@@ -1,7 +1,8 @@
 import "dotenv/config";
 import fs from "fs";
 
-import pkg from "@prisma/client";
+import { PrismaClient } from "@prisma/client";
+
 const { PrismaClient } = pkg;
 
 import { PrismaPg } from "@prisma/adapter-pg";

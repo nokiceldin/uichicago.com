@@ -1,29 +1,84 @@
 import { NextResponse } from "next/server";
 
-import { PrismaPg } from "@prisma/adapter-pg";
-import { Pool } from "pg";
+import { prisma } from "@/app/lib/prisma";
 
-import { PrismaClient } from "@prisma/client";
+const C = 20;
+const M = 4.0;
 
-const C = 20; // minimum weight, tweak later
-const M = 4.0; // baseline average rating
+import fs from "fs";
+import path from "path";
 
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-});
+function mapKeyToDbName(key: string) {
+  const s = (key || "").trim();
+  if (!s) return s;
 
-const prisma = new PrismaClient({
-  adapter: new PrismaPg(pool),
-});
+  if (s.includes(",")) {
+    const parts = s.split(",").map(p => p.trim()).filter(Boolean);
+    if (parts.length >= 2) {
+      const last = parts[0];
+      const first = parts.slice(1).join(" ");
+      return `${first} ${last}`.replace(/\s+/g, " ").trim();
+    }
+  }
+
+  return s;
+}
+
+function normName(s: string) {
+  return (s || "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim()
+    .replace(/\s+/g, " ");
+}
+
+
+type ProfCoursesMap = Record<string, string[]>;
+
+function normalizeCourseInput(s: string) {
+  const t = (s || "").trim().toUpperCase();
+  // CS301, CS 301, CS-301 etc
+  const m = t.match(/^([A-Z&]+)\s*[- ]?\s*(\d+[A-Z]?)\b/);
+  if (!m) return "";
+  return `${m[1]} ${m[2]}`; // "CS 301"
+}
+
+function courseLabelFromItem(s: string) {
+  const t = (s || "").trim().toUpperCase();
+  const m = t.match(/^([A-Z&]+)\s+(\d+[A-Z]?)\b/);
+  if (m) return `${m[1]} ${m[2]}`;
+  const pipe = t.split("|").map((x) => x.trim());
+  if (pipe.length >= 2) return `${pipe[0]} ${pipe[1]}`;
+  return t;
+}
+
+// cache it in dev so it doesnt re read every request
+const globalForCourseMap = globalThis as unknown as { __profCourseMap?: ProfCoursesMap };
+
+function getProfCourseMap(): ProfCoursesMap {
+  if (globalForCourseMap.__profCourseMap) return globalForCourseMap.__profCourseMap;
+
+  const filePath = path.join(process.cwd(), "public", "data", "professor_to_courses.json");
+  const raw = fs.readFileSync(filePath, "utf8");
+  const map = JSON.parse(raw) as ProfCoursesMap;
+
+  globalForCourseMap.__profCourseMap = map;
+  return map;
+}
+
+
+
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
-
+  
   const q = (searchParams.get("q") || "").trim();
   const dept = (searchParams.get("dept") || "All").trim();
   const minRatings = Number(searchParams.get("minRatings") || "0") || 0;
   const minStars = Number(searchParams.get("minStars") || "0") || 0;
   const sort = (searchParams.get("sort") || "best").toLowerCase();
+  const courseRaw = (searchParams.get("course") || "").trim();
+const course = normalizeCourseInput(courseRaw);
 
   const page = Math.max(1, Number(searchParams.get("page") || "1") || 1);
   const pageSize = Math.min(
@@ -31,6 +86,16 @@ export async function GET(req: Request) {
     Math.max(10, Number(searchParams.get("pageSize") || "50") || 50)
   );
   const offset = (page - 1) * pageSize;
+
+  // Only allow professors that have classes in course map
+const courseMap = getProfCourseMap();
+
+const activeDbNames: string[] = [];
+for (const key of Object.keys(courseMap)) {
+  const dbStyle = mapKeyToDbName(key);
+  activeDbNames.push(dbStyle);
+}
+
 
   const whereParts: string[] = [];
   const params: any[] = [];
@@ -57,6 +122,50 @@ export async function GET(req: Request) {
     params.push(minStars);
     whereParts.push(`COALESCE("rmpQuality", 0) >= $${params.length}`);
   }
+
+function normalizeProfNameServer(s: string) {
+  return (s || "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim()
+    .replace(/\s+/g, " ");
+}
+
+if (course) {
+  const map = getProfCourseMap();
+
+  const matchedDbStyleNames: string[] = [];
+
+  for (const [key, courses] of Object.entries(map)) {
+    const hasIt = (courses || []).some((c) => courseLabelFromItem(c) === course);
+    if (hasIt) matchedDbStyleNames.push(mapKeyToDbName(key));
+  }
+
+  if (matchedDbStyleNames.length === 0) {
+    return NextResponse.json({ total: 0, page, pageSize, items: [] });
+  }
+
+  const rows = await prisma.professor.findMany({ select: { name: true } });
+
+  const wanted = new Set(matchedDbStyleNames.map(normName));
+  const matchedRealDbNames = rows
+    .map(r => r.name)
+    .filter(n => wanted.has(normName(n)));
+
+  if (matchedRealDbNames.length === 0) {
+    return NextResponse.json({ total: 0, page, pageSize, items: [] });
+  }
+
+  params.push(matchedRealDbNames);
+  whereParts.push(`"name" = ANY($${params.length})`);
+}
+
+
+if (activeDbNames.length > 0) {
+  params.push(activeDbNames);
+  whereParts.push(`"name" = ANY($${params.length})`);
+}
+
 
   const whereSql = whereParts.length ? `WHERE ${whereParts.join(" AND ")}` : "";
 

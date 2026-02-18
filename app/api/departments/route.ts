@@ -1,20 +1,23 @@
 import { NextResponse } from "next/server";
-import { Pool } from "pg";
+import { prisma } from "@/app/lib/prisma";
 
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-});
+
 
 export async function GET() {
   try {
-    const result = await pool.query(
-      `SELECT DISTINCT "department"
-       FROM "Professor"
-       WHERE "department" IS NOT NULL AND "department" <> ''
-       ORDER BY "department" ASC`
-    );
+    const rows = await prisma.professor.findMany({
+      select: { department: true },
+      where: {
+        department: { not: "" },
+      },
+      distinct: ["department"],
+      orderBy: { department: "asc" },
+    });
 
-    const depts = result.rows.map((r) => r.department);
+    const depts = rows
+      .map((r) => r.department)
+      .filter((d): d is string => Boolean(d));
+
     return NextResponse.json(depts);
   } catch (err) {
     console.error("GET /api/departments error:", err);

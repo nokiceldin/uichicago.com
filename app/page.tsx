@@ -286,7 +286,7 @@ const panel =
 
          <div className="flex items-center gap-3">
   <span className="text-sm font-semibold text-zinc-700 dark:text-zinc-300">
-    {dark ? "Dark mode" : "Light mode"}
+    {dark ? "Dark mode enabled" : "Light mode enabled"}
   </span>
 
   <button

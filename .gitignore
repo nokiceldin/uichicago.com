@@ -10,6 +10,10 @@
 !.yarn/releases
 !.yarn/versions
 
+# large data
+prof_imports/merged/uic_courses_full_clean.json
+
+
 # testing
 /coverage
 

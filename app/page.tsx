@@ -282,7 +282,7 @@ const panel =
       <h1 className="text-4xl font-semibold tracking-[-0.01em]">UIC Professors</h1>
 
       <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
-        Explore professors by class, department, and ratings to plan your schedule confidently.
+        Explore professors by class, department, and ratings to plan your schedule confidently
       </p>
 
       

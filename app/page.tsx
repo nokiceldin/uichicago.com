@@ -278,15 +278,23 @@ const panel =
         <div className="rounded-3xl border border-zinc-800 dark:border-white/10 bg-white/70 p-6 shadow-lg backdrop-blur dark:border-white/10 dark:bg-zinc-950/40 dark:shadow-xl">
   <div className="flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between">
     
-    <div>
-      <h1 className="text-4xl font-semibold tracking-[-0.01em]">UIC Professors</h1>
+    <div className="flex items-start gap-4">
+  <img
+    src="/logo.png"
+    alt="UIC Professors Logo"
+    className="h-10 w-10 object-contain"
+  />
 
-      <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
-        Explore professors by class, department, and ratings to plan your schedule confidently
-      </p>
+  <div>
+    <h1 className="text-4xl font-semibold tracking-[-0.01em]">
+      UIC Professors
+    </h1>
 
-      
-    </div>
+    <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
+      Explore professors by class, department, and ratings to plan your schedule confidently
+    </p>
+  </div>
+</div>
 
     <div className="flex items-center gap-3">
       <span className="text-xs font-bold tracking-widest text-zinc-500 dark:text-zinc-400">

@@ -98,43 +98,39 @@ export default async function ProfessorPage({
   const C = 20;
   const M = 4.0;
 
-  const activeDbNames = getActiveDbNames();
-
   const result = await prisma.$queryRawUnsafe<any[]>(
-    `
-    WITH scored AS (
-      SELECT
-        "id",
-        "slug",
-        "name",
-        "department",
-        "school",
-        COALESCE("rmpQuality", 0) as "quality",
-        COALESCE("rmpRatingsCount", 0) as "ratingsCount",
-        COALESCE("rmpUrl", '') as "rmpUrl",
-        COALESCE("aiSummary", '') as "aiSummary",
-        CASE
-          WHEN COALESCE("rmpRatingsCount", 0) = 0 THEN 0
-          ELSE
-            (COALESCE("rmpRatingsCount", 0)::float / (COALESCE("rmpRatingsCount", 0) + ${C})) * COALESCE("rmpQuality", 0)
-            + (${C}::float / (COALESCE("rmpRatingsCount", 0) + ${C})) * ${M}
-        END as "score"
-      FROM "Professor"
-      WHERE "name" = ANY($2)
-    ),
-    ranked AS (
-      SELECT *,
-        ROW_NUMBER() OVER (ORDER BY "score" DESC, "ratingsCount" DESC, "name" ASC) as "overallRank",
-        ROW_NUMBER() OVER (PARTITION BY "department" ORDER BY "score" DESC, "ratingsCount" DESC, "name" ASC) as "deptRank"
-      FROM scored
-    )
-    SELECT *
-    FROM ranked
-    WHERE "slug" = $1
-    `,
-    slug,
-    activeDbNames
-  );
+  `
+  WITH scored AS (
+    SELECT
+      "id",
+      "slug",
+      "name",
+      "department",
+      "school",
+      COALESCE("rmpQuality", 0) as "quality",
+      COALESCE("rmpRatingsCount", 0) as "ratingsCount",
+      COALESCE("rmpUrl", '') as "rmpUrl",
+      COALESCE("aiSummary", '') as "aiSummary",
+      CASE
+        WHEN COALESCE("rmpRatingsCount", 0) = 0 THEN 0
+        ELSE
+          (COALESCE("rmpRatingsCount", 0)::float / (COALESCE("rmpRatingsCount", 0) + ${C})) * COALESCE("rmpQuality", 0)
+          + (${C}::float / (COALESCE("rmpRatingsCount", 0) + ${C})) * ${M}
+      END as "score"
+    FROM "Professor"
+  ),
+  ranked AS (
+    SELECT *,
+      ROW_NUMBER() OVER (ORDER BY "score" DESC, "ratingsCount" DESC, "name" ASC) as "overallRank",
+      ROW_NUMBER() OVER (PARTITION BY "department" ORDER BY "score" DESC, "ratingsCount" DESC, "name" ASC) as "deptRank"
+    FROM scored
+  )
+  SELECT *
+  FROM ranked
+  WHERE "slug" = $1
+  `,
+  slug
+)
 
   const professor = result[0];
   if (!professor) notFound();

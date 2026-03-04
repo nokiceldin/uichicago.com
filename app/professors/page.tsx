@@ -592,10 +592,7 @@ className="grid grid-cols-12 items-center border-b border-zinc-100 px-5 py-4 tex
                   <div className="col-span-4">
                     <div className="text-base font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">
                       {start + idx + 1}.{" "}
-<Link
-  href={`/professor/${p.slug}`}
-  className="hover:underline"
->
+<Link href={`/professors/${p.slug}`} className="hover:underline">
   {p.name}
 </Link>
                     </div>

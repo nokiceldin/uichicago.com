@@ -9,51 +9,62 @@ datasource db {
 }
 
 model Professor {
-  aiSummary String?
-  id              String   @id @default(cuid())
-  slug            String   @unique
-  name            String
-  department      String
-  school          String
-  rmpQuality      Float?
-  rmpDifficulty   Float?
+  id                String   @id @default(cuid())
+  slug              String   @unique
+  name              String
+  department        String
+  school            String
+  rmpQuality        Float?
+  rmpDifficulty     Float?
   rmpWouldTakeAgain Int?
-  rmpRatingsCount Int?
-  rmpUrl          String?
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  rmpRatingsCount   Int?
+  rmpUrl            String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  aiSummary         String?
 
   @@index([name])
   @@index([department])
 }
 
-model Term {
-  id        String   @id @default(cuid())
-  code      String   @unique  // ex "2025FA", "2025SP", "2025SU"
-  name      String?  // ex "Fall 2025"
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+model MissingProfessorReport {
+  id             String   @id @default(cuid())
+  createdAt      DateTime @default(now())
 
-  courseStats      CourseTermStats[]
-  instructorStats  CourseInstructorTermStats[]
+  searchQuery    String?
+  professorName  String
+  department     String?
+  classInput     String?
+  notes          String?
+
+  page           String?
+  userAgent      String?
+}
+
+model Term {
+  id              String                      @id @default(cuid())
+  code            String                      @unique
+  name            String?
+  createdAt       DateTime                    @default(now())
+  updatedAt       DateTime                    @updatedAt
+  instructorStats CourseInstructorTermStats[]
+  courseStats     CourseTermStats[]
 }
 
 model Course {
-  id        String   @id @default(cuid())
-  subject   String   // "ACTG"
-  number    String   // "211"
-  title     String
-  deptCode  String?
-  deptName  String?
-  difficultyScore   Float?   // 1.0 - 5.0 (5 = easiest)
-  avgGpa            Float?   // raw GPA before normalization
-  totalRegsAllTime  Int      @default(0)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  termStats       CourseTermStats[]
-  instructorStats CourseInstructorTermStats[]
+  id               String                      @id @default(cuid())
+  subject          String
+  number           String
+  title            String
+  deptCode         String?
+  deptName         String?
+  createdAt        DateTime                    @default(now())
+  updatedAt        DateTime                    @updatedAt
+  avgGpa           Float?
+  difficultyScore  Float?
+  totalRegsAllTime Int                         @default(0)
+  instructorStats  CourseInstructorTermStats[]
+  termStats        CourseTermStats[]
 
   @@unique([subject, number])
   @@index([deptName])
@@ -64,69 +75,58 @@ model CourseTermStats {
   id        String   @id @default(cuid())
   courseId  String
   termId    String
-
   gradeRegs Int      @default(0)
-
-  a   Int @default(0)
-  b   Int @default(0)
-  c   Int @default(0)
-  d   Int @default(0)
-  f   Int @default(0)
-
-  adv Int @default(0)
-  cr  Int @default(0)
-  dfr Int @default(0)
-  i   Int @default(0)
-  ng  Int @default(0)
-  nr  Int @default(0)
-  o   Int @default(0)
-  pr  Int @default(0)
-  s   Int @default(0)
-  u   Int @default(0)
-  w   Int @default(0)
-
+  a         Int      @default(0)
+  b         Int      @default(0)
+  c         Int      @default(0)
+  d         Int      @default(0)
+  f         Int      @default(0)
+  adv       Int      @default(0)
+  cr        Int      @default(0)
+  dfr       Int      @default(0)
+  i         Int      @default(0)
+  ng        Int      @default(0)
+  nr        Int      @default(0)
+  o         Int      @default(0)
+  pr        Int      @default(0)
+  s         Int      @default(0)
+  u         Int      @default(0)
+  w         Int      @default(0)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
-  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  term   Term   @relation(fields: [termId], references: [id], onDelete: Cascade)
+  course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  term      Term     @relation(fields: [termId], references: [id], onDelete: Cascade)
 
   @@unique([courseId, termId])
   @@index([termId])
 }
 
 model CourseInstructorTermStats {
-  id        String   @id @default(cuid())
-  courseId  String
-  termId    String
-
+  id             String   @id @default(cuid())
+  courseId       String
+  termId         String
   instructorName String
-
-  gradeRegs Int @default(0)
-
-  a   Int @default(0)
-  b   Int @default(0)
-  c   Int @default(0)
-  d   Int @default(0)
-  f   Int @default(0)
-
-  adv Int @default(0)
-  cr  Int @default(0)
-  dfr Int @default(0)
-  i   Int @default(0)
-  ng  Int @default(0)
-  nr  Int @default(0)
-  o   Int @default(0)
-  pr  Int @default(0)
-  s   Int @default(0)
-  u   Int @default(0)
-  w   Int @default(0)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  term   Term   @relation(fields: [termId], references: [id], onDelete: Cascade)
+  gradeRegs      Int      @default(0)
+  a              Int      @default(0)
+  b              Int      @default(0)
+  c              Int      @default(0)
+  d              Int      @default(0)
+  f              Int      @default(0)
+  adv            Int      @default(0)
+  cr             Int      @default(0)
+  dfr            Int      @default(0)
+  i              Int      @default(0)
+  ng             Int      @default(0)
+  nr             Int      @default(0)
+  o              Int      @default(0)
+  pr             Int      @default(0)
+  s              Int      @default(0)
+  u              Int      @default(0)
+  w              Int      @default(0)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  course         Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  term           Term     @relation(fields: [termId], references: [id], onDelete: Cascade)
 
   @@unique([courseId, termId, instructorName])
   @@index([termId])

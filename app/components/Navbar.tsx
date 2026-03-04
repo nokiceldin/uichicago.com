@@ -21,7 +21,7 @@ export default function Navbar() {
     <header className="sticky top-0 z-50 border-b border-zinc-200 bg-white dark:border-white/10 dark:bg-zinc-950 backdrop-blur">
       <div className="flex w-full items-center justify-between px-6 py-3">
         <Link
-          href="/"
+          href="/professors"
           className="flex items-center gap-3 rounded-xl px-2 py-1 hover:bg-zinc-100/60 dark:hover:bg-white/10"
         >
           <Image src="/logo.png" alt="UICProf" width={28} height={28} />
@@ -32,15 +32,15 @@ export default function Navbar() {
 
         <nav className="flex items-center gap-6">
   <Link
-    href="/"
+    href="/professors"
     className={`relative px-2 py-1 text-sm font-semibold transition ${
-      pathname === "/"
+      pathname.startsWith("/professors")
         ? "text-zinc-900 dark:text-white"
         : "text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white"
     }`}
   >
     Professors
-    {pathname === "/" && (
+    {pathname.startsWith("/professors") && (
       <span className="absolute left-0 right-0 -bottom-2 h-[2px] rounded-full bg-emerald-400" />
     )}
   </Link>

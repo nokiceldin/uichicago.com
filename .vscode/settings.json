@@ -1,0 +1,5 @@
+{
+  "files.exclude": { "**/.next": true },
+  "search.exclude": { "**/.next": true },
+  "explorer.excludeGitIgnore": true
+}

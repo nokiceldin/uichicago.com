@@ -7,18 +7,12 @@
   "private": true,
 
   "scripts": {
-
-    "dev": "next dev",
-
-    "build": "next build",
-
-    "start": "next start",
-
-    "lint": "eslint",
-
-    "postinstall": "prisma generate"
-
-  },
+  "dev": "NEXT_DISABLE_TURBOPACK=1 next dev",
+  "build": "next build",
+  "start": "next start",
+  "lint": "eslint",
+  "postinstall": "prisma generate"
+},
 
   "dependencies": {
 

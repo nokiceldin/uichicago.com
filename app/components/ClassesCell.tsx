@@ -20,184 +20,274 @@ function tokens(name: string) {
     .split(" ")
     .map((t) => t.trim())
     .filter(Boolean)
-    .filter((t) => t.length > 1); // remove single-letter initials
+    .filter((t) => t.length > 1);
 }
 
 function overlapCount(a: string[], b: string[]) {
   const setB = new Set(b);
   let count = 0;
-  for (const x of a) if (setB.has(x)) count++;
+  for (const x of a) {
+    if (setB.has(x)) count++;
+  }
   return count;
 }
 
 const NICK: Record<string, string[]> = {
-  // A
   alex: ["alexandra", "alexander"],
+  alexandra: ["alex", "sandy"],
+  alexander: ["alex"],
   al: ["alan", "allen", "albert", "alfred"],
   ally: ["allison", "alison"],
+  allison: ["ally"],
+  alison: ["ally"],
   andy: ["andrew"],
+  andrew: ["andy", "drew"],
   annie: ["anne", "anna"],
+  anne: ["annie"],
+  anna: ["annie"],
   art: ["arthur"],
+  arthur: ["art"],
 
-  // B
   ben: ["benjamin", "bennett"],
+  benjamin: ["ben"],
+  bennett: ["ben"],
   beth: ["elizabeth", "bethany"],
+  bethany: ["beth"],
   bill: ["william"],
   billy: ["william"],
   bob: ["robert"],
   bobby: ["robert"],
   brad: ["bradley"],
+  bradley: ["brad"],
   brian: ["bryan"],
+  bryan: ["brian"],
 
-  // C
   cam: ["cameron"],
-  cate: ["catherine", "katherine"],
-  cathy: ["catherine", "katherine"],
+  cameron: ["cam"],
+  cate: ["catherine", "katherine", "kathryn"],
+  cathy: ["catherine", "katherine", "kathryn"],
   charlie: ["charles"],
+  charles: ["charlie", "chuck"],
   chris: ["christopher", "christina", "christine"],
+  christopher: ["chris"],
+  christina: ["chris"],
+  christine: ["chris"],
   chuck: ["charles"],
   cindy: ["cynthia"],
+  cynthia: ["cindy"],
   claire: ["clarissa"],
+  clarissa: ["claire"],
 
-  // D
   dan: ["daniel"],
   danny: ["daniel"],
+  daniel: ["dan", "danny"],
   dave: ["david"],
   davy: ["david"],
+  david: ["dave", "davy"],
   deb: ["deborah"],
   debbie: ["deborah"],
+  deborah: ["deb", "debbie"],
   don: ["donald"],
   donny: ["donald"],
+  donald: ["don", "donny"],
   drew: ["andrew"],
   dylan: ["dillon"],
+  dillon: ["dylan"],
 
-  // E
   ed: ["edward", "edwin"],
   eddie: ["edward"],
+  edward: ["ed", "eddie"],
+  edwin: ["ed"],
   eli: ["elijah"],
+  elijah: ["eli"],
   ellie: ["elizabeth", "eleanor"],
+  elizabeth: ["beth", "ellie", "liz", "lizzy"],
+  eleanor: ["ellie"],
   em: ["emily", "emma"],
+  emily: ["em"],
+  emma: ["em"],
   eric: ["erik"],
+  erik: ["eric"],
 
-  // F
   frank: ["francis", "franklin"],
+  francis: ["frank"],
+  franklin: ["frank"],
   freddie: ["frederick"],
+  frederick: ["freddie"],
 
-  // G
   gabe: ["gabriel"],
+  gabriel: ["gabe"],
   gary: ["gerald"],
+  gerald: ["gary"],
   gen: ["jennifer"],
   geoff: ["geoffrey"],
+  geoffrey: ["geoff"],
   george: ["georgios"],
+  georgios: ["george"],
 
-  // H
   hank: ["henry"],
   harry: ["harold", "henry"],
+  harold: ["harry"],
+  henry: ["hank", "harry"],
   heidi: ["adelheid"],
+  adelheid: ["heidi"],
 
-  // J
   jack: ["john", "jackson"],
+  jackson: ["jack"],
   jake: ["jacob"],
-  james: ["jim"],
+  jacob: ["jake"],
+  james: ["jim", "jimmy"],
+  jim: ["james", "jimmy"],
+  jimmy: ["james", "jim"],
   jan: ["janet"],
+  janet: ["jan"],
   janey: ["jane"],
+  jane: ["janey"],
   jay: ["jason"],
+  jason: ["jay"],
   jean: ["jeanne"],
+  jeanne: ["jean"],
   jeff: ["jeffrey"],
+  jeffrey: ["jeff"],
   jen: ["jennifer"],
+  jennifer: ["jen", "jenny", "gen"],
   jenny: ["jennifer"],
   jess: ["jessica"],
   jessie: ["jessica"],
-  jim: ["james"],
-  jimmy: ["james"],
+  jessica: ["jess", "jessie"],
   joe: ["joseph"],
   joey: ["joseph"],
+  joseph: ["joe", "joey"],
+  john: ["jack", "johnny"],
   johnny: ["john"],
   jon: ["jonathan"],
+  jonathan: ["jon", "jonny"],
   jonny: ["jonathan"],
   josh: ["joshua"],
+  joshua: ["josh"],
   judy: ["judith"],
+  judith: ["judy"],
   julie: ["julia"],
+  julia: ["julie"],
   justin: ["justine"],
+  justine: ["justin"],
 
-  // K
   kate: ["katherine", "catherine", "kathryn"],
   katie: ["katherine", "catherine", "kathryn"],
-  kathy: ["katherine", "catherine"],
+  kathy: ["katherine", "catherine", "kathryn"],
+  katherine: ["kate", "katie", "kathy", "cate", "cathy"],
+  catherine: ["kate", "katie", "kathy", "cate", "cathy"],
+  kathryn: ["kate", "katie", "kathy", "cate", "cathy"],
   ken: ["kenneth"],
   kenny: ["kenneth"],
+  kenneth: ["ken", "kenny"],
   kim: ["kimberly"],
+  kimberly: ["kim"],
   kris: ["kristopher", "kristen"],
+  kristopher: ["kris"],
+  kristen: ["kris"],
 
-  // L
   larry: ["lawrence"],
+  lawrence: ["larry"],
   leo: ["leonard"],
+  leonard: ["leo"],
   liz: ["elizabeth"],
   lizzy: ["elizabeth"],
   lou: ["louis"],
+  louis: ["lou"],
   lucy: ["lucille"],
+  lucille: ["lucy"],
   luke: ["lucas"],
+  lucas: ["luke"],
 
-  // M
   maggie: ["margaret"],
+  margaret: ["maggie", "margie"],
   mandy: ["amanda"],
+  amanda: ["mandy"],
   marc: ["mark"],
+  mark: ["marc"],
   margie: ["margaret"],
   mary: ["marie"],
+  marie: ["mary"],
   matt: ["matthew"],
+  matthew: ["matt"],
   mikey: ["michael"],
   mike: ["michael"],
+  michael: ["mike", "mikey"],
   molly: ["mary"],
   monica: ["monique"],
+  monique: ["monica"],
 
-  // N
   nate: ["nathan", "nathaniel"],
+  nathan: ["nate"],
+  nathaniel: ["nate"],
   nick: ["nicholas"],
   nicky: ["nicholas"],
+  nicholas: ["nick", "nicky"],
 
-  // P
   pat: ["patrick", "patricia"],
+  patrick: ["pat"],
+  patricia: ["pat", "trish"],
   pete: ["peter"],
+  peter: ["pete"],
   phil: ["philip", "phillip"],
+  philip: ["phil"],
+  phillip: ["phil"],
 
-  // R
   randy: ["randall"],
+  randall: ["randy"],
   ray: ["raymond"],
+  raymond: ["ray"],
   rebecca: ["becky"],
+  becky: ["rebecca"],
   rick: ["richard"],
   ricky: ["richard"],
-  rob: ["robert"],
-  robbie: ["robert"],
+  richard: ["rick", "ricky"],
+  rob: ["robert", "bob", "bobby", "robbie"],
+  robbie: ["robert", "rob"],
+  robert: ["bob", "bobby", "rob", "robbie"],
   ron: ["ronald"],
   ronnie: ["ronald"],
+  ronald: ["ron", "ronnie"],
   russ: ["russell"],
+  russell: ["russ"],
 
-  // S
   sam: ["samuel", "samantha"],
+  samuel: ["sam"],
+  samantha: ["sam"],
   sandy: ["alexandra"],
   steve: ["steven", "stephen"],
-  stevie: ["steven"],
+  stevie: ["steven", "stephen"],
+  steven: ["steve", "stevie"],
+  stephen: ["steve", "stevie"],
   sue: ["susan"],
   susie: ["susan"],
+  susan: ["sue", "susie"],
 
-  // T
   ted: ["theodore"],
+  theodore: ["ted"],
   terry: ["terence", "theresa"],
+  terence: ["terry"],
+  theresa: ["terry"],
   tim: ["timothy"],
-  tom: ["thomas"],
-  tommy: ["thomas"],
+  timothy: ["tim"],
+  tom: ["thomas", "tomas", "tommy"],
+  tommy: ["thomas", "tomas", "tom"],
+  thomas: ["tom", "tommy", "tomas"],
+  tomas: ["tom", "tommy", "thomas"],
   tony: ["anthony"],
+  anthony: ["tony"],
   trish: ["patricia"],
 
-  // V
   vicky: ["victoria"],
+  victoria: ["vicky"],
   vinny: ["vincent"],
+  vincent: ["vinny"],
 
-  // W
   will: ["william"],
   willy: ["william"],
+  william: ["bill", "billy", "will", "willy"],
 };
-
 
 function expandToken(t: string) {
   return [t, ...(NICK[t] ?? [])];
@@ -212,43 +302,43 @@ function firstNameMatches(aFirst: string, bFirst: string) {
   return aExpanded.includes(bFirst) || bExpanded.includes(aFirst);
 }
 
-
-function getCoursesFuzzy(
-  map: Record<string, string[]>,
-  profName: string
-) {
+function getCoursesFuzzy(map: Record<string, string[]>, profName: string) {
   const exact = map[normalizeProfName(profName)];
   if (exact) return exact;
 
   const a = tokens(profName);
   if (a.length < 2) return [];
 
-  const first = a[0];
+  const aFirst = a[0];
+  const aLast = a[a.length - 1];
+  const aMiddle = a.slice(1, -1);
 
   let bestKey = "";
-  let bestScore = 0;
+  let bestScore = -1;
 
   for (const key of Object.keys(map)) {
     const b = tokens(key);
     if (b.length < 2) continue;
 
-    // require same first name
-    // allow nickname matching on first name
-if (!firstNameMatches(first, b[0])) continue;
+    const bFirst = b[0];
+    const bLast = b[b.length - 1];
+    const bMiddle = b.slice(1, -1);
 
+    if (aLast !== bLast) continue;
+    if (!firstNameMatches(aFirst, bFirst)) continue;
 
-    const common = overlapCount(a, b);
+    const middleOverlap = overlapCount(aMiddle, bMiddle);
 
-    // require at least 2 overlapping tokens
-    if (common >= 2 && common > bestScore) {
-      bestScore = common;
+    const score = 100 + middleOverlap;
+
+    if (score > bestScore) {
+      bestScore = score;
       bestKey = key;
     }
   }
 
   return bestKey ? map[bestKey] : [];
 }
-
 
 export function ClassesCell({
   profName,
@@ -258,17 +348,14 @@ export function ClassesCell({
   profName: string;
   map: Record<string, string[]>;
   onPickCourse?: (courseLabel: string) => void;
-
-  
 }) {
-const coursesRaw = getCoursesFuzzy(map, profName);
-
+  const coursesRaw = getCoursesFuzzy(map, profName);
 
   const courses = useMemo(() => {
-    // format labels and remove duplicates
     const labels = coursesRaw.map(formatCourseLabel);
     const seen = new Set<string>();
     const out: string[] = [];
+
     for (const x of labels) {
       const k = x.trim().toUpperCase();
       if (!k) continue;
@@ -276,6 +363,7 @@ const coursesRaw = getCoursesFuzzy(map, profName);
       seen.add(k);
       out.push(x);
     }
+
     return out;
   }, [coursesRaw]);
 
@@ -291,11 +379,14 @@ const coursesRaw = getCoursesFuzzy(map, profName);
       if (!wrapRef.current) return;
       if (!wrapRef.current.contains(e.target as Node)) setOpen(false);
     }
+
     function onKey(e: KeyboardEvent) {
       if (e.key === "Escape") setOpen(false);
     }
+
     document.addEventListener("mousedown", onDocClick);
     document.addEventListener("keydown", onKey);
+
     return () => {
       document.removeEventListener("mousedown", onDocClick);
       document.removeEventListener("keydown", onKey);
@@ -312,7 +403,11 @@ const coursesRaw = getCoursesFuzzy(map, profName);
     "ring-zinc-200 dark:ring-zinc-700";
 
   if (courses.length === 0) {
-    return <div className="text-xs text-zinc-500 dark:text-zinc-400">No data</div>;
+    return (
+      <div className="text-xs text-zinc-500 dark:text-zinc-400">
+        No data
+      </div>
+    );
   }
 
   return (
@@ -320,6 +415,7 @@ const coursesRaw = getCoursesFuzzy(map, profName);
       <div className="flex flex-wrap items-center gap-2 justify-start">
         {firstThree.map((label) => {
           const clickable = Boolean(onPickCourse);
+
           return (
             <button
               key={label}
@@ -368,6 +464,7 @@ const coursesRaw = getCoursesFuzzy(map, profName);
           <div className="max-h-56 overflow-auto px-1 pb-1">
             {rest.map((label) => {
               const clickable = Boolean(onPickCourse);
+
               return (
                 <button
                   key={label}

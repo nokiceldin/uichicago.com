@@ -41,6 +41,13 @@ const genedCategory = sp.genedCategory?.trim() || ""
   const hasSortParam = !!sp.sort
 const hasQuery = q.length > 0
 
+const qLower = q.toLowerCase()
+const qCompact = qLower.replace(/\s+/g, "")
+const qParts = q.trim().split(/\s+/)
+
+const subjectPart = qParts[0]?.match(/^[a-zA-Z]+$/) ? qParts[0] : ""
+const numberPart = qParts[1]?.match(/^\d+[a-zA-Z]*$/) ? qParts[1] : ""
+
 const where = {
   ...(dept ? { subject: dept } : {}),
   ...(q
@@ -49,6 +56,28 @@ const where = {
           { title: { contains: q, mode: "insensitive" as const } },
           { subject: { contains: q, mode: "insensitive" as const } },
           { number: { contains: q, mode: "insensitive" as const } },
+
+          ...(subjectPart && numberPart
+            ? [
+                {
+                  AND: [
+                    { subject: { equals: subjectPart, mode: "insensitive" as const } },
+                    { number: { startsWith: numberPart, mode: "insensitive" as const } },
+                  ],
+                },
+              ]
+            : []),
+
+          ...(qCompact
+            ? [
+                {
+                  AND: [
+                    { subject: { contains: qCompact.replace(/\d.*$/, ""), mode: "insensitive" as const } },
+                    { number: { contains: qCompact.replace(/^[a-zA-Z]+/, ""), mode: "insensitive" as const } },
+                  ],
+                },
+              ]
+            : []),
         ],
       }
     : {}),

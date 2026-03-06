@@ -194,107 +194,150 @@ const primaryPill =
         </div>
 
         <div className={panel}>
-          <div className="grid gap-4 lg:grid-cols-2">
-            <div className="space-y-3">
-              <div>
-                <div className="mb-1 text-xs font-semibold text-zinc-600 dark:text-zinc-300">Search</div>
-                <div className="flex gap-2">
-                  <input
-                    className={inputBase}
-                    placeholder="Search title, subject, or number"
-                    value={qDraft}
-                    onChange={(e) => setQDraft(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") applySearch()
-                    }}
-                  />
-                  <button type="button" className={pill + " h-10"} onClick={applySearch}>
-  Apply
-</button>
-                </div>
-              </div>
+  <div className="grid gap-6 lg:grid-cols-2 lg:items-stretch">
 
-              <div>
-                <div className="mb-1 text-xs font-semibold text-zinc-600 dark:text-zinc-300">Department</div>
-                <select className={selectBase} value={dept || ""} onChange={(e) => setDept(e.target.value)}>
-                  <option value="">All departments</option>
-                  {subjects.map((s) => (
-                    <option key={s} value={s}>
-                      {s}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
+    {/* LEFT COLUMN */}
+    <div className="flex h-full flex-col gap-4">
 
-            <div>
-  <div className="mb-1 text-xs font-semibold text-zinc-600 dark:text-zinc-300">Gen Ed</div>
-  <div className="grid gap-2 sm:grid-cols-2">
-    <button
-      type="button"
-      className={gened ? primaryPill : pill}
-      onClick={() => setGenEd(true)}
-    >
-      Gen Ed only
-    </button>
-    <button
-      type="button"
-      className={!gened ? primaryPill : pill}
-      onClick={() => setGenEd(false)}
-    >
-      All courses
-    </button>
+      <div>
+        <div className="mb-1 text-xs font-semibold text-zinc-600 dark:text-zinc-300">
+          Search
+        </div>
+
+        <div className="flex gap-2">
+          <input
+            className={inputBase}
+            placeholder="Search course title or code like CS 211"
+            value={qDraft}
+            onChange={(e) => setQDraft(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") applySearch()
+            }}
+          />
+
+          <button
+            type="button"
+            className={pill + " h-10 px-5"}
+            onClick={applySearch}
+          >
+            Apply
+          </button>
+        </div>
+      </div>
+
+      <div>
+        <div className="mb-1 text-xs font-semibold text-zinc-600 dark:text-zinc-300">
+          Department
+        </div>
+
+        <select
+          className={selectBase}
+          value={dept || ""}
+          onChange={(e) => setDept(e.target.value)}
+        >
+          <option value="">All departments</option>
+
+          {subjects.map((s) => (
+            <option key={s} value={s}>
+              {s}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      <div className="mt-auto">
+  <button
+    type="button"
+    className={pill + " w-full"}
+    onClick={clearAll}
+  >
+    Clear filters
+  </button>
   </div>
+
+    </div>
+
+
+    {/* RIGHT COLUMN */}
+    <div className="space-y-4">
+
+      <div>
+        <div className="mb-1 text-xs font-semibold text-zinc-600 dark:text-zinc-300">
+          Gen Ed
+        </div>
+
+        <div className="grid gap-2 sm:grid-cols-2">
+          <button
+            type="button"
+            className={gened ? primaryPill : pill}
+            onClick={() => setGenEd(true)}
+          >
+            Gen Ed only
+          </button>
+
+          <button
+            type="button"
+            className={!gened ? primaryPill : pill}
+            onClick={() => setGenEd(false)}
+          >
+            All courses
+          </button>
+        </div>
+      </div>
+
+      <div>
+  <div className="mb-1 text-xs font-semibold text-zinc-600 dark:text-zinc-300">
+    Gen Ed Category
+  </div>
+
+  <select
+    className={
+      selectBase +
+      (!gened
+        ? " opacity-50 cursor-not-allowed"
+        : "")
+    }
+    value={genedCategory || ""}
+    onChange={(e) => setGenEdCategory(e.target.value)}
+    disabled={!gened}
+  >
+    <option value="">All Gen Ed categories</option>
+
+    {genEdCategories.map((cat) => (
+      <option key={cat} value={cat}>
+        {cat}
+      </option>
+    ))}
+  </select>
 </div>
 
-{gened ? (
-  <div>
-    <div className="mb-1 text-xs font-semibold text-zinc-600 dark:text-zinc-300">
-      Gen Ed Category
-    </div>
-    <select
-      className={selectBase}
-      value={genedCategory || ""}
-      onChange={(e) => setGenEdCategory(e.target.value)}
-    >
-      <option value="">All Gen Ed categories</option>
-      {genEdCategories.map((cat) => (
-        <option key={cat} value={cat}>
-          {cat}
-        </option>
-      ))}
-    </select>
-  </div>
-) : null}
+      <div>
+        <div className="mb-1 text-xs font-semibold text-zinc-600 dark:text-zinc-300">
+          Sort
+        </div>
 
-            <div className="grid h-full grid-rows-[auto_1fr] gap-3">
-  <div>
-    <div className="mb-1 text-xs font-semibold text-zinc-600 dark:text-zinc-300">Sort</div>
-    <div className="grid gap-2 sm:grid-cols-2">
-      <button
-        type="button"
-        className={sort === "difficultyDesc" ? primaryPill : pill}
-        onClick={() => setSort("difficultyDesc")}
-      >
-        Easiest first
-      </button>
-      <button
-        type="button"
-        className={sort === "difficultyAsc" ? primaryPill : pill}
-        onClick={() => setSort("difficultyAsc")}
-      >
-        Hardest first
-      </button>
-    </div>
-  </div>
+        <div className="grid gap-2 sm:grid-cols-2">
+          <button
+            type="button"
+            className={sort === "difficultyDesc" ? primaryPill : pill}
+            onClick={() => setSort("difficultyDesc")}
+          >
+            Easiest first
+          </button>
 
-  <div className="flex items-end">
-    <button type="button" className={pill + " w-full"} onClick={clearAll}>
-      Clear filters
-    </button>
+          <button
+            type="button"
+            className={sort === "difficultyAsc" ? primaryPill : pill}
+            onClick={() => setSort("difficultyAsc")}
+          >
+            Hardest first
+          </button>
+        </div>
+      </div>
+
+    </div>
+
   </div>
-</div>
-          </div>
 
           <div className="mt-4 flex flex-wrap items-center gap-2">
             {dept ? (

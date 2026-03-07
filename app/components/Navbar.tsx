@@ -13,9 +13,9 @@ export default function Navbar() {
     <header className="sticky top-0 z-50 border-b border-zinc-200 bg-white/95 backdrop-blur dark:border-white/10 dark:bg-zinc-950/95">
       <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
         <Link
-          href="/professors"
-          className="flex min-w-0 items-center gap-2 rounded-xl px-1 py-1 transition hover:bg-zinc-100/60 dark:hover:bg-white/10"
-        >
+  href="/"
+  className="flex min-w-0 items-center gap-2 rounded-xl px-1 py-1 transition hover:bg-zinc-100/60 dark:hover:bg-white/10"
+>
           <Image
             src="/logo.png"
             alt="UIC Ratings"

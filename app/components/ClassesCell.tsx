@@ -367,7 +367,7 @@ export function ClassesCell({
     return out;
   }, [coursesRaw]);
 
-  const firstThree = courses.slice(0, 3);
+  const firstThree = courses.slice(0, 2);
   const rest = courses.slice(3);
   const extra = rest.length;
 

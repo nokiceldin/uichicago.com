@@ -12,13 +12,35 @@ type CourseHeaderProps = {
   };
 };
 
-function statPill(label: string, value: string) {
+function gpaColor(v: number | null) {
+  if (v == null) return ""
+
+  if (v >= 3.6) return "text-emerald-400"
+  if (v >= 3.2) return "text-green-400"
+  if (v >= 2.8) return "text-yellow-400"
+  if (v >= 2.4) return "text-orange-400"
+
+  return "text-red-400"
+}
+
+function easinessColor(v: number | null) {
+  if (v == null) return ""
+
+  if (v >= 4.0) return "text-emerald-400"
+  if (v >= 3.0) return "text-green-400"
+  if (v >= 2.0) return "text-yellow-400"
+  if (v >= 1.5) return "text-orange-400"
+
+  return "text-red-400"
+}
+
+function statPill(label: string, value: string, valueClass?: string) {
   return (
     <div className="rounded-2xl border border-zinc-200 bg-white px-4 py-3 shadow-sm dark:border-white/10 dark:bg-zinc-900/40">
       <div className="text-[11px] font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
         {label}
       </div>
-      <div className="mt-1 text-base font-semibold text-zinc-900 dark:text-zinc-100">
+      <div className={`mt-1 text-base font-semibold ${valueClass ?? "text-zinc-900 dark:text-zinc-100"}`}>
         {value}
       </div>
     </div>
@@ -61,19 +83,21 @@ export default function CourseHeader({ course }: CourseHeaderProps) {
 
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 lg:min-w-[420px]">
           {statPill(
-            "Avg GPA",
-            course.avgGpa == null ? "No data" : course.avgGpa.toFixed(2)
-          )}
-          {statPill(
-            "Easiness",
-            course.difficultyScore == null
-              ? "No data"
-              : course.difficultyScore.toFixed(2)
-          )}
-          {statPill(
-            "Total regs",
-            new Intl.NumberFormat("en-US").format(totalRegs)
-          )}
+  "Avg GPA",
+  course.avgGpa == null ? "No data" : course.avgGpa.toFixed(2),
+  gpaColor(course.avgGpa)
+)}
+{statPill(
+  "Easiness",
+  course.difficultyScore == null
+    ? "No data"
+    : course.difficultyScore.toFixed(2),
+  easinessColor(course.difficultyScore)
+)}
+{statPill(
+  "Total regs",
+  new Intl.NumberFormat("en-US").format(totalRegs)
+)}
         </div>
       </div>
     </section>

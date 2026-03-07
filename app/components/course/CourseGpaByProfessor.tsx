@@ -54,7 +54,9 @@ export default function CourseGpaByProfessor({
       </div>
 
       <div className="overflow-hidden rounded-3xl border border-zinc-200 dark:border-white/10">
-        <div className="grid grid-cols-12 border-b border-zinc-200 bg-zinc-50 px-5 py-3 text-xs font-semibold text-zinc-700 dark:border-white/10 dark:bg-zinc-950/40 dark:text-zinc-300">
+  <div className="overflow-x-auto">
+    <div className="min-w-[640px]">
+      <div className="grid grid-cols-12 border-b border-zinc-200 bg-zinc-50 px-5 py-3 text-xs font-semibold text-zinc-700 dark:border-white/10 dark:bg-zinc-950/40 dark:text-zinc-300">
           <div className="col-span-1">#</div>
           <div className="col-span-4">Professor</div>
           <div className="col-span-2 text-right">Avg GPA</div>
@@ -111,6 +113,8 @@ export default function CourseGpaByProfessor({
             </li>
           ) : null}
         </ul>
+      </div>
+      </div>
       </div>
     </section>
   );

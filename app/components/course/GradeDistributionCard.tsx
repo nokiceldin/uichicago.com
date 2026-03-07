@@ -26,9 +26,9 @@ export default function GradeDistributionCard({
   const chartData = distribution.filter((item) => item.value > 0);
 
   return (
-    <section className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-lg dark:border-white/10 dark:bg-zinc-900/40 dark:shadow-xl dark:backdrop-blur">
-      <div className="mb-6">
-        <h2 className="text-2xl font-semibold tracking-[-0.01em] text-zinc-900 dark:text-zinc-100">
+    <section className="rounded-3xl border border-zinc-200 bg-white p-4 sm:p-6 shadow-lg dark:border-white/10 dark:bg-zinc-900/40 dark:shadow-xl dark:backdrop-blur">
+      <div className="mb-5 sm:mb-6">
+        <h2 className="text-xl sm:text-2xl font-semibold tracking-[-0.01em] text-zinc-900 dark:text-zinc-100">
           Grade Distribution
         </h2>
         <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
@@ -36,8 +36,8 @@ export default function GradeDistributionCard({
         </p>
       </div>
 
-      <div className="grid gap-8 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
-        <div className="h-[340px]">
+      <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
+        <div className="h-[300px] sm:h-[340px]">
           {chartData.length > 0 ? (
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
@@ -57,8 +57,8 @@ export default function GradeDistributionCard({
                   data={chartData}
                   dataKey="value"
                   nameKey="label"
-                  innerRadius={88}
-                  outerRadius={128}
+                  innerRadius={78}
+                  outerRadius={118}
                   paddingAngle={2}
                   strokeWidth={0}
                 >
@@ -74,12 +74,12 @@ export default function GradeDistributionCard({
             </div>
           )}
 
-          <div className="pointer-events-none -mt-[205px] flex justify-center">
-            <div className="flex h-[120px] w-[120px] flex-col items-center justify-center rounded-full bg-white/90 text-center shadow-sm ring-1 ring-zinc-200 dark:bg-zinc-950/90 dark:ring-white/10">
-              <div className="text-[11px] font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+          <div className="pointer-events-none -mt-[182px] sm:-mt-[205px] flex justify-center">
+            <div className="flex h-[108px] w-[108px] sm:h-[120px] sm:w-[120px] flex-col items-center justify-center rounded-full bg-white/90 text-center shadow-sm ring-1 ring-zinc-200 dark:bg-zinc-950/90 dark:ring-white/10">
+              <div className="text-[10px] sm:text-[11px] font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
                 Avg GPA
               </div>
-              <div className="mt-1 text-2xl font-semibold text-zinc-900 dark:text-zinc-100">
+              <div className="mt-1 text-xl sm:text-2xl font-semibold text-zinc-900 dark:text-zinc-100">
                 {avgGpa == null ? "N/A" : avgGpa.toFixed(2)}
               </div>
             </div>
@@ -87,8 +87,8 @@ export default function GradeDistributionCard({
         </div>
 
         <div>
-          <div className="rounded-3xl border border-zinc-200 bg-zinc-50/60 p-4 dark:border-white/10 dark:bg-white/5">
-            <div className="space-y-3">
+          <div className="rounded-3xl border border-zinc-200 bg-zinc-50/60 p-3 sm:p-4 dark:border-white/10 dark:bg-white/5">
+            <div className="grid grid-cols-2 gap-3">
               {distribution.map((item) => {
                 const pct =
                   visualTotal > 0
@@ -98,24 +98,26 @@ export default function GradeDistributionCard({
                 return (
                   <div
                     key={item.label}
-                    className="flex items-center justify-between gap-4 rounded-2xl bg-white px-4 py-3 ring-1 ring-zinc-200 dark:bg-zinc-950/40 dark:ring-white/10"
+                    className="rounded-2xl bg-white px-3 py-3 ring-1 ring-zinc-200 dark:bg-zinc-950/40 dark:ring-white/10"
                   >
-                    <div className="flex items-center gap-3">
-                      <span
-                        className="h-3.5 w-3.5 rounded-full"
-                        style={{ backgroundColor: item.color }}
-                      />
-                      <span className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-                        {item.label}
-                      </span>
-                    </div>
-
-                    <div className="text-right">
-                      <div className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-                        {pct}%
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-2">
+                        <span
+                          className="h-3 w-3 rounded-full"
+                          style={{ backgroundColor: item.color }}
+                        />
+                        <span className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+                          {item.label}
+                        </span>
                       </div>
-                      <div className="text-xs text-zinc-500 dark:text-zinc-400">
-                        {item.value} students
+
+                      <div className="text-right">
+                        <div className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+                          {pct}%
+                        </div>
+                        <div className="text-[11px] text-zinc-500 dark:text-zinc-400">
+                          {item.value}
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -123,7 +125,7 @@ export default function GradeDistributionCard({
               })}
             </div>
 
-            <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
+            <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
               <div className="rounded-2xl border border-zinc-200 bg-white px-4 py-3 dark:border-white/10 dark:bg-zinc-950/40">
                 <div className="text-[11px] font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
                   Visual total
@@ -142,7 +144,7 @@ export default function GradeDistributionCard({
                 </div>
               </div>
 
-              <div className="rounded-2xl border border-zinc-200 bg-white px-4 py-3 dark:border-white/10 dark:bg-zinc-950/40">
+              <div className="col-span-2 sm:col-span-1 rounded-2xl border border-zinc-200 bg-white px-4 py-3 dark:border-white/10 dark:bg-zinc-950/40">
                 <div className="text-[11px] font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
                   Total regs
                 </div>

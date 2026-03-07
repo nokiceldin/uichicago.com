@@ -36,9 +36,9 @@ export default function ThemeToggle() {
 
   return (
     <div className="flex items-center gap-3">
-      <span className="text-xs font-bold tracking-widest text-zinc-500 dark:text-zinc-400">
-        {dark ? "DARK" : "LIGHT"}
-      </span>
+      <span className="hidden text-xs font-bold tracking-widest text-zinc-500 dark:text-zinc-400 lg:block">
+  {dark ? "DARK" : "LIGHT"}
+</span>
 
       <button
         type="button"

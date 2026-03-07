@@ -30,104 +30,97 @@ export default function Page() {
   const [course, setCourse] = useState("");
   const [dept, setDept] = useState("All");
 
-function getPageButtons(current: number, total: number) {
-  const maxButtons = 3;
+  function getPageButtons(current: number, total: number) {
+    const maxButtons = 3;
 
-  if (total <= maxButtons) {
-    return Array.from({ length: total }, (_, i) => i + 1);
-  }
-
-  let start = Math.max(1, current - Math.floor(maxButtons / 2));
-  let end = start + maxButtons - 1;
-
-  if (end > total) {
-    end = total;
-    start = end - maxButtons + 1;
-  }
-
-  return Array.from({ length: maxButtons }, (_, i) => start + i);
-}
-
-
-
-  // course autocomplete
-function formatCourseLabel(s: string) {
-  const t = (s || "").trim();
-
-  const m = t.match(/^([A-Z&]+)\s+(\d+[A-Z]?)\b/i);
-  if (m) return `${m[1].toUpperCase()} ${m[2].toUpperCase()}`;
-
-  const pipeParts = t.split("|").map((x) => x.trim());
-  if (pipeParts.length >= 2) return `${pipeParts[0]} ${pipeParts[1]}`;
-
-  return t;
-}
-
-const allCourseLabels = useMemo(() => {
-  if (!courseMap) return [];
-
-  const set = new Set<string>();
-  for (const arr of Object.values(courseMap)) {
-    for (const raw of arr || []) {
-      const label = formatCourseLabel(raw);
-      const key = label.toUpperCase().replace(/\s+/g, " ").trim();
-      if (key) set.add(key);
-    }
-  }
-
-  return Array.from(set).sort();
-}, [courseMap]);
-
-const [courseOpen, setCourseOpen] = useState(false);
-const [courseActive, setCourseActive] = useState(0);
-
-const courseSuggestions = useMemo(() => {
-  const typed = course.toUpperCase().trim();
-  if (!typed) return [];
-
-  // allow "CS301" to match "CS 301"
-  const typedLoose = typed.replace(/\s+/g, "");
-  const typedTight = typed.replace(/[^A-Z0-9&]/g, ""); // removes spaces + weird chars
-
-  const out: string[] = [];
-  for (const label of allCourseLabels) {
-    const labelLoose = label.replace(/\s+/g, "");
-    const labelTight = label.replace(/[^A-Z0-9&]/g, "");
-
-    if (
-      label.includes(typed) ||
-      labelLoose.includes(typedLoose) ||
-      labelTight.includes(typedTight)
-    ) {
-      out.push(label);
+    if (total <= maxButtons) {
+      return Array.from({ length: total }, (_, i) => i + 1);
     }
 
-    if (out.length >= 12) break;
+    let start = Math.max(1, current - Math.floor(maxButtons / 2));
+    let end = start + maxButtons - 1;
+
+    if (end > total) {
+      end = total;
+      start = end - maxButtons + 1;
+    }
+
+    return Array.from({ length: maxButtons }, (_, i) => start + i);
   }
 
-  return out;
-}, [course, allCourseLabels]);
+  function formatCourseLabel(s: string) {
+    const t = (s || "").trim();
 
+    const m = t.match(/^([A-Z&]+)\s+(\d+[A-Z]?)\b/i);
+    if (m) return `${m[1].toUpperCase()} ${m[2].toUpperCase()}`;
 
-useEffect(() => {
-  if (!courseSuggestions.length) setCourseOpen(false);
-  setCourseActive(0);
-}, [courseSuggestions.length]);
+    const pipeParts = t.split("|").map((x) => x.trim());
+    if (pipeParts.length >= 2) return `${pipeParts[0]} ${pipeParts[1]}`;
 
-useEffect(() => {
-  function onDocDown(e: MouseEvent) {
-    const el = e.target as HTMLElement | null;
-    if (!el) return;
-    if (el.closest("[data-course-autocomplete-root]")) return;
-    setCourseOpen(false);
+    return t;
   }
-  document.addEventListener("mousedown", onDocDown);
-  return () => document.removeEventListener("mousedown", onDocDown);
-}, []);
 
+  const allCourseLabels = useMemo(() => {
+    if (!courseMap) return [];
+
+    const set = new Set<string>();
+    for (const arr of Object.values(courseMap)) {
+      for (const raw of arr || []) {
+        const label = formatCourseLabel(raw);
+        const key = label.toUpperCase().replace(/\s+/g, " ").trim();
+        if (key) set.add(key);
+      }
+    }
+
+    return Array.from(set).sort();
+  }, [courseMap]);
+
+  const [courseOpen, setCourseOpen] = useState(false);
+  const [courseActive, setCourseActive] = useState(0);
+
+  const courseSuggestions = useMemo(() => {
+    const typed = course.toUpperCase().trim();
+    if (!typed) return [];
+
+    const typedLoose = typed.replace(/\s+/g, "");
+    const typedTight = typed.replace(/[^A-Z0-9&]/g, "");
+
+    const out: string[] = [];
+    for (const label of allCourseLabels) {
+      const labelLoose = label.replace(/\s+/g, "");
+      const labelTight = label.replace(/[^A-Z0-9&]/g, "");
+
+      if (
+        label.includes(typed) ||
+        labelLoose.includes(typedLoose) ||
+        labelTight.includes(typedTight)
+      ) {
+        out.push(label);
+      }
+
+      if (out.length >= 12) break;
+    }
+
+    return out;
+  }, [course, allCourseLabels]);
+
+  useEffect(() => {
+    if (!courseSuggestions.length) setCourseOpen(false);
+    setCourseActive(0);
+  }, [courseSuggestions.length]);
+
+  useEffect(() => {
+    function onDocDown(e: MouseEvent) {
+      const el = e.target as HTMLElement | null;
+      if (!el) return;
+      if (el.closest("[data-course-autocomplete-root]")) return;
+      setCourseOpen(false);
+    }
+    document.addEventListener("mousedown", onDocDown);
+    return () => document.removeEventListener("mousedown", onDocDown);
+  }, []);
 
   const [departments, setDepartments] = useState<string[]>([]);
-
   const [minRatings, setMinRatings] = useState(0);
   const [minStars, setMinStars] = useState(0);
 
@@ -135,46 +128,41 @@ useEffect(() => {
   const pageSize = 50;
 
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
-const pageButtons = useMemo(() => getPageButtons(page, totalPages), [page, totalPages]);
+  const pageButtons = useMemo(() => getPageButtons(page, totalPages), [page, totalPages]);
 
-const baseBtn =
-  "h-10 rounded-xl border border-zinc-200 bg-white px-4 text-sm font-medium text-zinc-900 hover:bg-zinc-50 disabled:opacity-50 dark:border-white/10 dark:bg-zinc-950/40 dark:text-zinc-100 dark:hover:bg-zinc-900/40";
+  const baseBtn =
+    "h-10 rounded-xl border border-zinc-200 bg-white px-3 sm:px-4 text-sm font-medium text-zinc-900 hover:bg-zinc-50 disabled:opacity-50 dark:border-white/10 dark:bg-zinc-950/40 dark:text-zinc-100 dark:hover:bg-zinc-900/40";
 
-function pageBtnClass(active: boolean) {
-  return (
-  baseBtn +
-  " min-w-10 px-3 tabular-nums flex items-center justify-center " +
-  (active
-    ? " pointer-events-none disabled:opacity-100 opacity-100 border-white/25 bg-white/10 text-white dark:border-white/25 dark:bg-white/10 dark:text-white"
-    : "")
-);
-}
+  function pageBtnClass(active: boolean) {
+    return (
+      baseBtn +
+      " min-w-9 sm:min-w-10 px-2.5 sm:px-3 tabular-nums flex items-center justify-center " +
+      (active
+        ? " pointer-events-none disabled:opacity-100 opacity-100 border-white/25 bg-white/10 text-white dark:border-white/25 dark:bg-white/10 dark:text-white"
+        : "")
+    );
+  }
 
-
-
-const middle = pageButtons.filter((n) => n !== 1 && n !== totalPages);
-
-
+  const middle = pageButtons.filter((n) => n !== 1 && n !== totalPages);
   const start = (page - 1) * pageSize;
 
-const inputBase =
-  "h-12 w-full rounded-2xl border border-zinc-200 bg-white px-4 text-zinc-900 outline-none placeholder:text-zinc-500 focus:border-zinc-300 focus:ring-2 focus:ring-zinc-200 " +
-  "dark:border-white/10 dark:bg-zinc-950/40 dark:text-zinc-100 dark:placeholder:text-zinc-500 dark:focus:ring-white/10";
+  const inputBase =
+    "h-11 sm:h-12 w-full rounded-2xl border border-zinc-200 bg-white px-4 text-sm sm:text-base text-zinc-900 outline-none placeholder:text-zinc-500 focus:border-zinc-300 focus:ring-2 focus:ring-zinc-200 " +
+    "dark:border-white/10 dark:bg-zinc-950/40 dark:text-zinc-100 dark:placeholder:text-zinc-500 dark:focus:ring-white/10";
 
-const selectBase =
-  "h-12 w-full cursor-pointer rounded-2xl border border-zinc-200 bg-white px-4 text-zinc-900 outline-none focus:border-zinc-300 focus:ring-2 focus:ring-zinc-200 " +
-  "dark:border-white/10 dark:bg-zinc-950/40 dark:text-zinc-100 dark:focus:ring-white/10";
+  const selectBase =
+    "h-11 sm:h-12 w-full cursor-pointer rounded-2xl border border-zinc-200 bg-white px-4 text-sm sm:text-base text-zinc-900 outline-none focus:border-zinc-300 focus:ring-2 focus:ring-zinc-200 " +
+    "dark:border-white/10 dark:bg-zinc-950/40 dark:text-zinc-100 dark:focus:ring-white/10";
 
-const panel =
-  "mt-6 rounded-3xl border border-zinc-200 bg-white p-6 shadow-lg " +
-  "dark:border-white/10 dark:bg-zinc-900/40 dark:shadow-xl dark:backdrop-blur";
-
+  const panel =
+    "mt-5 rounded-3xl border border-zinc-200 bg-white p-4 sm:p-5 md:p-6 shadow-lg " +
+    "dark:border-white/10 dark:bg-zinc-900/40 dark:shadow-xl dark:backdrop-blur";
 
   const chip =
     "inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/40 px-3 py-1 text-xs font-semibold text-zinc-700 hover:bg-white/60 dark:bg-white/5 dark:text-zinc-200 dark:hover:bg-white/10";
 
   const btn =
-  "h-12 rounded-2xl border border-zinc-200 bg-white px-4 text-sm font-semibold text-zinc-900 hover:bg-zinc-50 disabled:opacity-40 dark:border-white/10 dark:bg-white/5 dark:text-zinc-100 dark:hover:bg-white/10";
+    "h-11 sm:h-12 rounded-2xl border border-zinc-200 bg-white px-4 text-sm font-semibold text-zinc-900 hover:bg-zinc-50 disabled:opacity-40 dark:border-white/10 dark:bg-white/5 dark:text-zinc-100 dark:hover:bg-white/10";
 
   useEffect(() => {
     fetch("/api/departments")
@@ -245,184 +233,144 @@ const panel =
   }
 
   return (
-<main className="relative min-h-screen bg-white text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100"> <div className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-72 bg-gradient-to-b from-white/60 to-transparent dark:from-white/5" />     <div className="mx-auto max-w-6xl px-5 py-10">
-<div className="rounded-3xl border border-zinc-200 bg-white/70 p-6 shadow-lg backdrop-blur dark:border-white/10 dark:bg-zinc-950/40 dark:shadow-xl">  <div className="flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between">
-    
-    <div className="flex items-start gap-4">
-  <img
-    src="/logo.png"
-    alt="UIC Professors Logo"
-    className="h-10 w-10 object-contain"
-  />
+    <main className="relative min-h-screen bg-white text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100">
+      <div className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-72 bg-gradient-to-b from-white/60 to-transparent dark:from-white/5" />
 
-  <div>
-    <h1 className="text-4xl font-semibold tracking-[-0.01em]">
-      UIC Professors
-    </h1>
-
-    <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
-      Explore professors by class, department, and ratings to plan your schedule confidently
-    </p>
-  </div>
-</div>
-
-    
-  </div>
-</div>
-
-        <div className={panel}>
-          <div className="grid gap-4 lg:grid-cols-2">
-            <div className="space-y-3">
-              <div>
-                <div className="mb-1 text-xs font-semibold text-zinc-600 dark:text-zinc-300">
-                  Search
-                </div>
-                <input
-                  className={inputBase}
-                  placeholder="Search professor name or department..."
-                  value={query}
-                  onChange={(e) => {
-                    setQuery(e.target.value);
-                    setPage(1);
-                  }}
-                />
-              </div>
+      <div className="mx-auto max-w-6xl px-4 py-6 sm:px-5 sm:py-10">
+        <div className="rounded-3xl border border-zinc-200 bg-white/70 p-4 sm:p-6 shadow-lg backdrop-blur dark:border-white/10 dark:bg-zinc-950/40 dark:shadow-xl">
+          <div className="flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between">
+            <div className="flex items-start gap-3 sm:gap-4">
+              <img
+                src="/logo.png"
+                alt="UIC Professors Logo"
+                className="h-8 w-8 object-contain sm:h-10 sm:w-10"
+              />
 
               <div>
-                <div className="mb-1 text-xs font-semibold text-zinc-600 dark:text-zinc-300">
-                  Department
-                </div>
-                <select
-                  className={selectBase}
-                  value={dept}
-                  onChange={(e) => {
-                    setDept(e.target.value);
-                    setPage(1);
-                  }}
-                >
-                  <option value="All">All departments</option>
-                  {departments.map((d) => (
-                    <option key={d} value={d}>
-                      {d}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
+                <h1 className="text-2xl sm:text-4xl font-semibold tracking-[-0.01em] leading-tight">
+                  UIC Professors
+                </h1>
 
-            <div className="space-y-3">
-              <div>
-                <div className="mb-1 text-xs font-semibold text-zinc-600 dark:text-zinc-300">
-                  Class
-                </div>
-                <div data-course-autocomplete-root className="relative">
-  <input
-    className={inputBase}
-    placeholder="Filter by class (ex: CS 301)"
-    value={course}
-    onFocus={() => {
-      if (courseSuggestions.length) setCourseOpen(true);
-    }}
-    onChange={(e) => {
-      const v = e.target.value.toUpperCase().replace(/\s+/g, " ");
-      setCourse(v);
-      setPage(1);
-      if (v.trim()) setCourseOpen(true);
-    }}
-    onKeyDown={(e) => {
-      if (!courseOpen && courseSuggestions.length) {
-        if (e.key === "ArrowDown") setCourseOpen(true);
-      }
-
-      if (!courseOpen) return;
-
-      if (e.key === "ArrowDown") {
-        e.preventDefault();
-        setCourseActive((i) => Math.min(i + 1, courseSuggestions.length - 1));
-      } else if (e.key === "ArrowUp") {
-        e.preventDefault();
-        setCourseActive((i) => Math.max(i - 1, 0));
-      } else if (e.key === "Enter") {
-        const pick = courseSuggestions[courseActive];
-        if (pick) {
-          e.preventDefault();
-          setCourse(pick);
-          setPage(1);
-          setCourseOpen(false);
-        }
-      } else if (e.key === "Escape") {
-        setCourseOpen(false);
-      }
-    }}
-  />
-
-  {courseOpen && courseSuggestions.length > 0 && (
-    <div className="absolute left-0 right-0 top-[calc(100%+8px)] z-30 overflow-hidden rounded-2xl border border-white/10 bg-white/90 shadow-xl backdrop-blur dark:bg-zinc-950/80">
-      <div className="max-h-64 overflow-auto p-1">
-        {courseSuggestions.map((label, i) => (
-          <button
-            key={label}
-            type="button"
-            onMouseEnter={() => setCourseActive(i)}
-            onClick={() => {
-              setCourse(label);
-              setPage(1);
-              setCourseOpen(false);
-            }}
-            className={[
-              "w-full rounded-xl px-3 py-2 text-left text-sm",
-              i === courseActive
-                ? "bg-zinc-100 text-zinc-900 dark:bg-white/10 dark:text-zinc-100"
-                : "text-zinc-900 hover:bg-zinc-100 dark:text-zinc-100 dark:hover:bg-white/10",
-            ].join(" ")}
-          >
-            {label}
-          </button>
-        ))}
-      </div>
-    </div>
-  )}
-</div>
-
-                
-              </div>
-
-              <div>
-                <div className="mb-1 flex items-center justify-between text-xs font-semibold text-zinc-600 dark:text-zinc-300">
-                  <span>Minimum reviews</span>
-                  <span className="tabular-nums">{minRatings}</span>
-                </div>
-
-<div className="flex h-12 items-center rounded-2xl border border-zinc-200 bg-white dark:border-white/10 dark:bg-zinc-950/40">
-  <div className="px-4 w-full">
-    <input
-      type="range"
-      min={0}
-      max={200}
-      step={5}
-      value={minRatings}
-      onChange={(e) => setMinRatings(Number(e.target.value))}
-      className="w-full"
-    />
-  </div>
-</div>
-
-
-                <div className="mt-1 flex justify-between px-4 text-[11px] text-zinc-500 dark:text-zinc-400">
-
-  <span>0</span>
-  <span>50</span>
-  <span>100</span>
-  <span>150</span>
-  <span>200+</span>
-</div>
-
-
+                <p className="mt-2 text-sm leading-6 text-zinc-600 dark:text-zinc-400">
+                  Explore professors by class, department, and ratings to plan your schedule confidently
+                </p>
               </div>
             </div>
           </div>
+        </div>
 
-          <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <div className={panel}>
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="col-span-2">
+              <div className="mb-1 text-xs font-semibold text-zinc-600 dark:text-zinc-300">
+                Search
+              </div>
+              <input
+                className={inputBase}
+                placeholder="Search professor name or department..."
+                value={query}
+                onChange={(e) => {
+                  setQuery(e.target.value);
+                  setPage(1);
+                }}
+              />
+            </div>
+
+            <div>
+              <div className="mb-1 text-xs font-semibold text-zinc-600 dark:text-zinc-300">
+                Department
+              </div>
+              <select
+                className={selectBase}
+                value={dept}
+                onChange={(e) => {
+                  setDept(e.target.value);
+                  setPage(1);
+                }}
+              >
+                <option value="All">All departments</option>
+                {departments.map((d) => (
+                  <option key={d} value={d}>
+                    {d}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <div className="mb-1 text-xs font-semibold text-zinc-600 dark:text-zinc-300">
+                Class
+              </div>
+              <div data-course-autocomplete-root className="relative">
+                <input
+                  className={inputBase}
+                  placeholder="CS 301"
+                  value={course}
+                  onFocus={() => {
+                    if (courseSuggestions.length) setCourseOpen(true);
+                  }}
+                  onChange={(e) => {
+                    const v = e.target.value.toUpperCase().replace(/\s+/g, " ");
+                    setCourse(v);
+                    setPage(1);
+                    if (v.trim()) setCourseOpen(true);
+                  }}
+                  onKeyDown={(e) => {
+                    if (!courseOpen && courseSuggestions.length) {
+                      if (e.key === "ArrowDown") setCourseOpen(true);
+                    }
+
+                    if (!courseOpen) return;
+
+                    if (e.key === "ArrowDown") {
+                      e.preventDefault();
+                      setCourseActive((i) => Math.min(i + 1, courseSuggestions.length - 1));
+                    } else if (e.key === "ArrowUp") {
+                      e.preventDefault();
+                      setCourseActive((i) => Math.max(i - 1, 0));
+                    } else if (e.key === "Enter") {
+                      const pick = courseSuggestions[courseActive];
+                      if (pick) {
+                        e.preventDefault();
+                        setCourse(pick);
+                        setPage(1);
+                        setCourseOpen(false);
+                      }
+                    } else if (e.key === "Escape") {
+                      setCourseOpen(false);
+                    }
+                  }}
+                />
+
+                {courseOpen && courseSuggestions.length > 0 && (
+                  <div className="absolute left-0 right-0 top-[calc(100%+8px)] z-30 overflow-hidden rounded-2xl border border-white/10 bg-white/90 shadow-xl backdrop-blur dark:bg-zinc-950/80">
+                    <div className="max-h-64 overflow-auto p-1">
+                      {courseSuggestions.map((label, i) => (
+                        <button
+                          key={label}
+                          type="button"
+                          onMouseEnter={() => setCourseActive(i)}
+                          onClick={() => {
+                            setCourse(label);
+                            setPage(1);
+                            setCourseOpen(false);
+                          }}
+                          className={[
+                            "w-full rounded-xl px-3 py-2 text-left text-sm",
+                            i === courseActive
+                              ? "bg-zinc-100 text-zinc-900 dark:bg-white/10 dark:text-zinc-100"
+                              : "text-zinc-900 hover:bg-zinc-100 dark:text-zinc-100 dark:hover:bg-white/10",
+                          ].join(" ")}
+                        >
+                          {label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+
             <div>
               <div className="mb-1 text-xs font-semibold text-zinc-600 dark:text-zinc-300">
                 Min rating
@@ -462,7 +410,39 @@ const panel =
               </select>
             </div>
 
-            <div className="flex items-end">
+            <div className="col-span-2">
+              <div className="mb-1 flex items-center justify-between text-xs font-semibold text-zinc-600 dark:text-zinc-300">
+                <span>Minimum reviews</span>
+                <span className="tabular-nums">{minRatings}</span>
+              </div>
+
+              <div className="flex h-11 sm:h-12 items-center rounded-2xl border border-zinc-200 bg-white dark:border-white/10 dark:bg-zinc-950/40">
+                <div className="w-full px-4">
+                  <input
+                    type="range"
+                    min={0}
+                    max={200}
+                    step={5}
+                    value={minRatings}
+                    onChange={(e) => {
+                      setMinRatings(Number(e.target.value));
+                      setPage(1);
+                    }}
+                    className="w-full"
+                  />
+                </div>
+              </div>
+
+              <div className="mt-1 flex justify-between px-4 text-[11px] text-zinc-500 dark:text-zinc-400">
+                <span>0</span>
+                <span>50</span>
+                <span>100</span>
+                <span>150</span>
+                <span>200+</span>
+              </div>
+            </div>
+
+            <div className="col-span-2">
               <button className={btn + " w-full"} onClick={clearAll} disabled={!hasAnyFilters}>
                 Clear filters
               </button>
@@ -503,110 +483,106 @@ const panel =
           </div>
         </div>
 
-        <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between text-sm">
+        <div className="mt-5 flex flex-col gap-3 text-sm sm:flex-row sm:items-center sm:justify-between">
           <div className="text-zinc-600 tabular-nums dark:text-zinc-300">
             Showing {start + 1} to {Math.min(start + pageSize, total)} of {total}
             {loading ? <span className="ml-2 opacity-70">Loading...</span> : null}
           </div>
 
           <div className="flex items-center gap-2">
-  <button
-    className={baseBtn}
-    onClick={() => setPage((p) => Math.max(1, p - 1))}
-    disabled={page === 1 || loading}
-  >
-    Prev
-  </button>
+            <button
+              className={baseBtn}
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+              disabled={page === 1 || loading}
+            >
+              Prev
+            </button>
 
-<button
-  className={pageBtnClass(page === 1)}
-  onClick={() => setPage(1)}
-  disabled={loading}
-  aria-current={page === 1 ? "page" : undefined}
->
-  1
-</button>
+            <button
+              className={pageBtnClass(page === 1)}
+              onClick={() => setPage(1)}
+              disabled={loading}
+              aria-current={page === 1 ? "page" : undefined}
+            >
+              1
+            </button>
 
+            {middle.length > 0 && middle[0] > 2 ? (
+              <span className="px-1 text-zinc-500 dark:text-zinc-400">...</span>
+            ) : null}
 
-  {middle.length > 0 && middle[0] > 2 ? (
-    <span className="px-1 text-zinc-500 dark:text-zinc-400">...</span>
-  ) : null}
+            {middle.map((n) => (
+              <button
+                key={n}
+                className={pageBtnClass(page === n)}
+                onClick={() => setPage(n)}
+                disabled={loading}
+                aria-current={page === n ? "page" : undefined}
+              >
+                {n}
+              </button>
+            ))}
 
-  {middle.map((n) => (
-  <button
-  key={n}
-  className={pageBtnClass(page === n)}
-  onClick={() => setPage(n)}
-  disabled={loading}
-  aria-current={page === n ? "page" : undefined}
->
-  {n}
-</button>
+            {totalPages > 1 ? (
+              <>
+                {middle.length > 0 && middle[middle.length - 1] < totalPages - 1 ? (
+                  <span className="px-1 text-zinc-500 dark:text-zinc-400">...</span>
+                ) : null}
 
-  ))}
+                <button
+                  className={pageBtnClass(page === totalPages)}
+                  onClick={() => setPage(totalPages)}
+                  disabled={loading || page === totalPages}
+                >
+                  {totalPages}
+                </button>
+              </>
+            ) : null}
 
-  {totalPages > 1 ? (
-    <>
-      {middle.length > 0 && middle[middle.length - 1] < totalPages - 1 ? (
-        <span className="px-1 text-zinc-500 dark:text-zinc-400">...</span>
-      ) : null}
+            <button
+              className={baseBtn}
+              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+              disabled={page === totalPages || loading}
+            >
+              Next
+            </button>
+          </div>
+        </div>
 
-      <button
-        className={pageBtnClass(page === totalPages)}
-        onClick={() => setPage(totalPages)}
-        disabled={loading || page === totalPages}
-      >
-        {totalPages}
-      </button>
-    </>
-  ) : null}
-
-  <button
-    className={baseBtn}
-    onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-    disabled={page === totalPages || loading}
-  >
-    Next
-  </button>
+        <div className="mt-6 overflow-hidden rounded-3xl border border-zinc-200 bg-white shadow-lg dark:border-white/10 dark:bg-zinc-900/40 dark:shadow-xl dark:backdrop-blur">
+  <div className="max-h-[70vh] overflow-auto">
+    <div className="min-w-[640px]">
+            <div className="sticky top-0 z-10 grid grid-cols-12 border-b border-zinc-200 bg-white px-3 sm:px-5 py-3 text-[11px] sm:text-xs font-semibold text-zinc-700 dark:border-white/10 dark:bg-zinc-950/40 dark:text-zinc-300 dark:backdrop-blur">
+  <div className="col-span-5 sm:col-span-4">Professor</div>
+  <div className="hidden sm:block sm:col-span-3">Department</div>
+  <div className="col-span-4 sm:col-span-3">Classes</div>
+  <div className="col-span-1 text-right sm:col-span-1">Rating</div>
+  <div className="col-span-1 text-right sm:col-span-1">View</div>
 </div>
-</div>
-
-
-
-<div className="mt-6 overflow-hidden rounded-3xl border border-zinc-200 bg-white shadow-lg dark:border-white/10 dark:bg-zinc-900/40 dark:shadow-xl dark:backdrop-blur">
-          <div className="max-h-[70vh] overflow-auto">
-<div className="sticky top-0 z-10 grid grid-cols-12 border-b border-zinc-200 bg-white px-5 py-3 text-xs font-semibold text-zinc-700 dark:border-white/10 dark:bg-zinc-950/40 dark:text-zinc-300 dark:backdrop-blur">
-              <div className="col-span-4">Professor</div>
-              <div className="col-span-3">Department</div>
-              <div className="col-span-3">Classes</div>
-              <div className="col-span-1 text-right">Rating</div>
-              <div className="col-span-1 text-right">Link</div>
-            </div>
 
             <ul>
               {data.map((p, idx) => (
                 <li
                   key={p.slug}
-className="grid grid-cols-12 items-center border-b border-zinc-100 px-5 py-4 text-sm transition hover:bg-zinc-50 dark:border-white/5 dark:hover:bg-white/5"
+                  className="grid grid-cols-12 items-center border-b border-zinc-100 px-3 sm:px-5 py-4 text-sm transition hover:bg-zinc-50 dark:border-white/5 dark:hover:bg-white/5"
                 >
-                  <div className="col-span-4">
+                  <div className="col-span-5 sm:col-span-4">
                     <div className="text-base font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">
                       {start + idx + 1}.{" "}
-<Link href={`/professors/${p.slug}`} className="hover:underline">
-  {p.name}
-</Link>
+                      <Link href={`/professors/${p.slug}`} className="hover:underline">
+                        {p.name}
+                      </Link>
                     </div>
                     <div className="text-xs text-zinc-600 dark:text-zinc-400">{p.school}</div>
                   </div>
 
-                  <div className="col-span-3">
-                    <span className="inline-flex items-center rounded-full border border-zinc-200 bg-zinc-50 px-3 py-1 text-[11.5px] font-semibold text-zinc-800 dark:border-white/10 dark:bg-white/5 dark:text-zinc-100">
-  {p.department}
-</span>
+                  <div className="hidden sm:block sm:col-span-3">
+  <span className="inline-flex items-center rounded-full border border-zinc-200 bg-zinc-50 px-3 py-1 text-[11px] sm:text-[11.5px] font-semibold text-zinc-800 dark:border-white/10 dark:bg-white/5 dark:text-zinc-100">
+    {p.department}
+  </span>
+</div>
 
-                  </div>
-
-                  <div className="col-span-3">
+                  <div className="col-span-4 sm:col-span-3">
                     <ClassesCell
                       profName={p.name}
                       map={courseMap}
@@ -619,7 +595,7 @@ className="grid grid-cols-12 items-center border-b border-zinc-100 px-5 py-4 tex
 
                   <div className="col-span-1 text-right">
                     <span
-                      className={`inline-flex items-center justify-center gap-2 rounded-full px-3 py-1 text-sm font-semibold ${
+                      className={`inline-flex items-center justify-center gap-1 sm:gap-2 rounded-full px-2 sm:px-3 py-1 text-[11px] sm:text-sm font-semibold ${
                         p.quality >= 4.5
                           ? "bg-emerald-100 text-emerald-700 ring-1 ring-emerald-200 dark:bg-emerald-400/15 dark:text-emerald-200 dark:ring-emerald-300/25"
                           : p.quality >= 4.0
@@ -630,7 +606,7 @@ className="grid grid-cols-12 items-center border-b border-zinc-100 px-5 py-4 tex
                       }`}
                     >
                       <span className="tabular-nums">{(Number(p.quality) || 0).toFixed(1)}</span>
-                      <span className="text-xs font-semibold opacity-80 tabular-nums">
+                      <span className="hidden sm:inline text-[10px] sm:text-xs font-semibold opacity-80 tabular-nums">
                         ({Number(p.ratingsCount) || 0})
                       </span>
                     </span>
@@ -638,49 +614,46 @@ className="grid grid-cols-12 items-center border-b border-zinc-100 px-5 py-4 tex
 
                   <div className="col-span-1 text-right">
                     <a
-  className="inline-flex items-center justify-center rounded-2xl border border-zinc-300 bg-white px-3 py-2 text-xs font-semibold text-zinc-900 hover:bg-zinc-50 dark:border-white/10 dark:bg-white/90 dark:text-zinc-900 dark:hover:bg-white"
-  href={p.url}
-  target="_blank"
-  rel="noreferrer"
->
-  View
-</a>
-
+                      className="inline-flex items-center justify-center rounded-2xl border border-zinc-300 bg-white px-2 sm:px-3 py-2 text-[10px] sm:text-xs font-semibold text-zinc-900 hover:bg-zinc-50 dark:border-white/10 dark:bg-white/90 dark:text-zinc-900 dark:hover:bg-white"
+                      href={p.url}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      View
+                    </a>
                   </div>
                 </li>
               ))}
 
               {!loading && data.length === 0 ? (
-  <li className="px-5 py-10">
-    <div className="flex flex-col items-start gap-3 rounded-2xl border border-zinc-200 bg-white p-5 text-sm text-zinc-700 dark:border-white/10 dark:bg-zinc-950/40 dark:text-zinc-200">
-      <div>
-        <div className="font-semibold text-zinc-900 dark:text-zinc-100">
-          No results found
-        </div>
-        <div className="mt-1 text-zinc-600 dark:text-zinc-300">
-          Try clearing filters, lowering minimum reviews, or adjusting the class filter.
-        </div>
-      </div>
+                <li className="px-5 py-10">
+                  <div className="flex flex-col items-start gap-3 rounded-2xl border border-zinc-200 bg-white p-5 text-sm text-zinc-700 dark:border-white/10 dark:bg-zinc-950/40 dark:text-zinc-200">
+                    <div>
+                      <div className="font-semibold text-zinc-900 dark:text-zinc-100">
+                        No results found
+                      </div>
+                      <div className="mt-1 text-zinc-600 dark:text-zinc-300">
+                        Try clearing filters, lowering minimum reviews, or adjusting the class filter.
+                      </div>
+                    </div>
 
-      <MissingProfessorButton
-        page="professors"
-        searchQuery={query.trim()}
-        show
-      />
-    </div>
-  </li>
-) : null}
+                    <MissingProfessorButton
+                      page="professors"
+                      searchQuery={query.trim()}
+                      show
+                    />
+                  </div>
+                </li>
+              ) : null}
             </ul>
           </div>
         </div>
       </div>
-      <footer className="mt-12 border-t border-zinc-200 pt-6 text-center text-sm text-zinc-500 dark:border-white/10 dark:text-zinc-400">
-  <p>
-    Built to help make course planning easier.
-  </p>
-</footer>
+      </div>
 
+      <footer className="mt-12 border-t border-zinc-200 pt-6 text-center text-sm text-zinc-500 dark:border-white/10 dark:text-zinc-400">
+        <p>Not Affiliated with UIC or RMP</p>
+      </footer>
     </main>
   );
-  
 }

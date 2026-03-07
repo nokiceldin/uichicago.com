@@ -1,5 +1,6 @@
 // app/layout.tsx
 import type { Metadata } from "next"
+import HelpPopup from "./components/HelpPopup"
 import { Geist, Geist_Mono } from "next/font/google"
 import "./globals.css"
 import { Analytics } from "@vercel/analytics/react"
@@ -28,6 +29,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <ThemeInit />
         <Navbar />
         {children}
+        <HelpPopup />
         <Analytics />
       </body>
     </html>

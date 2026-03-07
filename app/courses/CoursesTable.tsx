@@ -477,8 +477,7 @@ export default function CoursesTable({
         </div>
 
         <footer className="mt-12 border-t border-zinc-200 pt-6 text-center text-sm text-zinc-500 dark:border-white/10 dark:text-zinc-400">
-          <p>Independent student built project. Not affiliated with UIC.</p>
-        </footer>
+Built by a group of UIC students and engineers to help make course planning easier.        </footer>
       </div>
     </main>
   );

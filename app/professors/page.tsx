@@ -676,7 +676,7 @@ className="grid grid-cols-12 items-center border-b border-zinc-100 px-5 py-4 tex
       </div>
       <footer className="mt-12 border-t border-zinc-200 pt-6 text-center text-sm text-zinc-500 dark:border-white/10 dark:text-zinc-400">
   <p>
-    Built by a group of UIC students and engineers to help make course planning easier.
+    Built to help make course planning easier.
   </p>
 </footer>
 

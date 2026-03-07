@@ -38,7 +38,7 @@ export default function HelpPopup() {
               Use filters to search by department, course, or rating.
             </p>
             <p>
-Built by a group of UIC students and engineers to help make course planning easier.            </p>
+Built to to help make course planning easier.            </p>
           </div>
 
           <div className="absolute bottom-[-8px] right-5 h-4 w-4 rotate-45 border-b border-r border-zinc-200 bg-white dark:border-white/10 dark:bg-zinc-950" />

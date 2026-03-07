@@ -151,7 +151,7 @@ className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-em
 
         {/* FOOTER */}
         <div className="mt-16 text-center text-sm text-zinc-500 dark:text-zinc-400">
-          Built by a group of UIC students and engineers to help make course planning easier. Not affiliated with UIC or RMP.</div>
+          Not affiliated with UIC or RMP.</div>
       </div>
     </main>
   )

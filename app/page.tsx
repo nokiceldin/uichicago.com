@@ -16,7 +16,7 @@ export default function Home() {
           {/* LEFT SIDE */}
           <div className="text-center lg:text-left">
             <h1 className="mt-1 text-3xl font-semibold tracking-tight leading-tight sm:text-4xl md:text-5xl lg:text-6xl">
-              Find the Best Professors & Courses at UIC
+              Pick better professors, easier classes, and smarter schedules at UIC
             </h1>
 
             <p className="mx-auto mt-5 max-w-xl text-base leading-8 text-zinc-600 dark:text-zinc-400 sm:mt-6 sm:text-lg lg:mx-0 lg:max-w-2xl">

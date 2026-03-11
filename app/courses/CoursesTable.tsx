@@ -180,9 +180,9 @@ function clearAll() {
     const selectedMajor = majorRequirements.find((m) => m.key === major);
   const majorCategories = selectedMajor?.categories ?? [];
   const baseBtn =
-    "h-10 rounded-xl border border-zinc-200 bg-white px-3 sm:px-4 text-sm font-medium text-zinc-900 hover:bg-zinc-50 disabled:opacity-50 " +
-    "dark:border-white/10 dark:bg-zinc-950/40 dark:text-zinc-100 dark:hover:bg-zinc-900/40";
-
+  "cursor-pointer h-10 rounded-xl border border-zinc-200 bg-white px-3 sm:px-4 text-sm font-medium text-zinc-900 hover:bg-zinc-50 disabled:opacity-50 disabled:cursor-not-allowed " +
+  "dark:border-white/10 dark:bg-zinc-950/40 dark:text-zinc-100 dark:hover:bg-zinc-900/40";
+  
   const primaryPill =
   "h-8 rounded-full border border-zinc-300 bg-zinc-100 px-3 text-xs font-semibold text-zinc-900 " +
   "ring-1 ring-zinc-200 shadow-sm " +
@@ -243,8 +243,7 @@ const pill =
                   UIC Courses
                 </h1>
                 <p className="mt-2 text-sm leading-6 text-zinc-600 dark:text-zinc-400">
-                  Browse course difficulty and GPA using real enrollment weighted data
-                </p>
+Find the best courses for your major using professor rankings, grade distributions, and real enrollment-weighted data                </p>
               </div>
             </div>
           </div>

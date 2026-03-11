@@ -125,14 +125,10 @@ async function main() {
 
     let difficultyScore = null;
 
-    if (r.rankable) {
-      const pct = pctById.get(r.id);
-      if (pct != null) {
-        // This is really "easiness score": higher GPA -> higher score
-        const score = 1 + 4 * pct; // 1..5
-        difficultyScore = round1(clamp(score, 1, 5));
-      }
-    }
+    if (r.rankable && r.gpa != null) {
+  const score = 1 + 4 * ((r.gpa - 2.3) / 1.7);
+  difficultyScore = round1(clamp(score, 1, 5));
+}
 
     updates.push(
       prisma.course.update({

@@ -410,17 +410,21 @@ const pill =
               </button>
             ) : null}
           </div>
-                    <div className="mt-3 flex justify-end">
-            <MissingCourseButton searchQuery={q.trim()} show />
-          </div>
+                    
         </div>
 
-        <div className="mt-5 flex flex-col gap-3 text-sm sm:flex-row sm:items-center sm:justify-between">
-          <div className="tabular-nums text-zinc-600 dark:text-zinc-300">
-            Showing {nf.format(start + 1)} to {nf.format(Math.min(start + pageSize, total))} of {nf.format(total)}
-          </div>
+        <div className="mt-5 flex flex-col gap-3 text-sm sm:flex-row sm:items-start sm:justify-between">
+  <div className="flex flex-col gap-2 text-zinc-600 dark:text-zinc-300">
+    <div className="tabular-nums">
+      Showing {nf.format(start + 1)} to {nf.format(Math.min(start + pageSize, total))} of {nf.format(total)}
+    </div>
 
-          <div className="flex items-center gap-2">
+    <div>
+      <MissingCourseButton searchQuery={q.trim()} show />
+    </div>
+  </div>
+
+  <div className="flex items-center gap-2">
   <button
     type="button"
     className={baseBtn}

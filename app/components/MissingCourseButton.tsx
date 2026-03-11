@@ -50,13 +50,13 @@ export default function MissingCourseButton({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          professorName: "",
-          department,
-          classInput: courseName,
-          notes,
-          searchQuery,
-          page,
-        }),
+  professorName: courseName,
+  department,
+  classInput: courseName,
+  notes,
+  searchQuery,
+  page,
+}),
       })
 
       if (!res.ok) throw new Error("bad")
@@ -142,7 +142,7 @@ export default function MissingCourseButton({
         onClick={() => setOpen(true)}
         className="rounded-xl border border-zinc-200 bg-white px-3 py-1.5 text-xs font-semibold text-zinc-700 hover:bg-zinc-50 dark:border-white/10 dark:bg-white/5 dark:text-zinc-200 dark:hover:bg-white/10"
       >
-        Something missing? Click here
+        Report missing course
       </button>
 
       {mounted && modal ? createPortal(modal, document.body) : null}

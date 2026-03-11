@@ -88,7 +88,7 @@ export default function CourseHeader({ course }: CourseHeaderProps) {
   gpaColor(course.avgGpa)
 )}
 {statPill(
-  "Easiness (1-5)",
+  "Easiness",
   course.difficultyScore == null
     ? "No data"
     : course.difficultyScore.toFixed(2),

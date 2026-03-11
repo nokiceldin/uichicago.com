@@ -74,19 +74,21 @@ export default function Page() {
   const start = (page - 1) * pageSize;
 
   const inputBase =
-    "h-11 sm:h-12 w-full rounded-2xl border border-zinc-200 bg-white px-4 text-sm sm:text-base text-zinc-900 outline-none placeholder:text-zinc-500 focus:border-zinc-300 focus:ring-2 focus:ring-zinc-200 " +
-    "dark:border-white/10 dark:bg-zinc-950/40 dark:text-zinc-100 dark:placeholder:text-zinc-500 dark:focus:ring-white/10";
+  "h-9 w-full rounded-xl border border-zinc-200 bg-white px-3 text-sm text-zinc-900 outline-none " +
+  "placeholder:text-zinc-400 focus:border-zinc-300 focus:ring-2 focus:ring-zinc-200 " +
+  "dark:border-white/10 dark:bg-zinc-950/40 dark:text-zinc-100 dark:placeholder:text-zinc-500 dark:focus:ring-white/10";
 
   const selectBase =
-    "h-11 sm:h-12 w-full cursor-pointer rounded-2xl border border-zinc-200 bg-white px-4 text-sm sm:text-base text-zinc-900 outline-none focus:border-zinc-300 focus:ring-2 focus:ring-zinc-200 " +
-    "dark:border-white/10 dark:bg-zinc-950/40 dark:text-zinc-100 dark:focus:ring-white/10";
+  "h-9 w-full cursor-pointer rounded-xl border border-zinc-200 bg-white px-3 text-sm text-zinc-900 outline-none " +
+  "focus:border-zinc-300 focus:ring-2 focus:ring-zinc-200 " +
+  "dark:border-white/10 dark:bg-zinc-950/40 dark:text-zinc-100 dark:focus:ring-white/10";
 
   const panel =
-    "mt-5 rounded-3xl border border-zinc-200 bg-white p-4 sm:p-5 md:p-6 shadow-lg " +
-    "dark:border-white/10 dark:bg-zinc-900/40 dark:shadow-xl dark:backdrop-blur";
+  "mt-4 rounded-2xl border border-zinc-200 bg-white p-3 sm:p-4 shadow-md " +
+  "dark:border-white/10 dark:bg-zinc-900/40 dark:shadow-lg dark:backdrop-blur";
 
-  const chip =
-    "inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/40 px-3 py-1 text-xs font-semibold text-zinc-700 hover:bg-white/60 dark:bg-white/5 dark:text-zinc-200 dark:hover:bg-white/10";
+const chip =
+  "inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/40 px-2.5 py-0.5 text-[11px] font-semibold text-zinc-700 hover:bg-white/60 dark:bg-white/5 dark:text-zinc-200 dark:hover:bg-white/10";
 
   const btn =
     "h-11 sm:h-12 rounded-2xl border border-zinc-200 bg-white px-4 text-sm font-semibold text-zinc-900 hover:bg-zinc-50 disabled:opacity-40 dark:border-white/10 dark:bg-white/5 dark:text-zinc-100 dark:hover:bg-white/10";
@@ -159,8 +161,8 @@ export default function Page() {
       <div className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-72 bg-gradient-to-b from-white/60 to-transparent dark:from-white/5" />
 
       <div className="mx-auto max-w-6xl px-4 py-6 sm:px-5 sm:py-10">
-        <div className="rounded-3xl border border-zinc-200 bg-white/70 p-4 sm:p-6 shadow-lg backdrop-blur dark:border-white/10 dark:bg-zinc-950/40 dark:shadow-xl">
-          <div className="flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between">
+        <div className="rounded-2xl border border-zinc-200 bg-white/70 p-4 sm:p-5 shadow-md backdrop-blur dark:border-white/10 dark:bg-zinc-950/40 dark:shadow-lg">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <div className="flex items-start gap-3 sm:gap-4">
               <img
                 src="/logo.png"
@@ -182,9 +184,9 @@ export default function Page() {
         </div>
 
         <div className={panel}>
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid grid-cols-1 gap-2 md:grid-cols-2 lg:grid-cols-3">
             <div className="col-span-2">
-              <div className="mb-1 text-xs font-semibold text-zinc-600 dark:text-zinc-300">
+              <div className="mb-0.5 text-[11px] font-semibold text-zinc-600 dark:text-zinc-300">
                 Search
               </div>
               <input
@@ -199,7 +201,7 @@ export default function Page() {
             </div>
 
             <div>
-              <div className="mb-1 text-xs font-semibold text-zinc-600 dark:text-zinc-300">
+              <div className="mb-0.5 text-[11px] font-semibold text-zinc-600 dark:text-zinc-300">
                 Department
               </div>
               <select
@@ -220,7 +222,7 @@ export default function Page() {
             </div>
 
             <div>
-              <div className="mb-1 text-xs font-semibold text-zinc-600 dark:text-zinc-300">
+              <div className="mb-0.5 text-[11px] font-semibold text-zinc-600 dark:text-zinc-300">
                 Min rating
               </div>
               <select
@@ -241,7 +243,7 @@ export default function Page() {
             </div>
 
             <div>
-              <div className="mb-1 text-xs font-semibold text-zinc-600 dark:text-zinc-300">
+              <div className="mb-0.5 text-[11px] font-semibold text-zinc-600 dark:text-zinc-300">
                 Sort by rating
               </div>
               <select
@@ -259,13 +261,13 @@ export default function Page() {
             </div>
 
             <div className="col-span-1">
-              <div className="mb-1 flex items-center justify-between text-xs font-semibold text-zinc-600 dark:text-zinc-300">
+              <div className="mb-0.5 flex items-center justify-between text-[11px] font-semibold text-zinc-600 dark:text-zinc-300">
                 <span>Minimum reviews</span>
                 <span className="tabular-nums">{minRatings}</span>
               </div>
 
-              <div className="flex h-11 sm:h-12 items-center rounded-2xl border border-zinc-200 bg-white dark:border-white/10 dark:bg-zinc-950/40">
-                <div className="w-full px-4">
+              <div className="flex h-9 items-center rounded-xl border border-zinc-200 bg-white dark:border-white/10 dark:bg-zinc-950/40">
+                <div className="w-full px-3">
                   <input
                     type="range"
                     min={0}
@@ -291,7 +293,7 @@ export default function Page() {
             </div>
           </div>
 
-          <div className="mt-4 flex flex-wrap items-center gap-2">
+          <div className="mt-3 flex flex-wrap items-center gap-1.5">
             {dept !== "All" ? (
               <button className={chip} onClick={() => (setDept("All"), setPage(1))}>
                 Dept: <span className="font-bold">{dept}</span> <span className="opacity-70">x</span>

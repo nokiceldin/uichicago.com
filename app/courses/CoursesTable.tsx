@@ -251,7 +251,7 @@ const pill =
 
         <div className={panel}>
           <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
-            <div className="col-span-2">
+            <div className="md:col-span-2 min-w-0">
               <div className="mb-0.5 text-xs font-semibold text-zinc-600 dark:text-zinc-300">
                 Search
               </div>
@@ -263,7 +263,7 @@ const pill =
               />
             </div>
 
-            <div>
+<div className="min-w-0">
               <div className="mb-0.5 text-xs font-semibold text-zinc-600 dark:text-zinc-300">
                 Department
               </div>
@@ -281,7 +281,7 @@ const pill =
               </select>
             </div>
 
-                        <div>
+                        <div className="min-w-0">
               <div className="mb-0.5 text-xs font-semibold text-zinc-600 dark:text-zinc-300">
                 Major
               </div>
@@ -301,7 +301,7 @@ const pill =
               </select>
             </div>
 
-            <div className="col-span-1">
+            <div className="min-w-0">
   <div className="mb-0.5 text-[11px] font-semibold text-zinc-600 dark:text-zinc-300">
     Gen Ed Category
   </div>
@@ -321,7 +321,7 @@ const pill =
   </select>
 </div>
 
-<div>
+<div className="min-w-0">
   <div className="mb-0.5 text-[11px] font-semibold text-zinc-600 dark:text-zinc-300">
     Requirement Type
   </div>

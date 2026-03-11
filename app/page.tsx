@@ -16,8 +16,8 @@ export default function Home() {
           {/* LEFT SIDE */}
           <div className="text-center lg:text-left">
             <h1 className="mt-1 text-3xl font-semibold tracking-tight leading-tight sm:text-4xl md:text-5xl lg:text-6xl">
-              Pick better professors, easier classes, and smarter schedules at UIC
-            </h1>
+  Find better professors, easier classes, and smarter schedules at UIC
+</h1>
 
             <p className="mx-auto mt-5 max-w-xl text-base leading-8 text-zinc-600 dark:text-zinc-400 sm:mt-6 sm:text-lg lg:mx-0 lg:max-w-2xl">
               Used by UIC students to pick the easiest classes, best professors
@@ -25,20 +25,20 @@ export default function Home() {
             </p>
 
             <div className="mt-8 flex flex-col items-center gap-3 sm:mt-10 sm:flex-row lg:justify-start">
-              <Link
-                href="/professors"
-                className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-500 px-6 py-4 text-base font-semibold text-white shadow-sm transition hover:bg-emerald-600 sm:w-auto sm:px-8 sm:py-5 sm:text-lg"
-              >
-                Explore Professors →
-              </Link>
+  <Link
+    href="/courses"
+    className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-500 px-6 py-4 text-base font-semibold text-white shadow-sm transition hover:bg-emerald-600 sm:w-auto sm:px-8 sm:py-5 sm:text-lg"
+  >
+    Browse Courses →
+  </Link>
 
-              <Link
-                href="/courses"
-                className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-zinc-300 bg-white px-6 py-4 text-base font-semibold shadow-sm transition hover:bg-zinc-50 dark:border-white/10 dark:bg-white/5 dark:hover:bg-white/10 sm:w-auto sm:px-8 sm:py-5 sm:text-lg"
-              >
-                Browse Courses →
-              </Link>
-            </div>
+  <Link
+    href="/professors"
+    className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-zinc-300 bg-white px-6 py-4 text-base font-semibold shadow-sm transition hover:bg-zinc-50 dark:border-white/10 dark:bg-white/5 dark:hover:bg-white/10 sm:w-auto sm:px-8 sm:py-5 sm:text-lg"
+  >
+    Explore Professors →
+  </Link>
+</div>
 
             <div className="mx-auto mt-10 grid max-w-[760px] grid-cols-1 gap-3 sm:grid-cols-3 lg:mx-0 lg:mt-12">
               <div className="rounded-2xl border border-zinc-300 bg-white px-6 py-4 text-center shadow-sm transition hover:-translate-y-0.5 hover:shadow-md sm:px-8 dark:border-white/10 dark:bg-white/5">

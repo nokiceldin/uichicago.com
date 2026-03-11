@@ -2,6 +2,7 @@ export const dynamic = "force-dynamic"
 export const revalidate = 0
 import prisma from "../../lib/prisma"
 import CoursesTable from "./CoursesTable"
+import { majorRequirements } from "@/lib/majorRequirements"
 
 type SortKey = "difficultyDesc" | "difficultyAsc"
 
@@ -15,14 +16,16 @@ function parseSort(sort: string | undefined): SortKey {
 export default async function CoursesPage({
   searchParams,
 }: {
-  searchParams: Promise<{
-  sort?: string
-  page?: string
-  dept?: string
-  q?: string
-  gened?: string
-  genedCategory?: string
-}>
+    searchParams: Promise<{
+    sort?: string
+    page?: string
+    dept?: string
+    q?: string
+    gened?: string
+    genedCategory?: string
+    major?: string
+    majorCategory?: string
+  }>
 }) {
   const sp = await searchParams
 
@@ -37,6 +40,9 @@ export default async function CoursesPage({
   const gened = sp.gened === "1"
 const genedCategory = sp.genedCategory?.trim() || ""
 
+  const major = sp.major?.trim() || ""
+  const majorCategory = sp.majorCategory?.trim() || ""
+
   const hasSortParam = !!sp.sort
 const hasQuery = q.length > 0
 
@@ -47,47 +53,96 @@ const qParts = q.trim().split(/\s+/)
 const subjectPart = qParts[0]?.match(/^[a-zA-Z]+$/) ? qParts[0] : ""
 const numberPart = qParts[1]?.match(/^\d+[a-zA-Z]*$/) ? qParts[1] : ""
 
+  const selectedMajor = majorRequirements.find((m) => m.key === major)
+  const selectedMajorCategory = selectedMajor?.categories.find(
+    (c) => c.key === majorCategory
+  )
+
+  const majorCoursePairs = selectedMajorCategory
+    ? selectedMajorCategory.courses
+        .map((courseCode) => {
+          const [subject, ...rest] = courseCode.trim().split(/\s+/)
+          const number = rest.join(" ")
+          if (!subject || !number) return null
+          return { subject, number }
+        })
+        .filter((value): value is { subject: string; number: string } => value !== null)
+    : []
+
 const where = {
-  ...(dept ? { subject: dept } : {}),
-  ...(q
-    ? {
-        OR: [
-          { title: { contains: q, mode: "insensitive" as const } },
-          { subject: { contains: q, mode: "insensitive" as const } },
-          { number: { contains: q, mode: "insensitive" as const } },
+  AND: [
+    ...(dept ? [{ subject: dept }] : []),
 
-          ...(subjectPart && numberPart
-            ? [
-                {
-                  AND: [
-                    { subject: { equals: subjectPart, mode: "insensitive" as const } },
-                    { number: { startsWith: numberPart, mode: "insensitive" as const } },
-                  ],
-                },
-              ]
-            : []),
+    ...(q
+      ? [
+          {
+            OR: [
+              { title: { contains: q, mode: "insensitive" as const } },
+              { subject: { contains: q, mode: "insensitive" as const } },
+              { number: { contains: q, mode: "insensitive" as const } },
 
-          ...(qCompact
-            ? [
-                {
-                  AND: [
-                    { subject: { contains: qCompact.replace(/\d.*$/, ""), mode: "insensitive" as const } },
-                    { number: { contains: qCompact.replace(/^[a-zA-Z]+/, ""), mode: "insensitive" as const } },
-                  ],
-                },
-              ]
-            : []),
-        ],
-      }
-    : {}),
-  ...(gened ? { isGenEd: true } : {}),
-  ...(genedCategory ? { genEdCategory: genedCategory } : {}),
-  ...(!hasQuery
-    ? {
-        difficultyScore: { not: null },
-        avgGpa: { gt: 0 },
-      }
-    : {}),
+              ...(subjectPart && numberPart
+                ? [
+                    {
+                      AND: [
+                        { subject: { equals: subjectPart, mode: "insensitive" as const } },
+                        { number: { startsWith: numberPart, mode: "insensitive" as const } },
+                      ],
+                    },
+                  ]
+                : []),
+
+              ...(qCompact
+                ? [
+                    {
+                      AND: [
+                        {
+                          subject: {
+                            contains: qCompact.replace(/\d.*$/, ""),
+                            mode: "insensitive" as const,
+                          },
+                        },
+                        {
+                          number: {
+                            contains: qCompact.replace(/^[a-zA-Z]+/, ""),
+                            mode: "insensitive" as const,
+                          },
+                        },
+                      ],
+                    },
+                  ]
+                : []),
+            ],
+          },
+        ]
+      : []),
+
+    ...(gened ? [{ isGenEd: true }] : []),
+
+    ...(genedCategory ? [{ genEdCategory: genedCategory }] : []),
+
+    ...(selectedMajorCategory && majorCoursePairs.length > 0
+      ? [
+          {
+            OR: majorCoursePairs.map(({ subject, number }) => ({
+              AND: [
+                { subject: { equals: subject, mode: "insensitive" as const } },
+                { number: { equals: number, mode: "insensitive" as const } },
+              ],
+            })),
+          },
+        ]
+      : []),
+
+    ...(!hasQuery
+      ? [
+          {
+            difficultyScore: { not: null },
+            avgGpa: { gt: 0 },
+          },
+        ]
+      : []),
+  ],
 }
 
   const orderBy =
@@ -134,7 +189,7 @@ const where = {
   const subjects = subjectsRows.map((s) => s.subject).filter(Boolean)
 
   return (
-    <CoursesTable
+        <CoursesTable
       courses={courses}
       total={total}
       page={page}
@@ -145,6 +200,8 @@ const where = {
       subjects={subjects}
       gened={gened}
       genedCategory={genedCategory}
+      major={major}
+      majorCategory={majorCategory}
     />
   )
 }

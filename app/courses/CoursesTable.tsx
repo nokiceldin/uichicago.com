@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { majorRequirements } from "@/lib/majorRequirements";
 import { useEffect, useMemo, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
@@ -51,6 +52,8 @@ export default function CoursesTable({
   subjects,
   gened,
   genedCategory,
+  major,
+  majorCategory,
 }: {
   courses: CourseRow[];
   total: number;
@@ -62,6 +65,8 @@ export default function CoursesTable({
   subjects: string[];
   gened: boolean;
   genedCategory: string;
+  major: string;
+  majorCategory: string;
 }) {
   const nf = useMemo(() => new Intl.NumberFormat("en-US"), []);
   const pathname = usePathname();
@@ -100,6 +105,22 @@ export default function CoursesTable({
     pushWith({ sort: nextSort, page: "1" });
   }
 
+  function setMajor(nextMajor: string) {
+    pushWith({
+      major: nextMajor || null,
+      majorCategory: null,
+      page: "1",
+    });
+  }
+
+  function setMajorCategory(nextCategory: string) {
+    pushWith({
+      major: major || null,
+      majorCategory: nextCategory || null,
+      page: "1",
+    });
+  }
+
   function setDept(nextDept: string) {
     pushWith({ dept: nextDept || null, page: "1" });
   }
@@ -112,13 +133,31 @@ export default function CoursesTable({
     });
   }
 
-  function setGenEdCategory(nextCategory: string) {
+function setGenEdCategory(nextCategory: string) {
+  if (!nextCategory) {
     pushWith({
-      gened: "1",
-      genedCategory: nextCategory || null,
+      gened: null,
+      genedCategory: null,
       page: "1",
     });
+    return;
   }
+
+  if (nextCategory === "__ALL_GENEDS__") {
+    pushWith({
+      gened: "1",
+      genedCategory: null,
+      page: "1",
+    });
+    return;
+  }
+
+  pushWith({
+    gened: "1",
+    genedCategory: nextCategory,
+    page: "1",
+  });
+}
 
 function clearAll() {
   setQDraft("");
@@ -137,20 +176,20 @@ function clearAll() {
   const start = (page - 1) * pageSize;
   const pageButtons = useMemo(() => getPageButtons(page, totalPages), [page, totalPages]);
   const middle = pageButtons.filter((n) => n !== 1 && n !== totalPages);
-
+    const selectedMajor = majorRequirements.find((m) => m.key === major);
+  const majorCategories = selectedMajor?.categories ?? [];
   const baseBtn =
     "h-10 rounded-xl border border-zinc-200 bg-white px-3 sm:px-4 text-sm font-medium text-zinc-900 hover:bg-zinc-50 disabled:opacity-50 " +
     "dark:border-white/10 dark:bg-zinc-950/40 dark:text-zinc-100 dark:hover:bg-zinc-900/40";
 
   const primaryPill =
-    "h-9 rounded-xl border border-zinc-300 bg-zinc-100 px-4 text-sm font-semibold text-zinc-900 " +
-    "ring-2 ring-zinc-200 shadow-sm " +
-    "dark:border-white/20 dark:bg-white/10 dark:text-zinc-100 dark:ring-white/15";
+  "h-8 rounded-full border border-zinc-300 bg-zinc-100 px-3 text-xs font-semibold text-zinc-900 " +
+  "ring-1 ring-zinc-200 shadow-sm " +
+  "dark:border-white/20 dark:bg-white/10 dark:text-zinc-100 dark:ring-white/15";
 
 const pill =
-  "h-9 rounded-xl border border-zinc-200 bg-white px-4 text-sm font-semibold text-zinc-900 hover:bg-zinc-50 " +
+  "h-8 rounded-full border border-zinc-200 bg-white px-3 text-xs font-semibold text-zinc-900 hover:bg-zinc-50 " +
   "dark:border-white/10 dark:bg-white/5 dark:text-zinc-100 dark:hover:bg-white/10";
-
   function pageBtnClass(active: boolean) {
     return (
       baseBtn +
@@ -162,41 +201,40 @@ const pill =
   }
 
   const inputBase =
-    "h-11 sm:h-10 w-full rounded-2xl border border-zinc-200 bg-white px-4 text-sm text-zinc-900 outline-none " +
-    "placeholder:text-zinc-400 focus:border-zinc-300 focus:ring-2 focus:ring-zinc-200 " +
-    "dark:border-white/10 dark:bg-zinc-950/40 dark:text-zinc-100 dark:placeholder:text-zinc-500 dark:focus:ring-white/10";
-
+  "h-9 w-full rounded-xl border border-zinc-200 bg-white px-3 text-sm text-zinc-900 outline-none " +
+  "placeholder:text-zinc-400 focus:border-zinc-300 focus:ring-2 focus:ring-zinc-200 " +
+  "dark:border-white/10 dark:bg-zinc-950/40 dark:text-zinc-100 dark:placeholder:text-zinc-500 dark:focus:ring-white/10";
   const selectBase =
-    "h-11 sm:h-12 w-full cursor-pointer rounded-2xl border border-zinc-200 bg-white px-4 text-sm sm:text-base text-zinc-900 outline-none " +
-    "focus:border-zinc-300 focus:ring-2 focus:ring-zinc-200 " +
-    "dark:border-white/10 dark:bg-zinc-950/40 dark:text-zinc-100 dark:focus:ring-white/10";
-
+  "h-9 w-full cursor-pointer rounded-xl border border-zinc-200 bg-white px-3 text-sm text-zinc-900 outline-none " +
+  "focus:border-zinc-300 focus:ring-2 focus:ring-zinc-200 " +
+  "dark:border-white/10 dark:bg-zinc-950/40 dark:text-zinc-100 dark:focus:ring-white/10";
   const panel =
-    "mt-5 rounded-3xl border border-zinc-200 bg-white p-4 sm:p-5 md:p-6 shadow-lg " +
-    "dark:border-white/10 dark:bg-zinc-900/40 dark:shadow-xl dark:backdrop-blur";
-
+  "mt-4 rounded-2xl border border-zinc-200 bg-white p-3 sm:p-4 shadow-md " +
+  "dark:border-white/10 dark:bg-zinc-900/40 dark:shadow-lg dark:backdrop-blur";
   const chip =
-    "inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/40 px-3 py-1 text-xs font-semibold " +
-    "text-zinc-700 hover:bg-white/60 dark:bg-white/5 dark:text-zinc-200 dark:hover:bg-white/10";
+  "inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/40 px-2.5 py-0.5 text-[11px] font-semibold " +
+  "text-zinc-700 hover:bg-white/60 dark:bg-white/5 dark:text-zinc-200 dark:hover:bg-white/10";
 
   const pillValue =
     "inline-flex items-center rounded-full border border-zinc-200 bg-zinc-50 px-2.5 sm:px-3 py-1 text-[11px] sm:text-[11.5px] font-semibold text-zinc-800 " +
     "dark:border-white/10 dark:bg-white/5 dark:text-zinc-100 tabular-nums";
 
   const hasAnyFilters =
-  !!q.trim() ||
-  !!dept ||
-  gened ||
-  !!genedCategory ||
-  sort !== "difficultyDesc";
+    !!q.trim() ||
+    !!dept ||
+    gened ||
+    !!genedCategory ||
+    !!major ||
+    !!majorCategory ||
+    sort !== "difficultyDesc";
 
   return (
     <main className="relative min-h-screen bg-zinc-50 text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100">
       <div className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-72 dark:bg-gradient-to-b dark:from-white/5 dark:to-transparent" />
 
       <div className="mx-auto max-w-6xl px-4 py-6 sm:px-5 sm:py-10">
-        <div className="rounded-3xl border border-zinc-200 bg-white/70 p-4 sm:p-6 shadow-lg backdrop-blur dark:border-white/10 dark:bg-zinc-950/40 dark:shadow-xl">
-          <div className="flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between">
+        <div className="rounded-2xl border border-zinc-200 bg-white/70 p-4 sm:p-5 shadow-md backdrop-blur dark:border-white/10 dark:bg-zinc-950/40 dark:shadow-lg">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <div className="flex items-start gap-3 sm:gap-4">
               <img src="/logo.png" alt="UIC Ratings Logo" className="h-8 w-8 object-contain sm:h-10 sm:w-10" />
               <div>
@@ -212,9 +250,9 @@ const pill =
         </div>
 
         <div className={panel}>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
             <div className="col-span-2">
-              <div className="mb-1 text-xs font-semibold text-zinc-600 dark:text-zinc-300">
+              <div className="mb-0.5 text-xs font-semibold text-zinc-600 dark:text-zinc-300">
                 Search
               </div>
               <input
@@ -226,7 +264,7 @@ const pill =
             </div>
 
             <div>
-              <div className="mb-1 text-xs font-semibold text-zinc-600 dark:text-zinc-300">
+              <div className="mb-0.5 text-xs font-semibold text-zinc-600 dark:text-zinc-300">
                 Department
               </div>
               <select
@@ -243,78 +281,71 @@ const pill =
               </select>
             </div>
 
-            <div className="col-span-1">
-              <div className="mb-1 text-xs font-semibold text-zinc-600 dark:text-zinc-300">
-                Gen Ed Category
+                        <div>
+              <div className="mb-0.5 text-xs font-semibold text-zinc-600 dark:text-zinc-300">
+                Major
               </div>
-
               <select
-                className={
-                  selectBase + (!gened ? " cursor-not-allowed opacity-50" : "")
-                }
-                value={genedCategory || ""}
-                onChange={(e) => setGenEdCategory(e.target.value)}
-                disabled={!gened}
+                className={selectBase}
+                value={major || ""}
+                onChange={(e) => setMajor(e.target.value)}
               >
-                <option value="">All Gen Ed categories</option>
-                {genEdCategories.map((cat) => (
-                  <option key={cat} value={cat}>
-                    {cat}
-                  </option>
-                ))}
+                <option value="">All majors</option>
+                {[...majorRequirements]
+  .sort((a, b) => a.label.localeCompare(b.label))
+  .map((m) => (
+    <option key={m.key} value={m.key}>
+      {m.label}
+    </option>
+  ))}
               </select>
             </div>
 
-            <div className="col-span-2">
-              <div className="mb-1 text-xs font-semibold text-zinc-600 dark:text-zinc-300">
-                Course Filter
-              </div>
+            <div className="col-span-1">
+  <div className="mb-0.5 text-[11px] font-semibold text-zinc-600 dark:text-zinc-300">
+    Gen Ed Category
+  </div>
 
-              <div className="grid grid-cols-2 gap-2">
-                <button
-  type="button"
-  className={!gened ? primaryPill : pill}
-  onClick={() => setGenEd(false)}
->
-  All courses
-</button>
+  <select
+    className={selectBase}
+    value={gened ? genedCategory || "__ALL_GENEDS__" : ""}
+    onChange={(e) => setGenEdCategory(e.target.value)}
+  >
+    <option value="">All courses</option>
+    <option value="__ALL_GENEDS__">All Gen Eds</option>
+    {genEdCategories.map((cat) => (
+      <option key={cat} value={cat}>
+        {cat}
+      </option>
+    ))}
+  </select>
+</div>
 
-<button
-  type="button"
-  className={gened ? primaryPill : pill}
-  onClick={() => setGenEd(true)}
->
-  Gen Ed only
-</button>
-              </div>
-            </div>
-
-            <div className="col-span-2">
-              <div className="mb-1 text-xs font-semibold text-zinc-600 dark:text-zinc-300">
-                Sort
-              </div>
-
-              <div className="grid grid-cols-2 gap-2">
-                <button
-                  type="button"
-                  className={sort === "difficultyDesc" ? primaryPill : pill}
-                  onClick={() => setSort("difficultyDesc")}
-                >
-                  Easiest first
-                </button>
-
-                <button
-                  type="button"
-                  className={sort === "difficultyAsc" ? primaryPill : pill}
-                  onClick={() => setSort("difficultyAsc")}
-                >
-                  Hardest first
-                </button>
-              </div>
+<div>
+  <div className="mb-0.5 text-[11px] font-semibold text-zinc-600 dark:text-zinc-300">
+    Requirement Type
+  </div>
+  <select
+    className={
+      selectBase + (!major ? " cursor-not-allowed opacity-50" : "")
+    }
+    value={majorCategory || ""}
+    onChange={(e) => setMajorCategory(e.target.value)}
+    disabled={!major}
+  >
+    <option value="">
+      {major ? "All requirement types" : "Choose a major first"}
+    </option>
+    {majorCategories.map((cat) => (
+      <option key={cat.key} value={cat.key}>
+        {cat.label}
+      </option>
+    ))}
+  </select>
             </div>
           </div>
 
-          <div className="mt-4 flex flex-wrap items-center gap-2">
+          <div className="mt-3 flex flex-wrap items-center gap-1.5">
             {dept ? (
               <button type="button" className={chip} onClick={() => setDept("")}>
                 Dept: <span className="font-bold">{dept}</span> <span className="opacity-70">x</span>
@@ -331,6 +362,22 @@ const pill =
                 }}
               >
                 Search: <span className="font-bold">"{q.trim()}"</span> <span className="opacity-70">x</span>
+              </button>
+            ) : null}
+
+                        {major ? (
+              <button type="button" className={chip} onClick={() => setMajor("")}>
+                Major: <span className="font-bold">{selectedMajor?.label}</span> <span className="opacity-70">x</span>
+              </button>
+            ) : null}
+
+                        {major && majorCategory ? (
+              <button type="button" className={chip} onClick={() => setMajorCategory("")}>
+                Requirement:{" "}
+                <span className="font-bold">
+                  {majorCategories.find((cat) => cat.key === majorCategory)?.label}
+                </span>{" "}
+                <span className="opacity-70">x</span>
               </button>
             ) : null}
 
@@ -370,14 +417,25 @@ const pill =
           </div>
 
           <div className="flex items-center gap-2">
-            <button
-              type="button"
-              className={baseBtn}
-              onClick={() => setPage(Math.max(1, page - 1))}
-              disabled={page === 1}
-            >
-              Prev
-            </button>
+  <button
+    type="button"
+    className={baseBtn}
+    onClick={() =>
+      setSort(sort === "difficultyDesc" ? "difficultyAsc" : "difficultyDesc")
+    }
+    title={sort === "difficultyDesc" ? "Switch to hardest first" : "Switch to easiest first"}
+  >
+    {sort === "difficultyDesc" ? "↓ Easy" : "↑ Hard"}
+  </button>
+
+  <button
+    type="button"
+    className={baseBtn}
+    onClick={() => setPage(Math.max(1, page - 1))}
+    disabled={page === 1}
+  >
+    Prev
+  </button>
 
             <button type="button" className={pageBtnClass(page === 1)} onClick={() => setPage(1)}>
               1

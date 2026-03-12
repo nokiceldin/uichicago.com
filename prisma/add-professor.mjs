@@ -5,6 +5,10 @@ import { PrismaClient } from "@prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 import pg from "pg";
 
+let created = 0;
+let updated = 0;
+let skipped = 0;
+
 const { Pool } = pg;
 
 const pool = new Pool({
@@ -112,3 +116,7 @@ main()
     await prisma.$disconnect();
     await pool.end();
   });
+
+console.log("Created:", created);
+console.log("Updated:", updated);
+console.log("Skipped:", skipped);

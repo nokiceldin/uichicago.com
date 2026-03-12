@@ -33,6 +33,7 @@ function mapKeyToDbName(key: string) {
       .split(",")
       .map((p) => p.trim())
       .filter(Boolean);
+
     if (parts.length >= 2) {
       const last = parts[0];
       const first = parts.slice(1).join(" ");
@@ -79,13 +80,15 @@ function bayesScore(quality: number, ratingsCount: number) {
   return (n / (n + C)) * q + (C / (n + C)) * M;
 }
 
-function chunk<T>(arr: T[], size: number) {
-  const out: T[][] = [];
-  for (let i = 0; i < arr.length; i += size) out.push(arr.slice(i, i + size));
-  return out;
-}
-
 async function main() {
+  const slug = process.argv[2];
+
+  if (!slug) {
+    console.error("Please provide a professor slug.");
+    console.error("Example: npx tsx scripts/generate-one-summary.ts william-mccarty-criminal-justice");
+    process.exit(1);
+  }
+
   const filePath = path.join(process.cwd(), "public", "data", "professor_to_courses.json");
   const raw = fs.readFileSync(filePath, "utf8");
   const courseMap = JSON.parse(raw) as ProfCoursesMap;
@@ -105,6 +108,13 @@ async function main() {
     },
   });
 
+  const target = profRows.find((p) => p.slug === slug);
+
+  if (!target) {
+    console.error(`Professor with slug "${slug}" was not found among active mapped professors.`);
+    process.exit(1);
+  }
+
   const profByNorm = new Map<string, (typeof profRows)[number]>();
   for (const p of profRows) profByNorm.set(normName(p.name), p);
 
@@ -123,7 +133,9 @@ async function main() {
 
   const overallTotal = scored.length;
   const overallRankByNorm = new Map<string, number>();
-  for (let i = 0; i < scored.length; i++) overallRankByNorm.set(normName(scored[i].name), i + 1);
+  for (let i = 0; i < scored.length; i++) {
+    overallRankByNorm.set(normName(scored[i].name), i + 1);
+  }
 
   const deptGroups = new Map<string, typeof scored>();
   for (const p of scored) {
@@ -134,18 +146,18 @@ async function main() {
   }
 
   const deptRankByNorm = new Map<string, { rank: number; total: number }>();
-  for (const [dept, arr] of deptGroups.entries()) {
+  for (const [, arr] of deptGroups.entries()) {
     arr.sort((a, b) => {
       if (b.score !== a.score) return b.score - a.score;
       if (b.ratingsCount !== a.ratingsCount) return b.ratingsCount - a.ratingsCount;
       return a.name.localeCompare(b.name);
     });
+
     for (let i = 0; i < arr.length; i++) {
       deptRankByNorm.set(normName(arr[i].name), { rank: i + 1, total: arr.length });
     }
   }
 
-  // Build professor -> courses list, and course -> professors mapping
   const profCoursesByNorm = new Map<string, { label: string; title: string }[]>();
   const courseToProfNorms = new Map<string, Set<string>>();
   const courseTitleByLabel = new Map<string, string>();
@@ -172,7 +184,6 @@ async function main() {
     }
   }
 
-  // Precompute course ranking lists once per course label
   const courseRankListByLabel = new Map<string, string[]>();
 
   for (const [label, setNorms] of courseToProfNorms.entries()) {
@@ -201,87 +212,62 @@ async function main() {
     courseRankListByLabel.set(label, arr.map((x) => x.norm));
   }
 
-  // Build summary for each professor
-  const updates: { id: string; aiSummary: string }[] = [];
+  const pNorm = normName(target.name);
+  const overallRank = overallRankByNorm.get(pNorm) || 0;
+  const deptInfo = deptRankByNorm.get(pNorm) || { rank: 0, total: 0 };
 
-  for (const p of scored) {
-    const pNorm = normName(p.name);
+  const courses = profCoursesByNorm.get(pNorm) || [];
+  const coursesTaughtCount = courses.length;
 
-    const overallRank = overallRankByNorm.get(pNorm) || 0;
-    const deptInfo = deptRankByNorm.get(pNorm) || { rank: 0, total: 0 };
+  const snippets: CourseRankSnippet[] = [];
+  for (const c of courses) {
+    const list = courseRankListByLabel.get(c.label);
+    if (!list) continue;
 
-    const courses = profCoursesByNorm.get(pNorm) || [];
-    const coursesTaughtCount = courses.length;
+    const idx = list.indexOf(pNorm);
+    if (idx === -1) continue;
 
-    // Pick best course ranks to mention
-    const snippets: CourseRankSnippet[] = [];
-    for (const c of courses) {
-      const list = courseRankListByLabel.get(c.label);
-      if (!list) continue;
-
-      const idx = list.indexOf(pNorm);
-      if (idx === -1) continue;
-
-      const total = list.length;
-      const rank = idx + 1;
-
-      snippets.push({
-        courseLabel: c.label,
-        courseTitle: c.title || courseTitleByLabel.get(c.label) || "",
-        rank,
-        total,
-      });
-    }
-
-    snippets.sort((a, b) => {
-      const aPct = a.total ? a.rank / a.total : 1;
-      const bPct = b.total ? b.rank / b.total : 1;
-      if (aPct !== bPct) return aPct - bPct;
-      return a.courseLabel.localeCompare(b.courseLabel);
+    snippets.push({
+      courseLabel: c.label,
+      courseTitle: c.title || courseTitleByLabel.get(c.label) || "",
+      rank: idx + 1,
+      total: list.length,
     });
-
-    const topCourseRanks = snippets.slice(0, 3);
-
-    const input: ProfessorSummaryInput = {
-      slug: p.slug,
-      name: p.name,
-      department: p.department,
-      school: p.school,
-      quality: p.quality,
-      ratingsCount: p.ratingsCount,
-      score: p.score,
-      overallRank,
-      overallTotal,
-      deptRank: deptInfo.rank,
-      deptTotal: deptInfo.total,
-      coursesTaughtCount,
-      topCourseRanks,
-    };
-
-    const aiSummary = generateProfessorSummary(input);
-
-    updates.push({ id: p.id, aiSummary });
   }
 
-  console.log(`Prepared ${updates.length} summaries. Writing to DB in batches...`);
+  snippets.sort((a, b) => {
+    const aPct = a.total ? a.rank / a.total : 1;
+    const bPct = b.total ? b.rank / b.total : 1;
+    if (aPct !== bPct) return aPct - bPct;
+    return a.courseLabel.localeCompare(b.courseLabel);
+  });
 
- const batches = chunk(updates, 50);
-  let done = 0;
+  const topCourseRanks = snippets.slice(0, 3);
 
-  for (const b of batches) {
-    await prisma.$transaction(
-      b.map((u) =>
-        prisma.professor.update({
-          where: { id: u.id },
-          data: { aiSummary: u.aiSummary },
-        })
-      )
-    );
-    done += b.length;
-    console.log(`Updated ${done}/${updates.length}`);
-  }
+  const input: ProfessorSummaryInput = {
+    slug: target.slug,
+    name: target.name,
+    department: target.department,
+    school: target.school,
+    quality: Number(target.rmpQuality ?? 0),
+    ratingsCount: Number(target.rmpRatingsCount ?? 0),
+    score: bayesScore(Number(target.rmpQuality ?? 0), Number(target.rmpRatingsCount ?? 0)),
+    overallRank,
+    overallTotal,
+    deptRank: deptInfo.rank,
+    deptTotal: deptInfo.total,
+    coursesTaughtCount,
+    topCourseRanks,
+  };
 
-  console.log("Done.");
+  const aiSummary = generateProfessorSummary(input);
+
+  await prisma.professor.update({
+    where: { id: target.id },
+    data: { aiSummary },
+  });
+
+  console.log(`Updated summary for ${target.name} (${target.slug})`);
 }
 
 main()
@@ -290,6 +276,6 @@ main()
     process.exitCode = 1;
   })
   .finally(async () => {
-  await prisma.$disconnect();
-  await pool.end();
-});
+    await prisma.$disconnect();
+    await pool.end();
+  });

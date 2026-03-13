@@ -1,134 +1,107 @@
-generator client {
-  provider = "prisma-client-js"
+import "dotenv/config";
+import fs from "fs";
+
+import { PrismaClient } from "@prisma/client";
+import { PrismaPg } from "@prisma/adapter-pg";
+import pg from "pg";
+
+const { Pool } = pg;
+
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+});
+
+const adapter = new PrismaPg(pool);
+const prisma = new PrismaClient({ adapter });
+
+function toInt(v) {
+  const n = Number(v);
+  return Number.isFinite(n) ? Math.round(n) : null;
 }
 
-datasource db {
-  provider = "postgresql"
+function toFloat(v) {
+  const n = Number(v);
+  return Number.isFinite(n) ? n : null;
 }
 
-model Professor {
-  id                String   @id @default(cuid())
-  slug              String   @unique
-  name              String
-  department        String
-  school            String
-  rmpQuality        Float?
-  rmpDifficulty     Float?
-  rmpWouldTakeAgain Int?
-  rmpRatingsCount   Int?
-  rmpUrl            String?
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
-  aiSummary         String?
-
-  @@index([name])
-  @@index([department])
+function slugify(s) {
+  return String(s)
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "");
 }
 
-model MissingProfessorReport {
-  id             String   @id @default(cuid())
-  createdAt      DateTime @default(now())
+async function main() {
+  const targetName = process.argv[2];
 
-  searchQuery    String?
-  professorName  String
-  department     String?
-  classInput     String?
-  notes          String?
+  if (!targetName) {
+    console.log('Usage: node prisma/add-professor.mjs "Professor Name"');
+    process.exit(1);
+  }
 
-  page           String?
-  userAgent      String?
+  const raw = fs.readFileSync("./public/data/uic_rmp_professors_fixed.json", "utf8");
+  const arr = JSON.parse(raw);
+
+  console.log("Loaded JSON:", arr.length);
+  console.log("Looking for professor:", targetName);
+
+  const p = arr.find((prof) => {
+    const name = String(prof.name ?? prof.Name ?? "").trim().toLowerCase();
+    return name === targetName.trim().toLowerCase();
+  });
+
+  if (!p) {
+    console.log("Professor not found in JSON.");
+    process.exit(1);
+  }
+
+  const name = String(p.name ?? p.Name ?? "");
+  const department = String(p.department ?? p.Department ?? "");
+  const school = String(p.school ?? p.School ?? "");
+
+  if (!name || !department) {
+    console.log("Professor is missing name or department.");
+    process.exit(1);
+  }
+
+  const slug = slugify(String(p.slug ?? `${name}-${department}`));
+
+  const result = await prisma.professor.upsert({
+    where: { slug },
+    update: {
+      name,
+      department,
+      school,
+      rmpQuality: toFloat(p.quality ?? p.Quality),
+      rmpDifficulty: toFloat(p.difficulty ?? p.Difficulty),
+      rmpWouldTakeAgain: toInt(p.wouldTakeAgain ?? p["Would Take Again %"]),
+      rmpRatingsCount: toInt(p.ratingsCount ?? p["Ratings Count"]),
+      rmpUrl: String(p.url ?? p["Profile URL"] ?? ""),
+    },
+    create: {
+      slug,
+      name,
+      department,
+      school,
+      rmpQuality: toFloat(p.quality ?? p.Quality),
+      rmpDifficulty: toFloat(p.difficulty ?? p.Difficulty),
+      rmpWouldTakeAgain: toInt(p.wouldTakeAgain ?? p["Would Take Again %"]),
+      rmpRatingsCount: toInt(p.ratingsCount ?? p["Ratings Count"]),
+      rmpUrl: String(p.url ?? p["Profile URL"] ?? ""),
+    },
+  });
+
+  console.log("Done.");
+  console.log("Upserted professor:", result.name);
+  console.log("Slug:", result.slug);
 }
 
-model Term {
-  id              String                      @id @default(cuid())
-  code            String                      @unique
-  name            String?
-  createdAt       DateTime                    @default(now())
-  updatedAt       DateTime                    @updatedAt
-  instructorStats CourseInstructorTermStats[]
-  courseStats     CourseTermStats[]
-}
-
-model Course {
-  id               String                      @id @default(cuid())
-  subject          String
-  number           String
-  title            String
-  deptCode         String?
-  deptName         String?
-  createdAt        DateTime                    @default(now())
-  updatedAt        DateTime                    @updatedAt
-  avgGpa           Float?
-  difficultyScore  Float?
-  totalRegsAllTime Int                         @default(0)
-  instructorStats  CourseInstructorTermStats[]
-  termStats        CourseTermStats[]
-  isGenEd       Boolean  @default(false)
-  genEdCategory String?
-
-  @@unique([subject, number])
-  @@index([deptName])
-  @@index([subject, number])
-}
-
-model CourseTermStats {
-  id        String   @id @default(cuid())
-  courseId  String
-  termId    String
-  gradeRegs Int      @default(0)
-  a         Int      @default(0)
-  b         Int      @default(0)
-  c         Int      @default(0)
-  d         Int      @default(0)
-  f         Int      @default(0)
-  adv       Int      @default(0)
-  cr        Int      @default(0)
-  dfr       Int      @default(0)
-  i         Int      @default(0)
-  ng        Int      @default(0)
-  nr        Int      @default(0)
-  o         Int      @default(0)
-  pr        Int      @default(0)
-  s         Int      @default(0)
-  u         Int      @default(0)
-  w         Int      @default(0)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  term      Term     @relation(fields: [termId], references: [id], onDelete: Cascade)
-
-  @@unique([courseId, termId])
-  @@index([termId])
-}
-
-model CourseInstructorTermStats {
-  id             String   @id @default(cuid())
-  courseId       String
-  termId         String
-  instructorName String
-  gradeRegs      Int      @default(0)
-  a              Int      @default(0)
-  b              Int      @default(0)
-  c              Int      @default(0)
-  d              Int      @default(0)
-  f              Int      @default(0)
-  adv            Int      @default(0)
-  cr             Int      @default(0)
-  dfr            Int      @default(0)
-  i              Int      @default(0)
-  ng             Int      @default(0)
-  nr             Int      @default(0)
-  o              Int      @default(0)
-  pr             Int      @default(0)
-  s              Int      @default(0)
-  u              Int      @default(0)
-  w              Int      @default(0)
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
-  course         Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  term           Term     @relation(fields: [termId], references: [id], onDelete: Cascade)
-
-  @@unique([courseId, termId, instructorName])
-  @@index([termId])
-  @@index([instructorName])
-}
+main()
+  .catch((e) => {
+    console.error(e);
+    process.exit(1);
+  })
+  .finally(async () => {
+    await prisma.$disconnect();
+    await pool.end();
+  });

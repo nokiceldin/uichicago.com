@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import fs from "fs";
 import path from "path";
 import HeroSearch from "@/app/components/HeroSearch";
+import Link from "next/link";
 
 type ProfCoursesMap = Record<string, string[]>;
 
@@ -44,6 +45,7 @@ function ratingBg(v: number) {
 }
 
 function rankBadgeClass(rank: number, total: number) {
+  if (rank === 1) return "text-emerald-700 bg-emerald-50 ring-emerald-200 dark:text-emerald-400 dark:bg-emerald-500/15 dark:ring-emerald-500/25";
   const pct = rank / total;
   if (pct <= 0.25) return "text-emerald-700 bg-emerald-50 ring-emerald-200 dark:text-emerald-400 dark:bg-emerald-500/15 dark:ring-emerald-500/25";
   if (pct <= 0.5) return "text-green-700 bg-green-50 ring-green-200 dark:text-green-400 dark:bg-green-500/15 dark:ring-green-500/25";
@@ -82,15 +84,32 @@ export default async function ProfessorPage({ params }: { params: Promise<{ slug
   const profCourses = (profMapKey ? courseMap[profMapKey] || [] : []).map((item) => ({ courseLabel: courseLabelFromItem(item), courseTitle: courseTitleFromItem(item) })).filter((x) => x.courseLabel);
 
   async function computeRankForCourse(courseLabel: string, courseTitle: string): Promise<CourseRankRow> {
-    const peerDbNames: string[] = [];
-    for (const [key, courses] of Object.entries(courseMap)) { if ((courses || []).some((c) => courseLabelFromItem(c) === courseLabel)) peerDbNames.push(mapKeyToDbName(key)); }
-    if (peerDbNames.length === 0) return { courseLabel, courseTitle, profRank: null, totalInCourse: 0, profScore: Number(professor.score || 0), profRatings: Number(professor.ratingsCount || 0) };
-    const peers = await prisma.professor.findMany({ where: { name: { in: peerDbNames } }, select: { name: true, rmpQuality: true, rmpRatingsCount: true } });
-    const scored = peers.map((p) => { const q = Number(p.rmpQuality ?? 0), r = Number(p.rmpRatingsCount ?? 0); return { name: p.name, score: r === 0 ? 0 : (r/(r+C))*q+(C/(r+C))*M, ratings: r }; });
-    scored.sort((a, b) => b.score !== a.score ? b.score - a.score : b.ratings !== a.ratings ? b.ratings - a.ratings : a.name.localeCompare(b.name));
-    const idx = scored.findIndex((p) => normName(p.name) === profNorm);
-    return { courseLabel, courseTitle, profRank: idx === -1 ? null : idx + 1, totalInCourse: scored.length, profScore: Number(professor.score || 0), profRatings: Number(professor.ratingsCount || 0) };
+  const peerDbNames: string[] = [];
+  for (const [key, courses] of Object.entries(courseMap)) {
+    if ((courses || []).some((c) => courseLabelFromItem(c) === courseLabel)) 
+      peerDbNames.push(mapKeyToDbName(key));
   }
+  console.log("courseLabel:", courseLabel);
+console.log("peerDbNames:", peerDbNames);
+console.log("profNorm:", profNorm);
+  if (peerDbNames.length === 0) return { courseLabel, courseTitle, profRank: null, totalInCourse: 0, profScore: Number(professor.score || 0), profRatings: Number(professor.ratingsCount || 0) };
+  
+  const peers = await prisma.professor.findMany({ 
+    where: { name: { in: peerDbNames, mode: "insensitive" } },  // <-- add this
+    select: { name: true, rmpQuality: true, rmpRatingsCount: true } 
+  });
+
+console.log("peers found:", peers?.length);  // add this after the findMany too
+  
+  const scored = peers.map((p) => { 
+    const q = Number(p.rmpQuality ?? 0), r = Number(p.rmpRatingsCount ?? 0); 
+    return { name: p.name, score: r === 0 ? 0 : (r/(r+C))*q+(C/(r+C))*M, ratings: r }; 
+  });
+  scored.sort((a, b) => b.score !== a.score ? b.score - a.score : b.ratings !== a.ratings ? b.ratings - a.ratings : a.name.localeCompare(b.name));
+  
+  const idx = scored.findIndex((p) => normName(p.name) === profNorm);  // this stays the same
+  return { courseLabel, courseTitle, profRank: idx === -1 ? null : idx + 1, totalInCourse: scored.length, profScore: Number(professor.score || 0), profRatings: Number(professor.ratingsCount || 0) };
+}
 
   const courseRanks: CourseRankRow[] = await Promise.all(profCourses.map((c) => computeRankForCourse(c.courseLabel, c.courseTitle)));
   const bg = ratingBg(Number(professor.quality || 0));
@@ -171,16 +190,23 @@ export default async function ProfessorPage({ params }: { params: Promise<{ slug
               <ul className="divide-y divide-zinc-100 dark:divide-white/[0.04]">
                 {courseRanks.map((r) => (
                   <li key={r.courseLabel} className="grid grid-cols-12 items-center px-5 sm:px-6 py-4 text-sm hover:bg-zinc-50 dark:hover:bg-white/[0.03] transition-colors">
-                    <div className="col-span-3 font-bold text-zinc-900 dark:text-zinc-100">{r.courseLabel}</div>
-                    <div className="col-span-6 text-zinc-400 dark:text-zinc-500 text-xs pr-4">{r.courseTitle || "Untitled"}</div>
-                    <div className="col-span-3 flex justify-end">
-                      {r.profRank ? (
-                        <span className={`inline-flex items-center rounded-lg px-2.5 py-1 text-xs font-bold ring-1 ${rankBadgeClass(r.profRank, r.totalInCourse)}`}>
-                          #{r.profRank} of {r.totalInCourse}
-                        </span>
-                      ) : <span className="text-xs text-zinc-300 dark:text-zinc-700">No data</span>}
-                    </div>
-                  </li>
+  <div className="col-span-3 font-bold text-zinc-900 dark:text-zinc-100">
+    <Link
+      href={`/courses/${r.courseLabel.split(" ")[0].toLowerCase()}/${r.courseLabel.split(" ")[1]?.toLowerCase()}`}
+      className="hover:text-emerald-600 dark:hover:text-emerald-400 hover:underline transition-colors"
+    >
+      {r.courseLabel}
+    </Link>
+  </div>
+  <div className="col-span-6 text-zinc-400 dark:text-zinc-500 text-xs pr-4">{r.courseTitle || "Untitled"}</div>
+  <div className="col-span-3 flex justify-end">
+    {r.profRank ? (
+      <span className={`inline-flex items-center rounded-lg px-2.5 py-1 text-xs font-bold ring-1 ${rankBadgeClass(r.profRank, r.totalInCourse)}`}>
+        #{r.profRank} of {r.totalInCourse}
+      </span>
+    ) : <span className="text-xs text-zinc-300 dark:text-zinc-700">No data</span>}
+  </div>
+</li>
                 ))}
               </ul>
             </>

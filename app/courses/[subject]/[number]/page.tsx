@@ -1,6 +1,5 @@
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
-import HeroSearch from "@/app/components/HeroSearch";
 import { notFound } from "next/navigation";
 import prisma from "@/app/lib/prisma";
 import { findSlugForUicName } from "@/app/lib/name";
@@ -110,9 +109,6 @@ export default async function CourseDetailPage({
     <main className="relative min-h-screen bg-zinc-50 text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100">
       <div className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-72 dark:bg-gradient-to-b dark:from-white/5 dark:to-transparent" />
       <div className="mx-auto max-w-6xl px-5 py-10">
-  <div className="mb-8">
-    <HeroSearch />
-  </div>
   <CourseHeader course={course} />
 
         <div className="mt-6">

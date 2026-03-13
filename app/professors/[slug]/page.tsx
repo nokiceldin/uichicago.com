@@ -2,7 +2,6 @@ import { prisma } from "@/app/lib/prisma";
 import { notFound } from "next/navigation";
 import fs from "fs";
 import path from "path";
-import HeroSearch from "@/app/components/HeroSearch";
 import Link from "next/link";
 
 type ProfCoursesMap = Record<string, string[]>;
@@ -119,9 +118,6 @@ console.log("peers found:", peers?.length);  // add this after the findMany too
   <div className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-72 bg-gradient-to-b from-emerald-50/60 to-transparent dark:from-emerald-950/30 dark:to-transparent" />
 
   <div className="mx-auto max-w-3xl px-4 py-10 sm:px-6 sm:py-16">
-    <div className="mb-8">
-      <HeroSearch />
-    </div>
     {/* Profile card */}
         <div className="overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-lg dark:border-white/8 dark:bg-zinc-900/50 dark:shadow-black/40">
           <div className={`h-1 w-full ${bg}`} />

@@ -4,9 +4,11 @@ import Link from "next/link";
 import Image from "next/image";
 import ThemeToggle from "./ThemeToggle";
 import { usePathname } from "next/navigation";
+import HeroSearch from "./HeroSearch";
 
 export default function Navbar() {
   const pathname = usePathname();
+  const isHome = pathname === "/";
 
   const navLink = (href: string, label: string) => {
     const active = pathname.startsWith(href);
@@ -29,10 +31,10 @@ export default function Navbar() {
 
   return (
     <header className="sticky top-0 z-50 border-b border-zinc-200 bg-white/95 backdrop-blur-md dark:border-white/8 dark:bg-zinc-950/95">
-      <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
+      <div className="mx-auto flex w-full max-w-6xl items-center gap-4 px-4 py-3 sm:px-6 lg:px-8">
         <Link
           href="/"
-          className="flex min-w-0 items-center gap-2.5 rounded-xl px-1 py-1 transition hover:opacity-80"
+          className="flex min-w-0 shrink-0 items-center gap-2.5 rounded-xl px-1 py-1 transition hover:opacity-80"
         >
           <Image
             src="/logo.png"
@@ -46,7 +48,13 @@ export default function Navbar() {
           </span>
         </Link>
 
-        <nav className="ml-2 flex items-center gap-4 sm:ml-4 sm:gap-6 md:gap-8">
+        {!isHome && (
+  <div className="flex-1 max-w-lg ml-auto mr-4">
+    <HeroSearch compact />
+  </div>
+)}
+
+        <nav className="ml-auto flex shrink-0 items-center gap-4 sm:gap-6 md:gap-8">
           {navLink("/courses", "Courses")}
           {navLink("/professors", "Professors")}
           <div className="ml-1 shrink-0 sm:ml-2">

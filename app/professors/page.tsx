@@ -6,496 +6,205 @@ import { ClassesCell } from "@/app/components/ClassesCell";
 import Link from "next/link";
 import MissingProfessorButton from "@/app/components/MissingProfessorButton";
 
-type Prof = {
-  name: string;
-  department: string;
-  school: string;
-  quality: number;
-  ratingsCount: number;
-  wouldTakeAgain: number | null;
-  difficulty: number;
-  url: string;
-  slug: string;
-};
+type Prof = { name: string; department: string; school: string; quality: number; ratingsCount: number; wouldTakeAgain: number | null; difficulty: number; url: string; slug: string; };
+
+function ratingConfig(v: number) {
+  if (v >= 4.5) return { text: "text-emerald-700 dark:text-emerald-400", bg: "bg-emerald-50 dark:bg-emerald-500/15", ring: "ring-emerald-200 dark:ring-emerald-500/25" };
+  if (v >= 4.0) return { text: "text-green-700 dark:text-green-400", bg: "bg-green-50 dark:bg-green-500/15", ring: "ring-green-200 dark:ring-green-500/25" };
+  if (v >= 3.0) return { text: "text-amber-700 dark:text-amber-400", bg: "bg-amber-50 dark:bg-amber-500/15", ring: "ring-amber-200 dark:ring-amber-500/25" };
+  return { text: "text-red-700 dark:text-red-400", bg: "bg-red-50 dark:bg-red-500/15", ring: "ring-red-200 dark:ring-red-500/25" };
+}
+
+function getPageButtons(current: number, total: number) {
+  const maxButtons = 3;
+  if (total <= maxButtons) return Array.from({ length: total }, (_, i) => i + 1);
+  let start = Math.max(1, current - Math.floor(maxButtons / 2));
+  let end = start + maxButtons - 1;
+  if (end > total) { end = total; start = end - maxButtons + 1; }
+  return Array.from({ length: maxButtons }, (_, i) => start + i);
+}
 
 export default function Page() {
   const courseMap = useProfCoursesMap();
-
   const [sort, setSort] = useState<"best" | "worst" | "most">("best");
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState<Prof[]>([]);
   const [total, setTotal] = useState(0);
-
   const [query, setQuery] = useState("");
   const [dept, setDept] = useState("All");
-
-  function getPageButtons(current: number, total: number) {
-    const maxButtons = 3;
-
-    if (total <= maxButtons) {
-      return Array.from({ length: total }, (_, i) => i + 1);
-    }
-
-    let start = Math.max(1, current - Math.floor(maxButtons / 2));
-    let end = start + maxButtons - 1;
-
-    if (end > total) {
-      end = total;
-      start = end - maxButtons + 1;
-    }
-
-    return Array.from({ length: maxButtons }, (_, i) => start + i);
-  }
-
   const [departments, setDepartments] = useState<string[]>([]);
   const [minRatings, setMinRatings] = useState(0);
   const [minStars, setMinStars] = useState(0);
-
   const [page, setPage] = useState(1);
   const pageSize = 50;
-
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
   const pageButtons = useMemo(() => getPageButtons(page, totalPages), [page, totalPages]);
-
-  const baseBtn =
-    "h-10 rounded-xl border border-zinc-200 bg-white px-3 sm:px-4 text-sm font-medium text-zinc-900 hover:bg-zinc-50 disabled:opacity-50 dark:border-white/10 dark:bg-zinc-950/40 dark:text-zinc-100 dark:hover:bg-zinc-900/40";
-
-  function pageBtnClass(active: boolean) {
-    return (
-      baseBtn +
-      " min-w-9 sm:min-w-10 px-2.5 sm:px-3 tabular-nums flex items-center justify-center " +
-      (active
-        ? " pointer-events-none disabled:opacity-100 opacity-100 border-white/25 bg-white/10 text-white dark:border-white/25 dark:bg-white/10 dark:text-white"
-        : "")
-    );
-  }
-
   const middle = pageButtons.filter((n) => n !== 1 && n !== totalPages);
   const start = (page - 1) * pageSize;
 
-  const inputBase =
-  "h-9 w-full rounded-xl border border-zinc-200 bg-white px-3 text-sm text-zinc-900 outline-none " +
-  "placeholder:text-zinc-400 focus:border-zinc-300 focus:ring-2 focus:ring-zinc-200 " +
-  "dark:border-white/10 dark:bg-zinc-950/40 dark:text-zinc-100 dark:placeholder:text-zinc-500 dark:focus:ring-white/10";
+  const selectBase = "h-9 w-full cursor-pointer rounded-xl border border-zinc-200 bg-white px-3 text-sm text-zinc-900 outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 transition-colors dark:border-white/10 dark:bg-zinc-900 dark:text-zinc-200 dark:focus:border-emerald-500/50 dark:focus:ring-emerald-500/20";
+  const inputBase = "h-10 w-full rounded-xl border border-zinc-200 bg-white px-4 text-sm text-zinc-900 outline-none placeholder:text-zinc-400 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 transition-colors dark:border-white/10 dark:bg-zinc-900 dark:text-zinc-200 dark:placeholder:text-zinc-600 dark:focus:border-emerald-500/50 dark:focus:ring-emerald-500/20";
+  const chipBase = "inline-flex items-center gap-1.5 rounded-full border border-zinc-200 bg-zinc-100 px-3 py-1 text-xs font-medium text-zinc-700 hover:bg-zinc-200 transition-colors cursor-pointer dark:border-white/10 dark:bg-white/5 dark:text-zinc-300 dark:hover:bg-white/10";
+  const navBtn = "h-9 px-4 rounded-xl border border-zinc-200 bg-white text-sm font-medium text-zinc-700 hover:bg-zinc-50 transition-colors disabled:opacity-30 disabled:cursor-not-allowed dark:border-white/10 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-white/10";
+  const pageBtn = (active: boolean) => "h-9 min-w-9 px-3 rounded-xl border text-sm font-medium transition-all flex items-center justify-center tabular-nums " + (active ? "border-emerald-300 bg-emerald-50 text-emerald-700 pointer-events-none dark:border-emerald-500/50 dark:bg-emerald-500/15 dark:text-emerald-400" : "border-zinc-200 bg-white text-zinc-700 hover:bg-zinc-50 dark:border-white/10 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-white/10");
+  const hasAnyFilters = query.trim() || dept !== "All" || minRatings !== 0 || minStars !== 0 || sort !== "best";
 
-  const selectBase =
-  "h-9 w-full cursor-pointer rounded-xl border border-zinc-200 bg-white px-3 text-sm text-zinc-900 outline-none " +
-  "focus:border-zinc-300 focus:ring-2 focus:ring-zinc-200 " +
-  "dark:border-white/10 dark:bg-zinc-950/40 dark:text-zinc-100 dark:focus:ring-white/10";
-
-  const panel =
-  "mt-4 rounded-2xl border border-zinc-200 bg-white p-3 sm:p-4 shadow-md " +
-  "dark:border-white/10 dark:bg-zinc-900/40 dark:shadow-lg dark:backdrop-blur";
-
-const chip =
-  "inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/40 px-2.5 py-0.5 text-[11px] font-semibold text-zinc-700 hover:bg-white/60 dark:bg-white/5 dark:text-zinc-200 dark:hover:bg-white/10";
-
-  const btn =
-    "h-11 sm:h-12 rounded-2xl border border-zinc-200 bg-white px-4 text-sm font-semibold text-zinc-900 hover:bg-zinc-50 disabled:opacity-40 dark:border-white/10 dark:bg-white/5 dark:text-zinc-100 dark:hover:bg-white/10";
+  function clearAll() { setQuery(""); setDept("All"); setMinRatings(0); setMinStars(0); setSort("best"); setPage(1); }
 
   useEffect(() => {
-    fetch("/api/departments")
-      .then(async (r) => {
-        const text = await r.text();
-        if (!r.ok) throw new Error(text);
-        return JSON.parse(text);
-      })
-      .then((d) => setDepartments(Array.isArray(d) ? d : []))
-      .catch(() => setDepartments([]));
+    fetch("/api/departments").then(async (r) => { const text = await r.text(); if (!r.ok) throw new Error(text); return JSON.parse(text); }).then((d) => setDepartments(Array.isArray(d) ? d : [])).catch(() => setDepartments([]));
   }, []);
 
   useEffect(() => {
     const controller = new AbortController();
-
     setLoading(true);
-
     const params = new URLSearchParams();
-    params.set("page", String(page));
-    params.set("pageSize", String(pageSize));
-    params.set("dept", dept);
-    params.set("minRatings", String(minRatings));
-    params.set("minStars", String(minStars));
-    params.set("sort", sort);
-
+    params.set("page", String(page)); params.set("pageSize", String(pageSize)); params.set("dept", dept);
+    params.set("minRatings", String(minRatings)); params.set("minStars", String(minStars)); params.set("sort", sort);
     const qTrim = query.trim();
     if (qTrim) params.set("q", qTrim);
-
     fetch(`/api/professors?${params.toString()}`, { signal: controller.signal })
-      .then(async (r) => {
-        const text = await r.text();
-        if (!r.ok) throw new Error(text);
-        return JSON.parse(text);
-      })
-      .then((res) => {
-        setData(res.items || []);
-        setTotal(res.total || 0);
-      })
-      .catch((err) => {
-        if (err?.name !== "AbortError") console.error(err);
-      })
-      .finally(() => {
-        if (!controller.signal.aborted) setLoading(false);
-      });
-
+      .then(async (r) => { const text = await r.text(); if (!r.ok) throw new Error(text); return JSON.parse(text); })
+      .then((res) => { setData(res.items || []); setTotal(res.total || 0); })
+      .catch((err) => { if (err?.name !== "AbortError") console.error(err); })
+      .finally(() => { if (!controller.signal.aborted) setLoading(false); });
     return () => controller.abort();
   }, [query, dept, minRatings, minStars, page, sort]);
 
-  const hasAnyFilters =
-    query.trim() ||
-    dept !== "All" ||
-    minRatings !== 0 ||
-    minStars !== 0 ||
-    sort !== "best";
-
-  function clearAll() {
-    setQuery("");
-    setDept("All");
-    setMinRatings(0);
-    setMinStars(0);
-    setSort("best");
-    setPage(1);
-  }
-
   return (
-    <main className="relative min-h-screen bg-white text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100">
-      <div className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-72 bg-gradient-to-b from-white/60 to-transparent dark:from-white/5" />
+    <main className="relative min-h-screen bg-zinc-50 text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100">
+      <div className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-72 bg-gradient-to-b from-emerald-50/50 to-transparent dark:from-emerald-950/30 dark:to-transparent" />
+      <div className="pointer-events-none absolute inset-0 -z-10 opacity-[0.02]" style={{ backgroundImage: "linear-gradient(rgba(0,0,0,0.4) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,0.4) 1px, transparent 1px)", backgroundSize: "48px 48px" }} />
 
-      <div className="mx-auto max-w-6xl px-4 py-6 sm:px-5 sm:py-10">
-        <div className="rounded-2xl border border-zinc-200 bg-white/70 p-4 sm:p-5 shadow-md backdrop-blur dark:border-white/10 dark:bg-zinc-950/40 dark:shadow-lg">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-            <div className="flex items-start gap-3 sm:gap-4">
-              <img
-                src="/logo.png"
-                alt="UIC Professors Logo"
-                className="h-8 w-8 object-contain sm:h-10 sm:w-10"
-              />
-
-              <div>
-                <h1 className="text-2xl sm:text-4xl font-semibold tracking-[-0.01em] leading-tight">
-                  UIC Professors
-                </h1>
-
-                <p className="mt-2 text-sm leading-6 text-zinc-600 dark:text-zinc-400">
-                  Find the best UIC professors by department, rating, and review count
-                </p>
-              </div>
-            </div>
+      <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-12">
+        <div className="mb-8">
+          <div className="mb-2">
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-semibold uppercase tracking-widest text-emerald-700 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-400">
+<span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />{new Intl.NumberFormat("en-US").format(total)} professors            </span>
           </div>
+          <h1 className="text-4xl font-black tracking-tight text-zinc-900 dark:text-white sm:text-5xl">UIC Professors</h1>
+          <p className="mt-2 max-w-xl text-sm text-zinc-500 sm:text-base">Find the best professors by department, rating, and student review count.</p>
         </div>
 
-        <div className={panel}>
-          <div className="grid grid-cols-1 gap-2 md:grid-cols-2 lg:grid-cols-3">
-            <div className="col-span-2">
-              <div className="mb-0.5 text-[11px] font-semibold text-zinc-600 dark:text-zinc-300">
-                Search
-              </div>
-              <input
-                className={inputBase}
-                placeholder="Search professor name..."
-                value={query}
-                onChange={(e) => {
-                  setQuery(e.target.value);
-                  setPage(1);
-                }}
-              />
-            </div>
-
+        <div className="mb-4 rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-white/8 dark:bg-zinc-900/60 sm:p-6">
+          <div className="relative mb-4">
+            <svg className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z" /></svg>
+            <input className={inputBase + " pl-10"} placeholder="Search professor name..." value={query} onChange={(e) => { setQuery(e.target.value); setPage(1); }} />
+          </div>
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
             <div>
-              <div className="mb-0.5 text-[11px] font-semibold text-zinc-600 dark:text-zinc-300">
-                Department
-              </div>
-              <select
-                className={selectBase}
-                value={dept}
-                onChange={(e) => {
-                  setDept(e.target.value);
-                  setPage(1);
-                }}
-              >
+              <div className="mb-1 text-[10px] font-bold uppercase tracking-widest text-zinc-400 dark:text-zinc-500">Department</div>
+              <select className={selectBase} value={dept} onChange={(e) => { setDept(e.target.value); setPage(1); }}>
                 <option value="All">All departments</option>
-                {departments.map((d) => (
-                  <option key={d} value={d}>
-                    {d}
-                  </option>
-                ))}
+                {departments.map((d) => <option key={d} value={d}>{d}</option>)}
               </select>
             </div>
-
             <div>
-              <div className="mb-0.5 text-[11px] font-semibold text-zinc-600 dark:text-zinc-300">
-                Min rating
-              </div>
-              <select
-                className={selectBase}
-                value={minStars}
-                onChange={(e) => {
-                  setMinStars(Number(e.target.value));
-                  setPage(1);
-                }}
-              >
-                <option value={0}>Any</option>
-                <option value={3}>3.0+</option>
-                <option value={3.5}>3.5+</option>
-                <option value={4}>4.0+</option>
-                <option value={4.5}>4.5+</option>
-                <option value={4.8}>4.8+</option>
+              <div className="mb-1 text-[10px] font-bold uppercase tracking-widest text-zinc-400 dark:text-zinc-500">Min rating</div>
+              <select className={selectBase} value={minStars} onChange={(e) => { setMinStars(Number(e.target.value)); setPage(1); }}>
+                <option value={0}>Any</option><option value={3}>3.0+</option><option value={3.5}>3.5+</option><option value={4}>4.0+</option><option value={4.5}>4.5+</option><option value={4.8}>4.8+</option>
               </select>
             </div>
-
             <div>
-              <div className="mb-0.5 text-[11px] font-semibold text-zinc-600 dark:text-zinc-300">
-                Sort by rating
-              </div>
-              <select
-                className={selectBase}
-                value={sort}
-                onChange={(e) => {
-                  setSort(e.target.value as "best" | "worst" | "most");
-                  setPage(1);
-                }}
-              >
-                <option value="best">High to low</option>
-                <option value="worst">Low to high</option>
-                <option value="most">Most ratings</option>
+              <div className="mb-1 text-[10px] font-bold uppercase tracking-widest text-zinc-400 dark:text-zinc-500">Sort by</div>
+              <select className={selectBase} value={sort} onChange={(e) => { setSort(e.target.value as "best" | "worst" | "most"); setPage(1); }}>
+                <option value="best">Highest rated</option><option value="worst">Lowest rated</option><option value="most">Most reviews</option>
               </select>
             </div>
-
-            <div className="col-span-1">
-              <div className="mb-0.5 flex items-center justify-between text-[11px] font-semibold text-zinc-600 dark:text-zinc-300">
-                <span>Minimum reviews</span>
-                <span className="tabular-nums">{minRatings}</span>
+            <div>
+              <div className="mb-1 flex items-center justify-between text-[10px] font-bold uppercase tracking-widest text-zinc-400 dark:text-zinc-500">
+                <span>Min reviews</span><span className="tabular-nums text-zinc-600">{minRatings}</span>
               </div>
-
-              <div className="flex h-9 items-center rounded-xl border border-zinc-200 bg-white dark:border-white/10 dark:bg-zinc-950/40">
-                <div className="w-full px-3">
-                  <input
-                    type="range"
-                    min={0}
-                    max={200}
-                    step={5}
-                    value={minRatings}
-                    onChange={(e) => {
-                      setMinRatings(Number(e.target.value));
-                      setPage(1);
-                    }}
-                    className="w-full"
-                  />
-                </div>
-              </div>
-
-              <div className="mt-1 flex justify-between px-4 text-[11px] text-zinc-500 dark:text-zinc-400">
-                <span>0</span>
-                <span>50</span>
-                <span>100</span>
-                <span>150</span>
-                <span>200+</span>
+              <div className="flex h-9 items-center rounded-xl border border-zinc-200 bg-white dark:border-white/10 dark:bg-zinc-900 px-3">
+                <input type="range" min={0} max={200} step={5} value={minRatings} onChange={(e) => { setMinRatings(Number(e.target.value)); setPage(1); }} className="w-full accent-emerald-500" />
               </div>
             </div>
           </div>
+          {hasAnyFilters && (
+            <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-zinc-100 dark:border-white/5 pt-4">
+              <span className="text-xs text-zinc-400 mr-1">Active:</span>
+              {dept !== "All" && <button className={chipBase} onClick={() => { setDept("All"); setPage(1); }}>Dept: <strong>{dept}</strong> <span className="text-zinc-400">×</span></button>}
+              {minStars !== 0 && <button className={chipBase} onClick={() => { setMinStars(0); setPage(1); }}>Rating: <strong>{minStars}+</strong> <span className="text-zinc-400">×</span></button>}
+              {minRatings !== 0 && <button className={chipBase} onClick={() => { setMinRatings(0); setPage(1); }}>Reviews: <strong>{minRatings}+</strong> <span className="text-zinc-400">×</span></button>}
+              {query.trim() && <button className={chipBase} onClick={() => { setQuery(""); setPage(1); }}>Search: <strong>"{query.trim()}"</strong> <span className="text-zinc-400">×</span></button>}
+              <button onClick={clearAll} className="ml-auto text-xs font-semibold text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 transition-colors">Clear all</button>
+            </div>
+          )}
+        </div>
 
-          <div className="mt-3 flex flex-wrap items-center gap-1.5">
-            {dept !== "All" ? (
-              <button className={chip} onClick={() => (setDept("All"), setPage(1))}>
-                Dept: <span className="font-bold">{dept}</span> <span className="opacity-70">x</span>
-              </button>
-            ) : null}
-
-            {minStars !== 0 ? (
-              <button className={chip} onClick={() => (setMinStars(0), setPage(1))}>
-                Min rating: <span className="font-bold">{minStars.toFixed(1)}+</span>{" "}
-                <span className="opacity-70">x</span>
-              </button>
-            ) : null}
-
-            {minRatings !== 0 ? (
-              <button className={chip} onClick={() => (setMinRatings(0), setPage(1))}>
-                Min reviews: <span className="font-bold">{minRatings}+</span> <span className="opacity-70">x</span>
-              </button>
-            ) : null}
-
-            {query.trim() ? (
-              <button className={chip} onClick={() => (setQuery(""), setPage(1))}>
-                Search: <span className="font-bold">"{query.trim()}"</span> <span className="opacity-70">x</span>
-              </button>
-            ) : null}
-
-            {hasAnyFilters ? (
-  <button
-    onClick={clearAll}
-    className="inline-flex items-center rounded-full border border-zinc-200 px-3 py-1 text-xs font-semibold text-zinc-600 transition hover:bg-zinc-50 hover:text-zinc-900 dark:border-white/10 dark:text-zinc-300 dark:hover:bg-white/5 dark:hover:text-zinc-100"
-  >
-    Clear all
-  </button>
-) : null}
+        <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-sm text-zinc-500 tabular-nums">
+            Showing <span className="text-zinc-700 dark:text-zinc-300 font-medium">{start + 1}–{Math.min(start + pageSize, total)}</span> of <span className="text-zinc-700 dark:text-zinc-300 font-medium">{total.toLocaleString()}</span>
+            {loading && <span className="ml-2 text-zinc-400">Loading…</span>}
+          </p>
+          <div className="flex items-center gap-2 flex-wrap">
+            <button className={navBtn} onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1 || loading}>← Prev</button>
+            <button className={pageBtn(page === 1)} onClick={() => setPage(1)}>1</button>
+            {middle.length > 0 && middle[0] > 2 && <span className="text-zinc-400 text-sm">…</span>}
+            {middle.map((n) => <button key={n} className={pageBtn(page === n)} onClick={() => setPage(n)}>{n}</button>)}
+            {totalPages > 1 && (<>
+              {middle.length > 0 && middle[middle.length - 1] < totalPages - 1 && <span className="text-zinc-400 text-sm">…</span>}
+              <button className={pageBtn(page === totalPages)} onClick={() => setPage(totalPages)}>{totalPages}</button>
+            </>)}
+            <button className={navBtn} onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page === totalPages || loading}>Next →</button>
           </div>
         </div>
 
-        <div className="mt-5 flex flex-col gap-3 text-sm sm:flex-row sm:items-center sm:justify-between">
-          <div className="text-zinc-600 tabular-nums dark:text-zinc-300">
-            Showing {start + 1} to {Math.min(start + pageSize, total)} of {total}
-            {loading ? <span className="ml-2 opacity-70">Loading...</span> : null}
+        <div className="overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-lg dark:border-white/8 dark:bg-zinc-900/40 dark:shadow-black/40">
+          <div className="min-w-[640px] grid grid-cols-12 border-b border-zinc-100 bg-zinc-50 px-4 sm:px-6 py-3 text-[10px] font-bold uppercase tracking-widest text-zinc-500 dark:border-white/8 dark:bg-zinc-950/60 dark:text-zinc-600">
+            <div className="col-span-4">Professor</div>
+            <div className="col-span-3">Department</div>
+            <div className="col-span-3">Classes</div>
+            <div className="col-span-1 text-right">Rating</div>
+            <div className="col-span-1 text-right">RMP</div>
           </div>
-
-          <div className="flex items-center gap-2">
-            <button
-              className={baseBtn}
-              onClick={() => setPage((p) => Math.max(1, p - 1))}
-              disabled={page === 1 || loading}
-            >
-              Prev
-            </button>
-
-            <button
-              className={pageBtnClass(page === 1)}
-              onClick={() => setPage(1)}
-              disabled={loading}
-              aria-current={page === 1 ? "page" : undefined}
-            >
-              1
-            </button>
-
-            {middle.length > 0 && middle[0] > 2 ? (
-              <span className="px-1 text-zinc-500 dark:text-zinc-400">...</span>
-            ) : null}
-
-            {middle.map((n) => (
-              <button
-                key={n}
-                className={pageBtnClass(page === n)}
-                onClick={() => setPage(n)}
-                disabled={loading}
-                aria-current={page === n ? "page" : undefined}
-              >
-                {n}
-              </button>
-            ))}
-
-            {totalPages > 1 ? (
-              <>
-                {middle.length > 0 && middle[middle.length - 1] < totalPages - 1 ? (
-                  <span className="px-1 text-zinc-500 dark:text-zinc-400">...</span>
-                ) : null}
-
-                <button
-                  className={pageBtnClass(page === totalPages)}
-                  onClick={() => setPage(totalPages)}
-                  disabled={loading || page === totalPages}
-                >
-                  {totalPages}
-                </button>
-              </>
-            ) : null}
-
-            <button
-              className={baseBtn}
-              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-              disabled={page === totalPages || loading}
-            >
-              Next
-            </button>
-          </div>
-        </div>
-
-        <div className="mt-6 overflow-hidden rounded-3xl border border-zinc-200 bg-white shadow-lg dark:border-white/10 dark:bg-zinc-900/40 dark:shadow-xl dark:backdrop-blur">
-          <div className="max-h-[80vh] overflow-auto">
+          <div className="max-h-[75vh] overflow-auto">
             <div className="min-w-[640px]">
-              <div className="sticky top-0 z-10 grid grid-cols-12 border-b border-zinc-200 bg-white px-3 py-3 text-[11px] font-semibold text-zinc-700 sm:px-5 sm:text-xs dark:border-white/10 dark:bg-zinc-950/40 dark:text-zinc-300 dark:backdrop-blur">
-                <div className="col-span-5 sm:col-span-4">Professor</div>
-                <div className="hidden sm:block sm:col-span-3">Department</div>
-                <div className="col-span-4 sm:col-span-3">Classes</div>
-                <div className="col-span-1 text-right sm:col-span-1">Rating</div>
-                <div className="col-span-1 text-right sm:col-span-1">View</div>
-              </div>
-
-              <ul>
-                {data.map((p, idx) => (
-                  <li
-                    key={p.slug}
-                    className="grid grid-cols-12 items-center border-b border-zinc-100 px-3 py-4 text-sm transition hover:bg-zinc-50 sm:px-5 dark:border-white/5 dark:hover:bg-white/5"
-                  >
-                    <div className="col-span-5 sm:col-span-4">
-                      <div className="text-base font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">
-                        {start + idx + 1}.{" "}
-                        <Link href={`/professors/${p.slug}`} className="hover:underline">
-                          {p.name}
-                        </Link>
+              <ul className="divide-y divide-zinc-100 dark:divide-white/[0.04]">
+                {data.map((p, idx) => {
+                  const rc = ratingConfig(Number(p.quality) || 0);
+                  return (
+                    <li key={p.slug} className="grid grid-cols-12 items-center px-4 sm:px-6 py-4 transition-colors hover:bg-zinc-50 dark:hover:bg-white/[0.04]">
+                      <div className="col-span-4 min-w-0 pr-3">
+                        <div className="text-sm font-bold text-zinc-900 dark:text-zinc-100 sm:text-base">
+                          <span className="text-zinc-400 dark:text-zinc-600 tabular-nums mr-1.5">{start + idx + 1}.</span>
+                          <Link href={`/professors/${p.slug}`} className="hover:text-emerald-600 dark:hover:text-white transition-colors hover:underline">{p.name}</Link>
+                        </div>
+                        <div className="mt-0.5 text-xs text-zinc-400 dark:text-zinc-600">{p.school}</div>
                       </div>
-                      <div className="text-xs text-zinc-600 dark:text-zinc-400">{p.school}</div>
-                    </div>
-
-                    <div className="hidden sm:block sm:col-span-3">
-                      <span className="inline-flex items-center rounded-full border border-zinc-200 bg-zinc-50 px-3 py-1 text-[11px] font-semibold text-zinc-800 dark:border-white/10 dark:bg-white/5 dark:text-zinc-100">
-                        {p.department}
-                      </span>
-                    </div>
-
-                    <div className="col-span-4 sm:col-span-3">
-                      <ClassesCell profName={p.name} map={courseMap} />
-                    </div>
-
-                    <div className="col-span-1 text-right">
-                      <span
-                        className={`inline-flex items-center justify-center gap-1 rounded-full px-2 py-1 text-[11px] font-semibold sm:gap-2 sm:px-3 sm:text-sm ${
-                          p.quality >= 4.5
-                            ? "bg-emerald-100 text-emerald-700 ring-1 ring-emerald-200 dark:bg-emerald-400/15 dark:text-emerald-200 dark:ring-emerald-300/25"
-                            : p.quality >= 4.0
-                            ? "bg-green-100 text-green-700 ring-1 ring-green-200 dark:bg-green-400/15 dark:text-green-200 dark:ring-green-300/25"
-                            : p.quality >= 3.0
-                            ? "bg-yellow-100 text-yellow-700 ring-1 ring-yellow-200 dark:bg-yellow-400/15 dark:text-yellow-200 dark:ring-yellow-300/25"
-                            : "bg-red-100 text-red-700 ring-1 ring-red-200 dark:bg-red-400/15 dark:text-red-200 dark:ring-red-300/25"
-                        }`}
-                      >
-                        <span className="tabular-nums">{(Number(p.quality) || 0).toFixed(1)}</span>
-                        <span className="hidden tabular-nums text-[10px] font-semibold opacity-80 sm:inline sm:text-xs">
-                          ({Number(p.ratingsCount) || 0})
+                      <div className="col-span-3 pr-3">
+                        <span className="inline-flex items-center rounded-lg bg-zinc-100 dark:bg-white/5 px-2.5 py-1 text-xs font-medium text-zinc-600 dark:text-zinc-400 ring-1 ring-zinc-200 dark:ring-white/8">{p.department}</span>
+                      </div>
+                      <div className="col-span-3 pr-3"><ClassesCell profName={p.name} map={courseMap} /></div>
+                      <div className="col-span-1 flex justify-end">
+                        <span className={`inline-flex flex-col items-center rounded-lg px-2.5 py-1.5 text-xs font-black tabular-nums ring-1 ${rc.bg} ${rc.text} ${rc.ring}`}>
+                          <span className="text-sm">{(Number(p.quality) || 0).toFixed(1)}</span>
+                          <span className="text-[9px] font-medium opacity-60">({Number(p.ratingsCount) || 0})</span>
                         </span>
-                      </span>
-                    </div>
-
-                    <div className="col-span-1 text-right">
-                      <a
-                        className="inline-flex items-center justify-center rounded-2xl border border-zinc-300 bg-white px-2 py-2 text-[10px] font-semibold text-zinc-900 hover:bg-zinc-50 sm:px-3 sm:text-xs dark:border-white/10 dark:bg-white/90 dark:text-zinc-900 dark:hover:bg-white"
-                        href={p.url}
-                        target="_blank"
-                        rel="noreferrer"
-                      >
-                        View
-                      </a>
-                    </div>
-                  </li>
-                ))}
-
-                {!loading && data.length === 0 ? (
-                  <li className="px-5 py-10">
-                    <div className="flex flex-col items-start gap-3 rounded-2xl border border-zinc-200 bg-white p-5 text-sm text-zinc-700 dark:border-white/10 dark:bg-zinc-950/40 dark:text-zinc-200">
-                      <div>
-                        <div className="font-semibold text-zinc-900 dark:text-zinc-100">
-                          No results found
-                        </div>
-                        <div className="mt-1 text-zinc-600 dark:text-zinc-300">
-                          Try clearing filters, lowering minimum reviews, or adjusting your search.
-                        </div>
                       </div>
-
-                      <MissingProfessorButton
-                        page="professors"
-                        searchQuery={query.trim()}
-                        show
-                      />
-                    </div>
+                      <div className="col-span-1 flex justify-end">
+                        <a href={p.url} target="_blank" rel="noreferrer" className="inline-flex items-center justify-center rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-xs font-semibold text-zinc-700 transition hover:bg-zinc-50 dark:border-white/10 dark:bg-white/5 dark:text-zinc-300 dark:hover:bg-white/10 dark:hover:text-white">RMP</a>
+                      </div>
+                    </li>
+                  );
+                })}
+                {!loading && data.length === 0 && (
+                  <li className="px-6 py-16 text-center">
+                    <p className="text-zinc-400 text-sm">No professors found.</p>
+                    <button onClick={clearAll} className="mt-3 text-sm text-emerald-600 dark:text-emerald-500 hover:text-emerald-500 dark:hover:text-emerald-400 transition-colors font-medium">Clear all filters →</button>
+                    <div className="mt-4 flex justify-center"><MissingProfessorButton page="professors" searchQuery={query.trim()} show /></div>
                   </li>
-                ) : null}
+                )}
               </ul>
             </div>
           </div>
         </div>
-      </div>
 
-      <footer className="mt-12 border-t border-zinc-200 pt-6 text-center text-sm text-zinc-500 dark:border-white/10 dark:text-zinc-400">
-        Contact: uicratings@gmail.com
-          <br />
-          Not affiliated with UIC or RMP.
-      </footer>
+        <footer className="mt-12 border-t border-zinc-100 dark:border-white/8 pt-8 text-center text-sm text-zinc-400 dark:text-zinc-600">
+          <p>Contact: <a href="mailto:uicratings@gmail.com" className="hover:text-emerald-500 dark:hover:text-emerald-400 transition-colors">uicratings@gmail.com</a></p>
+          <p className="mt-1">Not affiliated with UIC or RMP.</p>
+        </footer>
+      </div>
     </main>
   );
 }

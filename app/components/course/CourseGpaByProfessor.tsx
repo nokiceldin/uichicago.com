@@ -1,5 +1,12 @@
-type ProfessorGpaRow = { instructorName: string; avgGpa: number | null; gradedCount: number; totalRegs: number; a: number; b: number; c: number; d: number; f: number; w: number; };
-
+import Link from "next/link"
+type ProfessorGpaRow = {
+  instructorName: string;
+  slug: string | null;  // ← add this line
+  avgGpa: number | null;
+  gradedCount: number;
+  totalRegs: number;
+  a: number; b: number; c: number; d: number; f: number; w: number;
+};
 function gpaConfig(v: number | null) {
   if (v == null) return { text: "text-zinc-600 dark:text-zinc-400", bg: "bg-zinc-100 dark:bg-white/5", ring: "ring-zinc-200 dark:ring-white/10" };
   if (v >= 3.5) return { text: "text-emerald-700 dark:text-emerald-400", bg: "bg-emerald-50 dark:bg-emerald-500/15", ring: "ring-emerald-200 dark:ring-emerald-500/25" };
@@ -38,7 +45,13 @@ export default function CourseGpaByProfessor({ professors = [], courseLabel }: {
                     <span className="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-zinc-100 dark:bg-white/5 text-xs font-bold text-zinc-500 dark:text-zinc-500 ring-1 ring-zinc-200 dark:ring-white/8">{idx + 1}</span>
                   </div>
                   <div className="col-span-5">
-                    <span className="font-semibold text-zinc-900 dark:text-zinc-200">{row.instructorName}</span>
+                    {row.slug ? (
+  <Link href={`/professors/${row.slug}`} className="font-semibold text-zinc-900 dark:text-zinc-200 hover:text-emerald-600 dark:hover:text-emerald-400 hover:underline transition-colors">
+    {row.instructorName}
+  </Link>
+) : (
+  <span className="font-semibold text-zinc-900 dark:text-zinc-200">{row.instructorName}</span>
+)}
                   </div>
                   <div className="col-span-2 flex justify-end">
                     <span className={`inline-flex items-center rounded-lg px-2.5 py-1 text-xs font-bold tabular-nums ring-1 ${gc.bg} ${gc.text} ${gc.ring}`}>

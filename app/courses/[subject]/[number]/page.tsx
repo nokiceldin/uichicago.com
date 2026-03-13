@@ -12,6 +12,37 @@ function decodeParam(value: string) {
   return decodeURIComponent(value || "").trim();
 }
 
+function normName(s: string) {
+  return (s || "").toLowerCase().replace(/[^a-z0-9]+/g, " ").trim().replace(/\s+/g, " ");
+}
+
+// "Hodges, Mark Richard" -> ["mark", "richard", "hodges"]
+// "Ayala Rodriguez, Daniel" -> ["daniel", "ayala", "rodriguez"]
+function nameTokens(uicName: string): string[] {
+  if (uicName.includes(",")) {
+    const [last, ...rest] = uicName.split(",").map((s) => s.trim());
+    const firstParts = rest.join(" ").trim().split(/\s+/);
+    const lastParts = last.trim().split(/\s+/);
+    return [...firstParts, ...lastParts].map((t) => t.toLowerCase()).filter(Boolean);
+  }
+  return uicName.toLowerCase().split(/\s+/).filter(Boolean);
+}
+
+// Score how well a professor name matches a UIC instructor name
+// Higher = better match
+function matchScore(uicName: string, profName: string): number {
+  const uicTokens = nameTokens(uicName);
+  const profTokens = normName(profName).split(" ").filter(Boolean);
+  
+  let score = 0;
+  for (const pt of profTokens) {
+    if (uicTokens.includes(pt)) score += 1;
+  }
+  // Bonus if first names match exactly
+  if (uicTokens[0] && profTokens[0] && uicTokens[0] === profTokens[0]) score += 0.5;
+  return score;
+}
+
 export default async function CourseDetailPage({
   params,
 }: {
@@ -23,177 +54,112 @@ export default async function CourseDetailPage({
   const number = decodeParam(rawParams.number).toUpperCase();
 
   const course = await prisma.course.findUnique({
-    where: {
-      subject_number: {
-        subject,
-        number,
-      },
-    },
+    where: { subject_number: { subject, number } },
     select: {
-      id: true,
-      subject: true,
-      number: true,
-      title: true,
-      deptCode: true,
-      deptName: true,
-      avgGpa: true,
-      difficultyScore: true,
-      totalRegsAllTime: true,
-      isGenEd: true,
-      genEdCategory: true,
+      id: true, subject: true, number: true, title: true,
+      deptCode: true, deptName: true, avgGpa: true,
+      difficultyScore: true, totalRegsAllTime: true,
+      isGenEd: true, genEdCategory: true,
     },
   });
 
   if (!course) notFound();
 
-    const recentTerms = await prisma.term.findMany({
-    where: {
-      code: {
-        in: [
-          "2024SP",
-          "2024SU",
-          "2024FA",
-          "2025SP",
-          "2025SU",
-          "2025FA",
-          "2026SP",
-        ],
-      },
-    },
+  const recentTerms = await prisma.term.findMany({
+    where: { code: { in: ["2024SP","2024SU","2024FA","2025SP","2025SU","2025FA","2026SP"] } },
     select: { id: true },
   });
-
   const recentTermIds = recentTerms.map((t) => t.id);
 
   const [totals, instructorGroups] = await Promise.all([
     prisma.courseTermStats.aggregate({
       where: { courseId: course.id },
       _sum: {
-        gradeRegs: true,
-        a: true,
-        b: true,
-        c: true,
-        d: true,
-        f: true,
-        w: true,
-        adv: true,
-        cr: true,
-        dfr: true,
-        i: true,
-        ng: true,
-        nr: true,
-        o: true,
-        pr: true,
-        s: true,
-        u: true,
+        gradeRegs: true, a: true, b: true, c: true, d: true, f: true, w: true,
+        adv: true, cr: true, dfr: true, i: true, ng: true, nr: true, o: true, pr: true, s: true, u: true,
       },
     }),
     prisma.courseInstructorTermStats.groupBy({
       by: ["instructorName"],
-      where: {
-        courseId: course.id,
-        termId: { in: recentTermIds },
-      },
-      _sum: {
-        gradeRegs: true,
-        a: true,
-        b: true,
-        c: true,
-        d: true,
-        f: true,
-        w: true,
-      },
-      orderBy: {
-        _sum: {
-          gradeRegs: "desc",
-        },
-      },
+      where: { courseId: course.id, termId: { in: recentTermIds } },
+      _sum: { gradeRegs: true, a: true, b: true, c: true, d: true, f: true, w: true },
+      orderBy: { _sum: { gradeRegs: "desc" } },
     }),
   ]);
 
+  // Fetch all professors and build slug map using fuzzy token matching
+  const allProfessors = await prisma.professor.findMany({
+    select: { name: true, slug: true },
+  });
+
+  const slugMap: Record<string, string | null> = {};
+  for (const row of instructorGroups) {
+    const uicName = row.instructorName;
+    const uicTokens = nameTokens(uicName);
+    
+    let bestSlug: string | null = null;
+    let bestScore = 0;
+
+    for (const prof of allProfessors) {
+      const score = matchScore(uicName, prof.name);
+      const profTokens = normName(prof.name).split(" ").filter(Boolean);
+      
+      // Must match at least the first name and last name token
+      const firstNameMatch = uicTokens[0] && profTokens[0] && uicTokens[0] === profTokens[0];
+      const hasLastNameMatch = profTokens.slice(1).some((t) => uicTokens.includes(t));
+      
+      if (score > bestScore && firstNameMatch && hasLastNameMatch) {
+        bestScore = score;
+        bestSlug = prof.slug;
+      }
+    }
+
+    slugMap[uicName] = bestSlug;
+  }
+
   const sum = totals._sum;
-
-  const a = sum.a ?? 0;
-  const b = sum.b ?? 0;
-  const c = sum.c ?? 0;
-  const d = sum.d ?? 0;
-  const f = sum.f ?? 0;
-  const w = sum.w ?? 0;
-
-  const adv = sum.adv ?? 0;
-  const cr = sum.cr ?? 0;
-  const dfr = sum.dfr ?? 0;
-  const i = sum.i ?? 0;
-  const ng = sum.ng ?? 0;
-  const nr = sum.nr ?? 0;
-  const o = sum.o ?? 0;
-  const pr = sum.pr ?? 0;
-  const s = sum.s ?? 0;
-  const u = sum.u ?? 0;
-
+  const a = sum.a ?? 0, b = sum.b ?? 0, c = sum.c ?? 0, d = sum.d ?? 0;
+  const f = sum.f ?? 0, w = sum.w ?? 0;
+  const adv = sum.adv ?? 0, cr = sum.cr ?? 0, dfr = sum.dfr ?? 0;
+  const i = sum.i ?? 0, ng = sum.ng ?? 0, nr = sum.nr ?? 0;
+  const o = sum.o ?? 0, pr = sum.pr ?? 0, s = sum.s ?? 0, u = sum.u ?? 0;
   const other = adv + cr + dfr + i + ng + nr + o + pr + s + u;
   const totalRegs = sum.gradeRegs ?? 0;
   const visualTotal = a + b + c + d + f + w;
-
   const passRate = visualTotal > 0 ? ((a + b + c + d) / visualTotal) * 100 : 0;
   const withdrawalRate = visualTotal > 0 ? (w / visualTotal) * 100 : 0;
 
   const gradeMap = [
-    { label: "A", value: a },
-    { label: "B", value: b },
-    { label: "C", value: c },
-    { label: "D", value: d },
-    { label: "F", value: f },
-    { label: "W", value: w },
+    { label: "A", value: a }, { label: "B", value: b }, { label: "C", value: c },
+    { label: "D", value: d }, { label: "F", value: f }, { label: "W", value: w },
   ];
-
-  const mostCommonGrade =
-    gradeMap.reduce(
-      (best, current) => (current.value > best.value ? current : best),
-      gradeMap[0]
-    )?.label ?? "N/A";
+  const mostCommonGrade = gradeMap.reduce(
+    (best, cur) => (cur.value > best.value ? cur : best), gradeMap[0]
+  )?.label ?? "N/A";
 
   const professorGpas = instructorGroups
     .map((row) => {
-      const pa = row._sum.a ?? 0;
-      const pb = row._sum.b ?? 0;
-      const pc = row._sum.c ?? 0;
-      const pd = row._sum.d ?? 0;
-      const pf = row._sum.f ?? 0;
-      const pw = row._sum.w ?? 0;
+      const pa = row._sum.a ?? 0, pb = row._sum.b ?? 0, pc = row._sum.c ?? 0;
+      const pd = row._sum.d ?? 0, pf = row._sum.f ?? 0, pw = row._sum.w ?? 0;
       const pTotalRegs = row._sum.gradeRegs ?? 0;
-
       const gradedCount = pa + pb + pc + pd + pf;
-
-      const avgGpa =
-        gradedCount > 0
-          ? (4 * pa + 3 * pb + 2 * pc + 1 * pd) / gradedCount
-          : null;
-
+      const avgGpa = gradedCount > 0 ? (4*pa + 3*pb + 2*pc + 1*pd) / gradedCount : null;
       return {
         instructorName: row.instructorName,
-        avgGpa,
-        gradedCount,
-        totalRegs: pTotalRegs,
-        a: pa,
-        b: pb,
-        c: pc,
-        d: pd,
-        f: pf,
-        w: pw,
+        slug: slugMap[row.instructorName] ?? null,
+        avgGpa, gradedCount, totalRegs: pTotalRegs,
+        a: pa, b: pb, c: pc, d: pd, f: pf, w: pw,
       };
     })
     .filter((row) => row.gradedCount >= 20)
     .sort((x, y) => {
       const gpaDiff = (y.avgGpa ?? -1) - (x.avgGpa ?? -1);
-      if (gpaDiff !== 0) return gpaDiff;
-      return y.gradedCount - x.gradedCount;
+      return gpaDiff !== 0 ? gpaDiff : y.gradedCount - x.gradedCount;
     });
 
   return (
     <main className="relative min-h-screen bg-zinc-50 text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100">
       <div className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-72 dark:bg-gradient-to-b dark:from-white/5 dark:to-transparent" />
-
       <div className="mx-auto max-w-6xl px-5 py-10">
         <CourseHeader course={course} />
 

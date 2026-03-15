@@ -1,0 +1,121 @@
+{
+  "libraries": [
+    {
+      "name": "Richard J. Daley Library",
+      "abbreviation": "Daley",
+      "address": "801 S. Morgan, Chicago, IL 60607",
+      "phone": "(312) 996-2724",
+      "url": "https://library.uic.edu/libraries/daley/",
+      "quiet_floors": [
+        "3rd floor",
+        "4th floor",
+        "Circle Reading Room"
+      ],
+      "study_rooms": "Group study rooms by online reservation at libcal.uic.edu",
+      "collections": [
+        "Arts",
+        "Humanities",
+        "Sciences",
+        "Social sciences",
+        "Engineering",
+        "Special Collections & University Archives"
+      ]
+    },
+    {
+      "name": "Library of the Health Sciences-Chicago",
+      "abbreviation": "LHS Chicago",
+      "address": "1750 W. Polk St., Chicago, IL 60612",
+      "phone": "(312) 996-8966",
+      "url": "https://library.uic.edu/libraries/lhs-chicago/",
+      "quiet_floors": [
+        "3rd floor",
+        "Room 107"
+      ],
+      "study_rooms": "Single person study rooms by online reservation",
+      "collections": [
+        "Medicine",
+        "Nursing",
+        "Dentistry",
+        "Pharmacology",
+        "Health sciences history"
+      ]
+    }
+  ],
+  "borrowing": {
+    "loan_period": "16 weeks for books (undergrad and grad)",
+    "renewals": "Online renewals available. Videos cannot be renewed.",
+    "fines": "No overdue fines until 39 days past due. Lost items: $125+ replacement fee.",
+    "equipment_lending": [
+      {
+        "item": "Lenovo laptops",
+        "loan": "7 days"
+      },
+      {
+        "item": "MacBooks",
+        "loan": "7 days"
+      },
+      {
+        "item": "Graphing calculators",
+        "loan": "1 day (Daley front desk)"
+      },
+      {
+        "item": "Chargers and cords",
+        "loan": "4 hours (Daley)"
+      }
+    ]
+  },
+  "research_support": {
+    "consultation_url": "https://library.uic.edu/about/contact/",
+    "subject_librarians": "https://ask.library.uic.edu/",
+    "subject_guides": "https://researchguides.uic.edu/"
+  },
+  "study_rooms": {
+    "booking_url": "https://libcal.uic.edu/",
+    "daley": "Group study rooms",
+    "lhs": "Single person study rooms"
+  },
+  "printing": {
+    "system": "Wepa print stations",
+    "how_to_print": "Send jobs from laptop, phone, or computer lab. 70+ Wepa stations across campus."
+  },
+  "interlibrary_loan": {
+    "service": "ILLiad",
+    "url": "https://library.uic.edu/services/request-items/",
+    "articles": "Delivered as scanned PDFs",
+    "illinois_libraries": "I-Share: 3-5 business days",
+    "worldwide": "7-10 business days"
+  },
+  "databases": {
+    "off_campus_access": "Remote access for current UIC affiliates. Some require VPN.",
+    "guides_url": "https://researchguides.uic.edu/"
+  },
+  "digital_scholarship": {
+    "lab": "Digital Scholarship Hub at Daley Library",
+    "url": "https://library.uic.edu/services/digital-scholarship/"
+  },
+  "citation_support": {
+    "zotero_guide": "https://researchguides.uic.edu/c.php?g=252241&p=5541187"
+  },
+  "faqs": [
+    {
+      "q": "How long can I borrow books?",
+      "a": "16 weeks for both undergrads and grad students."
+    },
+    {
+      "q": "Can I borrow a laptop?",
+      "a": "Yes \u2014 Lenovo or MacBook for 7 days with valid i-card."
+    },
+    {
+      "q": "Are there quiet study spaces?",
+      "a": "Daley has quiet 3rd/4th floors and Circle Reading Room. LHS has quiet 3rd floor and Room 107."
+    },
+    {
+      "q": "How do I get a book UIC doesn't have?",
+      "a": "Use I-Share for Illinois libraries (3-5 days) or ILLiad for worldwide (7-10 days)."
+    },
+    {
+      "q": "How do I print at the library?",
+      "a": "Use Wepa print stations. Send jobs from phone, laptop, or computer lab."
+    }
+  ]
+}

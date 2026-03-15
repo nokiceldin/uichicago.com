@@ -1,0 +1,110 @@
+{
+  "honors_college": {
+    "url": "https://honors.uic.edu/",
+    "gpa_to_maintain": "3.40/4.00 minimum",
+    "gpa_notice": "3.15-3.40 = Honors GPA Notice",
+    "dismissal": "Below 3.15 = automatic dismissal",
+    "honors_units_required": "18 units (prorated for transfers)",
+    "core_courses": [
+      "Interdisciplinary Honors Core (first year)",
+      "HON 201 Honors Seminar",
+      "HON 301 Foundations for the Future"
+    ],
+    "activity_requirement": "One honors activity each fall and spring term",
+    "capstone": "Required before graduation",
+    "fellows": "Each student assigned a Faculty Fellow starting sophomore year",
+    "scholarships": [
+      "Darrel W. Cronan Honors Scholarship",
+      "Gale Sosnick Memorial Award",
+      "Kabbes Study Abroad Scholarship"
+    ],
+    "advising": "https://honors.uic.edu/resources/advising/",
+    "application": "Via Common Application First Year Supplement (first-year) or online application (continuing/transfer). Requires two essays."
+  },
+  "graduate_college": {
+    "url": "https://grad.uic.edu/",
+    "policies": "https://grad.uic.edu/academic-support/graduate-college-policies/",
+    "assistantship_enrollment": "At least 8 credit hours per fall/spring while on assistantship",
+    "tuition_waiver": "For 25%-67% appointments. Full-time waiver requires 9+ hours.",
+    "thesis_committee": "Master's: 3+ members. Doctoral: 5+ members including one from outside program.",
+    "accessibility_requirement": "Spring 2026+: All theses/dissertations must comply with WCAG 2.1 Level AA",
+    "deadlines": {
+      "spring_2026_file_graduation": "January 30, 2026",
+      "spring_2026_submit_thesis": "March 20, 2026",
+      "summer_2026_file_graduation": "June 26, 2026"
+    },
+    "professional_development": [
+      "FOCI teaching certificate",
+      "CATE programs",
+      "CIRTL certification"
+    ]
+  },
+  "professional_schools": [
+    {
+      "name": "UIC Law",
+      "support": "Academic Achievement and Bar Preparation: advising, study skills, bar prep",
+      "url": "https://law.uic.edu/student-support/academic-achievement/"
+    },
+    {
+      "name": "College of Medicine",
+      "support": "Academic support, career development, health/wellness, financial aid guidance"
+    },
+    {
+      "name": "College of Dentistry",
+      "support": "Resilience Center: therapy, support groups, referrals",
+      "url": "https://dentistry.uic.edu/about/resilience-center/"
+    },
+    {
+      "name": "Retzky College of Pharmacy",
+      "support": "Academic counseling, accommodations, wellness, career services"
+    }
+  ],
+  "veterans": {
+    "office": "Student Veteran Affairs",
+    "location": "SCE Suite 248",
+    "phone": "(312) 413-5112",
+    "url": "https://dos.uic.edu/student-veterans-affairs/",
+    "benefits": "G.I. Bill, Montgomery, Post 9/11, Chapters 1606 and 1607, Veterans Readiness and Employment"
+  },
+  "commuter": {
+    "office": "Commuter Student Resource Center",
+    "location": "SCE Suite 245",
+    "url": "https://csrc.uic.edu/",
+    "lockers": "300+ free semester lockers. Limited weekly lockers (emptied Fridays at 4pm).",
+    "lounge": "Tables, armchairs, sofas, free portable charger rentals.",
+    "programs": [
+      "Commuter Learning Communities",
+      "Transfer Success & Social Series",
+      "Adult Learner Success Series"
+    ]
+  },
+  "adult_learners": {
+    "program": "Adult Learners Professional and Leadership Development (for students 25+)",
+    "url": "https://alp.uic.edu/",
+    "services": [
+      "Career exploration",
+      "Leadership development",
+      "Work-life balance workshops",
+      "Case management"
+    ]
+  },
+  "first_gen": {
+    "programs": [
+      "TRIO Student Support Services",
+      "First-at-LAS",
+      "LARES Leaders",
+      "EIEP FIRST GEN"
+    ],
+    "url": "https://studentsuccess.uic.edu/programs-and-supports/"
+  },
+  "bridge_programs": [
+    "Summer College (tuition-free for incoming first-year)",
+    "TRIO Fire Spark",
+    "Summer Bridge Programs",
+    "AHS Summer Exploration and Transition Program"
+  ],
+  "academic_recovery": {
+    "program": "Summer Edge \u2014 tuition-free program to address DFW bottlenecks via summer course retakes",
+    "url": "https://ossb.uic.edu/university-innovation-alliance/uia-projects-at-uic/"
+  }
+}

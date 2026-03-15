@@ -1,0 +1,178 @@
+{
+  "student_orgs": {
+    "total": "470+",
+    "directory": "https://connect.uic.edu/",
+    "how_to_join": "Browse UIC Connection, attend Involvement Fair at semester start, or contact orgs directly.",
+    "how_to_start": "Email orgsupport@uic.edu. Need 3+ enrolled students, faculty advisor, constitution."
+  },
+  "major_events": {
+    "involvement_fair": "Start of each semester. 400+ orgs, departments, and businesses.",
+    "weeks_of_welcome": "First 6 weeks of semester. Campuswide welcome programming.",
+    "spark_festival": {
+      "description": "Annual fall music festival and welcome-back concert.",
+      "past_artists": [
+        "Kid Cudi",
+        "Kendrick Lamar",
+        "J. Cole",
+        "Twenty One Pilots",
+        "H.E.R.",
+        "Flo Milli",
+        "Party Next Door",
+        "Remi Wolf",
+        "Amin\u00e9",
+        "Lupe Fiasco",
+        "Nick Jonas"
+      ]
+    },
+    "homecoming": "Annual fall tradition. 2025: November 8+",
+    "flames_finish_strong": "Finals support with free food, coffee, midnight breakfast.",
+    "day_of_service": "Annual April service event across Chicagoland.",
+    "forever_flames": "Graduation week activities for graduating students."
+  },
+  "student_government": {
+    "undergraduate": {
+      "name": "Undergraduate Student Government",
+      "url": "https://usg.uic.edu/"
+    },
+    "graduate": {
+      "name": "Graduate Student Council",
+      "url": "https://gradstudentcouncil.uic.edu/"
+    }
+  },
+  "cultural_centers": [
+    {
+      "name": "Asian American Resource and Cultural Center",
+      "location": "723 W Maxwell",
+      "phone": "312-413-9569",
+      "url": "https://aarcc.uic.edu/"
+    },
+    {
+      "name": "Arab American Cultural Center",
+      "location": "B01 BSB",
+      "phone": "312-413-3253",
+      "url": "https://arabamcc.uic.edu/"
+    },
+    {
+      "name": "Black Cultural Center",
+      "location": "209 Addams Hall",
+      "phone": "312-996-9549",
+      "url": "https://blacc.uic.edu/"
+    },
+    {
+      "name": "Disability Cultural Center",
+      "location": "235 BSB",
+      "phone": "312-355-7050",
+      "url": "https://dcc.uic.edu/"
+    },
+    {
+      "name": "Gender and Sexuality Center",
+      "location": "181-183 BSB",
+      "phone": "312-413-8619",
+      "url": "https://gsc.uic.edu/"
+    },
+    {
+      "name": "Rafael Cintr\u00f3n Ortiz Latino Cultural Center",
+      "location": "Lecture Center B2",
+      "phone": "312-996-3095",
+      "url": "https://latinocultural.uic.edu/"
+    },
+    {
+      "name": "Women's Leadership and Resource Center",
+      "location": "SSB 1700",
+      "phone": "312-413-1025",
+      "url": "https://wlrc.uic.edu/"
+    }
+  ],
+  "identity_support": [
+    {
+      "name": "Native American Support Program",
+      "url": "https://nasp.uic.edu/"
+    },
+    {
+      "name": "Undocumented Student Support",
+      "url": "https://dream.uic.edu/"
+    },
+    {
+      "name": "Student Veteran Affairs",
+      "url": "https://dos.uic.edu/about/veterans-affairs/"
+    },
+    {
+      "name": "TRIO",
+      "url": "https://trio.uic.edu/"
+    },
+    {
+      "name": "OIS (International Students)",
+      "url": "https://ois.uic.edu/"
+    }
+  ],
+  "leadership": [
+    {
+      "name": "UIC Co-Curricular Leadership Certificate",
+      "url": "https://slce.uic.edu/leadership/leadership-certificate/"
+    },
+    {
+      "name": "LeadershipUIC",
+      "url": "https://slce.uic.edu/events/leadershipuic-begins/"
+    },
+    {
+      "name": "LeaderShape Institute",
+      "description": "4-day immersive leadership experience"
+    }
+  ],
+  "volunteer": {
+    "office": "Student Leadership and Civic Engagement",
+    "url": "https://slce.uic.edu/",
+    "programs": [
+      "UIC Day of Service",
+      "MLK Day of Service",
+      "Alternative Spring Break",
+      "Make Mondays Matter"
+    ]
+  },
+  "media": [
+    {
+      "name": "UIC Radio",
+      "url": "https://involvement.uic.edu/get-involved/uic-radio/"
+    },
+    {
+      "name": "UIC Today (campus news)",
+      "url": "https://today.uic.edu/"
+    }
+  ],
+  "emergency_support": [
+    {
+      "name": "U&I Care Emergency Fund",
+      "description": "Short-term financial aid up to ~$500 for enrolled students",
+      "url": "https://dos.uic.edu/student-assistance/ui-care/ui-care-fund/"
+    },
+    {
+      "name": "UIC Pop-Up Pantry",
+      "description": "Free food for students facing food insecurity",
+      "url": "https://wellnesscenter.uic.edu/pop-up-pantry/"
+    },
+    {
+      "name": "Basic Needs Support",
+      "url": "https://dos.uic.edu/student-assistance/basic-needs-insecurity/"
+    },
+    {
+      "name": "Emergency Short-Term Housing",
+      "description": "Up to 7 days for students in crisis",
+      "url": "https://dos.uic.edu/student-assistance/basic-needs-insecurity/resources-for-housing-insecurity/"
+    }
+  ],
+  "religious_resources": [
+    {
+      "name": "Interfaith Advisory Network",
+      "url": "https://dos.uic.edu/about/interfaith_advisory_network/"
+    },
+    {
+      "name": "Muslim Chaplaincy at UIC",
+      "url": "https://arabamcc.uic.edu/resources/resources-on-religion/"
+    }
+  ],
+  "parent_family": {
+    "url": "https://orientation.uic.edu/resources/family-resources/",
+    "contact": "famhelp@uic.edu",
+    "family_weekend": "October 10-12, 2025"
+  }
+}

@@ -1,0 +1,230 @@
+{
+  "last_updated": "2025-2026",
+  "campus_layout": {
+    "overview": "UIC Chicago campus divides into East/South Campus (Halsted area, most undergrad buildings) and West Campus/Medical District (Wood/Damen/Polk area, health sciences). Interactive map: maps.uic.edu",
+    "east_campus": "Runs along Halsted from Harrison south past Roosevelt. Student Center East, Daley Library, lecture centers, engineering, athletics, most undergrad housing.",
+    "west_campus": "Illinois Medical District around Wood, Damen, Polk, Taylor. Health sciences, UI Health, Student Center West, Library of Health Sciences, professional programs."
+  },
+  "key_buildings": {
+    "student_services": [
+      {
+        "name": "Student Services Building",
+        "abbreviation": "SSB",
+        "address": "1200 W Harrison St",
+        "side": "East Campus",
+        "whats_inside": ["Registrar (Suite 1200)", "Financial Aid (Suite 1800)", "Admissions (Suite 1100)", "Dean of Students (3030 SSB)", "Career Services (3050 SSB)", "Disability Resource Center (1070 SSB)", "Office of International Services (2160 SSB)", "Bursar Customer Service (1900 SSB)"],
+        "note": "Most important student services building. One stop for all paperwork."
+      },
+      {
+        "name": "University Hall",
+        "abbreviation": "UH",
+        "address": "601 S Morgan St",
+        "side": "East Campus",
+        "whats_inside": ["Central academic and administrative tower", "Study Abroad Office (502 UH)"]
+      },
+      {
+        "name": "Marshfield Avenue Building",
+        "abbreviation": "MAB",
+        "address": "809 S Marshfield Ave",
+        "side": "West Campus",
+        "whats_inside": ["University Bursar main department (210 MAB)", "Bursar cashiers (111 MAB)"]
+      }
+    ],
+    "academic_buildings": [
+      { "name": "Behavioral Sciences Building", "abbreviation": "BSB", "address": "1007 W Harrison St", "side": "East Campus", "whats_inside": "Major classroom and office building for social sciences" },
+      { "name": "Lecture Centers A-F", "abbreviations": "LCA, LCB, LCC, LCD, LCE, LCF", "addresses": "803-807 S Morgan St", "side": "East Campus", "whats_inside": "Large lecture and classroom buildings for gen ed and major courses" },
+      { "name": "Grant Hall", "abbreviation": "GH", "address": "703 S Morgan St", "side": "East Campus", "whats_inside": "Academic classrooms. Writing Center in Room 105." },
+      { "name": "Science and Engineering South", "abbreviation": "SES", "address": "845 W Taylor St", "side": "East Campus", "whats_inside": "Science/engineering classrooms, labs. Math and Science Learning Center on 3rd floor." },
+      { "name": "Science and Engineering Laboratory East", "abbreviation": "SELE", "address": "950 S Halsted St", "side": "East Campus", "whats_inside": "Engineering and science labs" },
+      { "name": "Science and Engineering Laboratory West", "abbreviation": "SELW", "address": "900 W Taylor St", "side": "East Campus", "whats_inside": "Science and engineering labs" },
+      { "name": "Engineering Innovation Building", "abbreviation": "EIB", "side": "East Campus", "whats_inside": "Modern engineering academic and innovation space" },
+      { "name": "Computer Design Research and Learning Center", "abbreviation": "CDRLC", "side": "East Campus", "whats_inside": "Computing, design, and learning spaces. Sandella's Flatbread Cafe inside." },
+      { "name": "Education Performing Arts and Social Work Building", "abbreviation": "EPASW", "side": "East Campus", "whats_inside": "Education, performing arts, social work" },
+      { "name": "College of Urban Planning and Public Affairs Hall", "abbreviation": "CUPPAH", "side": "East Campus", "whats_inside": "Public affairs, planning, policy" },
+      { "name": "Architecture and Design Studios", "abbreviation": "ADS", "address": "845 W Harrison St", "side": "East Campus", "whats_inside": "Architecture and design studios" }
+    ],
+    "libraries": [
+      {
+        "name": "Richard J. Daley Library",
+        "abbreviation": "LIB",
+        "address": "801 S Morgan St",
+        "side": "East Campus",
+        "hours": "Currently 7AM-7PM (check library.uic.edu for updated hours)",
+        "whats_inside": "Main UIC library. General collections, group study rooms, IDEA Commons, reference help, special collections. Quiet/silent areas on Levels 1, 3, 4.",
+        "tip": "Best all-around study spot on campus"
+      },
+      {
+        "name": "Library of the Health Sciences - Chicago",
+        "abbreviation": "LHS",
+        "address": "1750 W Polk St",
+        "side": "West Campus",
+        "hours": "Currently 7AM-7PM (check library.uic.edu)",
+        "whats_inside": "Health sciences collections. Single-person study rooms. Best for medicine, nursing, pharmacy, dentistry students."
+      },
+      {
+        "name": "UIC School of Law Library (Louis L. Biro Law Library)",
+        "address": "300 S State St, downtown Chicago (6th floor)",
+        "hours": "Mon-Thu 7AM-11PM, Fri 7AM-10PM, Sat-Sun 9AM-6PM",
+        "whats_inside": "Law collections and legal research. Not on main campus."
+      }
+    ],
+    "student_centers": [
+      {
+        "name": "Student Center East",
+        "abbreviation": "SCE",
+        "address": "750 S Halsted St",
+        "side": "East Campus",
+        "whats_inside": ["605 Commons Dining Hall", "Chick-fil-A", "Panda Express", "Dunkin' Donuts", "Market at Halsted (24 hrs)", "Sushi Do", "Subway", "Halal Shack", "Moe's Southwest Cantina", "UIC Bookstore", "Commuter Student Resource Center (2nd floor)", "Study Lounges", "Event Spaces"],
+        "tip": "Best all-around hangout spot. Central to east campus."
+      },
+      {
+        "name": "Student Center West",
+        "abbreviation": "SCW",
+        "address": "828 S Wolcott Ave",
+        "side": "West Campus",
+        "whats_inside": ["Starbucks", "Subway", "Harold's Chicken", "Lotus Café", "Wild Blue Sushi", "Mex Sabor", "Student spaces"]
+      }
+    ],
+    "recreation": [
+      {
+        "name": "Student Recreation Facility",
+        "abbreviation": "SRF",
+        "address": "737 S Halsted St",
+        "side": "East Campus",
+        "whats_inside": "Main east campus rec center. 18,000 sq ft gym, pool, track, racquetball, basketball/volleyball courts."
+      },
+      {
+        "name": "Sport and Fitness Center",
+        "abbreviation": "SFC",
+        "address": "828 S Wolcott Ave",
+        "side": "West Campus",
+        "whats_inside": "West campus rec center. Pool, gym, fitness equipment."
+      }
+    ],
+    "athletics": [
+      { "name": "Credit Union 1 Arena (formerly UIC Pavilion)", "address": "525 S Racine Ave", "side": "East Campus", "whats_inside": "Basketball and volleyball arena. 8,000 capacity for sports." },
+      { "name": "Curtis Granderson Stadium", "address": "901 W Roosevelt Rd", "side": "South Campus", "whats_inside": "Baseball. 1,784 capacity." },
+      { "name": "Flames Field", "address": "901 W Roosevelt Rd", "side": "South Campus", "whats_inside": "Soccer and softball. Rebuilt 2022." },
+      { "name": "Flames Natatorium", "address": "Inside Physical Education Building, 901 W Roosevelt Rd", "side": "South Campus", "whats_inside": "Swimming and diving." }
+    ],
+    "housing": [
+      { "name": "Academic and Residential Complex (ARC)", "address": "940 W Harrison St", "side": "East Campus" },
+      { "name": "James Stukel Towers (JST)", "address": "718 W Rochford St", "side": "South Campus" },
+      { "name": "Thomas Beckham Hall (TBH)", "address": "1250 S Halsted St", "side": "South Campus" },
+      { "name": "Marie Robinson Hall (MRH)", "address": "811 W Maxwell St", "side": "South Campus" },
+      { "name": "Single Student Residence (SSR)", "address": "809 S Damen Ave", "side": "West Campus" },
+      { "name": "Polk Street Residence (PSR)", "address": "1933 W Polk St", "side": "West Campus" }
+    ],
+    "west_campus_health": [
+      { "name": "College of Nursing", "address": "845 S Damen Ave" },
+      { "name": "College of Dentistry", "address": "801 S Paulina St", "note": "Near Polk Pink Line" },
+      { "name": "College of Pharmacy", "address": "833 S Wood St" },
+      { "name": "Applied Health Sciences Building (AHSB)", "address": "1919 W Taylor St" },
+      { "name": "University of Illinois Hospital (UIH)", "address": "1740 W Taylor St" },
+      { "name": "Outpatient Care Center (OCC)", "address": "1801 W Taylor St" }
+    ]
+  },
+  "transportation": {
+    "cta_trains": [
+      {
+        "line": "Blue Line",
+        "station": "UIC-Halsted",
+        "address": "430 S Halsted St",
+        "closest_to": "Student Center East, Student Services Building, ARC, Daley Library, east campus"
+      },
+      {
+        "line": "Blue Line",
+        "station": "Racine",
+        "address": "430 S Racine Ave",
+        "closest_to": "Student Services Building, Credit Union 1 Arena, ARC, west edge of east campus"
+      },
+      {
+        "line": "Blue Line",
+        "station": "Illinois Medical District",
+        "address": "430 S Damen Ave",
+        "closest_to": "College of Nursing, Library of Health Sciences, Sport and Fitness Center, Pharmacy, UI Health, west campus"
+      },
+      {
+        "line": "Pink Line",
+        "station": "Polk",
+        "address": "1713 W Polk St",
+        "closest_to": "College of Dentistry, UI Health medical district, west campus buildings"
+      }
+    ],
+    "key_cta_buses": [
+      { "route": "#7 Harrison", "notes": "East-west along Harrison. Best for SSB, BSB, ARC, east campus" },
+      { "route": "#8 Halsted", "notes": "North-south on Halsted. Best for SCE, Burnham, Addams, Daley, south campus housing" },
+      { "route": "#12 Roosevelt", "notes": "Along Roosevelt Road. Best for south campus, athletics, JST, TBH" },
+      { "route": "#60 Blue Island/26th", "notes": "Connects downtown rail to campus. Harrison/Taylor corridor" },
+      { "route": "#157 Streeterville/Taylor", "notes": "Taylor Street corridor and medical district" },
+      { "route": "#50 Damen", "notes": "West campus via Illinois Medical District station" }
+    ],
+    "shuttles": {
+      "intracampus_route": {
+        "description": "Links east and west campus via Roosevelt/Harrison. Valid UIC i-card required.",
+        "hours": "Mon-Fri 7AM-6PM every 30 min, then 6PM-11PM every 60 min. Weekends/holidays 7AM-11PM every 60 min."
+      },
+      "semester_express": {
+        "description": "Express from south side residence halls to east and west campus via Harrison. Mon-Fri only.",
+        "hours": "Mon-Fri 7AM-3PM every 30 min. Does NOT run weekends, holidays, or breaks."
+      },
+      "night_ride": {
+        "description": "On-demand van service after hours. Request via UIC Ride app.",
+        "hours": "10PM-7AM, 7 days/week, 365 days/year",
+        "coverage": "North: Congress Pkwy, South: Roosevelt, East: Union, West: Western. Also serves UIC Law downtown."
+      },
+      "app": "UIC Ride app — track all routes and schedule Night Ride"
+    },
+    "divvy_bikes": {
+      "discount": "UIC students/faculty/staff get discounted annual memberships using UIC email",
+      "low_income": "Divvy for Everyone: $5/year for unlimited 45-minute rides (for federal aid recipients)",
+      "nearby_stations": "SSB at Racine and Harrison, Peoria and Harrison, Peoria and Jackson"
+    }
+  },
+  "parking": {
+    "semester_permit": "$421 for 2025-2026",
+    "visitor_rates": {
+      "0_to_1_hour": "$5",
+      "1_to_2_hours": "$7",
+      "2_to_3_hours": "$9",
+      "3_to_4_hours": "$11",
+      "4_to_5_hours": "$13",
+      "5_plus_hours": "$15"
+    },
+    "value_card": "Occasional parkers: $9/visit at designated visitor lots",
+    "meters": "$0.50 per 10 minutes",
+    "lost_ticket": "$30",
+    "east_campus_garages": [
+      { "name": "Harrison Street Parking Structure (HSPS)", "address": "1100 W Harrison", "best_for": "SSB, Admissions, Financial Aid, Registrar, ARC" },
+      { "name": "Halsted Taylor Parking Structure (HLPS)", "address": "760 W Taylor", "best_for": "Student Center East, Daley Library, lecture centers" },
+      { "name": "Maxwell Street Parking Structure (MSPS)", "address": "701 W Maxwell", "best_for": "South campus housing and athletics. First 2 hours $3." }
+    ],
+    "west_campus_garages": [
+      { "name": "Paulina Street Parking Structure (PSPS)", "address": "915 S Paulina", "best_for": "Dentistry, UI Health, west campus" },
+      { "name": "Wood Street Parking Structure (WSPS)", "address": "1100 S Wood", "best_for": "Library of Health Sciences, Pharmacy, UI Health Specialty Care" }
+    ]
+  },
+  "important_offices": {
+    "registrar": { "location": "Suite 1200, SSB, 1200 W Harrison St", "hours": "Mon-Fri 9AM-4PM", "website": "registrar.uic.edu" },
+    "financial_aid": { "location": "Suite 1800, SSB, 1200 W Harrison St", "website": "financialaid.uic.edu" },
+    "admissions": { "location": "Suite 1100, 1200 W Harrison St", "visitors_center": "1220 W Harrison St", "website": "admissions.uic.edu" },
+    "dean_of_students": { "location": "3030 SSB, 1200 W Harrison St", "website": "dos.uic.edu" },
+    "bursar": { "location": "Main: 210 MAB, 809 S Marshfield. Cashiers: 111 MAB. Student accounts: 1900 SSB" },
+    "career_services": { "location": "3050 SSB, 1200 W Harrison St", "hours": "8:30AM-5PM", "appointment": "Book through Handshake", "website": "careerservices.uic.edu" },
+    "study_abroad": { "location": "University Hall 502, 601 S Morgan St", "website": "studyabroad.uic.edu" },
+    "international_services_OIS": { "location": "Suite 2160, SSB, 1200 W Harrison St", "hours": "Mon-Fri 8:30AM-5PM" },
+    "disability_resource_center": { "location": "1070 SSB, 1200 W Harrison St", "hours": "Mon-Fri 9AM-5PM", "phone": "312-413-2183", "email": "drc@uic.edu" },
+    "writing_center": { "location": "105 Grant Hall, 703 S Morgan St", "hours": "Mon-Fri 10AM-6PM. Drop-in: 10AM-5:30PM", "appointment": "WCOnline" },
+    "math_science_learning_center_MSLC": { "location": "3rd floor, Science and Engineering South (SES), 845 W Taylor St", "hours": "Mon-Thu 9AM-6PM, Fri 9AM-5PM", "cost": "FREE, no appointment needed" },
+    "honors_college": { "gpa_required": "3.40 UIC GPA", "units_required": "18 Honors units (prorated for transfers)" }
+  },
+  "quick_navigation": {
+    "for_undergrad_paperwork": "Go to SSB (1200 W Harrison) — Registrar, Financial Aid, Admissions, Dean of Students, Career Services, OIS, DRC all here",
+    "for_studying": "Daley Library (east campus) or LHS (west campus)",
+    "for_health_sciences": "West campus — LHS, Nursing, Dentistry, Pharmacy, UI Health",
+    "best_train_east_campus": "Blue Line UIC-Halsted or Racine",
+    "best_train_west_campus": "Blue Line Illinois Medical District or Pink Line Polk",
+    "best_parking_SSB": "Harrison Street Parking Structure",
+    "best_parking_west_campus": "Paulina or Wood Street Parking Structure"
+  }
+}

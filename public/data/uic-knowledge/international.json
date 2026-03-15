@@ -1,0 +1,73 @@
+{
+  "ois": {
+    "name": "Office of International Services",
+    "address": "SSB 2160, 1200 W Harrison St",
+    "phone": "(312) 996-3121",
+    "email": "ois@uic.edu",
+    "hours": "Mon-Fri 8:30am-5pm",
+    "url": "https://ois.uic.edu/"
+  },
+  "onboarding": {
+    "check_in": "All new international students must complete Immigration Check-In with OIS after arriving.",
+    "sevis": "F-1 check-in removes SEVIS/Advising Hold. J-1 must validate within 30 days of DS-2019 start date.",
+    "orientation": "OIS runs International Student Orientation. UIC Global students complete online Blackboard orientation before arrival.",
+    "placement_tests": "UIC Global undergrads must complete placement exams before arriving. Due April 27, 2026."
+  },
+  "visa": {
+    "f1": "Most common status. Requires full-time enrollment fall/spring. Allows on-campus work up to 20hr/week.",
+    "j1": "Exchange visitors. Must get work authorization from sponsor before working.",
+    "travel_signature": "Must be no more than 1 year old on date of re-entry. Request via myOIS.",
+    "reduced_course_load": "Exceptions for final semester or 50% assistantship. Must apply to OIS by add/drop deadline.",
+    "note": "General institutional guidance only \u2014 not legal advice"
+  },
+  "work": {
+    "on_campus": "F-1 can work immediately without OIS authorization. Up to 20hr/week during school, full-time during breaks.",
+    "cpt": "Curricular Practical Training \u2014 must be academically required and related to major.",
+    "opt": "Optional Practical Training \u2014 post-graduation work in field of study.",
+    "stem_opt": "24-month extension for STEM degree holders on post-completion OPT."
+  },
+  "fees": {
+    "international_student_fee": "~$130/semester",
+    "campuscare": "Required. Can waive with equivalent insurance before semester deadline."
+  },
+  "study_abroad": {
+    "office": "Study Abroad Office, University Hall Room 502",
+    "phone": "(312) 413-7662",
+    "url": "https://studyabroad.uic.edu/",
+    "first_step": "Complete First Step presentation before applying.",
+    "credit": "Study abroad coursework counts as UIC credit, not transfer credit.",
+    "scholarships": [
+      "Study Abroad Grants",
+      "Chicago Consular Corps Award",
+      "UIC Study Abroad Scholarship Fund"
+    ]
+  },
+  "english_support": {
+    "program": "UIC Tutorium in Intensive English",
+    "url": "https://tie.uic.edu/",
+    "services": [
+      "Intensive English Program",
+      "Part-time courses",
+      "Tutoring",
+      "Pathway to UIC degree programs"
+    ]
+  },
+  "faqs": [
+    {
+      "q": "Do new international students need to check in with OIS?",
+      "a": "Yes, all new international students must complete Immigration Check-In with OIS after arriving."
+    },
+    {
+      "q": "Can F-1 students work on campus right away?",
+      "a": "Yes, without additional OIS authorization, up to 20hr/week during school."
+    },
+    {
+      "q": "Do study abroad classes count as transfer credit?",
+      "a": "No \u2014 they count as UIC credit."
+    },
+    {
+      "q": "Can I waive CampusCare?",
+      "a": "Yes, with proof of equivalent insurance before the semester deadline."
+    }
+  ]
+}

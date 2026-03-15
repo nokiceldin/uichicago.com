@@ -1,0 +1,190 @@
+{
+  "last_updated": "2025-2026",
+  "health_services": {
+    "main_clinic": {
+      "name": "Family Medicine Center at University Village",
+      "address": "722 W Maxwell St, Suite 235, Chicago IL 60607",
+      "phone": "312-996-2901",
+      "hours": "Day, evening, weekend, and same-day appointments available. Call 8:30AM for same-day.",
+      "services": ["Primary care", "Acute illness", "STD testing", "Contraception counseling", "Annual wellness visits"],
+      "cost": "Many services covered by Student Health Fee at no extra cost. Others billed to insurance.",
+      "note": "Student Health Fee covers some care. Chronic disease, immunizations, lab tests may have additional cost.",
+      "insurance": "Accepts wide range of insurance. Bring student ID and insurance card."
+    },
+    "counseling_center": {
+      "name": "UIC Counseling Center",
+      "address": "Suite 2010, Student Services Building, 1200 W Harrison St",
+      "phone": "312-996-3490",
+      "hours": "Mon-Fri 8AM-5PM. Evening appointments available.",
+      "services": ["Individual therapy", "Group therapy", "Couples therapy", "Psychiatry", "Integrative medicine", "Mind-body services", "Outreach programming", "Case management", "Virtual drop-in"],
+      "cost": "Free for students assessed the Health Services Fee, regardless of insurance",
+      "crisis_line": "Call 312-996-3490 anytime 24/7 for crisis counseling",
+      "appointments": "Call or walk in. Initial consultations up to 50 minutes, scheduled up to 2 weeks in advance."
+    },
+    "campuscare": {
+      "what_it_is": "Affordable self-funded student health benefit program. Students are automatically enrolled unless they submit a waiver.",
+      "benefits": ["No pre-existing condition exclusions", "No deductibles", "Minimal co-payments", "Physician, hospital, ER, behavioral health, prescription drug coverage", "Discounted dental and vision"],
+      "waiver": "Can waive if you have qualifying outside insurance. Save ~$697/year if eligible.",
+      "spring_2026_dates": "January 1, 2026 through May 17, 2026. Waiver deadline: February 7, 2026",
+      "note": "Must use CampusCare primary care provider and get referrals before specialty care for full coverage."
+    },
+    "pharmacy": [
+      {
+        "name": "University Village Pharmacy",
+        "address": "722 W Maxwell St, Suite 205",
+        "phone": "312-355-2345",
+        "hours": "Mon-Fri 9AM-5PM"
+      },
+      {
+        "name": "Taylor Street / EEI Pharmacy",
+        "address": "1855 W Taylor St, 1st Floor",
+        "phone": "312-996-6540",
+        "hours": "Mon-Fri 9AM-5PM"
+      }
+    ],
+    "dental": {
+      "name": "UIC College of Dentistry",
+      "address": "801 S Paulina St",
+      "phone": "312-996-7555",
+      "services": ["General family dentistry", "Routine exams", "Fillings", "Root canals", "Crowns", "Dental implants"],
+      "note": "Call for initial screening. CampusCare offers discounted dental through UHP Dental."
+    },
+    "urgent_care": {
+      "name": "UI Health Mile Square Health Center",
+      "address": "1220 S Wood St, Chicago IL 60608",
+      "note": "UIC-affiliated urgent care nearby. Family Medicine Center also offers same-day appointments for many urgent needs."
+    },
+    "disability_resource_center": {
+      "address": "1070 SSB, 1200 W Harrison St",
+      "phone": "312-413-2183",
+      "email": "drc@uic.edu",
+      "hours": "Mon-Fri 9AM-5PM",
+      "how_to_register": "Start online or call. Schedule intake via iAdvise. Provisional accommodations may be available while documentation is gathered.",
+      "accommodations_available": ["Exam accommodations", "Note-taking", "Assistive technology", "ASL and CART", "Classroom access", "Housing and meal plan accommodations", "Alternate format materials", "Attendance accommodations", "Mobility access", "Transportation"]
+    }
+  },
+  "academic_support": {
+    "writing_center": {
+      "address": "105 Grant Hall, 703 S Morgan St",
+      "hours": "Mon-Fri 10AM-6PM. Drop-in: 10AM-5:30PM",
+      "appointment": "WCOnline",
+      "services": "Free for all UIC students. Helps with class assignments, research writing, personal statements, lab reports, resumes, applications.",
+      "cost": "FREE"
+    },
+    "math_science_learning_center": {
+      "name": "Math & Science Learning Center (MSLC)",
+      "address": "845 W Taylor St, 3rd Floor (Science and Engineering South)",
+      "phone": "mslc.uic.edu",
+      "hours": "Mon-Thu 9AM-6PM, Fri 9AM-5PM",
+      "subjects": ["Biology", "Chemistry", "Math", "Physics"],
+      "cost": "FREE, no appointment needed"
+    },
+    "other_tutoring": [
+      { "name": "Burnham Hall Tutoring Center", "address": "828 S Halsted St, 2nd Floor", "notes": "Honors peer tutors in sciences, social sciences, quantitative subjects, languages, writing" },
+      { "name": "Academic Support and Achievement Program", "address": "PEB 356, 901 W Roosevelt Rd", "notes": "Applied Health Sciences and related courses" },
+      { "name": "Port Academic Center", "address": "B60 Physical Education Building, 901 W Roosevelt Rd", "notes": "Student athletes" }
+    ],
+    "career_services": {
+      "address": "Suite 3050, 1200 W Harrison St",
+      "phone": "312-996-2300",
+      "email": "careerservices@uic.edu",
+      "appointment": "Book through Handshake (in-person and virtual)",
+      "walk_in": "Wednesday in-person 12PM-2PM, Thursday virtual 2PM-4PM (verify by semester)",
+      "services": ["Resume and cover letter review", "Interview prep", "Job offers guidance", "Internship search", "Career exploration", "Major exploration", "Job search support"],
+      "job_board": "Handshake",
+      "internships": "Can be paid/unpaid, credit/non-credit, in corporate/nonprofit/government/clinical/research settings"
+    }
+  },
+  "academic_calendar": {
+    "fall_2025": {
+      "semester_start": "August 25, 2025",
+      "labor_day_no_class": "September 1, 2025",
+      "part_of_term_a_ends": "October 17, 2025",
+      "part_of_term_b_begins": "October 20, 2025",
+      "wellness_day": "November 26, 2025",
+      "thanksgiving_break": "November 27-28, 2025",
+      "instruction_ends": "December 5, 2025",
+      "finals": "December 8-12, 2025",
+      "grading_deadline": "December 17, 2025 at 5PM",
+      "grades_available": "December 22, 2025",
+      "semester_end": "December 13, 2025",
+      "degree_date": "December 14, 2025",
+      "key_deadlines": {
+        "last_day_add_drop_no_W_16week": "September 5, 2025",
+        "last_day_file_graduation_intent": "September 12, 2025",
+        "spring_registration_opens": "November 3, 2025",
+        "last_day_withdraw_with_W_16week": "October 31, 2025"
+      }
+    },
+    "spring_2026": {
+      "semester_start": "January 12, 2026",
+      "mlk_day_no_class": "January 19, 2026",
+      "part_of_term_a_ends": "March 6, 2026",
+      "part_of_term_b_begins": "March 9, 2026",
+      "spring_break": "March 23-27, 2026",
+      "instruction_ends": "May 1, 2026",
+      "finals": "May 4-8, 2026",
+      "grading_deadline": "May 13, 2026 at 5PM",
+      "grades_available": "May 18, 2026",
+      "semester_end": "May 9, 2026",
+      "degree_date": "May 10, 2026",
+      "key_deadlines": {
+        "last_day_add_drop_no_W_16week": "January 23, 2026",
+        "last_day_file_graduation_intent": "January 30, 2026",
+        "last_day_withdraw_with_W_16week": "March 20, 2026",
+        "summer_fall_registration_opens": "March 30, 2026"
+      }
+    },
+    "winter_break": "Approximately December 13, 2025 through January 11, 2026"
+  },
+  "registration": {
+    "system": "Banner XE Registration at my.UIC.edu",
+    "availability": "24/7 except Sundays 6AM-12 noon",
+    "time_tickets": "Your assigned date/time to start registering, based on credit hours completed. Graduate students go first, then seniors, juniors, sophomores, freshmen.",
+    "time_ticket_schedule_2025": {
+      "graduate": "March 31, 2025",
+      "professional_veterans": "April 1, 2025",
+      "seniors": "April 2-4, 2025",
+      "juniors": "April 7-8, 2025",
+      "sophomores": "April 9-11, 2025",
+      "freshmen": "April 14-16, 2025",
+      "open_registration": "April 21-25, 2025"
+    },
+    "how_to_register": "Go to my.UIC.edu → Banner XE Registration → Register for Classes → Select term → Search courses → Add to summary → Submit",
+    "waitlist": "Available for select courses only. If seat opens, you get 24 hours to claim it via email. Miss it? You go back to bottom of waitlist.",
+    "add_drop": "During no-W period, make changes in XE. After that, contact college office. Max 4 W notations allowed during entire degree program.",
+    "overrides": "Course restrictions require contacting the department offering the course or your college advisor."
+  },
+  "academic_policies": {
+    "gpa_to_stay_enrolled": "Must maintain 2.00 cumulative UIC GPA",
+    "academic_notice": "Placed on academic notice if cumulative or UIC GPA falls below 2.00. Dean sets conditions (course restrictions, hour limits). Dismissed if still below 2.00 after notice.",
+    "graduation_requirements": {
+      "minimum_hours": "120 semester hours (some programs require more)",
+      "minimum_gpa": "2.00 in all UIC work, in the major, and in combined transfer+UIC work",
+      "gen_ed": "At least 24 semester hours across 6 gen ed categories. Writing proficiency via ENGL 160 and 161.",
+      "advanced_coursework": "Many programs require 40+ hours of 200-level and above coursework",
+      "residency": "Generally 30+ hours at UIC. Often majority of major must be completed at UIC."
+    },
+    "deans_list": "College-specific. Common pattern: 3.50 term GPA with at least 12 semester hours.",
+    "latin_honors": {
+      "cum_laude": "3.50 to 3.74 UIC GPA",
+      "magna_cum_laude": "3.75 to 3.89 UIC GPA",
+      "summa_cum_laude": "3.90 and above UIC GPA",
+      "note": "Based on UIC GPA only, not combined transfer GPA"
+    },
+    "honors_college": {
+      "gpa_required": "3.40 UIC GPA to maintain membership",
+      "units_required": "18 Honors units for first-year entrants (prorated for transfers)",
+      "to_join_as_current_student": "Need 3.40 GPA and at least 4 semesters remaining"
+    },
+    "grading_scale": {
+      "A": 4.0, "B": 3.0, "C": 2.0, "D": 1.0, "F": 0.0,
+      "note": "W, I, CR, NC, NR, DFR do not count in GPA"
+    },
+    "grade_replacement": "Courses with A or B may NOT be repeated. D or F may be repeated once without permission. All attempts stay on transcript.",
+    "incomplete_grade": "I must be removed within 1 calendar year. If not completed, I becomes F for undergrads.",
+    "withdrawal_limit": "Max 4 individual course withdrawals (W notations) during entire degree program.",
+    "double_major": "One bachelor's degree with two majors. No extra hours required but both major requirements must be completed. Not allowed with substantial overlap. Some colleges prohibit it (e.g., College of Education).",
+    "changing_major": "Contact the appropriate college office. For intercollege transfer, contact college you want to enter."
+  }
+}

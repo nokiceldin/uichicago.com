@@ -1,0 +1,83 @@
+{
+  "career_services": {
+    "location": "SSB Suite 3050",
+    "phone": "(312) 996-2300",
+    "hours": "Mon-Fri 8:30am-5pm",
+    "drop_in": "Wed in-person SSB 3050 12-2pm; Thu virtual via Zoom 2-4pm",
+    "url": "https://careerservices.uic.edu/",
+    "handshake": "https://uic.joinhandshake.com/"
+  },
+  "services": [
+    "One-on-one career advising",
+    "Resume/CV/cover letter review",
+    "Mock interviews",
+    "Career & major exploration",
+    "Job & internship search",
+    "Career fairs",
+    "DEI career resources",
+    "Lifetime alumni access"
+  ],
+  "career_fairs": [
+    {
+      "name": "Fall Internship & Career Fair",
+      "timing": "Fall semester"
+    },
+    {
+      "name": "Winter Internship Fair",
+      "timing": "Spring semester"
+    },
+    {
+      "name": "Spring Internship & Career Fair",
+      "timing": "Spring semester"
+    },
+    {
+      "name": "Post-Graduation Career Fair",
+      "timing": "Summer"
+    },
+    {
+      "name": "Graduate & Professional School Fair",
+      "timing": "Fall semester"
+    }
+  ],
+  "campus_jobs": {
+    "portal": "https://uic.joinhandshake.com/",
+    "hourly_range": "$16.00-$21.51 (FY2026 student wage plan)",
+    "work_study": "Must request on financial aid notification. Find jobs via Handshake.",
+    "international_students": "F-1/J-1 can work on campus up to 20 hours/week during school, full-time during breaks"
+  },
+  "internships": {
+    "start_search": "At least one semester before desired start date",
+    "for_credit": "Check if your college offers an internship course for credit",
+    "international": "CPT for academically required off-campus training. OPT after graduation."
+  },
+  "grad_assistantships": {
+    "ta": "Leads discussion sections, holds office hours, grades",
+    "ra": "Conducts experiments, analyzes data, contributes to publications",
+    "ga": "Administrative/technical support functions",
+    "how_to_find": "Contact Director of Graduate Studies in your program. Check HR Jobs Board.",
+    "tuition_waiver": "25%-67% appointments get tuition waiver for 91+ continuous days"
+  },
+  "workshops": [
+    "Resume & Cover Letter",
+    "Navigating a Career Fair",
+    "Interview Essentials",
+    "Connecting Majors to Careers",
+    "Evaluating Job Offers & Negotiating Salary",
+    "LinkedIn Workshop"
+  ],
+  "outcomes": {
+    "dashboard_url": "https://oir.uic.edu/surveys-2/uic-student-surveys/first-destination-survey/",
+    "description": "First destination outcomes for bachelor's degree graduates within 6 months"
+  },
+  "dei_resources": "https://careerservices.uic.edu/students/dei-career-resources/ \u2014 resources for 15+ identity groups including international students, LGBTQA+, veterans, undocumented/DACA, and more.",
+  "employers": {
+    "contact": "Ryan Smith, Associate Director: rs97@uic.edu, (312) 996-2300",
+    "recruit_via": [
+      "Handshake",
+      "Career fairs",
+      "Info sessions",
+      "Interview rooms",
+      "Industry panels"
+    ]
+  }
+}

@@ -1,0 +1,79 @@
+{
+  "tuition_2025_2026": {
+    "undergraduate": {
+      "in_state_per_semester": "$5,712",
+      "out_of_state_per_semester": "$13,763",
+      "in_state_per_credit_hour": "$476",
+      "guarantee": "4-year tuition lock for eligible undergrads"
+    },
+    "graduate": {
+      "in_state_per_semester": "$6,551"
+    },
+    "mandatory_fees_per_semester": "$2,445",
+    "campuscare_annual": "$1,394"
+  },
+  "cost_of_attendance": {
+    "in_state_on_campus": "$39,510",
+    "in_state_off_campus": "$37,410",
+    "out_of_state_on_campus": "$57,712",
+    "books_estimate": "$1,400",
+    "personal_estimate": "$4,500"
+  },
+  "financial_aid": {
+    "fafsa_priority_deadline": "March 15",
+    "fafsa_school_code": "001776",
+    "verification": "~25% selected. Submit docs via my.uic.edu. 2-3 weeks to process.",
+    "award_notification": "Incoming students: March. Continuing: June.",
+    "sap_policy": "67% completion ratio, 2.00 GPA, within 150% of degree hours required."
+  },
+  "billing": {
+    "fall_due_date": "September 28",
+    "spring_due_date": "February 28",
+    "payment_plan": "UI-Pay via Nelnet, 6 installments for fall/spring",
+    "late_fee": "1.5% or $1 per month, whichever greater",
+    "accepted_payments": [
+      "eCheck/ACH",
+      "Credit card",
+      "Debit card",
+      "Apple Pay",
+      "Flywire (international)"
+    ],
+    "refund_timing": "Aid disburses 10 days before semester. Refunds via direct deposit."
+  },
+  "campuscare": {
+    "annual_cost": "$1,394",
+    "waiver_deadline_fall": "September 12, 2025",
+    "waiver_deadline_spring": "February 7, 2026",
+    "waiver_url": "https://campuscare.uic.edu/important-information/waiver-reinstatement-forms/",
+    "copay_primary_care": "$15",
+    "copay_emergency": "$50"
+  },
+  "emergency_aid": {
+    "name": "U&I Care Emergency Fund",
+    "max_award": "$500 typically",
+    "eligibility": "Currently enrolled students with unexpected financial hardship",
+    "how_to_apply": "Through Office of the Dean of Students"
+  },
+  "scholarships": {
+    "snap_portal": "https://snap.uic.edu/",
+    "description": "500+ scholarships. One portal for all UIC scholarships."
+  },
+  "student_employment": {
+    "portal": "https://uic.joinhandshake.com/",
+    "hourly_range": "$16.00 to $21.51 based on FY2026 student wage plan",
+    "work_study": "Request on financial aid notification. Find jobs independently through Handshake."
+  },
+  "graduate_funding": {
+    "ta_ra_ga_waiver": "Tuition waived for 25%-67% appointments lasting 91+ days",
+    "fellowship_stipend_minimum": "$33,000 for new Graduate College recruitment fellowships (AY 2025-26)"
+  },
+  "cta_upass_fee": "$163 per semester",
+  "common_billing_holds": [
+    "Past due balance over $1,500",
+    "Payment plan rebalance required",
+    "Account in collections"
+  ],
+  "tax": {
+    "form": "1098-T available January 31 in UI-Pay portal"
+  }
+}

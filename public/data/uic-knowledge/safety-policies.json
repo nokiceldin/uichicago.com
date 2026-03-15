@@ -1,0 +1,100 @@
+{
+  "police": {
+    "name": "UIC Police Department",
+    "emergency": "(312) 355-5555",
+    "non_emergency": "(312) 996-2830",
+    "address": "943 W Maxwell Street",
+    "url": "https://police.uic.edu/"
+  },
+  "safety_escort": {
+    "phone": "(312) 996-2830",
+    "hours": "24/7",
+    "description": "Free Walking Safety Escort by trained Student Patrol officers."
+  },
+  "uic_safe_app": "Free personal security app with emergency guidelines, dispatcher contact, route sharing, virtual escort.",
+  "uic_alert": "University emergency notification system via email and optional text/call. Powered by Rave.",
+  "blue_phones": "Emergency blue light call boxes across campus connect directly to UIC Police.",
+  "title_ix": {
+    "office": "Office for Access and Equity",
+    "coordinator": "Donald Kamm",
+    "phone": "(312) 996-8670",
+    "url": "https://oae.uic.edu/sexual-misconduct/",
+    "confidential_resources": [
+      "Campus Advocacy Network (CAN): (312) 413-8206",
+      "UIC Counseling Center: (312) 996-3490",
+      "InTouch Crisis Hotline: (312) 996-5535 (Sun-Fri 6pm-10pm)"
+    ]
+  },
+  "student_conduct": {
+    "code_url": "https://go.uic.edu/disciplinarypolicy",
+    "ai_use_policy": "Unauthorized AI use counts as cheating. Whether AI is allowed depends on instructor/course rules.",
+    "sanctions": "Warning through suspension, dismissal, or expulsion depending on severity.",
+    "appeal_window": "5 days to submit appeal after decision."
+  },
+  "academic_integrity": {
+    "violations": [
+      "Cheating",
+      "Plagiarism",
+      "Unauthorized AI use",
+      "Fabrication",
+      "Unauthorized collaboration",
+      "Exam impersonation",
+      "Grade tampering"
+    ],
+    "how_to_report": "Academic Integrity Incident Report through Community Standards / Dean of Students."
+  },
+  "ferpa": {
+    "protects": "Privacy of student education records",
+    "parent_access": "Parents generally cannot access records without student written consent.",
+    "suppress_directory": "Students can suppress directory information by filing a suppression request."
+  },
+  "bias_reporting": {
+    "url": "https://dos.uic.edu/diversity-education/bias-reporting-prevention/",
+    "description": "Submit via Bias Reporting Tool. Anonymous submissions allowed."
+  },
+  "student_legal_services": {
+    "available": true,
+    "free": true,
+    "url": "https://dos.uic.edu/student-legal/",
+    "services": [
+      "Criminal matters",
+      "Expungement",
+      "Employment",
+      "Housing",
+      "Name/gender marker changes",
+      "Powers of attorney"
+    ]
+  },
+  "it_security": {
+    "netid": "Used for Blackboard, email, myUIC, WiFi, computer labs.",
+    "mfa": "Duo two-factor authentication required for VPN and some services.",
+    "vpn": "Cisco AnyConnect. Required for off-campus access to some UIC resources."
+  },
+  "crisis_contacts": [
+    {
+      "situation": "On-campus emergency",
+      "contact": "UIC Police",
+      "phone": "(312) 355-5555"
+    },
+    {
+      "situation": "Mental health crisis (business hours)",
+      "contact": "Counseling Center",
+      "phone": "(312) 996-3490"
+    },
+    {
+      "situation": "Mental health crisis (after hours)",
+      "contact": "Counseling Center option 2 or 988",
+      "phone": "(312) 996-3490"
+    },
+    {
+      "situation": "Sexual violence/misconduct",
+      "contact": "CAN (confidential)",
+      "phone": "(312) 413-8206"
+    },
+    {
+      "situation": "Bias incident",
+      "contact": "Bias Reporting Tool",
+      "phone": "dos.uic.edu"
+    }
+  ]
+}

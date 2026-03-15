@@ -23,7 +23,7 @@ export default function Navbar() {
       >
         {label}
         {active && (
-          <span className="absolute inset-x-0 -bottom-[13px] h-[2px] rounded-full bg-emerald-500" />
+          <span className="absolute inset-x-0 -bottom-[13px] h-[2px] rounded-full bg-red-500" />
         )}
       </Link>
     );
@@ -37,22 +37,20 @@ export default function Navbar() {
           className="flex min-w-0 shrink-0 items-center gap-2.5 rounded-xl px-1 py-1 transition hover:opacity-80"
         >
           <Image
-            src="/logo.png"
-            alt="UIC Ratings"
+            src="/sparky-icon.png"
+alt="UIC Sparky"
             width={34}
             height={34}
             className="h-8 w-8 shrink-0 sm:h-9 sm:w-9"
           />
           <span className="max-w-[88px] text-[11px] font-bold leading-tight text-zinc-900 sm:max-w-none sm:text-sm dark:text-zinc-100">
-            UIC Ratings
+            UIC Sparky
           </span>
         </Link>
 
-        {!isHome && (
-  <div className="flex-1 max-w-lg ml-auto mr-4">
-    <HeroSearch compact />
-  </div>
-)}
+        <div className="flex-1 max-w-lg ml-auto mr-4">
+  <HeroSearch compact />
+</div>
 
         <nav className="ml-auto flex shrink-0 items-center gap-4 sm:gap-6 md:gap-8">
           {navLink("/courses", "Courses")}
@@ -60,6 +58,28 @@ export default function Navbar() {
           <div className="ml-1 shrink-0 sm:ml-2">
             <ThemeToggle />
           </div>
+
+          <Link
+  href="/chat"
+  className={`group flex items-center gap-2 rounded-xl border px-3.5 py-1.5 text-xs font-bold tracking-wide transition-all sm:text-sm ${
+    pathname.startsWith("/chat")
+      ? "border-red-400 bg-red-600 text-white shadow-lg shadow-red-600/40"
+      : "border-red-500/40 bg-red-500/10 text-red-600 shadow-md shadow-red-500/20 hover:border-red-400 hover:bg-red-500/20 dark:text-red-400 dark:hover:bg-red-500/20"
+  }`}
+>
+  <span className="relative flex h-2 w-2">
+    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-400 opacity-75" />
+    <span className="relative inline-flex h-2 w-2 rounded-full bg-red-500" />
+  </span>
+  <span>Sparky</span>
+  <span className={`rounded-md px-1.5 py-0.5 text-[10px] font-black tracking-widest ${
+    pathname.startsWith("/chat")
+      ? "bg-white/20 text-white"
+      : "bg-red-500/20 text-red-600 dark:text-red-400"
+  }`}>
+    AI
+  </span>
+</Link>
         </nav>
       </div>
     </header>

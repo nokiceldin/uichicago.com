@@ -1,0 +1,291 @@
+{
+  "last_updated": "2025-2026",
+  "tuition": {
+    "undergraduate": {
+      "in_state": {
+        "tuition": 11424,
+        "mandatory_fees": 4890,
+        "direct_billed_total": 16314,
+        "per_credit_hour": 476,
+        "note": "Tuition is guaranteed for 4 years by cohort. Fees can still change annually."
+      },
+      "out_of_state": {
+        "tuition": 27526,
+        "mandatory_fees": 4890,
+        "direct_billed_total": 32416,
+        "note": "Out-of-state tuition inferred from UIC's own Lake County award matching language."
+      },
+      "program_differentials_per_credit": {
+        "architecture": 586,
+        "accounting_finance": 593,
+        "biochemistry": 558,
+        "bioengineering_computer_science": 583,
+        "health_information_management": 574,
+        "note": "Some programs have higher per-credit rates than the standard estimate."
+      }
+    },
+    "graduate": {
+      "in_state": {
+        "tuition": 12720,
+        "mandatory_fees": 4572,
+        "direct_billed_total": 17292,
+        "per_credit_hour": 546
+      }
+    },
+    "professional": {
+      "law": {
+        "in_state_per_credit": 1248,
+        "out_of_state_per_credit": 1560
+      },
+      "medicine": {
+        "in_state_annual_m1": 48450,
+        "out_of_state_annual_m1": 82350,
+        "note": "Plus mandatory fees on top of tuition."
+      }
+    },
+    "upcoming_changes": {
+      "fall_2026": "2% tuition increase approved for new resident undergraduates. Nonresident and international students will see ~2-3.3% increases.",
+      "new_per_credit_2026_2027": {
+        "undergraduate": 486,
+        "graduate": 562
+      }
+    }
+  },
+  "mandatory_fees_breakdown": {
+    "annual_totals": {
+      "undergraduate": 4890,
+      "graduate": 4572
+    },
+    "components": {
+      "general_fee": 475,
+      "service_fee": 406,
+      "health_service_fee": 110,
+      "student_health_insurance_campuscare": 697,
+      "cta_u_pass": 163,
+      "student_to_student_fee": 3,
+      "sustainability_fee": 6,
+      "academic_facilities_maintenance": 376,
+      "library_and_it_assessment": 247,
+      "note": "These are per-semester figures from UIC's professional fee schedules. Exact amounts vary slightly by student level. CampusCare can be WAIVED if you have qualifying outside insurance — submit waiver by deadline to save $697/year. Student-to-Student and Sustainability fees may be refundable if you opt out by the deadline."
+    }
+  },
+  "cost_of_attendance": {
+    "undergraduate_in_state_on_campus": {
+      "tuition": 11424,
+      "fees": 4890,
+      "housing_and_food": 16500,
+      "books_and_supplies": 1400,
+      "transportation": 1526,
+      "personal_expenses": 4500,
+      "federal_loan_fee": 70,
+      "total": 40310
+    },
+    "undergraduate_in_state_off_campus": {
+      "tuition": 11424,
+      "fees": 4890,
+      "housing_and_food": 14400,
+      "books_and_supplies": 1400,
+      "transportation": 1526,
+      "personal_expenses": 4500,
+      "federal_loan_fee": 70,
+      "total": 38210
+    },
+    "undergraduate_out_of_state_on_campus": {
+      "tuition": 27526,
+      "fees": 4890,
+      "housing_and_food": 16500,
+      "books_and_supplies": 1400,
+      "transportation": 3626,
+      "personal_expenses": 4500,
+      "federal_loan_fee": 70,
+      "total": 58512
+    },
+    "graduate_in_state_on_campus": {
+      "tuition": 12720,
+      "fees": 4572,
+      "housing_and_food": 14600,
+      "books_and_supplies": 1400,
+      "transportation": 1526,
+      "personal_expenses": 4500,
+      "federal_loan_fee": 200,
+      "total": 39518
+    },
+    "graduate_in_state_off_campus": {
+      "tuition": 12720,
+      "fees": 4572,
+      "housing_and_food": 14400,
+      "books_and_supplies": 1400,
+      "transportation": 1526,
+      "personal_expenses": 4500,
+      "federal_loan_fee": 200,
+      "total": 39318
+    }
+  },
+  "financial_aid": {
+    "aspire_grant": {
+      "what_it_is": "UIC's Aspire Grant covers 100% of tuition AND mandatory fees — essentially free tuition — for eligible Illinois students.",
+      "how_much": "$0 tuition and fees. Does NOT automatically cover housing, food, books, or personal expenses.",
+      "who_qualifies": [
+        "U.S. citizen, eligible noncitizen, or eligible undocumented student",
+        "Illinois resident",
+        "Family income and assets of $75,000 or less on FAFSA or RISE Act application",
+        "New first-year OR new transfer student (not continuing students)",
+        "Pursuing a first bachelor's degree",
+        "Enrolled in at least 12 credit hours each semester",
+        "Maintaining Satisfactory Academic Progress"
+      ],
+      "how_to_apply": "No separate application — submit FAFSA or RISE Act Alternative Application by March 15. Apply and get admitted to UIC. Complete all financial aid requirements by the deadline.",
+      "deadline": "March 15 for FAFSA/RISE application",
+      "website": "free.uic.edu"
+    },
+    "scholarships": {
+      "chancellors_fellows_award": {
+        "amount": "$7,500/year for Illinois first-year students, $5,000/year for Illinois transfer students",
+        "deadlines": {
+          "first_year_priority": "November 3, 2025",
+          "first_year_final": "November 3, 2025",
+          "transfer_final": "April 1, 2026"
+        },
+        "requirements": {
+          "must_be": "Illinois resident, first-year student, 2025 Illinois high school graduate",
+          "academic_thresholds": [
+            "Class rank #1, OR",
+            "3.70 unweighted GPA + at least 8 honors/AP/IB Higher Level core courses across grades 11-12, OR",
+            "3.70 unweighted GPA + ACT 33 or SAT 1450"
+          ],
+          "income_requirement": "Family income at or below 8x the federal poverty guideline",
+          "fafsa_required": true
+        },
+        "renewal": "Must maintain 3.0 cumulative GPA and continuous full-time enrollment"
+      },
+      "presidents_award_program": {
+        "amounts": {
+          "scholars_award": "$5,000/year",
+          "honors_scholars": "Full tuition + housing"
+        },
+        "deadlines": {
+          "first_year_priority": "November 3, 2025",
+          "first_year_final": "February 1, 2026"
+        },
+        "requirements": "Illinois student with outstanding academic achievement + at least one of: from underrepresented Illinois county/high school, first-generation student, Pell/MAP eligible",
+        "note": "No exact GPA/ACT/SAT cutoff is publicly published. No separate application — reviewed automatically after admission. Honors Scholars must also apply to Honors College.",
+        "renewal_gpa": "2.75 cumulative GPA required"
+      },
+      "merit_tuition_award": {
+        "amount": "$9,128/year (increasing to $9,494 for Fall 2026)",
+        "who": "Non-resident U.S. students",
+        "deadlines": {
+          "first_year_priority": "November 3, 2025",
+          "first_year_final": "February 1, 2026",
+          "transfer_final": "April 1, 2026"
+        },
+        "note": "No exact GPA/test cutoff published. Selection considers GPA, test scores, and selected major."
+      },
+      "lake_county_indiana_award": {
+        "amount": "$16,102/year (increasing to $16,700 for Fall 2026)",
+        "purpose": "Makes tuition equivalent to in-state rate for Lake County, Indiana residents",
+        "same_deadlines_as_merit": true
+      },
+      "tribal_nation_tuition_award": {
+        "amount": "$16,102/year (increasing to $16,700 for Fall 2026)",
+        "purpose": "Makes tuition equivalent to in-state rate for eligible Tribal Nation members",
+        "note": "Starting 2025, also available to graduate and professional incoming students",
+        "same_deadlines_as_merit": true
+      },
+      "housing_grant_nonresident": {
+        "amount": "$10,000 one-time toward on-campus housing",
+        "who": "Non-resident students",
+        "note": "May be renewable if funds are available"
+      },
+      "student_to_student_grant": {
+        "amount": "$500 to $3,000/year",
+        "who": "Illinois resident undergraduates, pursuing first bachelor's degree, full-time, MAP eligible, EFC 0",
+        "note": "Funding is limited"
+      },
+      "snap_portal": {
+        "description": "UIC has 500+ scholarships in the SnAP scholarship portal. Many are college/department-specific and NOT part of the central admissions list. Check every year.",
+        "tip": "LAS awards 30+ scholarships ranging from $400 to full year of tuition. Engineering has a large scholarship network."
+      }
+    },
+    "statistics": {
+      "source": "UIC Common Data Set 2022-2023",
+      "percent_receiving_aid": "~65-79% of students receive some grant or scholarship",
+      "total_aid_awarded": "Nearly $200 million in financial aid and scholarships per year",
+      "first_year_full_time": {
+        "average_financial_aid_package": 15330,
+        "average_need_based_scholarship_grant": 14899,
+        "average_percent_of_need_met": "60%"
+      },
+      "all_undergrads": {
+        "average_financial_aid_package": 14930,
+        "average_percent_of_need_met": "61%"
+      },
+      "average_debt_at_graduation": {
+        "percent_who_borrowed": "43%",
+        "average_cumulative_debt": 21381
+      }
+    }
+  },
+  "payment_plans": {
+    "provider": "Nelnet via UI Pay",
+    "installments": "Up to 6 installments for fall and spring depending on when you enroll",
+    "deadlines": "Generally the 28th of each month",
+    "late_fees": "No monthly late payment fees while enrolled in the plan"
+  },
+  "tuition_waivers": {
+    "senior_citizen": "Available to Illinois residents 65+ with low household income. Covers tuition only, not all fees.",
+    "graduate_assistantship": {
+      "eligibility": "Qualifying TA, RA, or GA appointment between 25-67% for required duration",
+      "covers": ["Full tuition including differentials", "Service fee", "Health service fee", "AFMFA", "Library and IT assessment", "Part of CampusCare in fall/spring (not summer)"]
+    }
+  },
+  "residency_for_tuition": {
+    "dependent_students": "Residency can change once parent/spouse/guardian establishes Illinois residency. One parent in Illinois can be enough.",
+    "independent_students": "Must live in Illinois for one FULL YEAR for reasons other than education. Cannot attend school during that year. Must show domicile and intent to stay permanently.",
+    "f1_visa": "F-1 students generally do NOT qualify for Illinois residency for tuition purposes.",
+    "petition_deadlines": {
+      "fall": "September 30",
+      "spring": "February 15",
+      "summer": "June 20"
+    }
+  },
+  "comparison_with_other_illinois_schools": {
+    "uic_in_state_direct_billed": 16314,
+    "niu": {
+      "tuition": 10742,
+      "fees": 3050,
+      "total_estimated_COA": 32484,
+      "verdict": "UIC is more expensive on direct billed cost, mainly because UIC fees are higher"
+    },
+    "uiuc": {
+      "resident_tuition_fees_gies": 18372,
+      "nonresident_tuition_fees_gies": 38724,
+      "total_nonresident_COA": "57,622 to 65,722 depending on program",
+      "verdict": "UIC is usually CHEAPER than UIUC, especially for nonresidents"
+    },
+    "siu": {
+      "note": "SIU charges out-of-state domestic students the in-state rate",
+      "verdict": "SIU can be much cheaper for out-of-state domestic students unless they win a UIC tuition award"
+    }
+  },
+  "cost_saving_tips": [
+    "Illinois families under $75,000 — target Aspire first. It covers full tuition and mandatory fees (free.uic.edu)",
+    "Strong Illinois first-year students — apply for Chancellor's Fellows by November 3. One of the few awards with a clear published threshold worth $7,500/year",
+    "Submit FAFSA or RISE by March 15 for Aspire eligibility. Missing this deadline could cost you everything",
+    "Out-of-state students — look at Merit Tuition Award, Lake County Indiana, and Tribal Nation awards to drastically cut the nonresident premium",
+    "Waive CampusCare if you have qualifying outside insurance — saves ~$697/year",
+    "Use the payment plan (Nelnet) if cash flow is the issue — spread charges over 6 installments",
+    "Off-campus housing ($14,400) is cheaper than on-campus ($16,500) but factor in commuting costs",
+    "Finish within 4 years — tuition is guaranteed by cohort. Extending enrollment exposes you to newer, higher rates",
+    "Check SnAP scholarship portal every year for 500+ scholarships, many not on the main admissions list",
+    "Opt out of Student-to-Student Fee ($3) and Sustainability Fee ($6) by deadline if you want a refund"
+  ],
+  "quick_answers": {
+    "how_much_does_uic_cost_in_state": "For 2025-2026, in-state undergrad direct billed cost is ~$16,314/year (tuition + fees). Add housing (~$16,500 on campus) and other expenses for a total COA of ~$40,310.",
+    "how_much_does_uic_cost_out_of_state": "~$58,512 total estimated COA for 2025-2026. But UIC offers several nonresident awards that can significantly reduce this.",
+    "is_uic_free_for_illinois_students": "It can be! The Aspire Grant covers 100% of tuition and fees for Illinois students from families earning $75,000 or less. Visit free.uic.edu",
+    "how_does_uic_compare_to_uiuc": "UIC is generally cheaper than UIUC, especially for out-of-state students.",
+    "what_gpa_do_i_need_for_merit_scholarship": "For Chancellor's Fellows: 3.70 GPA + ACT 33/SAT 1450 OR 3.70 GPA + 8 honors/AP courses. For other awards, UIC doesn't publish exact cutoffs.",
+    "average_student_debt": "43% of UIC graduates borrow, with an average of $21,381 in cumulative debt."
+  }
+}

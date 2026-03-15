@@ -1,0 +1,396 @@
+{
+  "last_updated": "2025-2026",
+  "housing": {
+    "overview": "UIC operates 10 residence halls with 32 room styles across east, south, and west campus. All halls have free laundry, AC, and heat. There is a $50 nonrefundable application fee for new applicants and an $80/semester Housing Technology Access Fee for all residents.",
+    "application": {
+      "portal": "housing.uic.edu (Housing Portal)",
+      "process": [
+        "Submit housing application in the portal",
+        "Pay $50 nonrefundable application fee (new applicants only)",
+        "Indicate LLC or affinity dwelling preference",
+        "Form a roommate group if desired",
+        "Self-select your own room during your assigned room selection window",
+        "Sign the housing contract within 48 hours or the space is released"
+      ],
+      "timeline_2026_2027": {
+        "applications_open": "December 15, 2025 at 12PM",
+        "returning_resident_selection": "March 2, 2026",
+        "new_resident_selection": "May 27, 2026",
+        "summer_2026_applications_open": "March 23, 2026 at 12PM"
+      },
+      "roommate_matching": "Students can search for roommates, message them, use questionnaire match percentages, send requests, and create mutual groups. Group size determines which room types you see. Gender inclusive groups available.",
+      "important": "UIC does NOT assign rooms — you self-select. Popular halls and room types may be gone by the time your window opens. Have backup choices ready. Unauthorized room moves = $100 charge."
+    },
+    "residence_halls": [
+      {
+        "name": "Academic and Residential Complex",
+        "abbreviation": "ARC",
+        "address": "940 W Harrison St, Chicago, IL 60607",
+        "best_for": "First-year students",
+        "open_to": "First-year students only",
+        "type": "Traditional and semi-suite",
+        "room_types": ["Traditional private", "Traditional shared (2-person)", "Semi-suite private", "Semi-suite shared (2-person)"],
+        "annual_costs_2026_2027": {
+          "traditional_private": 14584,
+          "traditional_shared": 12684,
+          "semi_suite_private": 18010,
+          "semi_suite_shared": 15062
+        },
+        "per_semester_approx": {
+          "traditional_private": 7292,
+          "traditional_shared": 6342,
+          "semi_suite_private": 9005,
+          "semi_suite_shared": 7531
+        },
+        "meal_plan_required": true,
+        "amenities": ["Fitness center/gym", "Study lounges on every floor", "Sky lounge (10th floor)", "Social and gaming lounges", "Classrooms integrated in building", "Free laundry", "AC", "High-speed wifi"],
+        "llcs": ["Future Leaders of Healthcare (4th floor)", "Creators of Community Impact (5th floor)", "Evans Scholars (7th floor)"],
+        "why_choose": "Most modern building, best in-building amenities, gym inside, strongest academics-housing integration. Best for freshmen who want community and convenience.",
+        "bathroom_setup": "Traditional rooms = shared floor bathrooms. Semi-suite = private to unit only."
+      },
+      {
+        "name": "James Stukel Towers",
+        "abbreviation": "JST",
+        "address": "718 W James M Rochford St, Chicago, IL 60607",
+        "best_for": "First-year students who want suite living and strong LLC options",
+        "open_to": "First-year students",
+        "type": "Suite style (4, 5, or 8-person suites)",
+        "room_types": ["Suite private", "Suite shared (2-person)"],
+        "annual_costs_2026_2027": {
+          "suite_private": 13742,
+          "suite_shared": 12363
+        },
+        "per_semester_approx": {
+          "suite_private": 6871,
+          "suite_shared": 6181
+        },
+        "meal_plan_required": true,
+        "amenities": ["Dining hall IN the building", "Penthouse lounges", "Meeting and seminar rooms", "Student org offices", "Auditorium", "Kitchenettes", "Tutoring center", "Free laundry", "AC"],
+        "llcs": ["Innovate (A Tower 2-3F)", "PAP STEM (A Tower 3F)", "DuSable Scholars (B Tower 3-4F)", "Ventures in Business and Industry (B Tower 5-6F)", "SISTERS affinity (C Tower 3-4F)", "Bayt Al Iman affinity (C Tower 3-4F)", "Honors (C Tower 5-9F)", "PAP Honors (C Tower 10-12F)", "La Casa affinity (D Tower 3F)", "LEAD ASIA affinity (D Tower 4F)"],
+        "why_choose": "Suite living, dining hall literally in the building, most LLC options of any dorm, high-rise with great Chicago views."
+      },
+      {
+        "name": "Commons North",
+        "abbreviation": "CMN",
+        "address": "700 S Halsted St, Chicago, IL 60607",
+        "best_for": "Transfers and upperclassmen who want a private bedroom",
+        "open_to": "Sophomores and above, transfers",
+        "type": "Suite style (3-4 or 5-6 person suites)",
+        "room_types": ["Suite private (3-4 resident suites)", "Suite private (5-6 resident suites)"],
+        "annual_costs_2026_2027": {
+          "suite_3_4_resident": 13020,
+          "suite_5_6_resident": 12806
+        },
+        "per_semester_approx": {
+          "suite_3_4_resident": 6510,
+          "suite_5_6_resident": 6403
+        },
+        "meal_plan_required": true,
+        "amenities": ["AC", "Free laundry", "Kitchenettes", "Lounges", "Computer lab", "Connected to 605 Commons cafeteria and Student Center East"],
+        "bathroom_setup": "In-unit, shared only with suitemates",
+        "why_choose": "Private bedroom, smaller bathroom group, east campus convenience, connected to dining and Student Center."
+      },
+      {
+        "name": "Commons West",
+        "abbreviation": "CMW",
+        "address": "700 S Halsted St, Chicago, IL 60607",
+        "best_for": "Students who want the most affordable east campus option",
+        "open_to": "First-year students and above",
+        "type": "Traditional (community bathrooms)",
+        "room_types": ["Private", "Shared (2-person)"],
+        "annual_costs_2026_2027": {
+          "private": 11808,
+          "shared": 10550
+        },
+        "per_semester_approx": {
+          "private": 5904,
+          "shared": 5275
+        },
+        "meal_plan_required": true,
+        "amenities": ["AC", "Free laundry", "Kitchenettes", "Computer lab", "Lounges"],
+        "why_choose": "One of the most affordable dorm options at UIC while still being on east campus."
+      },
+      {
+        "name": "Commons South",
+        "abbreviation": "CMS",
+        "address": "700 S Halsted St, Chicago, IL 60607",
+        "best_for": "Students wanting east campus traditional dorm feel",
+        "open_to": "First-year students and above",
+        "type": "Traditional (community bathrooms)",
+        "room_types": ["Private with full-size bed", "Private", "Shared (2-person)"],
+        "annual_costs_2026_2027": {
+          "private_full_size_bed": 12908,
+          "private": 11808,
+          "shared": 10550
+        },
+        "per_semester_approx": {
+          "private_full_size_bed": 6454,
+          "private": 5904,
+          "shared": 5275
+        },
+        "meal_plan_required": true,
+        "amenities": ["AC", "Free laundry", "Kitchenettes", "Lounges"],
+        "why_choose": "East campus, traditional feel, slightly upgraded bed option in some rooms."
+      },
+      {
+        "name": "Courtyard",
+        "abbreviation": "CTY",
+        "address": "700 S Halsted St, Chicago, IL 60607",
+        "best_for": "Students wanting east campus suite living with layout variety",
+        "open_to": "First-year students and above",
+        "type": "Suite style (wide variety of configurations)",
+        "room_types": ["Suite private", "Suite shared - various configurations (2, 3, 5, 7-9, 8 person)"],
+        "annual_costs_2026_2027": {
+          "range": "$10,551 to $13,019 depending on layout"
+        },
+        "per_semester_approx": {
+          "range": "$5,275 to $6,510"
+        },
+        "meal_plan_required": true,
+        "amenities": ["AC", "Free laundry", "Kitchenettes", "Computer lab", "Lounges", "Connected to cafeteria and Student Center East", "Free tutoring at Learning Resource Center", "Gender inclusive rooms"],
+        "llcs": ["Spectrum affinity dwelling (4th floor)"],
+        "why_choose": "Most layout variety on east campus, suite living, free tutoring on site, gender inclusive options."
+      },
+      {
+        "name": "Marie Robinson Hall",
+        "abbreviation": "MRH",
+        "address": "811 W Maxwell St, Chicago, IL 60608",
+        "best_for": "Upperclassmen who want apartment-style independence with a full kitchen",
+        "open_to": "Sophomores and above, transfers",
+        "type": "Apartment style",
+        "room_types": ["Studio (1 person)", "2-bedroom apartment (2 people)", "4-bedroom apartment (4 people)"],
+        "annual_costs_2026_2027": {
+          "studio": 17884,
+          "two_bedroom_apartment": 14908,
+          "four_bedroom_apartment": 14565
+        },
+        "per_semester_approx": {
+          "studio": 8942,
+          "two_bedroom_apartment": 7454,
+          "four_bedroom_apartment": 7282
+        },
+        "meal_plan_required": false,
+        "amenities": ["Full kitchen (stove, fridge, microwave)", "AC", "Free laundry", "Lounges", "Gender inclusive apartments"],
+        "llcs": ["PBMA affinity dwelling (4th floor)"],
+        "why_choose": "True apartment living, cook your own food, no required meal plan, more independence. Best for upperclassmen who want to live like they have their own place."
+      },
+      {
+        "name": "Thomas Beckham Hall",
+        "abbreviation": "TBH",
+        "address": "1250 S Halsted St, Chicago, IL 60607",
+        "best_for": "Upperclassmen wanting apartment-style living in University Village",
+        "open_to": "Sophomores and above, transfers",
+        "type": "Apartment style",
+        "room_types": ["Studio (1 person)", "2-bedroom apartment (2 people)", "4-bedroom apartment (4 people)"],
+        "annual_costs_2026_2027": {
+          "studio": 17884,
+          "two_bedroom_apartment": 14908,
+          "four_bedroom_apartment": 14565
+        },
+        "per_semester_approx": {
+          "studio": 8942,
+          "two_bedroom_apartment": 7454,
+          "four_bedroom_apartment": 7282
+        },
+        "meal_plan_required": false,
+        "amenities": ["Full kitchen (stove, fridge, microwave)", "AC", "Free laundry", "Computer lab", "Extensive study rooms and lounges", "TV lounge"],
+        "why_choose": "Apartment living, quieter and more mature environment, University Village neighborhood, lots of study space."
+      },
+      {
+        "name": "Single Student Residence",
+        "abbreviation": "SSR",
+        "address": "809 S Damen Ave, Chicago, IL 60612",
+        "best_for": "Graduate students, professional students, older/independent undergrads",
+        "open_to": "Graduate and professional students, sophomores and above",
+        "type": "Apartment style",
+        "room_types": ["Studio (1 person)", "2-person apartment", "3-person apartment", "Efficiency apartment (2-3 people)"],
+        "annual_costs_2026_2027": {
+          "studio": 15884,
+          "two_person_apartment": 12626,
+          "three_person_apartment": 12371,
+          "efficiency_apartment": 10772
+        },
+        "per_semester_approx": {
+          "studio": 7942,
+          "two_person_apartment": 6313,
+          "three_person_apartment": 6185,
+          "efficiency_apartment": 5386
+        },
+        "meal_plan_required": false,
+        "amenities": ["Kitchen (stove, fridge)", "AC", "Free laundry", "Lounges", "Gender inclusive apartments", "Close to hospitals and CRRC"],
+        "why_choose": "Most independent living at UIC, quietest environment, perfect for grad/professional students and pre-health students near the medical district."
+      },
+      {
+        "name": "Polk Street Residence",
+        "abbreviation": "PSR",
+        "address": "1933 W Polk St, Chicago, IL 60612",
+        "best_for": "Students who want west campus, smaller community, medical district access",
+        "open_to": "First-year students and above, transfers",
+        "type": "Suite style (3-person suites)",
+        "room_types": ["Suite private", "Private", "Shared (2-person)"],
+        "annual_costs_2026_2027": {
+          "suite_private": 13850,
+          "private": 11649,
+          "shared": 10647
+        },
+        "per_semester_approx": {
+          "suite_private": 6925,
+          "private": 5824,
+          "shared": 5323
+        },
+        "meal_plan_required": false,
+        "amenities": ["AC", "Free laundry", "Kitchenettes", "Lounges", "Shuttle stop in front of building", "Close to hospitals and CRRC"],
+        "why_choose": "Smaller, quieter west campus community, no required meal plan, shuttle access, great for health professions students."
+      }
+    ],
+    "all_halls_have": ["Free laundry", "Air conditioning", "Heat", "High-speed wifi"],
+    "gym_in_building": "Only ARC has a dedicated fitness center inside the building. All students have access to CRRC (Campus Recreation).",
+    "quick_comparisons": {
+      "cheapest_options": "CMW or CMS shared room (~$5,275/semester)",
+      "most_expensive": "ARC semi-suite private (~$9,005/semester)",
+      "best_for_freshmen": ["ARC", "JST", "CMW", "CMS", "CTY", "PSR"],
+      "best_for_transfers_upperclassmen": ["CMN", "MRH", "TBH", "SSR"],
+      "apartment_style_no_meal_plan": ["MRH", "TBH", "SSR", "PSR"],
+      "meal_plan_required": ["ARC", "CTY", "CMN", "CMW", "CMS", "JST"],
+      "meal_plan_optional": ["MRH", "TBH", "SSR", "PSR"]
+    }
+  },
+  "meal_plans": {
+    "academic_year": "Fall 2025 - Spring 2026",
+    "required_for_halls": ["ARC", "CTY", "CMN", "CMW", "CMS", "JST"],
+    "optional_for": ["MRH", "TBH", "SSR", "PSR", "Commuters", "Faculty", "Staff"],
+    "default_if_no_selection": "Automatically assigned 15 meals/week + $100 Flames Fare per semester if you live in a required hall and don't choose",
+    "resident_plans": [
+      {
+        "name": "Ignite Unlimited",
+        "price_per_semester": 2800,
+        "includes": "Unlimited meal swipes, $400 Flames Fare, 50 meal exchanges, 5 guest passes/semester",
+        "best_for": "Students who eat on campus constantly and want maximum flexibility"
+      },
+      {
+        "name": "Ignite 15",
+        "price_per_semester": 2060,
+        "includes": "15 swipes/week, $50 Flames Fare, 5 guest passes/semester",
+        "best_for": "Students who eat on campus most days but cook sometimes"
+      },
+      {
+        "name": "Ignite 160",
+        "price_per_semester": 2350,
+        "includes": "160 swipes for the semester, $750 Flames Fare, 30 meal exchanges, 5 guest passes/semester",
+        "best_for": "Students who want flexibility on when they eat — not locked into per-week swipes"
+      }
+    ],
+    "commuter_apartment_plans": [
+      {
+        "name": "Blaze 160",
+        "price_per_semester": 2260,
+        "includes": "160 meal swipes, $450 Flames Fare"
+      },
+      {
+        "name": "Blaze 80",
+        "price_per_semester": 1150,
+        "includes": "80 meal swipes, $200 Flames Fare"
+      },
+      {
+        "name": "Blaze 30",
+        "price_per_semester": 370,
+        "includes": "30 meal swipes"
+      }
+    ],
+    "important_rules": [
+      "Weekly swipes reset every Monday morning",
+      "Blaze plan swipes are per semester, not per week",
+      "Flames Fare rolls from fall to spring and spring to summer, then expires at end of Summer Session II",
+      "Meal plan changes allowed in first 10-14 days of semester only. After that, can only UPGRADE",
+      "Guest passes do NOT roll over — use them each semester",
+      "Flames Fare works at any UIC dining location on campus"
+    ]
+  },
+  "dining": {
+    "main_dining_halls": [
+      {
+        "name": "605 Commons",
+        "location": "Student Center East, 750 S Halsted St",
+        "type": "Full dining hall",
+        "food": "Homestyle meals, grill, pizza and pasta, salad bar, deli, rotating specials, Simply 3 allergen-friendly station",
+        "hours": {
+          "monday_friday": "Breakfast 7:30AM-10:30AM, Lunch 11AM-2PM, Dinner 4:30PM-8PM",
+          "saturday_sunday": "Brunch 10AM-2PM, Dinner 4:30PM-8PM"
+        },
+        "accepts": ["Meal swipes", "Flames Fare", "Credit/debit"]
+      },
+      {
+        "name": "JST Café",
+        "location": "James Stukel Towers, 718 W James M Rochford St",
+        "type": "Full dining hall",
+        "food": "Performance plate balanced meals, UCook station, fresh hearty meals",
+        "hours": {
+          "monday_friday": "Breakfast 7:30AM-10:30AM, Lunch 11AM-2PM, Dinner 4:30PM-8:30PM",
+          "saturday_sunday": "Brunch 10AM-2PM, Dinner 4:30PM-8PM"
+        }
+      }
+    ],
+    "student_center_east": {
+      "location": "750 S Halsted St",
+      "locations": [
+        { "name": "Chick-fil-A", "floor": "1st floor", "type": "Chicken sandwiches and nuggets", "meal_exchange": true },
+        { "name": "Panda Express", "type": "Chinese-American fast casual", "hours": "Mon-Fri 10AM-8PM, Sat 9AM-4PM, Sun closed" },
+        { "name": "Dunkin' Donuts", "type": "Coffee and breakfast", "hours": "Mon-Fri 6:30AM-10PM, Sat-Sun 7AM-6PM" },
+        { "name": "Market at Halsted", "floor": "2nd floor", "type": "Grab-and-go market, Amazon Just Walk Out", "hours": "Open 24 hours daily" },
+        { "name": "Sushi Do", "floor": "2nd floor Inner Circle", "type": "Sushi and Japanese cuisine", "hours": "Mon-Thu 10:30AM-7PM, Fri 10:30AM-5PM, Sat 10:30AM-3:30PM, Sun closed" },
+        { "name": "Subway", "floor": "2nd floor", "type": "Sandwiches", "meal_exchange": true },
+        { "name": "DeWitt's Cookies", "floor": "1st floor", "type": "Cookies and boba beverages", "meal_exchange": true },
+        { "name": "Halal Shack", "type": "Halal bowls, burgers, tenders", "meal_exchange": true },
+        { "name": "Moe's Southwest Cantina", "type": "Tex-Mex" },
+        { "name": "Halsted Stop", "type": "Dining retail" }
+      ]
+    },
+    "student_center_west": {
+      "location": "828 S Wolcott Ave",
+      "locations": [
+        { "name": "Starbucks", "floor": "1st floor", "hours": "Mon-Fri 7AM-4PM, weekends closed" },
+        { "name": "Subway", "floor": "1st floor", "meal_exchange": true },
+        { "name": "Harold's Chicken", "location": "Marketplace at West", "type": "Chicken meals", "meal_exchange": true },
+        { "name": "Lotus Café", "location": "Marketplace at West", "type": "Asian menu - grilled pork, ginger chicken, eggrolls, veggie options" },
+        { "name": "Tea Hive", "type": "Beverages" },
+        { "name": "Wild Blue Sushi", "type": "Sushi" },
+        { "name": "Mex Sabor", "type": "Mexican food" },
+        { "name": "Foodville", "type": "Dining retail" }
+      ]
+    },
+    "other_locations": [
+      { "name": "Starbucks at ARC", "location": "940 W Harrison St area", "hours": "Mon-Thu 7AM-7PM, Fri 7AM-5PM, Sat-Sun 9AM-3PM" },
+      { "name": "Starbucks at UVM (JST area)", "location": "718 W James M Rochford St area", "hours": "Mon-Fri 7AM-6PM, Sat 7AM-5PM, Sun 8AM-5PM" },
+      { "name": "Market at Morgan Street", "location": "1007 W Harrison St", "type": "Coffee, breakfast and lunch sandwiches, salads", "hours": "Mon-Fri 8AM-6PM, weekends closed" },
+      { "name": "Sandella's Flatbread Cafe", "location": "CDRLC, 850 W Taylor St", "type": "Wraps, paninis, quesadillas, grilled flatbreads, breakfast items, Starbucks beverages", "hours": "Mon-Fri 9:30AM-4PM, weekends closed" },
+      { "name": "Market at Taylor St", "location": "828 S Wolcott Ave", "type": "Sandwiches, soups, fresh bread, sliced meats and cheeses", "hours": "Mon-Fri 7AM-5PM, weekends closed" },
+      { "name": "Chicago French Press at Rebecca Port Center", "type": "Coffee" },
+      { "name": "Chicago French Press at Daley Library", "type": "Coffee" }
+    ],
+    "also_on_campus": ["Tamale Spaceship", "Costa Coffee", "Pizza 88", "S'Barros", "Frank N' Fries", "Erbert & Gerbert's Bistro", "Just Baked", "Shake Smart"],
+    "dining_website": "uicdining.sodexomyway.com"
+  },
+  "off_campus_housing": {
+    "official_tool": "offcampushousing.uic.edu",
+    "office": "Commuter and Off-Campus Life office — helps with apartment searching, tenant rights, and resources",
+    "best_neighborhoods": [
+      { "name": "Medical District", "best_for": "West campus, health professions, SSR/PSR side students" },
+      { "name": "University Village / Little Italy", "best_for": "South or east campus balance, walkable to campus" },
+      { "name": "Pilsen", "best_for": "Lower cost shared housing, strong neighborhood feel" },
+      { "name": "West Loop", "best_for": "Newer buildings and nightlife, usually higher price point" },
+      { "name": "Near West Side", "best_for": "Close to campus, variety of options" }
+    ]
+  },
+  "quick_answers": {
+    "cheapest_dorm": "Commons West or Commons South shared room (~$5,275/semester + $80 tech fee)",
+    "best_dorm_for_freshmen": "ARC (most modern, gym, study lounges) or JST (suite living, dining hall inside)",
+    "best_dorm_for_transfers": "Commons North (private bedroom, suite bathroom) or MRH/TBH (apartment style)",
+    "only_dorm_with_gym": "ARC has a fitness center. All students can also use CRRC.",
+    "apartment_style_dorms": "MRH, TBH, SSR (no meal plan required)",
+    "which_dorms_require_meal_plan": "ARC, CTY, CMN, CMW, CMS, JST require meal plans",
+    "which_dorms_no_meal_plan": "MRH, TBH, SSR, PSR — no meal plan required",
+    "24_hour_food": "Market at Halsted (2nd floor Student Center East) is open 24 hours",
+    "halal_food_on_campus": "Halal Shack in Student Center East",
+    "best_meal_plan": "Ignite Unlimited ($2,800/semester) for heavy campus eaters. Ignite 160 ($2,350) for flexibility. Ignite 15 ($2,060) for moderate eaters."
+  }
+}

@@ -18,7 +18,7 @@ const geistMono = Geist_Mono({
 })
 
 export const metadata: Metadata = {
-  title: "UIC Ratings",
+  title: "UIC Sparky",
   description: "Search UIC professors and courses using real student ratings and grade distribution data to build a smarter schedule.",
 }
 

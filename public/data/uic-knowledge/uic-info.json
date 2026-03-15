@@ -1,0 +1,143 @@
+{
+  "tuition": {
+    "academic_year": "2025-2026",
+    "undergraduate": {
+      "in_state_tuition_fees": 11424,
+      "out_of_state_tuition_fees": 27526,
+      "total_COA_on_campus_in_state": 30900,
+      "total_COA_on_campus_out_of_state": 47000,
+      "total_COA_off_campus_in_state": 37775,
+      "total_COA_off_campus_out_of_state": 53835
+    },
+    "graduate": {
+      "in_state": 17550,
+      "out_of_state": 27748
+    },
+    "financial_aid": {
+      "aspire_grant": "NEW for 2025-2026: Illinois students from families earning under $75,000/year pay $0 in tuition and fees. Visit free.uic.edu",
+      "percent_receiving_aid": "65-70% of undergrads receive some financial aid",
+      "average_aid_amount": 15596,
+      "fafsa": "Complete FAFSA to determine eligibility. Most scholarships require no separate application — you're auto-considered after applying to UIC.",
+      "scholarship_priority_date": "Apply by the Scholarship Priority Date to maximize eligibility"
+    },
+    "4_year_estimate": {
+      "in_state_tuition_only": 64129,
+      "out_of_state_tuition_only": 129301,
+      "in_state_total_COA": 164684,
+      "out_of_state_total_COA": 229856
+    },
+    "notes": "More than half of full-time undergrads pay less than $3,000/semester in tuition and fees after aid."
+  },
+  "housing": {
+    "overview": "UIC operates 10 residence halls with 32 different room styles. No deadline to apply but apply early for preferences.",
+    "application": "Apply at housing.uic.edu once admitted. Applications for 2026-2027 go live December 15, 2025.",
+    "residence_halls": [
+      {
+        "name": "Academic & Residential Complex (ARC)",
+        "abbreviation": "ARC",
+        "address": "940 W. Harrison St.",
+        "type": "Traditional and semi-suite style",
+        "description": "Private or shared 2-person bedrooms, connected to multimedia lecture classrooms. Most popular for freshmen.",
+        "meal_plan_required": true,
+        "notes": "Great location, close to classes"
+      },
+      {
+        "name": "James Stukel Towers (JST)",
+        "abbreviation": "JST",
+        "address": "718 W. Rochford St.",
+        "type": "Tower style",
+        "description": "High-rise tower dorm, great views of Chicago.",
+        "meal_plan_required": true
+      },
+      {
+        "name": "Commons North (CMN)",
+        "abbreviation": "CMN",
+        "address": "700 S. Halsted",
+        "type": "Suite style",
+        "description": "Close to classrooms and student support services.",
+        "meal_plan_required": true
+      },
+      {
+        "name": "Commons South (CMS)",
+        "abbreviation": "CMS",
+        "address": "700 S. Halsted",
+        "type": "Suite style",
+        "meal_plan_required": true
+      },
+      {
+        "name": "Commons West (CMW)",
+        "abbreviation": "CMW",
+        "type": "Suite style",
+        "meal_plan_required": true
+      },
+      {
+        "name": "Courtyard (CTY)",
+        "abbreviation": "CTY",
+        "type": "Suite style",
+        "meal_plan_required": true
+      },
+      {
+        "name": "Marie Robinson Hall (MRH)",
+        "abbreviation": "MRH",
+        "type": "Apartment style",
+        "description": "Apartment-style with private bedrooms, full kitchens, private bedrooms, and shared bathrooms. No meal plan required — great for upperclassmen who want to cook.",
+        "meal_plan_required": false
+      },
+      {
+        "name": "Thomas Beckham Hall (TBH)",
+        "abbreviation": "TBH",
+        "address": "S. Newberry Ave.",
+        "type": "Apartment style",
+        "description": "Apartment-style, studio, 2-bedroom, and 4-bedroom options. No required meal plan.",
+        "meal_plan_required": false
+      },
+      {
+        "name": "Single Student Residence (SSR)",
+        "abbreviation": "SSR",
+        "address": "1933 W. Polk St.",
+        "type": "Apartment style",
+        "meal_plan_required": false
+      },
+      {
+        "name": "Polk Street Residence (PSR)",
+        "abbreviation": "PSR",
+        "address": "1933 W. Polk St.",
+        "type": "Apartment style",
+        "meal_plan_required": false
+      }
+    ],
+    "meal_plans": {
+      "required_for": ["ARC", "Courtyard", "Commons North", "Commons West", "Commons South", "JST"],
+      "optional_for": ["MRH", "TBH", "SSR", "PSR", "commuters"],
+      "plans": [
+        { "name": "Ignite 15", "description": "15 meal swipes/week + $50 Flames Fare + 5 guest passes/semester", "price_per_semester": 2060 },
+        { "name": "Blaze 160", "description": "160 meal swipes/semester + $450 Flames Fare", "price_per_semester": 2260 },
+        { "name": "Default if no selection", "description": "Automatically assigned 15 meals/week + $50 Flames Fare if you don't pick a plan" }
+      ],
+      "notes": "Meal swipes and Flames Fare roll over to next semester. Guest passes do not roll over. Changes only allowed in first 10 days of semester. Flames Fare works at any dining location on campus.",
+      "dining_halls": ["605 Commons Dining Hall", "JST Dining Hall"],
+      "dining_website": "uicdining.sodexomyway.com"
+    },
+    "on_campus_living_cost_estimate": 22526,
+    "tips": "MRH and TBH are best for upperclassmen who want apartment-style living and to cook their own food. ARC is most popular for freshmen. Apply ASAP if you have a specific hall preference."
+  },
+  "campus": {
+    "location": "Near West Side, Chicago, Illinois",
+    "address": "1200 W. Harrison St., Chicago, IL 60607",
+    "size": "240 acres",
+    "students": "33,000+ students",
+    "type": "Large public research university (R1)",
+    "nickname": "UIC Flames",
+    "mascot": "Sparky the Dragon",
+    "colors": "Navy Blue and Flames Red",
+    "conference": "Horizon League (athletics)",
+    "phone": "312-996-7000",
+    "website": "uic.edu"
+  },
+  "financial_aid_offices": {
+    "financial_aid": { "website": "financialaid.uic.edu", "phone": "312-996-3126" },
+    "registrar": { "website": "registrar.uic.edu", "phone": "312-996-4990" },
+    "admissions": { "website": "admissions.uic.edu", "phone": "312-996-4350" },
+    "housing": { "website": "housing.uic.edu", "phone": "312-355-7800" }
+  }
+}

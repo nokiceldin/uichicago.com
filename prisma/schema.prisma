@@ -71,6 +71,51 @@ model Course {
   @@index([subject, number])
 }
 
+
+model NewsItem {
+  id          String   @id @default(cuid())
+  guid        String   @unique
+  source      String
+  title       String
+  url         String
+  publishedAt DateTime
+  rawContent  String   @db.Text
+  aiSummary   String?  @db.Text
+  category    String?
+  createdAt   DateTime @default(now())
+
+  @@index([source])
+  @@index([publishedAt])
+}
+
+
+model KnowledgeChunk {
+  id          String   @id @default(cuid())
+  content     String   @db.Text       // The actual text Sparky will read
+  sourceType  String                  // "course" | "professor" | "news" | "knowledge"
+  sourceId    String?                 // ref to Course.id, Professor.id, NewsItem.id etc
+  metadata    String   @db.Text       // JSON: {subject, number, name, dept, etc}
+  embeddingUpdatedAt DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([sourceType])
+  @@index([sourceId])
+  @@unique([sourceId, sourceType])
+}
+
+model ConversationSession {
+  id          String   @id @default(cuid())
+  sessionId   String   @unique        // cookie/browser fingerprint
+  memory      String   @db.Text       // JSON: what Sparky knows about this user
+  messageCount Int     @default(0)
+  lastSeenAt  DateTime @default(now())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([sessionId])
+}
+
 model CourseTermStats {
   id        String   @id @default(cuid())
   courseId  String

@@ -1,0 +1,69 @@
+{
+  "first_year": {
+    "application_platform": "Common Application",
+    "deadlines": {
+      "priority": "2025-11-03",
+      "regular": "2026-02-02",
+      "spring": "2025-10-01"
+    },
+    "test_policy": "Test-optional. ACT/SAT not required.",
+    "no_enrollment_deposit": "UIC does not charge an enrollment deposit.",
+    "required_materials": [
+      "Common Application",
+      "$70 fee or waiver",
+      "High school transcripts",
+      "School Report"
+    ]
+  },
+  "transfer": {
+    "minimum_credits": "24 transferable hours at application, 36 by enrollment",
+    "minimum_gpa": "2.50 recommended; competitive apps typically higher",
+    "regular_deadline": "2026-04-01",
+    "community_college_pathway": "Guaranteed Admission Transfer at tag.uic.edu with 3.0 GPA"
+  },
+  "readmission": {
+    "process": "Apply via UIC web application, submit transcripts, letter of petition",
+    "deadline": "Fall: 2026-04-01, Spring: 2025-10-15"
+  },
+  "international": {
+    "toefl_minimum": "80",
+    "ielts_minimum": "6.5",
+    "transcript_note": "ATA-certified translations required for non-English documents",
+    "international_eval_fee": "$100"
+  },
+  "admitted_next_steps": {
+    "intent_to_enroll": "First-year: May 1 (fall), Dec 1 (spring). Transfer: June 1 (fall), Dec 1 (spring)",
+    "portal": "Activate NetID at my.uic.edu",
+    "placement_tests": "Complete before June 30 for fall admits",
+    "housing_application_opens": "December 15 for next academic year"
+  },
+  "campus_visits": {
+    "url": "https://discover.uic.edu/",
+    "admitted_students": "bound.uic.edu",
+    "virtual_tour": true
+  },
+  "scholarships": {
+    "chancellors_fellows": {
+      "amount": "$7,500 first-year / $5,000 transfer",
+      "deadline": "2025-11-03"
+    },
+    "presidents_award": {
+      "amount": "$5,000 or full tuition+housing for Honors",
+      "deadline": "2026-02-01"
+    },
+    "merit_tuition_award": {
+      "amount": "$9,128/year for nonresidents",
+      "deadline": "2026-02-01"
+    },
+    "aspire_grant": {
+      "amount": "100% tuition and fees for Illinois families under $75,000",
+      "deadline": "2026-03-15"
+    },
+    "lake_county_indiana": {
+      "amount": "$16,102/year in-state equivalent"
+    },
+    "tribal_nation": {
+      "amount": "$16,102/year in-state equivalent"
+    }
+  }
+}

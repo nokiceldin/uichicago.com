@@ -1,0 +1,185 @@
+{
+  "central_advising": {
+    "description": "Decentralized \u2014 advising takes place in student's major college. Use iAdvise in myUIC.",
+    "url": "https://advising.uic.edu/student-resources/"
+  },
+  "college_offices": [
+    {
+      "college": "Applied Health Sciences",
+      "location": "516 AHSB",
+      "phone": "(312) 996-2079"
+    },
+    {
+      "college": "Architecture, Design, and the Arts",
+      "location": "208 Jefferson Hall",
+      "phone": "(312) 996-2006"
+    },
+    {
+      "college": "Business Administration",
+      "location": "Douglass Hall Suite 110",
+      "phone": "(312) 996-2700"
+    },
+    {
+      "college": "Education",
+      "location": "3145 ETMSW",
+      "phone": "(312) 996-4532"
+    },
+    {
+      "college": "Engineering",
+      "location": "123 SEO",
+      "phone": "(312) 996-3463"
+    },
+    {
+      "college": "Liberal Arts and Sciences",
+      "location": "3rd Floor University Hall",
+      "phone": "(312) 996-3366"
+    },
+    {
+      "college": "Nursing",
+      "location": "5th Floor NURS",
+      "phone": "(312) 996-7800"
+    },
+    {
+      "college": "Public Health",
+      "location": "SPHPI Building",
+      "phone": "(312) 355-2536"
+    },
+    {
+      "college": "Urban Planning and Public Affairs",
+      "location": "115 CUPPA Hall",
+      "phone": "(312) 413-8088"
+    },
+    {
+      "college": "Honors College",
+      "url": "https://honors.uic.edu/resources/advising/"
+    }
+  ],
+  "tutoring": {
+    "mslc": {
+      "name": "Math & Science Learning Center",
+      "location": "845 W Taylor St, 3rd Floor SES",
+      "phone": "(312) 355-4900",
+      "subjects": [
+        "BIOS",
+        "CHEM",
+        "MATH",
+        "MCS",
+        "PHYS",
+        "STAT"
+      ],
+      "services": [
+        "Drop-in support",
+        "Study groups",
+        "Peer Learning Assistants",
+        "Online sessions"
+      ],
+      "url": "https://mslc.uic.edu/"
+    },
+    "writing_center": {
+      "location": "105 Grant Hall, 703 S Morgan St",
+      "phone": "(312) 413-2206",
+      "hours": "Mon-Fri 10am-6pm; drop-in Mon-Thu 10am-5:30pm, Fri 10am-4:30pm",
+      "appointment_url": "https://uic.mywconline.com/",
+      "url": "https://writingcenter.uic.edu/"
+    },
+    "other_centers": [
+      {
+        "name": "Burnham Hall Tutoring",
+        "location": "2nd floor Burnham Hall",
+        "subjects": [
+          "Sciences",
+          "Social sciences",
+          "Foreign language",
+          "Writing"
+        ]
+      },
+      {
+        "name": "Business Learning Center",
+        "location": "Douglass Hall Cafe 2nd floor",
+        "subjects": [
+          "Business courses"
+        ]
+      },
+      {
+        "name": "Engineering Learning Center",
+        "location": "SELE NE2063",
+        "subjects": [
+          "Engineering courses"
+        ]
+      },
+      {
+        "name": "Language & Culture Learning Center",
+        "location": "301 Grant Hall",
+        "subjects": [
+          "Spanish",
+          "French",
+          "German",
+          "Italian 100-level"
+        ]
+      },
+      {
+        "name": "LARES Tutoring",
+        "location": "SSB Suite 2640",
+        "subjects": [
+          "Math",
+          "Chemistry"
+        ]
+      }
+    ]
+  },
+  "career_services": {
+    "location": "SSB Suite 3050",
+    "phone": "(312) 996-2300",
+    "hours": "Mon-Fri 8:30am-5pm",
+    "drop_in": "Wed in-person 12-2pm, Thu virtual 2-4pm",
+    "url": "https://careerservices.uic.edu/",
+    "handshake": "https://uic.joinhandshake.com/"
+  },
+  "special_programs": {
+    "first_year": {
+      "name": "Office of First-Year Initiatives",
+      "url": "https://ofyi.uic.edu/"
+    },
+    "transfer": {
+      "name": "Transfer Assistance Center",
+      "url": "https://registrar.uic.edu/transfer-assistance/"
+    },
+    "commuter": {
+      "name": "Commuter Student Resource Center",
+      "location": "SCE Suite 245",
+      "url": "https://csrc.uic.edu/"
+    },
+    "undergrad_research": {
+      "name": "Undergraduate Research Hub",
+      "url": "https://undergradresearch.uic.edu/"
+    },
+    "honors_advising": {
+      "url": "https://honors.uic.edu/resources/advising/",
+      "requirement": "3.4 GPA + one honors activity per term + capstone project"
+    }
+  },
+  "peer_mentoring": [
+    {
+      "name": "CREAR Futuros (LARES)",
+      "url": "https://lares.uic.edu/services/programs/crear-futuros-mentorship/"
+    },
+    {
+      "name": "Asian American Mentor Program",
+      "url": "https://aarcc.uic.edu/programs/asian-american-mentor-program/"
+    }
+  ],
+  "faqs": [
+    {
+      "q": "How do I find my advisor?",
+      "a": "Log into myUIC, open Advising tab, access iAdvise."
+    },
+    {
+      "q": "I have a registration hold, what do I do?",
+      "a": "Check Student Self Service to identify the hold, then contact the responsible office."
+    },
+    {
+      "q": "Where can I get extra help in my classes?",
+      "a": "Start with instructor office hours, then use MSLC, Writing Center, or your college tutoring center."
+    }
+  ]
+}

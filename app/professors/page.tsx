@@ -42,11 +42,12 @@ export default function Page() {
   const middle = pageButtons.filter((n) => n !== 1 && n !== totalPages);
   const start = (page - 1) * pageSize;
 
-  const selectBase = "h-9 w-full cursor-pointer rounded-xl border border-zinc-200 bg-white px-3 text-sm text-zinc-900 outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 transition-colors dark:border-white/10 dark:bg-zinc-900 dark:text-zinc-200 dark:focus:border-emerald-500/50 dark:focus:ring-emerald-500/20";
-  const inputBase = "h-10 w-full rounded-xl border border-zinc-200 bg-white px-4 text-sm text-zinc-900 outline-none placeholder:text-zinc-400 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 transition-colors dark:border-white/10 dark:bg-zinc-900 dark:text-zinc-200 dark:placeholder:text-zinc-600 dark:focus:border-emerald-500/50 dark:focus:ring-emerald-500/20";
+  // Red brand, rating colours unchanged
+  const selectBase = "h-9 w-full cursor-pointer rounded-xl border border-zinc-200 bg-white px-3 text-sm text-zinc-900 outline-none focus:border-red-500 focus:ring-2 focus:ring-red-900/20 transition-colors dark:border-white/10 dark:bg-zinc-900 dark:text-zinc-200 dark:focus:border-red-500/50 dark:focus:ring-red-500/10";
+  const inputBase = "h-10 w-full rounded-xl border border-zinc-200 bg-white px-4 text-sm text-zinc-900 outline-none placeholder:text-zinc-400 focus:border-red-500 focus:ring-2 focus:ring-red-900/20 transition-colors dark:border-white/10 dark:bg-zinc-900 dark:text-zinc-200 dark:placeholder:text-zinc-600 dark:focus:border-red-500/50 dark:focus:ring-red-500/10";
   const chipBase = "inline-flex items-center gap-1.5 rounded-full border border-zinc-200 bg-zinc-100 px-3 py-1 text-xs font-medium text-zinc-700 hover:bg-zinc-200 transition-colors cursor-pointer dark:border-white/10 dark:bg-white/5 dark:text-zinc-300 dark:hover:bg-white/10";
   const navBtn = "h-9 px-4 rounded-xl border border-zinc-200 bg-white text-sm font-medium text-zinc-700 hover:bg-zinc-50 transition-colors disabled:opacity-30 disabled:cursor-not-allowed dark:border-white/10 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-white/10";
-  const pageBtn = (active: boolean) => "h-9 min-w-9 px-3 rounded-xl border text-sm font-medium transition-all flex items-center justify-center tabular-nums " + (active ? "border-emerald-300 bg-emerald-50 text-emerald-700 pointer-events-none dark:border-emerald-500/50 dark:bg-emerald-500/15 dark:text-emerald-400" : "border-zinc-200 bg-white text-zinc-700 hover:bg-zinc-50 dark:border-white/10 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-white/10");
+  const pageBtn = (active: boolean) => "h-9 min-w-9 px-3 rounded-xl border text-sm font-medium transition-all flex items-center justify-center tabular-nums " + (active ? "border-red-500/60 bg-red-600/15 text-red-400 pointer-events-none dark:border-red-500/50 dark:bg-red-500/15 dark:text-red-400" : "border-zinc-200 bg-white text-zinc-700 hover:bg-zinc-50 dark:border-white/10 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-white/10");
   const hasAnyFilters = query.trim() || dept !== "All" || minRatings !== 0 || minStars !== 0 || sort !== "best";
 
   function clearAll() { setQuery(""); setDept("All"); setMinRatings(0); setMinStars(0); setSort("best"); setPage(1); }
@@ -73,14 +74,16 @@ export default function Page() {
 
   return (
     <main className="relative min-h-screen bg-zinc-50 text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100">
-      <div className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-72 bg-gradient-to-b from-emerald-50/50 to-transparent dark:from-emerald-950/30 dark:to-transparent" />
+      <div className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-72 bg-gradient-to-b from-red-950/20 to-transparent" />
       <div className="pointer-events-none absolute inset-0 -z-10 opacity-[0.02]" style={{ backgroundImage: "linear-gradient(rgba(0,0,0,0.4) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,0.4) 1px, transparent 1px)", backgroundSize: "48px 48px" }} />
 
       <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-12">
         <div className="mb-8">
           <div className="mb-2">
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-semibold uppercase tracking-widest text-emerald-700 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-400">
-<span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />{new Intl.NumberFormat("en-US").format(total)} professors            </span>
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-red-800/40 bg-red-600/10 px-3 py-1 text-xs font-semibold uppercase tracking-widest text-red-400">
+              <span className="h-1.5 w-1.5 rounded-full bg-red-500" />
+              {new Intl.NumberFormat("en-US").format(total)} professors
+            </span>
           </div>
           <h1 className="text-4xl font-black tracking-tight text-zinc-900 dark:text-white sm:text-5xl">UIC Professors</h1>
           <p className="mt-2 max-w-xl text-sm text-zinc-500 sm:text-base">Find the best professors by department, rating, and student review count.</p>
@@ -116,7 +119,7 @@ export default function Page() {
                 <span>Min reviews</span><span className="tabular-nums text-zinc-600">{minRatings}</span>
               </div>
               <div className="flex h-9 items-center rounded-xl border border-zinc-200 bg-white dark:border-white/10 dark:bg-zinc-900 px-3">
-                <input type="range" min={0} max={200} step={5} value={minRatings} onChange={(e) => { setMinRatings(Number(e.target.value)); setPage(1); }} className="w-full accent-emerald-500" />
+                <input type="range" min={0} max={200} step={5} value={minRatings} onChange={(e) => { setMinRatings(Number(e.target.value)); setPage(1); }} className="w-full accent-red-500" />
               </div>
             </div>
           </div>
@@ -168,7 +171,7 @@ export default function Page() {
                       <div className="col-span-4 min-w-0 pr-3">
                         <div className="text-sm font-bold text-zinc-900 dark:text-zinc-100 sm:text-base">
                           <span className="text-zinc-400 dark:text-zinc-600 tabular-nums mr-1.5">{start + idx + 1}.</span>
-                          <Link href={`/professors/${p.slug}`} className="hover:text-emerald-600 dark:hover:text-white transition-colors hover:underline">{p.name}</Link>
+                          <Link href={`/professors/${p.slug}`} className="hover:text-red-500 dark:hover:text-white transition-colors hover:underline">{p.name}</Link>
                         </div>
                         <div className="mt-0.5 text-xs text-zinc-400 dark:text-zinc-600">{p.school}</div>
                       </div>
@@ -191,7 +194,7 @@ export default function Page() {
                 {!loading && data.length === 0 && (
                   <li className="px-6 py-16 text-center">
                     <p className="text-zinc-400 text-sm">No professors found.</p>
-                    <button onClick={clearAll} className="mt-3 text-sm text-emerald-600 dark:text-emerald-500 hover:text-emerald-500 dark:hover:text-emerald-400 transition-colors font-medium">Clear all filters →</button>
+                    <button onClick={clearAll} className="mt-3 text-sm text-red-500 hover:text-red-400 transition-colors font-medium">Clear all filters →</button>
                     <div className="mt-4 flex justify-center"><MissingProfessorButton page="professors" searchQuery={query.trim()} show /></div>
                   </li>
                 )}
@@ -201,7 +204,7 @@ export default function Page() {
         </div>
 
         <footer className="mt-12 border-t border-zinc-100 dark:border-white/8 pt-8 text-center text-sm text-zinc-400 dark:text-zinc-600">
-          <p>Contact: <a href="mailto:uicratings@gmail.com" className="hover:text-emerald-500 dark:hover:text-emerald-400 transition-colors">uicratings@gmail.com</a></p>
+          <p>Contact: <a href="mailto:uicratings@gmail.com" className="hover:text-red-400 transition-colors">uicratings@gmail.com</a></p>
           <p className="mt-1">Not affiliated with UIC or RMP.</p>
         </footer>
       </div>

@@ -1,0 +1,177 @@
+{
+  "last_updated": "2025-2026",
+  "overview": {
+    "conference": "Missouri Valley Conference (MVC) — joined July 1, 2022",
+    "division": "NCAA Division I (since 1981)",
+    "website": "UICFlames.com",
+    "mascot": "Sparky the Dragon",
+    "colors": "Navy Blue and Flames Red",
+    "athletics_director": "Andrea Williams (joined November 2025)",
+    "all_time_stats": "75 conference championships and 47 NCAA postseason appearances when joining MVC in 2022",
+    "note": "Men's tennis competes in MAC (Mid-American Conference), not MVC"
+  },
+  "teams": {
+    "mens": [
+      {
+        "sport": "Baseball",
+        "coach": "Sean McDermott",
+        "venue": "Curtis Granderson Stadium, 901 W Roosevelt Rd",
+        "venue_capacity": 1784,
+        "notes": "Stadium named for UIC legend and MLB star Curtis Granderson. Program has 13 Horizon League championships."
+      },
+      {
+        "sport": "Men's Basketball",
+        "coach": "Rob Ehsan (hired April 2024)",
+        "venue": "Credit Union 1 Arena (formerly UIC Pavilion), 525 S Racine Ave",
+        "venue_capacity_basketball": 8000,
+        "venue_capacity_concerts": 10300,
+        "notes": "Renamed from UIC Pavilion in November 2018. Main rivalry: Loyola Chicago (31-30 all-time edge for UIC as of 2023)."
+      },
+      {
+        "sport": "Men's Cross Country / Track and Field",
+        "coach": "Paul Zavala",
+        "notes": "53 new school records and 244 top-10 all-time performances under Zavala."
+      },
+      {
+        "sport": "Men's Soccer",
+        "coach": "Sean Phillips",
+        "venue": "Flames Field, 901 W Roosevelt Rd",
+        "venue_capacity": 1200,
+        "notes": "Rebuilt in 2022. Grass pitch, new video board, Chicago skyline views."
+      },
+      {
+        "sport": "Men's Swimming and Diving",
+        "coach": "Ashley Dell",
+        "dive_coach": "Susan Bromberg",
+        "venue": "Flames Natatorium, inside Physical Education Building, 901 W Roosevelt Rd"
+      },
+      {
+        "sport": "Men's Tennis",
+        "coach": "Jovan Parlic",
+        "conference": "MAC (Mid-American Conference)",
+        "venue": "Flames Outdoor Tennis Courts (6 lighted hard courts, 100+ seating) and XS Tennis Village",
+        "notes": "Eldin Nokic named MAC Freshman of the Year 2024-2025."
+      }
+    ],
+    "womens": [
+      {
+        "sport": "Women's Basketball",
+        "coach": "Ashleen Bracey",
+        "venue": "Credit Union 1 Arena, 525 S Racine Ave",
+        "notes": "Bracey won 2023-2024 IBCA Women's NCAA Division I Co-Coach of the Year — first Flames coach to win that award."
+      },
+      {
+        "sport": "Women's Cross Country / Track and Field",
+        "coach": "Paul Zavala"
+      },
+      {
+        "sport": "Women's Golf",
+        "coach": "Angela Rayhill",
+        "notes": "Finished 2nd at 2024 MVC Championship — best in program history. Ended season ranked #165 nationally — also a program best."
+      },
+      {
+        "sport": "Women's Soccer",
+        "coach": "David Nikolic (hired April 2021)",
+        "venue": "Flames Field, 901 W Roosevelt Rd",
+        "notes": "WON 2025 MVC Tournament Championship — first conference title in program history. Made first-ever NCAA tournament appearance in 2025."
+      },
+      {
+        "sport": "Softball",
+        "coach": "Megan Coronado (hired June 2025)",
+        "venue": "Flames Field softball complex, 901 W Roosevelt Rd",
+        "notes": "1994 team reached Women's College World Series (56-19-1 season). 1999 team went 67-17, tying NCAA record for wins."
+      },
+      {
+        "sport": "Women's Swimming and Diving",
+        "coach": "Ashley Dell",
+        "venue": "Flames Natatorium",
+        "notes": "Program-record 14 athletes sent to CSCAA National Invitational Championships after 2024-2025 season. Harrison Nolan named 2025 MVC Diver of the Year."
+      },
+      {
+        "sport": "Women's Tennis",
+        "coach": "Elizabeth Lumpkin Robinson",
+        "notes": "19 conference championships and 17 NCAA tournament appearances since 1996. Dominant run of league titles 1997-2013."
+      },
+      {
+        "sport": "Volleyball",
+        "coach": "Justin Ingram",
+        "venue": "Flames Athletic Center and Credit Union 1 Arena"
+      }
+    ]
+  },
+  "venues": {
+    "credit_union_1_arena": {
+      "name": "Credit Union 1 Arena (formerly UIC Pavilion)",
+      "address": "525 S Racine Ave, Chicago IL 60607",
+      "capacity_sports": 8000,
+      "capacity_concerts": 10300,
+      "renamed": "November 2018",
+      "home_to": ["Men's Basketball", "Women's Basketball", "Volleyball (major events)"]
+    },
+    "flames_field": {
+      "name": "Flames Field",
+      "address": "901 W Roosevelt Rd",
+      "home_to": ["Men's Soccer", "Women's Soccer", "Softball"],
+      "notes": "Soccer venue rebuilt 2022 with new scoreboard, video board, grandstand"
+    },
+    "granderson_stadium": {
+      "name": "Curtis Granderson Stadium",
+      "address": "901 W Roosevelt Rd",
+      "capacity": 1784,
+      "home_to": ["Baseball"]
+    },
+    "flames_natatorium": {
+      "name": "Flames Natatorium",
+      "address": "Inside Physical Education Building, 901 W Roosevelt Rd",
+      "home_to": ["Men's Swimming and Diving", "Women's Swimming and Diving"]
+    },
+    "tennis_complex": {
+      "name": "Flames Outdoor Tennis Courts",
+      "courts": "6 lighted hard courts",
+      "seating": "100+",
+      "home_to": ["Men's Tennis", "Women's Tennis"]
+    }
+  },
+  "tickets_and_students": {
+    "student_admission": "FREE to all regular season home athletics events with valid UIC student ID",
+    "basketball_student_section": {
+      "gate": "Gate 3, Credit Union 1 Arena",
+      "sections": "110, 111, 112",
+      "identity": "Flame Force (@uic_studentsection on Instagram)"
+    },
+    "fall_sports_pricing": {
+      "general_admission": "$5 for adults",
+      "students_staff": "FREE with ID",
+      "under_8th_grade": "FREE",
+      "flames_fast_pass": "$50 — covers all home athletics events except basketball for the full academic year"
+    },
+    "basketball_tickets": {
+      "students": "FREE with ID",
+      "adult_single_game_lower_baseline": "$18",
+      "adult_single_game_lower_sideline": "$28",
+      "womens_general_admission": "$12 adult, $6 youth",
+      "purchase": "Ticketmaster, UICFlames.com/Tickets, or ticket office at 312-413-UIC1"
+    }
+  },
+  "rivalries": [
+    "Loyola Chicago — primary crosstown rival, especially in basketball. Nearly 50-year rivalry.",
+    "Bradley, Illinois State, Southern Illinois — designated in-state MVC basketball rivalry games"
+  ],
+  "recent_results_2025_2026": {
+    "mens_basketball": "Reached 2026 MVC title game (Arch Madness). Beat Murray State 92-79 in quarters, Drake 72-51 in semis, lost to Northern Iowa 84-69 in final. Best conference tournament run since 2020.",
+    "womens_basketball": "Finished 14-17, 9-11 MVC. No. 7 seed, lost to Evansville 76-71 in opening round.",
+    "womens_soccer": "WON 2025 MVC Tournament Championship — first in program history. Made first-ever NCAA tournament appearance. 4 players on MVC All-Conference Team.",
+    "mens_tennis": "Competing in MAC. Fell to Ball State 4-3 on March 12, 2026.",
+    "womens_golf": "Best conference finish in program history (2nd at 2024 MVC Championship)."
+  },
+  "current_rosters_2025_2026": {
+    "note": "Current rosters at UICFlames.com",
+    "mens_basketball": ["Ahmad Henderson II", "Jayce Nathaniel", "Elijah Crawford", "Carlos Harris III", "Nano Barrantes", "Andy Johnson", "AJ Morgan", "Abdul Momoh", "Josiah Hammons", "Mekhi Lowery", "Sam Silverstein", "Ante Beljan", "Tai Walters Whitaker", "Rashund Washington Jr."],
+    "womens_basketball": ["Jaya McClure", "Samantha Serrano", "TuTu Clayton", "Sara Zabrecky", "Aileen Becerril Landeros", "Jessica Carrothers", "Marissa Green", "Amelia Strong", "Julia Coleman", "Grace Harris", "Crystal Ortiz", "Jarius Powers", "Megen Sanaj", "London Walker George", "Magdalena Winter"],
+    "mens_soccer": ["Owen Cornell", "Gianfranco Paladino", "Sota Nakazono", "Takeru Chiba", "Hector Gil", "Alan Alonso", "Adrian Biaggi", "Darrell Turcios", "Vasilis Eliadis", "Brandon Flores", "Joey Galante", "Sebastian Khoury", "Martin Montoya", "Daniel Navarro", "Carlos Nevarez", "AJ Sabanovic", "Kyle Ward"],
+    "womens_soccer": ["Sidney Lazenby", "Bella Lister", "Emmy Higgins", "Sydney Bollis", "Kamryn Brickman", "Marinna Campos", "Braelyn Clark", "Delaney Engel", "Ajla Gradjan", "Jilly Higgins", "Amina Marin", "Rosie Martin", "Camryn Ries", "Jennifer Rodriguez", "Becca Ruggiero", "Julia Thomson"],
+    "mens_tennis": ["Artem Alekseychuk", "Elliott Dam", "Emil Dapcevic", "Victor Dorojan", "Youssef Hamed", "Simon Knezevic", "Eldin Nokic", "Henrique Sa", "Mihailo Savic"],
+    "womens_tennis": ["Anaïs Brion", "Nia Cooper", "Edit Cosmo", "Charlotte Deletioglu", "Marta Halbersztadt", "Joanne Hartono", "Dongke Liu", "Paula Rodriguez Gregoris", "Stela Vlaisavljevic"],
+    "volleyball": ["Ayat Amin", "Beatrice Carulli", "Emma Colombari", "Jillian Gibbons", "Mihaela Harizanova", "Hannah Howard", "Tamara Kisic", "Sasha Pellettieri", "Gabi Peter", "Ana Petrides", "Julieta Sandez", "Mia Telechbush", "Francesca Venturini", "Ava Young", "Jada Young"]
+  }
+}

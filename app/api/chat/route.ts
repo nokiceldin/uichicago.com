@@ -1,4 +1,7 @@
+
 export const dynamic = "force-dynamic";
+export const runtime = "nodejs";  // ADD THIS
+export const revalidate = 0;      // ADD
 import { NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
 import { detectIntent, detectCampusIntent } from "@/lib/chat/intent";
@@ -1628,7 +1631,7 @@ export async function POST(req: Request) {
   const maxTokens = query.answerMode === "planning" ? 2800 : query.answerMode === "hybrid" ? 2200 : query.isFact ? 300 : 1800;
 
   try {
-    const stream = await client.messages.stream({
+    const stream = client.messages.stream({
       model: "claude-sonnet-4-20250514",
       max_tokens: maxTokens,
       system: systemPrompt,
@@ -1639,11 +1642,11 @@ export async function POST(req: Request) {
     const readable = new ReadableStream({
       async start(controller) {
         try {
-          for await (const chunk of stream) {
-            if (chunk.type === "content_block_delta" && chunk.delta.type === "text_delta") {
-              controller.enqueue(encoder.encode(chunk.delta.text));
-            }
-          }
+          for await (const event of stream) {
+  if (event.type === "content_block_delta" && event.delta.type === "text_delta") {
+    controller.enqueue(encoder.encode(event.delta.text));
+  }
+}
         } finally {
           controller.close();
         }
@@ -1655,8 +1658,6 @@ export async function POST(req: Request) {
       "X-Content-Type-Options": "nosniff",
       "Cache-Control": "no-store, no-cache, must-revalidate",
       "X-Accel-Buffering": "no",
-      "Transfer-Encoding": "chunked",
-      "Connection": "keep-alive",
     };
     if (isNew) {
       headers["Set-Cookie"] = `sparky_session=${sessionId}; Path=/; Max-Age=${60 * 60 * 24 * 365}; SameSite=Lax`;

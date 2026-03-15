@@ -2,7 +2,7 @@
   "crons": [
     {
       "path": "/api/cron/import-rss?secret=YOUR_CRON_SECRET",
-      "schedule": "0 * * * *"
+      "schedule": "0 9 * * *"
     }
   ],
   "functions": {

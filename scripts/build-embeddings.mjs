@@ -60,74 +60,83 @@ async function buildCourseChunks() {
   const courses = await prisma.course.findMany({
     where: { avgGpa: { not: null } },
     select: {
-  id: true, subject: true, number: true, title: true,
-  deptName: true, avgGpa: true, difficultyScore: true,
-  totalRegsAllTime: true, isGenEd: true, genEdCategory: true,
-  termStats: { select: { a: true, b: true, c: true, d: true, f: true, gradeRegs: true } },
-  instructorStats: { select: { instructorName: true, gradeRegs: true } },
-},
+      id: true, subject: true, number: true, title: true,
+      deptName: true, avgGpa: true, difficultyScore: true,
+      totalRegsAllTime: true, isGenEd: true, genEdCategory: true,
+      termStats: { select: { a: true, b: true, c: true, d: true, f: true, gradeRegs: true } },
+      instructorStats: { select: { instructorName: true, gradeRegs: true } },
+    },
     orderBy: { totalRegsAllTime: "desc" },
   });
 
   console.log(`  Found ${courses.length} courses`);
   let processed = 0;
 
-  // Process in batches
   for (let i = 0; i < courses.length; i += BATCH_SIZE) {
     const batch = courses.slice(i, i + BATCH_SIZE);
 
-    const texts = batch.map(c => {
-  const gradeInfo = c.termStats?.length
-    ? (() => {
+    const allTexts = [];
+    const allMeta = [];
+
+    for (const c of batch) {
+      const topProfs = c.instructorStats
+        ?.sort((a, b) => b.gradeRegs - a.gradeRegs)
+        ?.slice(0, 3)
+        ?.map(i => i.instructorName)
+        ?.join(", ") ?? "";
+
+      const gradeInfo = c.termStats?.length ? (() => {
         const totals = c.termStats.reduce((acc, t) => ({
           a: acc.a + t.a, b: acc.b + t.b, c: acc.c + t.c,
           d: acc.d + t.d, f: acc.f + t.f, total: acc.total + t.gradeRegs
         }), { a: 0, b: 0, c: 0, d: 0, f: 0, total: 0 });
         if (totals.total === 0) return "";
         const pct = x => ((x / totals.total) * 100).toFixed(0);
-        return `Grade breakdown: ${pct(totals.a)}% A, ${pct(totals.b)}% B, ${pct(totals.c)}% C, ${pct(totals.d)}% D, ${pct(totals.f)}% F. `;
-      })()
-    : "";
-  const topProfs = c.instructorStats
-    ?.sort((a, b) => b.gradeRegs - a.gradeRegs)
-    ?.slice(0, 3)
-    ?.map(i => i.instructorName)
-    ?.join(", ") ?? "";
+        return `${pct(totals.a)}% A, ${pct(totals.b)}% B, ${pct(totals.c)}% C, ${pct(totals.d)}% D, ${pct(totals.f)}% F`;
+      })() : "";
 
-  return `${c.subject} ${c.number} — ${c.title}. ` +
-    `Department: ${c.deptName ?? "N/A"}. ` +
-    `Average GPA: ${c.avgGpa?.toFixed(2) ?? "N/A"}. ` +
-    `Difficulty: ${diffLabel(c.difficultyScore)} (${c.difficultyScore?.toFixed(1) ?? "N/A"}/5). ` +
-    `Total enrollments: ${c.totalRegsAllTime?.toLocaleString() ?? "N/A"}. ` +
-    gradeInfo +
-    (topProfs ? `Common instructors: ${topProfs}. ` : "") +
-    (c.isGenEd ? `Gen Ed course. Category: ${c.genEdCategory ?? "N/A"}. ` : "") +
-    `Course code: ${c.subject} ${c.number}.`;
-});
+      // 1. Catalog chunk — what is this course
+      const catalogText = `${c.subject} ${c.number} — ${c.title}. ` +
+        `Department: ${c.deptName ?? "N/A"}. ` +
+        `Total enrollments: ${c.totalRegsAllTime?.toLocaleString() ?? "N/A"}. ` +
+        (c.isGenEd ? `This is a Gen Ed course. Category: ${c.genEdCategory ?? "N/A"}. ` : "") +
+        (topProfs ? `Common instructors: ${topProfs}. ` : "") +
+        `[UIC Course Catalog | ${c.deptName ?? c.subject} | 2025-2026]`;
+      allTexts.push(catalogText);
+      allMeta.push({ type: "catalog", subject: c.subject, number: c.number, title: c.title, dept: c.deptName, isGenEd: c.isGenEd, courseId: c.id });
+
+      // 2. Grade chunk — how easy/hard is this course
+      const gradeText = `${c.subject} ${c.number} (${c.title}) grade data. ` +
+        `Average GPA: ${c.avgGpa?.toFixed(2) ?? "N/A"}. ` +
+        `Difficulty: ${diffLabel(c.difficultyScore)} (${c.difficultyScore?.toFixed(1) ?? "N/A"}/5). ` +
+        (gradeInfo ? `Grade distribution: ${gradeInfo}. ` : "") +
+        `[UIC Course Grade Data | ${c.deptName ?? c.subject} | Source: grade distribution database]`;
+      allTexts.push(gradeText);
+      allMeta.push({ type: "grades", subject: c.subject, number: c.number, gpa: c.avgGpa, difficulty: c.difficultyScore, courseId: c.id });
+    }
 
     try {
-      const embeddings = await embedBatch(texts);
-      for (let j = 0; j < batch.length; j++) {
-        const c = batch[j];
+      const embeddings = await embedBatch(allTexts);
+      for (let j = 0; j < allTexts.length; j++) {
+        const meta = allMeta[j];
         await upsertChunk(
-          texts[j],
+          allTexts[j],
           "course",
-          c.id,
-          { subject: c.subject, number: c.number, title: c.title, dept: c.deptName, gpa: c.avgGpa, difficulty: c.difficultyScore, isGenEd: c.isGenEd },
+          `${meta.courseId}_${meta.type}`,
+          meta,
           embeddings[j]
         );
-        processed++;
+        if (meta.type === "catalog") processed++;
       }
       console.log(`  ✅ Courses: ${processed}/${courses.length}`);
     } catch (err) {
       console.error(`  ❌ Batch ${i}-${i+BATCH_SIZE} failed:`, err.message);
     }
 
-    // Rate limit pause
     await new Promise(r => setTimeout(r, 200));
   }
 
-  console.log(`  → Done: ${processed} course embeddings`);
+  console.log(`  → Done: ${processed} courses (${processed * 2} total chunks)`);
 }
 
 // ─── Build professor chunks ───────────────────────────────────────────────────
@@ -136,10 +145,10 @@ async function buildProfessorChunks() {
   const professors = await prisma.professor.findMany({
     where: { rmpRatingsCount: { gt: 0 } },
     select: {
-  id: true, name: true, department: true, school: true,
-  rmpQuality: true, rmpDifficulty: true, rmpRatingsCount: true,
-  rmpWouldTakeAgain: true, aiSummary: true, slug: true,
-},
+      id: true, name: true, department: true, school: true,
+      rmpQuality: true, rmpDifficulty: true, rmpRatingsCount: true,
+      rmpWouldTakeAgain: true, aiSummary: true, slug: true,
+    },
     orderBy: { rmpRatingsCount: "desc" },
   });
 
@@ -149,37 +158,61 @@ async function buildProfessorChunks() {
   for (let i = 0; i < professors.length; i += BATCH_SIZE) {
     const batch = professors.slice(i, i + BATCH_SIZE);
 
-    const texts = batch.map(p =>
-  `Professor ${p.name}. ` +
-  `Department: ${p.department}. ` +
-  `RateMyProfessors rating: ${p.rmpQuality?.toFixed(1) ?? "N/A"}/5 from ${p.rmpRatingsCount ?? 0} reviews. ` +
-  `Difficulty rating: ${p.rmpDifficulty?.toFixed(1) ?? "N/A"}/5. ` +
-  `Would take again: ${p.rmpWouldTakeAgain ?? "N/A"}%. ` +
-  (p.aiSummary ? `Summary: ${p.aiSummary}` : "")
-);
+    // Build multiple representations per professor
+    const allTexts = [];
+    const allMeta = [];
+
+    for (const p of batch) {
+      // 1. Profile chunk — who is this professor
+      const profileText = `Professor ${p.name}. Department: ${p.department}. ` +
+        `Overall RMP rating: ${p.rmpQuality?.toFixed(1) ?? "N/A"}/5 from ${p.rmpRatingsCount ?? 0} student reviews. ` +
+        `Would take again: ${p.rmpWouldTakeAgain ?? "N/A"}%. ` +
+        `[UIC Professor Profile | ${p.department} | Source: RateMyProfessors]`;
+      allTexts.push(profileText);
+      allMeta.push({ type: "profile", name: p.name, dept: p.department, quality: p.rmpQuality, slug: p.slug, profId: p.id });
+
+      // 2. Difficulty/grading chunk — is this professor easy or hard
+      const diffText = `Professor ${p.name} (${p.department}) difficulty and grading. ` +
+        `RMP difficulty: ${p.rmpDifficulty?.toFixed(1) ?? "N/A"}/5 (1=easy, 5=hard). ` +
+        `Overall quality: ${p.rmpQuality?.toFixed(1) ?? "N/A"}/5. ` +
+        `Would take again: ${p.rmpWouldTakeAgain ?? "N/A"}%. ` +
+        `Based on ${p.rmpRatingsCount ?? 0} reviews. ` +
+        `[UIC Professor Difficulty Data | ${p.department} | Source: RateMyProfessors]`;
+      allTexts.push(diffText);
+      allMeta.push({ type: "difficulty", name: p.name, dept: p.department, difficulty: p.rmpDifficulty, slug: p.slug, profId: p.id });
+
+      // 3. Student consensus chunk — what do students say
+      if (p.aiSummary) {
+        const reviewText = `Student reviews for Professor ${p.name} (${p.department}): ${p.aiSummary} ` +
+          `[UIC Professor Student Reviews | ${p.department} | Source: RateMyProfessors student consensus]`;
+        allTexts.push(reviewText);
+        allMeta.push({ type: "reviews", name: p.name, dept: p.department, quality: p.rmpQuality, slug: p.slug, profId: p.id });
+      }
+    }
 
     try {
-      const embeddings = await embedBatch(texts);
-      for (let j = 0; j < batch.length; j++) {
-        const p = batch[j];
+      const embeddings = await embedBatch(allTexts);
+      for (let j = 0; j < allTexts.length; j++) {
+        const meta = allMeta[j];
+        // Use compound sourceId so each chunk type gets its own row
         await upsertChunk(
-          texts[j],
+          allTexts[j],
           "professor",
-          p.id,
-          { name: p.name, dept: p.department, quality: p.rmpQuality, difficulty: p.rmpDifficulty, ratings: p.rmpRatingsCount, slug: p.slug },
+          `${meta.profId}_${meta.type}`,
+          meta,
           embeddings[j]
         );
-        processed++;
+        if (meta.type === "profile") processed++;
       }
       console.log(`  ✅ Professors: ${processed}/${professors.length}`);
     } catch (err) {
       console.error(`  ❌ Batch ${i}-${i+BATCH_SIZE} failed:`, err.message);
     }
 
-    await new Promise(r => setTimeout(r, 200));
+    await new Promise(r => setTimeout(r, 300));
   }
 
-  console.log(`  → Done: ${processed} professor embeddings`);
+  console.log(`  → Done: ${processed} professors (${processed * 2}-${processed * 3} total chunks)`);
 }
 
 // ─── Build news/knowledge chunks ─────────────────────────────────────────────

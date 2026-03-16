@@ -68,6 +68,87 @@ export async function vectorSearch(
   }
 }
 
+export async function rerankChunks(
+  query: string,
+  chunks: any[],
+  topK = 8
+): Promise<any[]> {
+  if (chunks.length <= topK) return chunks;
+
+  const client = new Anthropic();
+
+  try {
+    const response = await client.messages.create({
+      model: "claude-haiku-4-5-20251001",
+      max_tokens: 800,
+      messages: [{
+        role: "user",
+        content: `You are a retrieval ranker for a university AI assistant. Your job is to select the most useful chunks for answering a student's question.
+
+Query: "${query}"
+
+For each chunk below, classify it and return structured JSON.
+
+Chunks:
+${chunks.slice(0, 25).map((c, i) => `[${i}] ${c.content.slice(0, 250)}`).join("\n\n")}
+
+Return ONLY a JSON array like this:
+[
+  {"index": 0, "relevance": "direct_answer", "entity_match": "exact", "use": true},
+  {"index": 1, "relevance": "strong_support", "entity_match": "partial", "use": true},
+  {"index": 2, "relevance": "irrelevant", "entity_match": "none", "use": false}
+]
+
+relevance options: direct_answer | strong_support | weak_support | background | irrelevant
+entity_match options: exact | partial | none
+use: true if this chunk should be included in the final answer, false if not
+
+Rules:
+- Mark as direct_answer only if it directly answers the question
+- Prioritize exact entity matches (specific course code, professor name)
+- Deprioritize broad background chunks when specific data exists
+- Remove near-duplicates (keep only the best version)
+- Keep at most 2 chunks from the same source facet
+- Return JSON only, no explanation`
+      }]
+    });
+
+    const text = (response.content[0] as any)?.text ?? "[]";
+    const clean = text.replace(/```json|```/g, "").trim();
+    const rankings: { index: number; relevance: string; entity_match: string; use: boolean }[] = JSON.parse(clean);
+
+    // Score by relevance tier
+    const relevanceScore: Record<string, number> = {
+      direct_answer: 4,
+      strong_support: 3,
+      weak_support: 2,
+      background: 1,
+      irrelevant: 0,
+    };
+    const entityScore: Record<string, number> = {
+      exact: 2,
+      partial: 1,
+      none: 0,
+    };
+
+    return rankings
+      .filter(r => r.use)
+      .sort((a, b) => {
+        const scoreA = (relevanceScore[a.relevance] ?? 0) * 3 + (entityScore[a.entity_match] ?? 0);
+        const scoreB = (relevanceScore[b.relevance] ?? 0) * 3 + (entityScore[b.entity_match] ?? 0);
+        return scoreB - scoreA;
+      })
+      .slice(0, topK)
+      .map(r => chunks[r.index])
+      .filter(Boolean);
+  } catch {
+    // Fallback to original scoring
+    return chunks
+      .sort((a, b) => (b.relevanceScore * b.sourceConfidence) - (a.relevanceScore * a.sourceConfidence))
+      .slice(0, topK);
+  }
+}
+
 // Store a knowledge chunk with its embedding
 export async function upsertChunk(
   content: string,

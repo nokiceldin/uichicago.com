@@ -184,8 +184,16 @@ export async function fetchProfessorsByDept(deptName?: string | null, limit = 30
 // ─── Professor with course rankings ──────────────────────────────────────────
 
 export async function fetchProfessorWithCourseRankings(profNameHint: string) {
-  const prof = await prisma.professor.findFirst({
-    where: { name: { contains: profNameHint, mode: "insensitive" } },
+  // Try direct match first, then try each word of the hint individually
+const nameParts = profNameHint.split(/\s+/).filter(p => p.length >= 3);
+const prof = await prisma.professor.findFirst({
+  where: {
+    OR: [
+      { name: { contains: profNameHint, mode: "insensitive" as const } },
+      ...nameParts.map(part => ({ name: { contains: part, mode: "insensitive" as const } })),
+    ]
+  },
+  orderBy: { rmpRatingsCount: "desc" },
     select: {
       name: true, department: true, rmpQuality: true, rmpDifficulty: true,
       rmpRatingsCount: true, rmpWouldTakeAgain: true, aiSummary: true, slug: true,
@@ -217,4 +225,97 @@ export async function fetchRecentNews(category?: string | null, limit = 10) {
     take: limit,
     select: { title: true, aiSummary: true, publishedAt: true, source: true, url: true, category: true },
   });
+}
+
+// ─── Easiest/best professors FOR A SPECIFIC COURSE ────────────────────────────
+// This is the core "who's easiest for CS 211?" query — pure SQL, no vectors
+
+export async function fetchProfessorsForCourse(
+  subject: string,
+  number: string,
+  easiestFirst = true
+) {
+  const course = await prisma.course.findFirst({
+    where: {
+      subject: { equals: subject, mode: "insensitive" },
+      number: { equals: number, mode: "insensitive" },
+    },
+    select: { id: true, title: true, subject: true, number: true, avgGpa: true },
+  });
+  if (!course) return null;
+
+  const stats = await prisma.courseInstructorTermStats.groupBy({
+    by: ["instructorName"],
+    where: { courseId: course.id },
+    _sum: { a: true, b: true, c: true, d: true, f: true, w: true, gradeRegs: true },
+    orderBy: { _sum: { gradeRegs: "desc" } },
+  });
+
+  const courseMap = getProfCourseMap();
+
+  const instructors = await Promise.all(
+    stats.map(async (s) => {
+      const sum = s._sum;
+      const graded = (sum.a ?? 0) + (sum.b ?? 0) + (sum.c ?? 0) + (sum.d ?? 0) + (sum.f ?? 0);
+      const gpa = graded > 0 ? calcGpa(sum.a ?? 0, sum.b ?? 0, sum.c ?? 0, sum.d ?? 0, sum.f ?? 0) : null;
+      const aRate = graded > 0 ? +((( sum.a ?? 0) / graded) * 100).toFixed(1) : null;
+      const wRate = (sum.gradeRegs ?? 0) > 0 ? +(((sum.w ?? 0) / (sum.gradeRegs ?? 1)) * 100).toFixed(1) : null;
+
+      // Try to find RMP data
+      const prof = await prisma.professor.findFirst({
+        where: { name: { contains: s.instructorName.split(",")[0]?.trim() ?? s.instructorName, mode: "insensitive" } },
+        select: { rmpQuality: true, rmpDifficulty: true, rmpRatingsCount: true, rmpWouldTakeAgain: true, aiSummary: true, slug: true },
+      });
+
+      return {
+        name: s.instructorName,
+        gpa,
+        aRate,
+        wRate,
+        totalStudents: sum.gradeRegs ?? 0,
+        rmpQuality: prof?.rmpQuality ?? null,
+        rmpDifficulty: prof?.rmpDifficulty ?? null,
+        rmpRatingsCount: prof?.rmpRatingsCount ?? null,
+        rmpWouldTakeAgain: prof?.rmpWouldTakeAgain ?? null,
+        aiSummary: prof?.aiSummary ?? null,
+        slug: prof?.slug ?? null,
+      };
+    })
+  );
+
+  // Sort by GPA (easiest = highest GPA first) or hardest
+  const sorted = instructors
+    .filter(i => i.gpa !== null && i.totalStudents >= 10)
+    .sort((a, b) => easiestFirst ? (b.gpa! - a.gpa!) : (a.gpa! - b.gpa!));
+
+  return { course, instructors: sorted };
+}
+
+// ─── Course GPA ranking within a department/subject ──────────────────────────
+// "easiest CS courses", "highest GPA MATH courses"
+
+export async function fetchCourseGpaRanking(
+  subject: string | null,
+  deptName: string | null,
+  easiestFirst = true,
+  isGenEdOnly = false,
+  limit = 20
+) {
+  const where: any = { avgGpa: { not: null } };
+  if (subject) where.subject = { equals: subject, mode: "insensitive" };
+  if (deptName && !subject) where.deptName = { contains: deptName, mode: "insensitive" };
+  if (isGenEdOnly) where.isGenEd = true;
+
+  const courses = await prisma.course.findMany({
+    where,
+    select: {
+      subject: true, number: true, title: true,
+      avgGpa: true, difficultyScore: true,
+      totalRegsAllTime: true, isGenEd: true, genEdCategory: true,
+    },
+    orderBy: easiestFirst ? { avgGpa: "desc" } : { avgGpa: "asc" },
+    take: limit,
+  });
+
+  return courses;
 }

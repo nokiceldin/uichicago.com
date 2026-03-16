@@ -6,17 +6,9 @@ import { NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
 import { detectIntent, detectCampusIntent } from "@/lib/chat/intent";
 import { classifyIntent } from "@/lib/chat/classify";
-import { vectorSearch } from "@/lib/chat/vectors";
+import { vectorSearch, rerankChunks } from "@/lib/chat/vectors";
+import { getSessionState, updateSessionState, extractEntitiesFromQuery } from "@/lib/chat/session-state";
 import { getMemory, updateMemory, formatMemoryForPrompt } from "@/lib/chat/memory";
-import {
-  fetchCourseDetail,
-  fetchCoursesByCodesRanked,
-  fetchCoursesBySubjectOrDept,
-  fetchGenEdCourses,
-  fetchProfessorsByDept,
-  fetchProfessorWithCourseRankings,
-  fetchRecentNews,
-} from "@/lib/chat/data";
 import { diffLabel } from "@/lib/chat/utils";
 import housingDiningData from "@/public/data/uic-knowledge/housing-dining.json";
 import athleticsData from "@/public/data/uic-knowledge/athletics.json";
@@ -31,6 +23,19 @@ import instagramData from "@/public/data/uic-knowledge/instagram-accounts.json";
 import healthData from "@/public/data/uic-knowledge/health-academics.json";
 import buildingsData from "@/public/data/uic-knowledge/campus-buildings.json";
 import advisingData from "@/public/data/uic-knowledge/advising-support.json";
+import tuitionData from "@/public/data/uic-knowledge/tuition.json";
+import specialPopData from "@/public/data/uic-knowledge/special-populations.json";
+import {
+  fetchCourseDetail,
+  fetchCoursesByCodesRanked,
+  fetchCoursesBySubjectOrDept,
+  fetchGenEdCourses,
+  fetchProfessorsByDept,
+  fetchProfessorWithCourseRankings,
+  fetchRecentNews,
+  fetchProfessorsForCourse,   // ADD
+  fetchCourseGpaRanking,       // ADD
+} from "@/lib/chat/data";
 
 
 const client = new Anthropic();
@@ -253,11 +258,11 @@ function analyzeQuery(msg: string, conversationHistory: ChatMessage[]): QueryAna
   ].map((t: any) => (t.coach ?? "").toLowerCase());
 
   const athleticsMatch =
-    allRosterPlayers.some(p => {
-      const parts = p.split(/\s+/);
-      // Match on last name (last part) if it's 3+ chars, or full name
-      return parts.some(part => part.length >= 3 && lower.includes(part)) || lower.includes(p);
-    }) ||
+  allRosterPlayers.some(p => {
+    const pParts = p.split(/\s+/).filter(part => part.length >= 3 && !["ii","iii","jr","sr","iv"].includes(part));
+    const qParts = lower.split(/\s+/).filter(w => w.length >= 3 && !["who","is","the","are","about","tell","me"].includes(w));
+    return pParts.some(part => lower.includes(part)) || qParts.some(w => p.includes(w));
+  }) ||
     allCoaches.some(c => {
       const parts = c.split(/\s+/);
       return parts.some((part: string) => part.length >= 4 && lower.includes(part));
@@ -437,6 +442,32 @@ function scoreChunk(content: string, query: QueryAnalysis, domain: Domain): numb
 
 function makeChunk(domain: Domain, content: string, baseConfidence: number, query: QueryAnalysis): RetrievedChunk {
   let finalContent = content;
+  
+  // Prepend context sentence so the model knows provenance of every chunk
+  const contextPrefix: Partial<Record<Domain, string>> = {
+    courses: "[UIC course and grade data]",
+    professors: "[UIC professor ratings and grade data]",
+    housing: "[UIC housing and residence hall data 2025-2026]",
+    dining: "[UIC dining locations and meal plan data]",
+    tuition: "[UIC tuition and financial aid data 2025-2026]",
+    financial_aid: "[UIC scholarships and financial aid 2025-2026]",
+    athletics: "[UIC Flames athletics data]",
+    health: "[UIC health and counseling services]",
+    campus_map: "[UIC campus buildings and locations]",
+    transportation: "[UIC transportation and CTA data]",
+    student_life: "[UIC student organizations and campus life]",
+    calendar: "[UIC academic calendar and policies 2025-2026]",
+    admissions: "[UIC admissions data]",
+    careers: "[UIC career services]",
+    safety: "[UIC safety and campus police]",
+    international: "[UIC international student services]",
+    library: "[UIC library services]",
+  };
+  
+  const prefix = contextPrefix[domain];
+  if (prefix && !finalContent.startsWith("[")) {
+    finalContent = `${prefix}\n${finalContent}`;
+  }
   if (query.isFact) {
     const queryWords = query.rawQuery.toLowerCase().split(/\s+/);
     const extracted = extractFact(content, queryWords);
@@ -571,7 +602,7 @@ async function retrieveMajorPlan(query: QueryAnalysis): Promise<RetrievedChunk[]
     const data = JSON.parse(readFileSync(join(process.cwd(), "public/data/uic-knowledge/major-requirements.json"), "utf8"));
     const lower = query.rawQuery.toLowerCase();
 
-    const majorMatch = data.majors?.find((m: any) => {
+    const majorMatch = data.majors?.filter((m: any) => {
       const n = m.name.toLowerCase();
       return lower.includes(n) ||
         (n.includes("computer science") && (lower.includes(" cs ") || lower.includes("cs major") || lower.includes("computer science"))) ||
@@ -582,13 +613,19 @@ async function retrieveMajorPlan(query: QueryAnalysis): Promise<RetrievedChunk[]
         (n.includes("accounting") && lower.includes("account")) ||
         (n.includes("finance") && lower.includes("finance")) ||
         (n.includes("marketing") && lower.includes("marketing")) ||
+        (n.includes("management") && lower.includes("management")) ||
+        (n.includes("economics") && lower.includes("econ")) ||
         (n.includes("chemistry") && lower.includes("chem") && !lower.includes("biochem")) ||
         (n.includes("mechanical engineering") && lower.includes("mechanical")) ||
         (n.includes("electrical engineering") && lower.includes("electrical")) ||
         (n.includes("civil engineering") && lower.includes("civil")) ||
-        (n.includes("bioengineering") && lower.includes("bioengin")) ||
+        (n.includes("biomedical engineering") && lower.includes("bioengin")) ||
         (n.includes("public health") && lower.includes("public health"));
-    });
+    }).sort((a: any, b: any) => {
+      const scoreA = (a.name.includes(" BS") || a.name.includes(" BA") ? 10 : 0) + (a.requiredCourses?.length ?? 0);
+      const scoreB = (b.name.includes(" BS") || b.name.includes(" BA") ? 10 : 0) + (b.requiredCourses?.length ?? 0);
+      return scoreB - scoreA;
+    })[0] ?? null;
 
     if (!majorMatch) {
       const list = data.majors?.slice(0, 40).map((m: any) => `- ${m.name}`).join("\n") || "";
@@ -624,6 +661,7 @@ async function retrieveMajorPlan(query: QueryAnalysis): Promise<RetrievedChunk[]
 function retrieveTuition(ci: any, query: QueryAnalysis): RetrievedChunk[] {
   const bill = billingData as any;
   const chunks: RetrievedChunk[] = [];
+  
 
   if (ci.isAboutTuition || ci.isAboutCostComparison || ci.isAboutDebt || query.domainConfidence["tuition"]) {
     const content = `=== UIC TUITION & COSTS 2025-2026 ===\n` +
@@ -653,6 +691,13 @@ function retrieveTuition(ci: any, query: QueryAnalysis): RetrievedChunk[] {
       `In-state residency: Independent students need 1 year in IL not as a student. F-1 visa = not eligible.`;
     chunks.push(makeChunk("financial_aid", content, 0.97, query));
   }
+
+  const aspire = (tuitionData as any).financial_aid?.aspire_grant;
+
+if (aspire && (ci.isAboutFinancialAid || query.rawQuery.toLowerCase().includes("aspire"))) {  chunks.push(makeChunk("financial_aid", 
+    `ASPIRE GRANT: ${aspire.what_it_is}\nEligibility: ${aspire.eligibility}\nDeadline: ${aspire.deadline}\nApply: ${aspire.how_to_apply}`,
+    0.99, query));
+}
   return chunks;
 }
 
@@ -792,7 +837,17 @@ async function retrieveAthletics(query: QueryAnalysis): Promise<RetrievedChunk[]
     for (const [rosterKey, players] of Object.entries(allRosters)) {
       if (rosterKey === "note") continue;
       const playerList = players as string[];
-      const matched = playerList.filter((p: string) => lower.includes(p.toLowerCase().split(" ").pop()!.toLowerCase()) || lower.includes(p.toLowerCase()));
+      const matched = playerList.filter((p: string) => {
+  const pLower = p.toLowerCase();
+  const pParts = pLower.split(/\s+/).filter(part => part.length >= 3 && !["ii","iii","jr","sr","iv"].includes(part));
+  const qParts = lower.split(/\s+/).filter((w: string) => w.length >= 3);
+  // Match if any meaningful part of the player name appears anywhere in the query
+  const anyPartMatch = pParts.some(part => lower.includes(part));
+  // Match if query words appear in player name (handles reversed names like "nokic eldin" = "eldin nokic")
+  const reversedMatch = qParts.filter((w: string) => !["who","is","the","are","about","tell","me","a","an"].includes(w))
+    .some((w: string) => pLower.includes(w));
+  return anyPartMatch || reversedMatch || lower.includes(pLower);
+});
       if (matched.length > 0) {
         // Find the team this roster belongs to
         const teamLabel = rosterKey.replace(/_/g, " ");
@@ -1383,19 +1438,107 @@ function assembleContext(chunks: RetrievedChunk[], brief: AnswerBrief): string {
 // STAGE 6: SYSTEM PROMPT WITH ANSWER BRIEF
 // ═══════════════════════════════════════════════════════════════════════════════
 
+// ═══════════════════════════════════════════════════════════════════════════════
+// ANSWER PACK BUILDER — converts retrieval output into typed evidence pack
+// This is what the final model writes from, not raw chunks
+// ═══════════════════════════════════════════════════════════════════════════════
+
+interface AnswerPack {
+  answerMode: AnswerMode;
+  resolvedIntent: string;
+  resolvedEntities: { type: string; value: string }[];
+  directFacts: string[];
+  rankedEvidence: { source: string; content: string; trust: "official" | "review" | "generated" }[];
+  caveats: string[];
+  maxResponseShape: string;
+}
+
+function buildAnswerPack(
+  query: QueryAnalysis,
+  chunks: RetrievedChunk[],
+  intent: any,
+  sessionState: any
+): AnswerPack {
+  // Resolve entities
+  const resolvedEntities: { type: string; value: string }[] = [];
+  if (intent.courseCode) resolvedEntities.push({ type: "course", value: `${intent.courseCode.subject} ${intent.courseCode.number}` });
+  if (intent.profNameHint) resolvedEntities.push({ type: "professor", value: intent.profNameHint });
+  if (intent.subjectCode) resolvedEntities.push({ type: "subject", value: intent.subjectCode });
+  if (sessionState?.activeCourseCode && !intent.courseCode) resolvedEntities.push({ type: "course_from_session", value: sessionState.activeCourseCode });
+  if (sessionState?.activeProfessorName && !intent.profNameHint) resolvedEntities.push({ type: "professor_from_session", value: sessionState.activeProfessorName });
+
+  // Extract direct facts from chunks — lines with numbers, names, specifics
+  const directFacts: string[] = [];
+  const seen = new Set<string>();
+  for (const chunk of chunks.slice(0, 5)) {
+    const lines = chunk.content.split("\n").filter(l => l.trim() && !l.startsWith("===") && !l.startsWith("["));
+    for (const line of lines.slice(0, 3)) {
+      const key = line.trim().slice(0, 60);
+      if (!seen.has(key) && line.match(/\d|GPA|%|Prof|Course|\$|deadline|hours/i)) {
+        seen.add(key);
+        directFacts.push(line.trim());
+      }
+    }
+    if (directFacts.length >= 6) break;
+  }
+
+  // Rank evidence by trust level
+  const rankedEvidence = chunks.slice(0, 6).map(chunk => {
+    let trust: "official" | "review" | "generated" = "official";
+    if (chunk.domain === "professors" && chunk.content.includes("Student reviews")) trust = "review";
+    else if (chunk.content.includes("consensus") || chunk.content.includes("students say")) trust = "review";
+    else if (chunk.content.includes("SEMANTIC SUPPORT")) trust = "generated";
+    return {
+      source: chunk.domain,
+      content: chunk.content.slice(0, 400),
+      trust,
+    };
+  });
+
+  // Detect caveats
+  const caveats: string[] = [];
+  if (chunks.length === 0) caveats.push("No direct data found — answer from general knowledge only");
+  if (chunks.every(c => c.relevanceScore < 0.6)) caveats.push("Retrieved data is loosely related — answer with caution");
+  if (intent.courseCode && !chunks.some(c => c.domain === "courses" || c.domain === "professors")) {
+    caveats.push(`Specific data for ${intent.courseCode.subject} ${intent.courseCode.number} may be limited`);
+  }
+
+  // Response shape by mode
+  const shapeMap: Record<AnswerMode, string> = {
+    ranking: "2-4 sentences with a clear winner named first. Use specific numbers.",
+    comparison: "Parallel structure A vs B. End with a direct recommendation.",
+    recommendation: "Direct personalized answer in 2-3 sentences. No hedging.",
+    logistics: "1-2 sentences with exact details (address, phone, deadline). No editorializing.",
+    planning: "Semester-by-semester table with real course codes.",
+    discovery: "2-3 short paragraphs max. Lead with the most useful fact.",
+    hybrid: "Organized sections, one per sub-question. Crisp summary at end.",
+  };
+
+  return {
+    answerMode: query.answerMode,
+    resolvedIntent: query.primaryGoal,
+    resolvedEntities,
+    directFacts,
+    rankedEvidence,
+    caveats,
+    maxResponseShape: shapeMap[query.answerMode] ?? "2-3 sentences max.",
+  };
+}
+
 function buildSystemPrompt(
   brief: AnswerBrief,
   memoryContext: string,
   context: string,
-  isFact: boolean
+  isFact: boolean,
+  answerPack?: AnswerPack
 ): string {
   const modeInstructions: Record<AnswerMode, string> = {
     ranking: "RANKING: Lead with the top options. Use real GPA numbers, scores, prices to justify rankings. Name a clear winner. Don't hedge — students want a decisive answer.",
+    discovery: "DISCOVERY: If this is a simple or casual question, answer briefly and directly. Only give a rich overview if the student is genuinely exploring a broad topic.",
     comparison: "COMPARISON: Structure as clear A vs B with parallel criteria. Acknowledge the real tradeoffs. End with a concrete recommendation tailored to the implied student profile.",
     recommendation: "RECOMMENDATION: You detected specific constraints about this student. Use them. Give a direct, personalized answer — not 'it depends,' but 'given that you care about X and Y, here is what I recommend and why.'",
     logistics: "LOGISTICS: Be precise. Lead with exact addresses, phone numbers, deadlines, URLs, hours. Zero editorializing. Students need to act — give them exactly what they need.",
     planning: "PLANNING: Build a complete, specific semester-by-semester plan. Use real course codes. For all optional/elective slots, auto-select the easiest options from the GPA data. Present as a clean table.",
-    discovery: "DISCOVERY: Give a rich, organized overview. Point to the most useful information. Be the knowledgeable friend who knows where everything is.",
     hybrid: "HYBRID: This is a multi-part question. Break it into organized sections. Answer each well. Synthesize with a crisp bottom line that ties it together.",
   };
 
@@ -1413,9 +1556,14 @@ function buildSystemPrompt(
 
   const corePrinciples = isFact
     ? `CORE PRINCIPLES:
+  - Match response length to the question. Simple questions = 1-3 sentences. Only use lists and long responses for planning, comparisons, or multi-part questions.
+- If the answer is short, write it short. Never pad.
+- Read between the lines: if a student seems stressed, overwhelmed, or is implicitly asking for an easier path, address that directly.
+- Connect dots: a course question often implies a professor question — answer the real question.
+- If memory shows the student's major/year, tailor every answer to their situation without being asked.
 - Quote addresses, phone numbers, suite numbers, and deadlines exactly as they appear in the data
 - Never paraphrase a location or contact detail — copy it word for word
-- Answer in 1–3 sentences for simple fact questions
+- Answer in 1-3 sentences for simple fact questions
 - If the specific fact is not in the retrieved data, say so and direct to the relevant UIC website`
     : `CORE PRINCIPLES:
 - Synthesize — reason about the data, don't just repeat it
@@ -1426,7 +1574,8 @@ function buildSystemPrompt(
 - Zero filler phrases — students want answers, not preamble
 - Think like the smartest UIC insider who knows every shortcut and real answer`;
 
-  return `You are Sparky — the intelligence layer of UIC Sparky (uicratings.com). You are not a chatbot. You are a campus reasoning system with access to real, verified UIC data.
+
+  return `You are Sparky — a smart, friendly UIC assistant. You can have normal conversations AND answer deep questions about UIC with real data. Read the room: casual messages get casual replies, serious questions get detailed answers.
 
 YOUR DATA COVERAGE:
 - 2,696 courses with real grade distributions (GPA, A-rate, W-rate, difficulty, pass rate)
@@ -1454,9 +1603,23 @@ ${corePrinciples}
 
 UIC: Chicago's only public Research I university. ~33,000 students. ~91% commuters. Majority-minority. Mascot: Sparky the Dragon. Navy and Flames Red. Missouri Valley Conference (MVC). Go Flames!
 ${memoryContext ? "\n" + memoryContext + "\n" : ""}
+${answerPack ? `
+--- ANSWER PACK ---
+INTENT: ${answerPack.resolvedIntent}
+MODE: ${answerPack.answerMode.toUpperCase()}
+ENTITIES: ${answerPack.resolvedEntities.map(e => `${e.type}=${e.value}`).join(", ") || "none"}
+RESPONSE SHAPE: ${answerPack.maxResponseShape}
+${answerPack.caveats.length > 0 ? `CAVEATS: ${answerPack.caveats.join(" | ")}` : ""}
+
+KEY FACTS (use these first):
+${answerPack.directFacts.slice(0, 5).join("\n") || "none extracted"}
+
+EVIDENCE (official > review > generated):
+${answerPack.rankedEvidence.map(e => `[${e.trust.toUpperCase()}/${e.source}] ${e.content}`).join("\n\n")}
+--- END ANSWER PACK ---` : `
 --- RETRIEVED DATA ---
 ${context}
---- END DATA ---`;
+--- END DATA ---`}`;
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -1480,11 +1643,74 @@ export async function POST(req: Request) {
   }
 
 // ── Session & query analysis ──────────────────────────────────────────────
-const { sessionId, isNew } = resolveSession(req);
-const query = analyzeQuery(lastMsg, messages.slice(0, -1));
+// ── Casual message fast path ──────────────────────────────────────────────
+  const { sessionId, isNew } = resolveSession(req);
+  const casualPatterns = /^(hey|hi|hello|sup|yo|what'?s? ?up|how are you|how r u|thanks|thank you|thx|ok|okay|cool|nice|great|lol|haha|lmao|😂|👍|k|kk|gotcha|got it|makes sense|sounds good|perfect|awesome|sure|np|no problem|good|good morning|good afternoon|good evening|morning|night|bye|goodbye|see ya|later)[\s!?.]*$/i;
+
+  if (casualPatterns.test(lastMsg.trim())) {
+    const casualResponse = await client.messages.create({
+      model: "claude-sonnet-4-20250514",
+      max_tokens: 100,
+      system: `You are Sparky, a friendly UIC assistant. The student just sent a casual message. Reply casually and briefly like a friend would — 1 sentence max. No UIC data, no lists, no preamble. Just be natural and warm.`,
+      messages: messages.map(m => ({ role: m.role, content: m.content })),
+    });
+
+    const casualText = (casualResponse.content[0] as any)?.text ?? "Hey!";
+    const encoder = new TextEncoder();
+    const readable = new ReadableStream({
+      start(controller) {
+        controller.enqueue(encoder.encode(casualText));
+        controller.close();
+      },
+    });
+    return new Response(readable, {
+      headers: {
+        "Content-Type": "text/plain; charset=utf-8",
+        "Cache-Control": "no-store",
+      },
+    });
+  }
+
+  // ── Follow-up fast path ───────────────────────────────────────────────────
+const followUpPatterns = /^(tell me more|more info|elaborate|explain more|what about (that|this|him|her|it|them)|and (him|her|it|them|that|this)|what else|any other|go on|continue|what do you mean|how so|why|really\??|interesting|what about his|what about her|what about their|and (what about)?|more details?|can you elaborate|expand on that|what does that mean)[\s?!.]*$/i;
+
+if (followUpPatterns.test(lastMsg.trim()) && messages.length >= 3) {
+  const recentContext = messages.slice(-4).map(m => `${m.role}: ${m.content}`).join("\n");
+  const followUpResponse = await client.messages.create({
+    model: "claude-sonnet-4-20250514",
+    max_tokens: 600,
+    system: `You are Sparky, a UIC assistant. The student is following up on a previous answer. Use the conversation context to give a natural, relevant continuation. Be concise. Don't repeat what you already said.`,
+    messages: [
+      { role: "user", content: `Conversation so far:\n${recentContext}\n\nStudent's follow-up: "${lastMsg}"\n\nContinue naturally.` }
+    ],
+  });
+
+  const followUpText = (followUpResponse.content[0] as any)?.text ?? "Could you be more specific?";
+  const encoder = new TextEncoder();
+  const readable = new ReadableStream({
+    start(controller) {
+      controller.enqueue(encoder.encode(followUpText));
+      controller.close();
+    },
+  });
+  return new Response(readable, {
+    headers: {
+      "Content-Type": "text/plain; charset=utf-8",
+      "Cache-Control": "no-store",
+    },
+  });
+}
+
+  const query = analyzeQuery(lastMsg, messages.slice(0, -1));
 
 // ── Fetch memory first, then classify with it ─────────────────────────────
 const userMemory = await getMemory(sessionId).catch(() => null);
+
+const sessionState = await getSessionState(sessionId).catch(() => ({
+  activeCourseId: null, activeCourseCode: null,
+  activeProfessorId: null, activeProfessorName: null,
+  activeDomain: null, lastAnswerType: null, lastTopics: [],
+}));
 
 const [aiIntentResult, regexIntentResult, regexCiResult] = await Promise.allSettled([
   classifyIntent(lastMsg, messages.slice(0, -1), userMemory),
@@ -1541,6 +1767,44 @@ const rc = regexCiResult.status === "fulfilled" ? regexCiResult.value : ({} as a
   const dc = query.domainConfidence;
   const lower = lastMsg.toLowerCase();
 
+// Use session state to resolve ambiguous follow-ups
+if (!intent.courseCode && !intent.subjectCode && sessionState.activeCourseCode) {
+  const parts = sessionState.activeCourseCode.split(" ");
+  if (parts.length >= 2) {
+    intent.courseCode = { subject: parts[0], number: parts[1] };
+  }
+}
+if (!intent.profNameHint && sessionState.activeProfessorName) {
+  const lower2 = lastMsg.toLowerCase();
+  if (lower2.match(/\b(him|her|that prof|that professor|same prof|they|their)\b/) ||
+      lower2.match(/^(what about|tell me more|more about|and him|and her)[\s?!.]*$/i)) {
+    intent.profNameHint = sessionState.activeProfessorName;
+  }
+}
+
+  // Memory-boosted retrieval — inject user's known major/interests into intent
+if (userMemory?.major && !intent.subjectCode && !intent.deptName) {
+  const m = userMemory.major.toLowerCase();
+  if (m.includes("computer science") || m.includes(" cs")) intent.subjectCode = "CS";
+  else if (m.includes("ece") || m.includes("electrical")) intent.subjectCode = "ECE";
+  else if (m.includes("math")) intent.subjectCode = "MATH";
+  else if (m.includes("biology")) intent.subjectCode = "BIOS";
+  else if (m.includes("chemistry")) intent.subjectCode = "CHEM";
+  else if (m.includes("physics")) intent.subjectCode = "PHYS";
+  else if (m.includes("psychology")) intent.subjectCode = "PSCH";
+  else if (m.includes("nursing")) intent.subjectCode = "NURS";
+  else if (m.includes("accounting")) intent.subjectCode = "ACTG";
+  else if (m.includes("finance")) intent.subjectCode = "FIN";
+}
+
+// Boost domain confidence for known interests
+if (userMemory?.interests?.some(i => i.toLowerCase().includes("greek") || i.toLowerCase().includes("sport"))) {
+  if (!dc["student_life"]) dc["student_life"] = 0.6;
+}
+if (userMemory?.interests?.some(i => i.toLowerCase().includes("sport") || i.toLowerCase().includes("basketball"))) {
+  if (!dc["athletics"]) dc["athletics"] = 0.6;
+}
+
   // ── Execute sync (JSON) retrievals immediately ────────────────────────────
   const syncChunks: RetrievedChunk[] = [];
   if ((dc["tuition"] ?? 0) > 0.5 || ci.isAboutTuition || ci.isAboutCostComparison) syncChunks.push(...retrieveTuition(ci, query));
@@ -1560,8 +1824,62 @@ const rc = regexCiResult.status === "fulfilled" ? regexCiResult.value : ({} as a
   if ((dc["instagram"] ?? 0) > 0.5) syncChunks.push(...retrieveInstagram(query));
   if ((dc["recreation"] ?? 0) > 0.5 && !(dc["health"] ?? 0)) syncChunks.push(...retrieveRecreation(query));
 
+  if (lower.match(/\bhonors\b|veteran|commuter|first.?gen|bridge program|academic recovery|eop\b/)) {
+  const sp = specialPopData as any;
+  const lower2 = lower;
+  let spContent = "";
+  if (lower2.includes("honors")) spContent = `HONORS COLLEGE: GPA to maintain ${sp.honors_college.gpa_to_maintain} | Required: ${sp.honors_college.honors_units_required} | ${sp.honors_college.url}`;
+  else if (lower2.includes("veteran")) spContent = `VETERANS: ${JSON.stringify(sp.veterans).slice(0, 300)}`;
+  else if (lower2.includes("commuter")) spContent = `COMMUTER RESOURCES: ${JSON.stringify(sp.commuter).slice(0, 300)}`;
+  else if (lower2.match(/first.?gen/)) spContent = `FIRST-GEN RESOURCES: ${JSON.stringify(sp.first_gen).slice(0, 300)}`;
+  else if (lower2.includes("bridge")) spContent = `BRIDGE PROGRAMS: ${JSON.stringify(sp.bridge_programs).slice(0, 300)}`;
+  if (spContent) syncChunks.push(makeChunk("student_life", spContent, 0.95, query));
+}
+
   // ── Execute async (DB) retrievals in parallel ─────────────────────────────
   const asyncTasks: Promise<RetrievedChunk[]>[] = [];
+  // Typed SQL routing — "who's easiest for CS 211?" never hits vector search
+if (intent.courseCode && (intent.isAboutProfessors || intent.wantsEasiest || intent.wantsProfRanking || intent.wantsHardest)) {
+  asyncTasks.push((async () => {
+    const result = await fetchProfessorsForCourse(
+      intent.courseCode!.subject,
+      intent.courseCode!.number,
+      !intent.wantsHardest
+    );
+    if (!result) return [];
+    const { course, instructors } = result;
+    if (instructors.length === 0) return [];
+    const content = `=== PROFESSORS FOR ${course.subject} ${course.number}: ${course.title} (ranked by ${intent.wantsHardest ? "hardest" : "easiest"} grader) ===\n` +
+      `Course avg GPA: ${course.avgGpa ?? "N/A"}\n\n` +
+      instructors.slice(0, 8).map((i, idx) =>
+        `${idx + 1}. ${i.name} | GPA: ${i.gpa?.toFixed(2) ?? "N/A"} | A-rate: ${i.aRate ?? "N/A"}% | W-rate: ${i.wRate ?? "N/A"}%` +
+        (i.rmpQuality ? ` | RMP: ${i.rmpQuality}/5 (${i.rmpRatingsCount} reviews)` : "") +
+        ` | ${i.totalStudents} students` +
+        (i.aiSummary ? `\n   "${i.aiSummary.slice(0, 150)}"` : "")
+      ).join("\n");
+    return [makeChunk("professors", content, 0.99, query)];
+  })());
+}
+
+// Typed SQL routing — "easiest CS courses", "highest GPA math classes"
+if ((intent.isAboutCourses || intent.wantsEasiest || intent.wantsHardest) && !intent.courseCode && (intent.subjectCode || intent.deptName)) {
+  asyncTasks.push((async () => {
+    const courses = await fetchCourseGpaRanking(
+      intent.subjectCode ?? null,
+      intent.deptName ?? null,
+      !intent.wantsHardest,
+      intent.isAboutGenEd,
+      20
+    );
+    if (!courses.length) return [];
+    const label = intent.subjectCode || intent.deptName || "UIC";
+    const content = `=== ${label.toUpperCase()} COURSES RANKED BY GPA (${intent.wantsHardest ? "hardest" : "easiest"} first) ===\n` +
+      courses.map((c: any) =>
+        `${c.subject} ${c.number} — ${c.title}: GPA ${c.avgGpa?.toFixed(2) ?? "N/A"}${c.isGenEd ? ` [Gen Ed: ${c.genEdCategory}]` : ""}`
+      ).join("\n");
+    return [makeChunk("courses", content, 0.97, query)];
+  })());
+}
   if (intent.courseCode) asyncTasks.push(retrieveCourseDetail(intent, query));
   if ((dc["courses"] ?? 0) > 0.5 || intent.isAboutCourses) asyncTasks.push(retrieveCourseList(intent, query));
   if ((dc["gen_ed"] ?? 0) > 0.5 || intent.isAboutGenEd) asyncTasks.push(retrieveGenEd(query));
@@ -1570,9 +1888,9 @@ const rc = regexCiResult.status === "fulfilled" ? regexCiResult.value : ({} as a
   if ((dc["athletics"] ?? 0) > 0.5 || ci.isAboutAthletics) asyncTasks.push(retrieveAthletics(query));
 
   // Vector search in parallel — only for discovery/recommendation or when structured retrieval found nothing
-  const vectorTask = (query.answerMode === "discovery" || query.answerMode === "recommendation" || syncChunks.length === 0)
-    ? vectorSearch(lastMsg, 4).catch(() => [])
-    : Promise.resolve([]);
+const vectorTask = syncChunks.length < 2
+  ? vectorSearch(lastMsg, 6).catch(() => [])
+  : vectorSearch(lastMsg, 3).catch(() => []);
 
   // Await all async work
   const [asyncResults, vectorResults] = await Promise.all([
@@ -1589,7 +1907,7 @@ const rc = regexCiResult.status === "fulfilled" ? regexCiResult.value : ({} as a
 
   // Add vector results only for domains not already covered by structured retrieval
   const coveredDomains = new Set(allChunks.map(c => c.domain));
-  const relevantVectors = (vectorResults as any[]).filter((r: any) => r.similarity > 0.72);
+  const relevantVectors = (vectorResults as any[]).filter((r: any) => r.similarity > 0.65);
   if (relevantVectors.length > 0 && !query.isFact) {
     const vectorContent = relevantVectors.map((r: any) => r.content).join("\n");
     const vectorChunk = makeChunk("courses", `=== SEMANTIC SUPPORT ===\n${vectorContent}`, 0.7, query);
@@ -1618,18 +1936,35 @@ const rc = regexCiResult.status === "fulfilled" ? regexCiResult.value : ({} as a
   }
 
   // ── Build answer brief + assemble context ─────────────────────────────────
-  const brief = buildAnswerBrief(query, allChunks);
-  const context = assembleContext(allChunks, brief);
-  const memoryContext = userMemory ? formatMemoryForPrompt(userMemory) : "";
+  // Rerank all chunks before assembly — never pass raw nearest neighbors to the model
+const rerankTopK = query.isFact ? 3 : query.answerMode === "planning" ? 10 : query.answerMode === "comparison" ? 8 : query.answerMode === "ranking" ? 6 : 7;
+const rerankedChunks = allChunks.length > rerankTopK ? await rerankChunks(lastMsg, allChunks, rerankTopK) : allChunks;
+
+const brief = buildAnswerBrief(query, rerankedChunks);
+const context = assembleContext(rerankedChunks, brief);
+const memoryContext = userMemory ? formatMemoryForPrompt(userMemory) : "";
+const answerPack = buildAnswerPack(query, rerankedChunks, intent, sessionState);
 
   if (userMemory !== null && messages.length > 2) {
     updateMemory(sessionId, messages, userMemory).catch(() => {});
   }
 
-  // ── Build prompt + call model ─────────────────────────────────────────────
-  const systemPrompt = buildSystemPrompt(brief, memoryContext, context, query.isFact);
-  const maxTokens = query.answerMode === "planning" ? 2800 : query.answerMode === "hybrid" ? 2200 : query.isFact ? 300 : 1800;
+  // Update session entity state
+const stateUpdates = extractEntitiesFromQuery(lastMsg, intent, sessionState);
+if (Object.keys(stateUpdates).length > 0) {
+  updateSessionState(sessionId, stateUpdates).catch(() => {});
+}
 
+  // ── Build prompt + call model ─────────────────────────────────────────────
+const systemPrompt = buildSystemPrompt(brief, memoryContext, context, query.isFact, answerPack);
+const maxTokens = query.answerMode === "planning" ? 2800 
+  : query.answerMode === "hybrid" ? 1800 
+  : query.isFact ? 300 
+  : query.answerMode === "ranking" ? 800
+  : query.answerMode === "logistics" ? 400
+  : query.answerMode === "recommendation" ? 900
+  : query.answerMode === "comparison" ? 900
+  : 600; // discovery default
   try {
     const stream = client.messages.stream({
       model: "claude-sonnet-4-20250514",

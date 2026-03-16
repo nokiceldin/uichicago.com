@@ -88,7 +88,6 @@ model NewsItem {
   @@index([publishedAt])
 }
 
-
 model KnowledgeChunk {
   id          String   @id @default(cuid())
   content     String   @db.Text
@@ -187,4 +186,20 @@ model CourseInstructorTermStats {
   @@unique([courseId, termId, instructorName])
   @@index([termId])
   @@index([instructorName])
+}
+
+model CampusKnowledge {
+  id        String   @id @default(cuid())
+  domain    String   // "housing" | "dining" | "tuition" | "health" | etc
+  entity    String   // "ARC" | "JST" | "aspire_grant" | "counseling_center" etc
+  key       String   // "cost_per_semester" | "address" | "phone" | "hours" etc
+  value     String   @db.Text  // the actual fact
+  metadata  String   @db.Text  // JSON: extra structured data
+  lastUpdated String // "2025-2026"
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([domain])
+  @@index([domain, entity])
+  @@index([domain, key])
 }

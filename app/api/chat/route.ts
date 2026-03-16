@@ -1241,18 +1241,23 @@ function retrieveAdvising(query: QueryAnalysis): RetrievedChunk[] {
 }
 
 function retrieveAdmissions(query: QueryAnalysis): RetrievedChunk[] {
+  const adm = admissionsData as any;
+  const fy = adm.first_year;
+  const tr = adm.transfer;
+  const sc = adm.scholarships;
+
   const content = `=== UIC ADMISSIONS 2025-2026 ===\n` +
-    `Common App | Test-optional | No enrollment deposit\n` +
-    `First-Year: Priority Nov 3 | Regular Feb 2, 2026 | Spring Oct 1, 2025\n` +
-    `Transfer: Fall Apr 1 | Spring Oct 15 | Min 24 credits at app, 36 by enrollment\n` +
-    `Guaranteed Transfer: 3.0 GPA pathway at tag.uic.edu\n\n` +
+    `Platform: ${fy.application_platform} | Test policy: ${fy.test_policy} | ${fy.no_enrollment_deposit}\n` +
+    `First-Year deadlines: Priority ${fy.deadlines.priority} | Regular ${fy.deadlines.regular} | Spring ${fy.deadlines.spring}\n` +
+    `Transfer: Fall ${tr.regular_deadline} | Spring ${adm.readmission?.deadline?.split(",")[1]?.trim() ?? "Oct 15"} | Min ${tr.minimum_credits} | GPA: ${tr.minimum_gpa}\n` +
+    `Guaranteed Transfer: ${tr.community_college_pathway}\n\n` +
     `SCHOLARSHIPS:\n` +
-    `Aspire Grant: 100% tuition+fees for IL families under $75k income. Deadline Mar 15. free.uic.edu\n` +
-    `Chancellor's Fellows: $7,500/yr (first-year) or $5,000/yr (transfer). Deadline Nov 3.\n` +
-    `President's Award: $5,000/yr or full tuition+housing for Honors. Deadline Feb 1.\n` +
-    `Merit Tuition Award: $9,128/yr for OOS students (auto-reviewed).\n\n` +
-    `AFTER ADMISSION: Activate NetID | Placement tests (by June 30) | Apply housing (housing.uic.edu) | File FAFSA | Register orientation\n` +
-    `Visits: discover.uic.edu | Admitted hub: bound.uic.edu`;
+    `Aspire Grant: ${sc.aspire_grant.amount}. Deadline ${sc.aspire_grant.deadline}\n` +
+    `Chancellor's Fellows: ${sc.chancellors_fellows.amount}. Deadline ${sc.chancellors_fellows.deadline}\n` +
+    `President's Award: ${sc.presidents_award.amount}. Deadline ${sc.presidents_award.deadline}\n` +
+    `Merit Tuition Award: ${sc.merit_tuition_award.amount}\n\n` +
+    `AFTER ADMISSION: Activate NetID | Placement tests by June 30 | Apply housing (housing.uic.edu) | File FAFSA | Register orientation\n` +
+    `Visits: ${adm.campus_visits.url} | Admitted hub: ${adm.campus_visits.admitted_students}`;
   return [makeChunk("admissions", content, 0.97, query)];
 }
 
@@ -1268,15 +1273,23 @@ function retrieveCareers(query: QueryAnalysis): RetrievedChunk[] {
 }
 
 function retrieveLibrary(query: QueryAnalysis): RetrievedChunk[] {
+  const lib = libraryData as any;
+  const daley = lib.libraries?.daley_library;
+  const lhs = lib.libraries?.lhs_chicago;
+  const borrowing = lib.borrowing_policies;
+  const research = lib.research_help;
+
   const content = `=== LIBRARY ===\n` +
-    `Daley: 801 S Morgan | 312-996-2724 | Quiet: 3rd+4th floors, Circle Reading Room\n` +
-    `LHS Chicago: 1750 W Polk | 312-996-8966 | Quiet: 3rd floor, Room 107\n` +
+    `Daley: ${daley?.address} | ${daley?.phone} | Hours: ${daley?.hours?.regular_semester ?? "see library.uic.edu"}\n` +
+    `Quiet floors: ${daley?.quiet_areas?.join(", ") ?? "3rd+4th floors, Circle Reading Room"}\n` +
+    `LHS Chicago: ${lhs?.address} | ${lhs?.phone} | Hours: ${lhs?.hours?.regular_semester ?? "see library.uic.edu"}\n` +
     `Study rooms: libcal.uic.edu\n\n` +
-    `BORROWING: Books — 16 weeks | Laptops/MacBooks — 7 days (i-card) | Calculators — 1 day\n` +
-    `No fines until 39 days past due. Lost item: $125+\n` +
-    `PRINTING: Wepa stations campus-wide.\n` +
-    `ILL: I-Share IL libraries 3-5 days | ILLiad worldwide 7-10 days\n` +
-    `Research help: ask.library.uic.edu | Guides: researchguides.uic.edu`;
+    `BORROWING:\n` +
+    `${Object.entries(borrowing?.loan_periods ?? {}).map(([k, v]) => `${k.replace(/_/g, " ")}: ${v}`).join(" | ")}\n` +
+    `Fines: ${borrowing?.fines ?? "No fines until 39 days past due"}. Lost item: ${borrowing?.lost_item_fee ?? "$125+"}\n` +
+    `PRINTING: ${lib.printing?.system ?? "Wepa stations campus-wide"}\n` +
+    `ILL: ${lib.interlibrary_loan?.i_share ?? "I-Share 3-5 days"} | ${lib.interlibrary_loan?.illiad ?? "ILLiad 7-10 days"}\n` +
+    `Research help: ${research?.ask_a_librarian ?? "ask.library.uic.edu"} | Guides: ${research?.research_guides ?? "researchguides.uic.edu"}`;
   return [makeChunk("library", content, 0.9, query)];
 }
 

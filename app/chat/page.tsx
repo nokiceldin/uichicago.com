@@ -1,6 +1,6 @@
 "use client";
 export const dynamic = "force-dynamic";
-
+import SparkyMarkdown from "../components/SparkyMarkdown";
 import { useState, useRef, useEffect, useCallback, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 const BETA_PASSWORD = "uicsparky2026";
@@ -407,14 +407,9 @@ function MessageBubble({ msg, onRegenerate }: { msg: Message; onRegenerate?: () 
     <SparkyAvatar size="sm" />
     <div className={`flex-1 min-w-0 max-w-[90%] md:max-w-[85%] ${msg.error ? "opacity-60" : ""}`}>
       <div className="text-[16px] leading-[1.75] text-zinc-300 font-normal prose-sparky">
-        {msg.streaming ? (
-          <div data-stream-id={msg.id} className="whitespace-pre-wrap" />
-        ) : (
-          <div
-            className="space-y-1"
-            dangerouslySetInnerHTML={{ __html: formatContent(msg.content) }}
-          />
-        )}
+<div className="text-[16px] leading-[1.75] text-zinc-300 font-normal prose-sparky">
+  <SparkyMarkdown content={msg.content} />
+</div>
       </div>
       {!msg.streaming && !msg.error && (
         <div className="flex items-center gap-0.5 mt-2 opacity-100 transition-opacity duration-150">
@@ -863,56 +858,72 @@ useEffect(() => {
       stopRef.current = () => { reader.cancel(); };
 
 
-      
 const decoder = new TextDecoder();
 let accumulated = "";
 let displayed = "";
 const charQueue: string[] = [];
-let animating = false;
+let flushScheduled = false;
 
-const getDomNode = () =>
-  document.querySelector(`[data-stream-id="${assistantId}"]`) as HTMLElement | null;
+function scheduleFlush() {
+  if (flushScheduled) return;
+  flushScheduled = true;
 
-// Drains the queue one character at a time at ~60 chars/sec
-function drainQueue() {
-  if (animating) return;
-  animating = true;
-  function tick() {
-    // Drain up to 3 chars per frame so it never falls too far behind
-    const batch = Math.min(3, charQueue.length);
-    if (batch === 0) { animating = false; return; }
-    for (let i = 0; i < batch; i++) {
+  requestAnimationFrame(() => {
+    flushScheduled = false;
+
+    const batchSize = Math.min(3, charQueue.length);
+    if (batchSize === 0) return;
+
+    for (let i = 0; i < batchSize; i++) {
       displayed += charQueue.shift()!;
     }
-    const node = getDomNode();
-if (node) node.innerHTML = formatContent(displayed);
-    requestAnimationFrame(tick);
-  }
-  requestAnimationFrame(tick);
+
+    setMessages((prev: Message[]) =>
+      prev.map((m) =>
+        m.id === assistantId
+          ? { ...m, content: displayed, streaming: true }
+          : m
+      )
+    );
+
+    if (charQueue.length > 0) {
+      scheduleFlush();
+    }
+  });
 }
 
 while (true) {
   const { done, value } = await reader.read();
   if (done) break;
+
   const delta = decoder.decode(value, { stream: true });
   accumulated += delta;
-  for (const char of delta) charQueue.push(char);
-  drainQueue();
+
+  for (const char of delta) {
+    charQueue.push(char);
+  }
+
+  scheduleFlush();
 }
 
-// Wait for queue to fully drain before handing off to React
-await new Promise<void>(resolve => {
-  function waitDrain() {
-    if (charQueue.length === 0) { resolve(); return; }
-    requestAnimationFrame(waitDrain);
+await new Promise<void>((resolve) => {
+  function waitUntilDone() {
+    if (charQueue.length === 0) {
+      resolve();
+      return;
+    }
+    requestAnimationFrame(waitUntilDone);
   }
-  requestAnimationFrame(waitDrain);
+  waitUntilDone();
 });
 
-      // Stream done — hand off to React with full content so formatContent runs
-      setMessages((prev: Message[]) =>
-        prev.map((m) => m.id === assistantId ? { ...m, content: accumulated, streaming: false } : m)
-      );
+setMessages((prev: Message[]) =>
+  prev.map((m) =>
+    m.id === assistantId
+      ? { ...m, content: accumulated, streaming: false }
+      : m
+  )
+);
     } catch {
       setMessages((prev: Message[]) => [
         ...prev,
@@ -953,46 +964,73 @@ await new Promise<void>(resolve => {
 
     const reader = res.body.getReader();
     stopRef.current = () => { reader.cancel(); };
-    const decoder = new TextDecoder();
-    let accumulated = "";
-    let displayed = "";
-    const charQueue: string[] = [];
-    let animating = false;
 
-    const getDomNode = () => document.querySelector(`[data-stream-id="${assistantId}"]`) as HTMLElement | null;
+const decoder = new TextDecoder();
+let accumulated = "";
+let displayed = "";
+const charQueue: string[] = [];
+let flushScheduled = false;
 
-    function drainQueue() {
-      if (animating) return;
-      animating = true;
-      function tick() {
-        const batch = Math.min(3, charQueue.length);
-        if (batch === 0) { animating = false; return; }
-        for (let i = 0; i < batch; i++) displayed += charQueue.shift()!;
-        const node = getDomNode();
-        if (node) node.innerHTML = formatContent(displayed);
-        requestAnimationFrame(tick);
-      }
-      requestAnimationFrame(tick);
+function scheduleFlush() {
+  if (flushScheduled) return;
+  flushScheduled = true;
+
+  requestAnimationFrame(() => {
+    flushScheduled = false;
+
+    const batchSize = Math.min(3, charQueue.length);
+    if (batchSize === 0) return;
+
+    for (let i = 0; i < batchSize; i++) {
+      displayed += charQueue.shift()!;
     }
 
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
-      const delta = decoder.decode(value, { stream: true });
-      accumulated += delta;
-      for (const char of delta) charQueue.push(char);
-      drainQueue();
+    setMessages(prev =>
+      prev.map(m =>
+        m.id === assistantId
+          ? { ...m, content: displayed, streaming: true }
+          : m
+      )
+    );
+
+    if (charQueue.length > 0) {
+      scheduleFlush();
     }
+  });
+}
 
-    await new Promise<void>(resolve => {
-      function waitDrain() {
-        if (charQueue.length === 0) { resolve(); return; }
-        requestAnimationFrame(waitDrain);
-      }
-      requestAnimationFrame(waitDrain);
-    });
+while (true) {
+  const { done, value } = await reader.read();
+  if (done) break;
 
-    setMessages(prev => prev.map(m => m.id === assistantId ? { ...m, content: accumulated, streaming: false } : m));
+  const delta = decoder.decode(value, { stream: true });
+  accumulated += delta;
+
+  for (const char of delta) {
+    charQueue.push(char);
+  }
+
+  scheduleFlush();
+}
+
+await new Promise<void>((resolve) => {
+  function waitUntilDone() {
+    if (charQueue.length === 0) {
+      resolve();
+      return;
+    }
+    requestAnimationFrame(waitUntilDone);
+  }
+  waitUntilDone();
+});
+
+setMessages(prev =>
+  prev.map(m =>
+    m.id === assistantId
+      ? { ...m, content: accumulated, streaming: false }
+      : m
+  )
+);
   } catch {
     setMessages(prev => [...prev, { id: uid(), role: "assistant", content: "Something went wrong. Please try again.", error: true }]);
   } finally {

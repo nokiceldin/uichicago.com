@@ -1,9 +1,11 @@
 import "dotenv/config";
+import { resolveInstructorNames } from "./name_resolution.mjs";
 import fs from "fs";
 import path from "path";
 import { PrismaClient } from "@prisma/client";
 import { Pool } from "pg";
 import { PrismaPg } from "@prisma/adapter-pg";
+
 
 const connectionString = process.env.DATABASE_URL;
 
@@ -231,6 +233,7 @@ if (!termRow) {
     courseRows.push({ courseId: courseIdByKey.get(key), ...stats });
   }
 
+  // Build raw instructor rows
   const instructorRows = [];
   for (const [key2, stats] of instructorTotals.entries()) {
     const parts = key2.split("__");
@@ -239,21 +242,33 @@ if (!termRow) {
     instructorRows.push({ courseId: courseIdByKey.get(courseKey), instructorName, ...stats });
   }
 
-  console.log(
-  courseRows.slice(0, 5)
-);
+  const missingCourseId = courseRows.filter(r => !r.courseId).length;
+  if (missingCourseId > 0) {
+    console.log(`⚠️  ${missingCourseId} course rows missing courseId`);
+  }
 
-console.log(
-  courseRows.filter(r => !r.courseId).length,
-  "rows missing courseId"
-);
-  // Insert in big batches
+  // ── Resolve instructor names to Professor.id ──────────────────────────────
+  // Collects all unique raw instructor names from this import, runs the
+  // two-stage matching (exact normalized, then middle-stripped), and attaches
+  // the resolved professorId to each row before insert.
+  const rawNames = instructorRows.map(r => r.instructorName);
+  const resolutionMap = await resolveInstructorNames(rawNames);
+
+  const instructorRowsWithFK = instructorRows.map(row => ({
+    ...row,
+    professorId: resolutionMap.get(row.instructorName) ?? null,
+  }));
+
+  const resolvedCount = instructorRowsWithFK.filter(r => r.professorId !== null).length;
+  console.log(`\n  professorId linked on ${resolvedCount}/${instructorRowsWithFK.length} instructor rows`);
+
+  // ── Insert in batches ─────────────────────────────────────────────────────
   for (const batch of chunk(courseRows, 100)) {
     await prisma.courseTermStats.createMany({ data: batch });
     console.log(`Inserted course term stats: +${batch.length}`);
   }
 
-  for (const batch of chunk(instructorRows, 100)) {
+  for (const batch of chunk(instructorRowsWithFK, 100)) {
     await prisma.courseInstructorTermStats.createMany({ data: batch });
     console.log(`Inserted instructor stats: +${batch.length}`);
   }

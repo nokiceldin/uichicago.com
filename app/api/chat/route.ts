@@ -9,6 +9,7 @@ import { classifyIntent } from "@/lib/chat/classify";
 import { vectorSearch, rerankChunks } from "@/lib/chat/vectors";
 import { getSessionState, updateSessionState, extractEntitiesFromQuery } from "@/lib/chat/session-state";
 import { getMemory, updateMemory, formatMemoryForPrompt } from "@/lib/chat/memory";
+import { prisma } from "@/lib/prisma";
 import { diffLabel } from "@/lib/chat/utils";
 import housingDiningData from "@/public/data/uic-knowledge/housing-dining.json";
 import athleticsData from "@/public/data/uic-knowledge/athletics.json";
@@ -289,6 +290,100 @@ function analyzeQuery(msg: string, conversationHistory: ChatMessage[]): QueryAna
   };
 }
 
+// ── Abstention helper ─────────────────────────────────────────────────────
+// Returns a specific redirect for each domain rather than a generic refusal.
+// Never calls the model — this is hardcoded authoritative text.
+function getAbstainResponse(query: QueryAnalysis): string {
+  const domain = Object.entries(query.domainConfidence)
+    .sort(([, a], [, b]) => b - a)[0]?.[0] ?? "general";
+
+  const responses: Partial<Record<string, string>> = {
+    registration:
+      "I don't have that registration detail. For course credit limits and " +
+      "overload approvals, contact your college advising office or the Registrar: " +
+      "registrar.uic.edu.",
+    courses:
+      "I don't have reliable data to answer that question. For course information, " +
+      "check the UIC Schedule of Classes at registrar.uic.edu or the course catalog " +
+      "at catalog.uic.edu.",
+
+    professors:
+      "I don't have enough information to answer that reliably. For professor reviews, " +
+      "check RateMyProfessors.com. For office hours and contact info, check the " +
+      "department's website or your course's Blackboard page.",
+
+    gen_ed:
+      "I couldn't find clear data for that Gen Ed question. The full Gen Ed course list " +
+      "is at catalog.uic.edu — search by category under General Education requirements.",
+
+    major_plan:
+      "I don't have a complete answer for that major or program. Contact your college " +
+      "advising office, or see the official degree requirements at catalog.uic.edu.",
+
+    housing:
+      "I don't have the specific housing information you need. Contact UIC Housing " +
+      "directly: housing.uic.edu | 312-413-5255 | housing@uic.edu.",
+
+    dining:
+      "I don't have current dining details for that. Check dining.uic.edu for menus, " +
+      "hours, and meal plan information.",
+
+    tuition:
+      "I can't confirm that tuition or billing detail. See current figures at " +
+      "bursar.uic.edu or call the Bursar's Office: 312-996-8574.",
+
+    financial_aid:
+      "I can't confirm that financial aid detail. Contact the Office of Student " +
+      "Financial Aid: SSB Suite 1800 | 312-996-3126 | financialaid.uic.edu.",
+
+    health:
+      "I don't have that health services information. For the health clinic: " +
+      "campuscare.uic.edu | 312-996-7420. For counseling: 312-996-3490.",
+
+    calendar:
+      "I don't have that academic calendar detail. See the official calendar at " +
+      "registrar.uic.edu/calendars.",
+
+    academic_policy:
+      "I don't have a reliable answer for that policy question. Contact the " +
+      "Registrar's Office at registrar.uic.edu or your college advising office.",
+
+    admissions:
+      "I don't have that admissions detail. Contact Admissions: " +
+      "admissions.uic.edu | 312-996-4350.",
+
+    careers:
+      "I don't have that career services detail. Contact Career Services: " +
+      "SSB Suite 3050 | 312-996-2300 | uic.joinhandshake.com.",
+
+    international:
+      "I don't have that international student detail. Contact the Office of " +
+      "International Services: SSB 2160 | 312-996-3121 | ois.uic.edu.",
+
+    safety:
+      "I don't have that policy detail. For campus safety: police.uic.edu | " +
+      "Emergency: 312-996-2830. For Title IX: oae.uic.edu | 312-996-8670.",
+
+    library:
+      "I don't have that library detail. Contact Daley Library: " +
+      "library.uic.edu | 312-996-2726.",
+
+    athletics:
+      "I don't have that athletics detail. Check UICFlames.com for schedules, " +
+      "rosters, and ticket information.",
+
+    transportation:
+      "I don't have current transit details. Check transitchicago.com for CTA " +
+      "schedules or transportation.uic.edu for campus shuttles.",
+  };
+
+  return (
+    responses[domain] ??
+    "I'm not sure I have reliable information on that. You can reach UIC at " +
+    "312-996-7000 or visit uic.edu — most offices also have live chat on their pages."
+  );
+}
+
 function detectAnswerMode(lower: string): AnswerMode {
   if (lower.match(/\b4.?year|four.?year|degree plan|course plan|semester.?plan|sequence\b/)) return "planning";
   if (lower.match(/\b(should i|recommend|suggest|good for|worth it|would you|best for|which is better for me)\b/)) return "recommendation";
@@ -322,6 +417,40 @@ function inferPrimaryGoal(lower: string, domainConfidence: Partial<Record<Domain
     hybrid: "research",
   };
   return `${modeVerb[answerMode]} ${topDomain.replace("_", " ")} at UIC`;
+}
+
+function formatContent(text: string): string {
+  let cleaned = text;
+
+  // Remove accidental markdown table separator rows
+  cleaned = cleaned.replace(/^\|?[\s\-:|]{3,}\|?$/gm, "");
+
+  // Turn markdown table rows into plain lines if they ever appear
+  cleaned = cleaned.replace(/^\|(.+)\|$/gm, (_, row) => {
+    return row
+      .split("|")
+      .map((cell: string) => cell.trim())
+      .filter(Boolean)
+      .join("  •  ");
+  });
+
+  let html = cleaned.replace(/^### (.+)$/gm, "<h3 class='text-white font-bold text-base mt-4 mb-1.5'>$1</h3>");
+  html = html.replace(/^## (.+)$/gm, "<h2 class='text-white font-bold text-[17px] mt-5 mb-2'>$1</h2>");
+  html = html.replace(/\*\*(.*?)\*\*/g, "<strong class='text-white font-semibold'>$1</strong>");
+  html = html.replace(/`([^`]+)`/g, "<code class='bg-zinc-800 text-zinc-200 px-1.5 py-0.5 rounded text-[13px] font-mono'>$1</code>");
+  html = html.replace(/^[•\-\*] (.+)$/gm, "<li class='flex gap-2 items-start'><span class='text-zinc-500 mt-0.5 shrink-0'>•</span><span>$1</span></li>");
+  html = html.replace(/^(\d+)\. (.+)$/gm, "<li class='flex gap-2.5 items-start'><span class='text-zinc-500 font-mono text-xs mt-1 shrink-0 w-4'>$1.</span><span>$2</span></li>");
+
+  const liBlockRegex = /<li[^>]*>[\s\S]*?<\/li>/g;
+  const liBlocks = html.match(liBlockRegex);
+  if (liBlocks) {
+    html = html.replace(/<li/, "<ul class='space-y-1.5 my-2'><li");
+    html = html.replace(/(<\/li>)(?!\s*<li)/, "$1</ul>");
+  }
+
+  html = html.replace(/\n\n/g, "</p><p class='mt-3'>");
+  html = html.replace(/\n/g, "<br/>");
+  return html;
 }
 
 function decomposeQuery(
@@ -481,6 +610,55 @@ function makeChunk(domain: Domain, content: string, baseConfidence: number, quer
     sourceConfidence: baseConfidence,
     tokenEstimate: Math.ceil(finalContent.length / 4),
   };
+}
+
+function getVectorSourceTypes(query: QueryAnalysis): string[] {
+  const dc = query.domainConfidence;
+  const lower = query.rawQuery.toLowerCase();
+
+  const sourceTypes = new Set<string>();
+
+  // Always allow your core structured semantic support
+  sourceTypes.add("course");
+  sourceTypes.add("professor");
+  sourceTypes.add("news");
+
+  const isAthleticsLike =
+    (dc["athletics"] ?? 0) > 0.5 ||
+    lower.match(/\b(team|teams|athlete|athletes|softball|baseball|basketball|soccer|tennis|volleyball|swim|track|flames)\b/) !== null;
+
+  const isStudentLifeLike =
+    (dc["student_life"] ?? 0) > 0.5 ||
+    (dc["instagram"] ?? 0) > 0.5 ||
+    lower.match(/\b(club|clubs|org|organization|student life|campus vibe|what's happening|recently|lately|follow|instagram|insta|social media)\b/) !== null;
+
+  const isRecentSocialQuery =
+    lower.match(/\b(lately|recently|posting|posted|worth mentioning|active lately|current vibe|what are.*doing|who.*worth mentioning)\b/) !== null;
+
+  // Only include Instagram for social / athletics / recent-activity style questions
+  if (isAthleticsLike || isStudentLifeLike || isRecentSocialQuery) {
+    sourceTypes.add("instagram_caption");
+    sourceTypes.add("instagram_account");
+  }
+
+  return Array.from(sourceTypes);
+}
+
+function mapVectorSourceTypeToDomain(sourceType: string): Domain {
+  if (sourceType === "instagram_caption" || sourceType === "instagram_account") return "instagram";
+  if (sourceType === "news") return "news";
+  if (sourceType === "professor") return "professors";
+  return "courses";
+}
+
+function vectorSourceConfidence(sourceType: string, trustLevel?: string | null): number {
+  if (sourceType === "course") return 0.82;
+  if (sourceType === "professor") return 0.80;
+  if (sourceType === "news") return 0.78;
+  if (sourceType === "instagram_account") return 0.62;
+  if (sourceType === "instagram_caption") return 0.58;
+  if (trustLevel === "social") return 0.58;
+  return 0.70;
 }
 
 async function retrieveCourseDetail(intent: any, query: QueryAnalysis): Promise<RetrievedChunk[]> {
@@ -651,7 +829,7 @@ async function retrieveMajorPlan(query: QueryAnalysis): Promise<RetrievedChunk[]
       `REQUIRED COURSES:\n${required}\n\n` +
       `OFFICIAL SEMESTER SCHEDULE:\n${schedule}` +
       (easyText ? `\n\nEASIEST DEPT ELECTIVES (auto-select for optional slots):\n${easyText}` : "") +
-      `\n\nINSTRUCTION: Build complete semester-by-semester plan. For optional slots, use easiest courses by GPA. Present as table with course codes.`;
+      `\n\nINSTRUCTION: Build a complete semester-by-semester plan. For optional slots, use the easiest courses by GPA. Do NOT use markdown tables. Use sections labeled YEAR 1, YEAR 2, YEAR 3, YEAR 4, with Fall Semester and Spring Semester under each, and bullet lists for the courses.`;
     return [makeChunk("major_plan", content, 0.95, query)];
   } catch {
     return [makeChunk("major_plan", "Visit catalog.uic.edu for official degree requirements.", 0.3, query)];
@@ -1522,7 +1700,7 @@ function buildAnswerPack(
     comparison: "Parallel structure A vs B. End with a direct recommendation.",
     recommendation: "Direct personalized answer in 2-3 sentences. No hedging.",
     logistics: "1-2 sentences with exact details (address, phone, deadline). No editorializing.",
-    planning: "Semester-by-semester table with real course codes.",
+    planning: "Semester-by-semester plan using headings and bullet lists only. No markdown tables.",
     discovery: "2-3 short paragraphs max. Lead with the most useful fact.",
     hybrid: "Organized sections, one per sub-question. Crisp summary at end.",
   };
@@ -1551,7 +1729,7 @@ function buildSystemPrompt(
     comparison: "COMPARISON: Structure as clear A vs B with parallel criteria. Acknowledge the real tradeoffs. End with a concrete recommendation tailored to the implied student profile.",
     recommendation: "RECOMMENDATION: You detected specific constraints about this student. Use them. Give a direct, personalized answer — not 'it depends,' but 'given that you care about X and Y, here is what I recommend and why.'",
     logistics: "LOGISTICS: Be precise. Lead with exact addresses, phone numbers, deadlines, URLs, hours. Zero editorializing. Students need to act — give them exactly what they need.",
-    planning: "PLANNING: Build a complete, specific semester-by-semester plan. Use real course codes. For all optional/elective slots, auto-select the easiest options from the GPA data. Present as a clean table.",
+    planning: "PLANNING: Build a complete, specific semester-by-semester plan. Use real course codes. For all optional and elective slots, auto-select the easiest options from the GPA data. DO NOT use markdown tables or ASCII tables. Format the answer with headings like YEAR 1, Fall Semester, Spring Semester, and use bullet lists for courses.",
     hybrid: "HYBRID: This is a multi-part question. Break it into organized sections. Answer each well. Synthesize with a crisp bottom line that ties it together.",
   };
 
@@ -1640,6 +1818,8 @@ ${context}
 // ═══════════════════════════════════════════════════════════════════════════════
 
 export async function POST(req: Request) {
+  const requestStartMs = Date.now();
+
   // ── Input validation ──────────────────────────────────────────────────────
   let messages: ChatMessage[];
   let lastMsg: string;
@@ -1835,6 +2015,9 @@ if (userMemory?.interests?.some(i => i.toLowerCase().includes("sport") || i.toLo
   if ((dc["international"] ?? 0) > 0.5) syncChunks.push(...retrieveInternational(query));
   if ((dc["safety"] ?? 0) > 0.5 || ci.isAboutSafety) syncChunks.push(...retrieveSafety(query));
   if ((dc["instagram"] ?? 0) > 0.5) syncChunks.push(...retrieveInstagram(query));
+  if (((dc["athletics"] ?? 0) > 0.5 || (dc["student_life"] ?? 0) > 0.5) && (dc["instagram"] ?? 0) <= 0.5) {
+  syncChunks.push(...retrieveInstagram(query));
+}
   if ((dc["recreation"] ?? 0) > 0.5 && !(dc["health"] ?? 0)) syncChunks.push(...retrieveRecreation(query));
 
   if (lower.match(/\bhonors\b|veteran|commuter|first.?gen|bridge program|academic recovery|eop\b/)) {
@@ -1901,9 +2084,11 @@ if ((intent.isAboutCourses || intent.wantsEasiest || intent.wantsHardest) && !in
   if ((dc["athletics"] ?? 0) > 0.5 || ci.isAboutAthletics) asyncTasks.push(retrieveAthletics(query));
 
   // Vector search in parallel — only for discovery/recommendation or when structured retrieval found nothing
+const vectorSourceTypes = getVectorSourceTypes(query);
+
 const vectorTask = syncChunks.length < 2
-  ? vectorSearch(lastMsg, 6).catch(() => [])
-  : vectorSearch(lastMsg, 3).catch(() => []);
+  ? vectorSearch(lastMsg, 8, { sourceTypes: vectorSourceTypes }).catch(() => [])
+  : vectorSearch(lastMsg, 4, { sourceTypes: vectorSourceTypes }).catch(() => []);
 
   // Await all async work
   const [asyncResults, vectorResults] = await Promise.all([
@@ -1919,15 +2104,28 @@ const vectorTask = syncChunks.length < 2
   let allChunks = [...syncChunks, ...asyncChunks];
 
   // Add vector results only for domains not already covered by structured retrieval
-  const coveredDomains = new Set(allChunks.map(c => c.domain));
-  const relevantVectors = (vectorResults as any[]).filter((r: any) => r.similarity > 0.65);
-  if (relevantVectors.length > 0 && !query.isFact) {
-    const vectorContent = relevantVectors.map((r: any) => r.content).join("\n");
-    const vectorChunk = makeChunk("courses", `=== SEMANTIC SUPPORT ===\n${vectorContent}`, 0.7, query);
-    vectorChunk.relevanceScore *= 0.8;
-    allChunks.push(vectorChunk);
-  }
-  void coveredDomains;
+const relevantVectors = (vectorResults as any[]).filter((r: any) => r.similarity > 0.52);
+
+if (relevantVectors.length > 0 && !query.isFact) {
+  const perVectorChunks: RetrievedChunk[] = relevantVectors.map((r: any) => {
+    const domain = mapVectorSourceTypeToDomain(r.sourceType);
+    const confidence = vectorSourceConfidence(r.sourceType, r.trustLevel);
+
+    const chunk = makeChunk(
+      domain,
+      r.content,
+      confidence,
+      query
+    );
+
+    // semantic hits should not overpower official JSON / SQL
+    chunk.relevanceScore = Math.min(chunk.relevanceScore, r.similarity);
+
+    return chunk;
+  });
+
+  allChunks.push(...perVectorChunks);
+}
 
   // ── Fallback for completely unmatched queries ─────────────────────────────
   if (allChunks.length === 0) {
@@ -1953,6 +2151,119 @@ const vectorTask = syncChunks.length < 2
 const rerankTopK = query.isFact ? 3 : query.answerMode === "planning" ? 10 : query.answerMode === "comparison" ? 8 : query.answerMode === "ranking" ? 6 : 7;
 const rerankedChunks = allChunks.length > rerankTopK ? await rerankChunks(lastMsg, allChunks, rerankTopK) : allChunks;
 
+// ── Abstention gate ───────────────────────────────────────────────────────
+// Runs after reranking, before any model call.
+// If evidence is too weak, return a helpful redirect without calling Sonnet.
+
+const ABSTAIN_SCORE_THRESHOLD = 0.38;
+
+// High-trust sources: SQL grade data and official JSON retrievers.
+// Vector results (max 0.70) and generated aiSummary (0.40) never qualify.
+// A chunk is high-trust when its sourceConfidence >= 0.90.
+const hasHighTrustSource = rerankedChunks.some(
+  c => c.sourceConfidence >= 0.90
+);
+
+const topChunkScore = rerankedChunks.length > 0
+  ? Math.max(...rerankedChunks.map(c => c.relevanceScore))
+  : 0;
+
+// Trigger conditions — any one is sufficient to abstain:
+//   1. No chunks came back at all after the full pipeline.
+//   2. No high-trust source AND best relevance score is below threshold.
+//   3. Primary domain was clearly detected but zero chunks match it.
+const noChunks = rerankedChunks.length === 0;
+
+const evidenceTooWeak =
+  !hasHighTrustSource &&
+  topChunkScore < ABSTAIN_SCORE_THRESHOLD;
+
+const primaryDomainEntry = Object.entries(query.domainConfidence)
+  .sort(([, a], [, b]) => b - a)[0];
+const primaryDomainName  = primaryDomainEntry?.[0] ?? null;
+const primaryDomainConf  = primaryDomainEntry?.[1] ?? 0;
+const primaryDomainCovered = primaryDomainName
+  ? rerankedChunks.some(c => c.domain === primaryDomainName)
+  : true;
+const domainMismatch =
+  primaryDomainConf > 0.75 &&
+  !primaryDomainCovered &&
+  rerankedChunks.length < 2;
+
+// Live/personal/external data detector — catches questions the abstention
+// score thresholds miss because adjacent domain chunks score adequately.
+// These question patterns have no reliable data source in the system.
+const lowerQuery = lastMsg.toLowerCase();
+const isLiveDataQuery =
+  // Real-time queries — no live feeds exist
+  lowerQuery.match(/right now|today|tonight|this morning|currently|at the moment|live score|last night.{0,20}game|last game|current score/) !== null ||
+  // Personal academic record queries — no student record access
+  lowerQuery.match(/my gpa|my grade|my transcript|my record|my financial aid|my account|my schedule|my classes|what (did|do) i (get|have|owe)|how (am|are) i doing/) !== null ||
+  // External institution queries — data only covers UIC
+  lowerQuery.match(/transfer to (uiuc|northwestern|depaul|loyola|niu|illinois state|chicago state|purdue|indiana|michigan)|gpa (to|for) (transfer|uiuc|northwestern)/) !== null ||
+  // Syllabus/professor-specific policy queries — no syllabus data ingested
+  lowerQuery.match(/syllabus|late (work|policy|submission|assignment)|makeup (exam|test|quiz)|office hours (today|this week)|does (prof|professor|instructor).{0,30}(allow|accept|give|offer)/) !== null;
+
+const shouldAbstain = noChunks || evidenceTooWeak || domainMismatch || isLiveDataQuery;
+
+const abstainReason: string | null = shouldAbstain
+  ? noChunks          ? "no_chunks"
+  : isLiveDataQuery   ? "live_or_personal_data"
+  : domainMismatch    ? "domain_mismatch"
+  :                     "low_score"
+  : null;
+
+// ── QueryLog write (runs on every request, abstained or not) ─────────────
+const domainsTriggered = Object.entries(query.domainConfidence)
+  .filter(([, score]) => score > 0.5)
+  .map(([domain]) => domain);
+
+const retrievalSources: string[] = [
+  ...(syncChunks.length > 0                                                         ? ["json"]   : []),
+  ...(asyncChunks.length > 0                                                         ? ["sql"]    : []),
+  ...((vectorResults as any[]).some((r: any) => r.similarity > 0.65)               ? ["vector"] : []),
+];
+
+prisma.queryLog.create({
+  data: {
+    id:               `ql_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+    sessionId,
+    query:            lastMsg,
+    answerMode:       query.answerMode,
+    domainsTriggered: JSON.stringify(domainsTriggered),
+    retrievalSources: JSON.stringify(retrievalSources),
+    topChunkScore:    topChunkScore > 0 ? topChunkScore : null,
+    chunkCount:       rerankedChunks.length,
+    abstained:        shouldAbstain,
+    abstainReason,
+    responseMs:       Date.now() - requestStartMs,
+  },
+}).catch(() => {});
+// ── End QueryLog ──────────────────────────────────────────────────────────
+
+// ── Return abstention response without calling Sonnet ────────────────────
+if (shouldAbstain) {
+  const abstainText = getAbstainResponse(query);
+  const encoder = new TextEncoder();
+  const readable = new ReadableStream({
+    start(controller) {
+      controller.enqueue(encoder.encode(abstainText));
+      controller.close();
+    },
+  });
+  const headers: Record<string, string> = {
+    "Content-Type":          "text/plain; charset=utf-8",
+    "Cache-Control":         "no-store",
+    "X-Abstained":           "true",
+    "X-Abstain-Reason":      abstainReason ?? "unknown",
+  };
+  if (isNew) {
+    headers["Set-Cookie"] = `sparky_session=${sessionId}; Path=/; Max-Age=${60 * 60 * 24 * 365}; SameSite=Lax`;
+  }
+  return new Response(readable, { headers });
+}
+// ── End abstention gate ───────────────────────────────────────────────────
+
 const brief = buildAnswerBrief(query, rerankedChunks);
 const context = assembleContext(rerankedChunks, brief);
 const memoryContext = userMemory ? formatMemoryForPrompt(userMemory) : "";
@@ -1967,6 +2278,7 @@ const stateUpdates = extractEntitiesFromQuery(lastMsg, intent, sessionState);
 if (Object.keys(stateUpdates).length > 0) {
   updateSessionState(sessionId, stateUpdates).catch(() => {});
 }
+
 
   // ── Build prompt + call model ─────────────────────────────────────────────
 const systemPrompt = buildSystemPrompt(brief, memoryContext, context, query.isFact, answerPack);

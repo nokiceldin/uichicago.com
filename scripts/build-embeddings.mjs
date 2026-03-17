@@ -2,13 +2,18 @@
 // scripts/build-embeddings.mjs
 // Run: node --env-file=.env scripts/build-embeddings.mjs
 // This converts all courses, professors, and news into searchable vectors
-
+import fs from "fs/promises";
+import path from "path";
+import { fileURLToPath } from "url";
 import { PrismaClient } from "@prisma/client";
 import { Pool } from "pg";
 import { PrismaPg } from "@prisma/adapter-pg";
 const pool = new Pool({ connectionString: process.env.DATABASE_URL, max: 3 });
 const prisma = new PrismaClient({ adapter: new PrismaPg(pool) });
-
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const ROOT_DIR = path.resolve(__dirname, "..");
+const INSTAGRAM_DIR = path.join(ROOT_DIR, "public", "data", "instagram-captions-good");
 const BATCH_SIZE = 64;
 const EMBEDDING_MODEL = "voyage-3-large";
 
@@ -33,16 +38,57 @@ async function embedBatch(texts) {
 // ─── Upsert a chunk with embedding ───────────────────────────────────────────
 async function upsertChunk(content, sourceType, sourceId, metadata, embedding) {
   const embeddingStr = `[${embedding.join(",")}]`;
+
+  const chunkType = metadata.chunkType ?? null;
+  const entityId = metadata.entityId ?? null;
+  const entityType = metadata.entityType ?? null;
+  const trustLevel = metadata.trustLevel ?? "generated";
+  const validUntil = metadata.validUntil ? new Date(metadata.validUntil) : null;
+
   await prisma.$executeRawUnsafe(`
-    INSERT INTO "KnowledgeChunk" (id, content, "sourceType", "sourceId", metadata, embedding, "embeddingUpdatedAt", "createdAt", "updatedAt")
-    VALUES (gen_random_uuid()::text, $1, $2, $3, $4, $5::vector, NOW(), NOW(), NOW())
+    INSERT INTO "KnowledgeChunk" (
+      id,
+      content,
+      "sourceType",
+      "sourceId",
+      metadata,
+      embedding,
+      "chunkType",
+      "entityId",
+      "entityType",
+      "trustLevel",
+      "validUntil",
+      "embeddingUpdatedAt",
+      "createdAt",
+      "updatedAt"
+    )
+    VALUES (
+      gen_random_uuid()::text,
+      $1, $2, $3, $4, $5::vector, $6, $7, $8, $9, $10, NOW(), NOW(), NOW()
+    )
     ON CONFLICT ("sourceId", "sourceType") DO UPDATE SET
       content = EXCLUDED.content,
       metadata = EXCLUDED.metadata,
       embedding = EXCLUDED.embedding,
+      "chunkType" = EXCLUDED."chunkType",
+      "entityId" = EXCLUDED."entityId",
+      "entityType" = EXCLUDED."entityType",
+      "trustLevel" = EXCLUDED."trustLevel",
+      "validUntil" = EXCLUDED."validUntil",
       "embeddingUpdatedAt" = NOW(),
       "updatedAt" = NOW()
-  `, content, sourceType, sourceId, JSON.stringify(metadata), embeddingStr);
+  `,
+    content,
+    sourceType,
+    sourceId,
+    JSON.stringify(metadata),
+    embeddingStr,
+    chunkType,
+    entityId,
+    entityType,
+    trustLevel,
+    validUntil
+  );
 }
 
 function diffLabel(score) {
@@ -52,6 +98,19 @@ function diffLabel(score) {
   if (score >= 2.5) return "Medium";
   if (score >= 1.5) return "Hard";
   return "Very Hard";
+}
+function extractCaption(post) {
+  return (
+    post?.caption ||
+    post?.caption_raw ||
+    post?.text ||
+    post?.description ||
+    post?.node?.caption ||
+    post?.node?.text ||
+    post?.edge_media_to_caption?.edges?.[0]?.node?.text ||
+    post?.caption_text ||
+    ""
+  );
 }
 
 // ─── Build course chunks ──────────────────────────────────────────────────────
@@ -137,6 +196,194 @@ async function buildCourseChunks() {
   }
 
   console.log(`  → Done: ${processed} courses (${processed * 2} total chunks)`);
+}
+
+// ─── Build Instagram caption chunks ──────────────────────────────────────────
+async function buildInstagramChunks() {
+  console.log("\n📸 Building Instagram caption embeddings...");
+
+  let files = [];
+  try {
+    files = await fs.readdir(INSTAGRAM_DIR);
+  } catch (err) {
+    console.error(`  ❌ Could not read Instagram dir: ${INSTAGRAM_DIR}`);
+    console.error(`     ${err.message}`);
+    return;
+  }
+
+  const jsonFiles = files.filter(f => f.endsWith(".json"));
+  console.log(`  Found ${jsonFiles.length} Instagram account files`);
+
+  let postChunkCount = 0;
+  let accountChunkCount = 0;
+
+  for (const filename of jsonFiles) {
+    const fullPath = path.join(INSTAGRAM_DIR, filename);
+
+    let raw;
+    try {
+      raw = JSON.parse(await fs.readFile(fullPath, "utf8"));
+    } catch (err) {
+      console.error(`  ❌ Failed to parse ${filename}: ${err.message}`);
+      continue;
+    }
+
+const isTopLevelArray = Array.isArray(raw);
+const firstItem = isTopLevelArray ? raw[0] : null;
+
+const handle =
+  (isTopLevelArray ? firstItem?.account : null) ||
+  (isTopLevelArray ? firstItem?.username : null) ||
+  raw.handle ||
+  raw.username ||
+  raw.account ||
+  raw.profile?.username ||
+  raw.profile?.handle ||
+  filename.replace(/\.json$/i, "");
+
+const accountType =
+  (isTopLevelArray ? firstItem?.category : null) ||
+  raw.category ||
+  raw.type ||
+  raw.profile?.category ||
+  "instagram";
+
+const rawPosts = isTopLevelArray
+  ? raw
+  : (
+      raw.posts ??
+      raw.captions ??
+      raw.items ??
+      raw.good_posts ??
+      raw.data ??
+      []
+    );
+
+const posts = Array.isArray(rawPosts)
+  ? rawPosts
+  : rawPosts && typeof rawPosts === "object"
+    ? Object.values(rawPosts)
+    : [];
+
+    const validPosts = posts.filter(p => {
+      const caption = p.caption || p.text || p.description || "";
+      return typeof caption === "string" && caption.trim().length > 20;
+    });
+
+    if (validPosts.length === 0) continue;
+
+    const allTexts = [];
+    const allMeta = [];
+
+    // 1. One chunk per post
+    for (const post of validPosts) {
+const caption = extractCaption(post).trim();
+
+const shortcode =
+  post.shortcode ||
+  post.code ||
+  post.id ||
+  post.post_url ||
+  post.node?.shortcode ||
+  `${handle}_${Buffer.from(caption).toString("base64").slice(0, 16)}`;
+
+const postDate =
+  post.published_at ||
+  post.date ||
+  post.timestamp ||
+  post.taken_at ||
+  post.createdAt ||
+  null;
+
+const postUrl =
+  post.post_url ||
+  post.url ||
+  null;
+
+      const hashtags = Array.isArray(post.hashtags)
+        ? post.hashtags.join(", ")
+        : "";
+
+const postText =
+  `Instagram post from @${handle}. ` +
+  (postDate ? `Post date: ${new Date(postDate).toLocaleDateString()}. ` : "") +
+  (postUrl ? `Post URL: ${postUrl}. ` : "") +
+  `Caption: ${caption} ` +
+  `[UIC Instagram Social Post | ${handle} | Source: Instagram caption archive]`;
+
+      allTexts.push(postText);
+      allMeta.push({
+        handle,
+        accountType,
+        postId: String(shortcode),
+        postDate,
+        chunkType: "social_post",
+        entityId: String(shortcode),
+        entityType: "instagram_post",
+        trustLevel: "social",
+        sourceFile: filename
+      });
+    }
+
+    // 2. One account summary chunk
+    const recentPosts = validPosts.slice(0, 12);
+    const snippets = recentPosts
+      .map((p, idx) => {
+        const caption = (p.caption || p.text || p.description || "").trim().replace(/\s+/g, " ");
+        return `${idx + 1}. ${caption.slice(0, 220)}`;
+      })
+      .join(" ");
+
+    const accountSummaryText =
+      `Instagram account @${handle}. ` +
+      `Category: ${accountType}. ` +
+      `Recent activity themes and caption snippets: ${snippets} ` +
+      `[UIC Instagram Account Summary | ${handle} | Source: Instagram caption archive]`;
+
+    allTexts.push(accountSummaryText);
+    allMeta.push({
+      handle,
+      accountType,
+      chunkType: "social_account_summary",
+      entityId: String(handle),
+      entityType: "instagram_account",
+      trustLevel: "social",
+      sourceFile: filename
+    });
+
+    try {
+      const embeddings = await embedBatch(allTexts);
+
+      for (let j = 0; j < allTexts.length; j++) {
+        const meta = allMeta[j];
+        const isAccountSummary = meta.chunkType === "social_account_summary";
+
+        await upsertChunk(
+          allTexts[j],
+          isAccountSummary ? "instagram_account" : "instagram_caption",
+          isAccountSummary
+            ? `ig_account_${meta.handle}`
+            : `ig_post_${meta.postId}`,
+          meta,
+          embeddings[j]
+        );
+
+        if (isAccountSummary) accountChunkCount++;
+        else postChunkCount++;
+      }
+
+      console.log(
+        `  ✅ @${handle}: ${validPosts.length} posts + 1 account summary`
+      );
+    } catch (err) {
+      console.error(`  ❌ Embedding failed for ${filename}: ${err.message}`);
+    }
+
+    await new Promise(r => setTimeout(r, 250));
+  }
+
+  console.log(`  → Done: ${postChunkCount} Instagram post chunks`);
+  console.log(`  → Done: ${accountChunkCount} Instagram account summary chunks`);
 }
 
 // ─── Build professor chunks ───────────────────────────────────────────────────
@@ -287,6 +534,7 @@ async function main() {
   if (runAll || args.includes("--news")) await buildNewsChunks();
   if (runAll || args.includes("--professors")) await buildProfessorChunks();
   if (runAll || args.includes("--courses")) await buildCourseChunks();
+  if (runAll || args.includes("--instagram")) await buildInstagramChunks();
 
   const total = await prisma.knowledgeChunk.count();
   console.log(`\n✅ Done! Total knowledge chunks: ${total}`);

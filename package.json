@@ -46,7 +46,13 @@
 
     "react-dom": "19.2.3",
 
+    "react-markdown": "^10.1.0",
+
     "recharts": "^3.8.0",
+
+    "rehype-sanitize": "^6.0.0",
+
+    "remark-gfm": "^4.0.1",
 
     "resend": "^6.9.3",
 
@@ -73,6 +79,8 @@
     "eslint": "^9",
 
     "eslint-config-next": "16.1.6",
+
+    "playwright": "^1.58.2",
 
     "postcss": "^8.5.6",
 

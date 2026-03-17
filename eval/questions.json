@@ -1,0 +1,875 @@
+[
+  {
+    "id": "eval_001",
+    "question": "What is the in-state undergraduate tuition per semester at UIC?",
+    "category": "financial_aid_tuition",
+    "shouldAbstain": false,
+    "groundTruth": {
+      "mustContain": [
+        "5,712"
+      ],
+      "mustNotContain": [
+        "approximately",
+        "around",
+        "roughly"
+      ],
+      "scoringMethod": "exact_string"
+    },
+    "lastRunScore": 1,
+    "lastRunAt": "2026-03-17T00:54:14.265Z",
+    "lastRunAnswer": "In-state undergraduate tuition at UIC is **$5,712 per semester**, plus **$2,445 in fees**.\n\nThat breaks down to **$476 per credit hour** for in-state students. UIC also offers a 4-year tuition lock, s"
+  },
+  {
+    "id": "eval_002",
+    "question": "What is the FAFSA priority deadline at UIC?",
+    "category": "financial_aid_tuition",
+    "shouldAbstain": false,
+    "groundTruth": {
+      "mustContain": [
+        "March 15"
+      ],
+      "scoringMethod": "exact_string"
+    },
+    "lastRunScore": 1,
+    "lastRunAt": "2026-03-17T00:54:20.530Z",
+    "lastRunAnswer": "The FAFSA priority deadline at UIC is **March 15**. UIC's FAFSA code is 001776."
+  },
+  {
+    "id": "eval_003",
+    "question": "What is the FAFSA school code for UIC?",
+    "category": "financial_aid_tuition",
+    "shouldAbstain": false,
+    "groundTruth": {
+      "mustContain": [
+        "001776"
+      ],
+      "scoringMethod": "exact_string"
+    },
+    "lastRunScore": 0,
+    "lastRunAt": "2026-03-17T00:54:24.938Z",
+    "lastRunAnswer": "I don't have that athletics detail. Check UICFlames.com for schedules, rosters, and ticket information."
+  },
+  {
+    "id": "eval_004",
+    "question": "What is the Aspire Grant and who qualifies?",
+    "category": "financial_aid_tuition",
+    "shouldAbstain": false,
+    "groundTruth": {
+      "mustContain": [
+        "75,000",
+        "tuition",
+        "Illinois"
+      ],
+      "scoringMethod": "exact_string"
+    },
+    "lastRunScore": 1,
+    "lastRunAt": "2026-03-17T00:54:35.724Z",
+    "lastRunAnswer": "The **Aspire Grant** is UIC's flagship financial aid program that covers **100% of tuition AND mandatory fees** — essentially making UIC free for eligible Illinois students from lower-income families."
+  },
+  {
+    "id": "eval_005",
+    "question": "When is the fall tuition bill due?",
+    "category": "financial_aid_tuition",
+    "shouldAbstain": false,
+    "groundTruth": {
+      "mustContain": [
+        "September 28"
+      ],
+      "scoringMethod": "exact_string"
+    },
+    "lastRunScore": 0,
+    "lastRunAt": "2026-03-17T00:54:44.492Z",
+    "lastRunAnswer": "I don't have the exact tuition payment due dates in my current data. For Fall 2025 payment deadlines, you'll want to check your **Student Self-Service** portal or contact **Student Accounts** at **(31"
+  },
+  {
+    "id": "eval_006",
+    "question": "How much does CampusCare health insurance cost per year?",
+    "category": "financial_aid_tuition",
+    "shouldAbstain": false,
+    "groundTruth": {
+      "mustContain": [
+        "1,394"
+      ],
+      "scoringMethod": "exact_string"
+    },
+    "lastRunScore": 1,
+    "lastRunAt": "2026-03-17T00:54:52.689Z",
+    "lastRunAnswer": "CampusCare health insurance costs **$1,394 per year**. You're automatically enrolled unless you submit a waiver by September 12, 2025 (Fall) or February 7, 2026 (Spring) if you have qualifying outside"
+  },
+  {
+    "id": "eval_007",
+    "question": "What payment plan does UIC offer for tuition?",
+    "category": "financial_aid_tuition",
+    "shouldAbstain": false,
+    "groundTruth": {
+      "mustContain": [
+        "Nelnet"
+      ],
+      "scoringMethod": "exact_string"
+    },
+    "lastRunScore": 0,
+    "lastRunAt": "2026-03-17T00:55:02.086Z",
+    "lastRunAnswer": "UIC offers several tuition payment options to help manage costs:\n\n**Payment Plans**: UIC has installment payment plans that let you spread tuition and fees across the semester instead of paying everyt"
+  },
+  {
+    "id": "eval_008",
+    "question": "What is the mandatory fees amount per semester at UIC?",
+    "category": "financial_aid_tuition",
+    "shouldAbstain": false,
+    "groundTruth": {
+      "mustContain": [
+        "2,445"
+      ],
+      "scoringMethod": "exact_string"
+    },
+    "lastRunScore": 1,
+    "lastRunAt": "2026-03-17T00:55:09.685Z",
+    "lastRunAnswer": "The mandatory fees at UIC are **$2,445 per semester** for both in-state and out-of-state students. This is separate from tuition costs.\n\nSo your total per-semester cost would be:\n- **In-state**: $5,71"
+  },
+  {
+    "id": "eval_009",
+    "question": "Does ARC require a meal plan?",
+    "category": "housing",
+    "shouldAbstain": false,
+    "groundTruth": {
+      "mustContain": [
+        "meal plan"
+      ],
+      "scoringMethod": "exact_string_ci"
+    },
+    "lastRunScore": 1,
+    "lastRunAt": "2026-03-17T00:55:17.233Z",
+    "lastRunAnswer": "Yes, **ARC requires a meal plan** — it's mandatory for all residents.\n\nYour main options are **Ignite Unlimited** ($2,800/semester) with unlimited swipes, or **Ignite 15** ($2,060/semester) with 15 sw"
+  },
+  {
+    "id": "eval_010",
+    "question": "What is the cheapest room type at ARC per semester?",
+    "category": "housing",
+    "shouldAbstain": false,
+    "groundTruth": {
+      "mustContain": [
+        "6,342"
+      ],
+      "scoringMethod": "exact_string"
+    },
+    "lastRunScore": 0,
+    "lastRunAt": "2026-03-17T00:55:24.678Z",
+    "lastRunAnswer": "**ARC** doesn't appear in my housing data. UIC has 10 residence halls, but none are called \"ARC.\"\n\nThe cheapest room types at UIC are:\n- **Commons West (CMW)** shared room: **$5,275/semester**\n- **Com"
+  },
+  {
+    "id": "eval_011",
+    "question": "What residence halls do not require a meal plan?",
+    "category": "housing",
+    "shouldAbstain": false,
+    "groundTruth": {
+      "mustContain": [
+        "MRH",
+        "TBH"
+      ],
+      "scoringMethod": "exact_string"
+    },
+    "lastRunScore": 1,
+    "lastRunAt": "2026-03-17T00:55:33.513Z",
+    "lastRunAnswer": "**Marie Robinson Hall (MRH)**, **Thomas Beckham Hall (TBH)**, **Single Student Residence (SSR)**, and **Polk Street Residence (PSR)** are the four residence halls where meal plans are optional.\n\nThese"
+  },
+  {
+    "id": "eval_012",
+    "question": "How do I apply for UIC housing?",
+    "category": "housing",
+    "shouldAbstain": false,
+    "groundTruth": {
+      "mustContain": [
+        "housing.uic.edu"
+      ],
+      "scoringMethod": "exact_string"
+    },
+    "lastRunScore": 1,
+    "lastRunAt": "2026-03-17T00:55:42.862Z",
+    "lastRunAnswer": "**Housing Application Process:**\n\n**Application:** Apply through the **UIC Housing Portal** at housing.uic.edu. You'll need your UIC NetID to access the system.\n\n**Deadlines:**\n- **First-Year Priority"
+  },
+  {
+    "id": "eval_013",
+    "question": "What LLCs are available at JST?",
+    "category": "housing",
+    "shouldAbstain": false,
+    "groundTruth": {
+      "mustContain": [
+        "Innovate"
+      ],
+      "scoringMethod": "exact_string"
+    },
+    "lastRunScore": 1,
+    "lastRunAt": "2026-03-17T00:55:50.134Z",
+    "lastRunAnswer": "**James Stukel Towers (JST)** has the most Living Learning Community options of any dorm:\n\n**JST LLCs:**\n- **Innovate** (innovation + entrepreneurship)\n- **PAP STEM** \n- **DuSable Scholars**\n- **Ventu"
+  },
+  {
+    "id": "eval_014",
+    "question": "What is the Ignite Unlimited meal plan and how much does it cost?",
+    "category": "housing",
+    "shouldAbstain": false,
+    "groundTruth": {
+      "mustContain": [
+        "2,800",
+        "Ignite"
+      ],
+      "scoringMethod": "exact_string"
+    },
+    "lastRunScore": 0,
+    "lastRunAt": "2026-03-17T00:55:59.466Z",
+    "lastRunAnswer": "I don't have that athletics detail. Check UICFlames.com for schedules, rosters, and ticket information."
+  },
+  {
+    "id": "eval_015",
+    "question": "When does the spring 2026 semester start?",
+    "category": "academic_calendar",
+    "shouldAbstain": false,
+    "groundTruth": {
+      "mustContain": [
+        "January 12"
+      ],
+      "scoringMethod": "exact_string"
+    },
+    "lastRunScore": 1,
+    "lastRunAt": "2026-03-17T00:56:05.295Z",
+    "lastRunAnswer": "**Spring 2026 starts January 12, 2026.**\n\nKey dates:\n- **Add/drop deadline (no W):** January 23, 2026\n- **Last day to withdraw (W):** March 20, 2026\n- **Spring break:** March 23-27, 2026\n- **Finals:**"
+  },
+  {
+    "id": "eval_016",
+    "question": "When is the last day to withdraw from a 16-week course in spring 2026?",
+    "category": "academic_calendar",
+    "shouldAbstain": false,
+    "groundTruth": {
+      "mustContain": [
+        "March 20"
+      ],
+      "scoringMethod": "exact_string"
+    },
+    "lastRunScore": 1,
+    "lastRunAt": "2026-03-17T00:56:11.156Z",
+    "lastRunAnswer": "The last day to withdraw (W) from a 16-week course in Spring 2026 is **March 20, 2026**.\n\nJust remember that UIC has a withdrawal limit of max 4 individual course withdrawals (W notations) during your"
+  },
+  {
+    "id": "eval_017",
+    "question": "When is spring break 2026?",
+    "category": "academic_calendar",
+    "shouldAbstain": false,
+    "groundTruth": {
+      "mustContain": [
+        "March 23"
+      ],
+      "scoringMethod": "exact_string"
+    },
+    "lastRunScore": 1,
+    "lastRunAt": "2026-03-17T00:56:17.374Z",
+    "lastRunAnswer": "**Spring break 2026 is March 23-27, 2026.**\n\nThat's during the Spring 2026 semester, which runs from January 12 through finals on May 4-8. Spring registration opens March 30, right after break ends."
+  },
+  {
+    "id": "eval_018",
+    "question": "When does summer and fall registration open in 2026?",
+    "category": "academic_calendar",
+    "shouldAbstain": false,
+    "groundTruth": {
+      "mustContain": [
+        "March 30"
+      ],
+      "scoringMethod": "exact_string"
+    },
+    "lastRunScore": 1,
+    "lastRunAt": "2026-03-17T00:56:23.960Z",
+    "lastRunAnswer": "**Summer and Fall 2026 registration opens March 30, 2026.**\n\nThis is during Spring 2026 semester, well before spring break (March 23-27) and finals (May 4-8)."
+  },
+  {
+    "id": "eval_019",
+    "question": "What GPA do I need to graduate from UIC?",
+    "category": "academic_calendar",
+    "shouldAbstain": false,
+    "groundTruth": {
+      "mustContain": [
+        "2.0"
+      ],
+      "scoringMethod": "exact_string"
+    },
+    "lastRunScore": 1,
+    "lastRunAt": "2026-03-17T00:56:31.104Z",
+    "lastRunAnswer": "You need a **2.0 GPA** to graduate from UIC. This is the minimum cumulative GPA requirement for earning your bachelor's degree.\n\nHowever, some programs may have higher requirements - for example, cert"
+  },
+  {
+    "id": "eval_020",
+    "question": "What GPA do you need for Summa Cum Laude at UIC?",
+    "category": "academic_calendar",
+    "shouldAbstain": false,
+    "groundTruth": {
+      "mustContain": [
+        "3.90"
+      ],
+      "scoringMethod": "exact_string"
+    },
+    "lastRunScore": 0,
+    "lastRunAt": "2026-03-17T00:56:38.390Z",
+    "lastRunAnswer": "**Summa Cum Laude** at UIC requires a **3.800 GPA or higher**.\n\nThe Latin honors thresholds are:\n- **Summa Cum Laude**: 3.800+ GPA\n- **Magna Cum Laude**: 3.600-3.799 GPA  \n- **Cum Laude**: 3.400-3.599"
+  },
+  {
+    "id": "eval_021",
+    "question": "What system does UIC use for course registration?",
+    "category": "academic_calendar",
+    "shouldAbstain": false,
+    "groundTruth": {
+      "mustContain": [
+        "Banner"
+      ],
+      "scoringMethod": "exact_string"
+    },
+    "lastRunScore": 0,
+    "lastRunAt": "2026-03-17T00:56:48.040Z",
+    "lastRunAnswer": "UIC uses **myUIC** for course registration. Students access registration through the myUIC portal, which is the university's main student information system.\n\nFor academic advising to help plan your c"
+  },
+  {
+    "id": "eval_022",
+    "question": "Where is the financial aid office at UIC?",
+    "category": "campus_logistics",
+    "shouldAbstain": false,
+    "groundTruth": {
+      "mustContain": [
+        "Suite 1800",
+        "SSB"
+      ],
+      "scoringMethod": "exact_string"
+    },
+    "lastRunScore": 1,
+    "lastRunAt": "2026-03-17T00:56:53.787Z",
+    "lastRunAnswer": "I can't confirm that financial aid detail. Contact the Office of Student Financial Aid: SSB Suite 1800 | 312-996-3126 | financialaid.uic.edu."
+  },
+  {
+    "id": "eval_023",
+    "question": "What is the phone number for the UIC counseling center?",
+    "category": "campus_logistics",
+    "shouldAbstain": false,
+    "groundTruth": {
+      "mustContain": [
+        "312-996-3490"
+      ],
+      "scoringMethod": "exact_string"
+    },
+    "lastRunScore": 1,
+    "lastRunAt": "2026-03-17T00:56:59.543Z",
+    "lastRunAnswer": "The UIC Counseling Center phone number is **312-996-3490**. They're located in Suite 2010, Student Services Building, 1200 W Harrison St, and this number also serves as their 24/7 crisis line."
+  },
+  {
+    "id": "eval_024",
+    "question": "Which CTA train lines serve UIC?",
+    "category": "campus_logistics",
+    "shouldAbstain": false,
+    "groundTruth": {
+      "mustContain": [
+        "Blue Line",
+        "Pink Line"
+      ],
+      "scoringMethod": "exact_string"
+    },
+    "lastRunScore": 0,
+    "lastRunAt": "2026-03-17T00:57:08.264Z",
+    "lastRunAnswer": "The **Blue Line** is UIC's primary CTA connection with three stops serving different parts of campus:\n\n• **UIC-Halsted** — closest to Student Center East, Student Services Building, ARC, and Daley Lib"
+  },
+  {
+    "id": "eval_025",
+    "question": "Are UIC basketball games free for students?",
+    "category": "athletics_student_life",
+    "shouldAbstain": false,
+    "groundTruth": {
+      "mustContain": [
+        "free"
+      ],
+      "scoringMethod": "exact_string_ci"
+    },
+    "lastRunScore": 1,
+    "lastRunAt": "2026-03-17T00:57:17.504Z",
+    "lastRunAnswer": "Yes! **UIC basketball games are free for students** with a valid student ID. This applies to both men's and women's basketball games at the Credit Union 1 Arena.\n\nThe men's team just made their **firs"
+  },
+  {
+    "id": "eval_026",
+    "question": "What conference does UIC play in?",
+    "category": "athletics_student_life",
+    "shouldAbstain": false,
+    "groundTruth": {
+      "mustContain": [
+        "Missouri Valley"
+      ],
+      "scoringMethod": "exact_string"
+    },
+    "lastRunScore": 1,
+    "lastRunAt": "2026-03-17T00:57:26.153Z",
+    "lastRunAnswer": "UIC competes in the **Missouri Valley Conference (MVC)**. \n\nStudents get **free admission** to all regular season home games with their UIC ID, or you can get the **Flames Fast Pass for $50** which co"
+  },
+  {
+    "id": "eval_027",
+    "question": "How many registered student organizations does UIC have?",
+    "category": "athletics_student_life",
+    "shouldAbstain": false,
+    "groundTruth": {
+      "mustContain": [
+        "470"
+      ],
+      "scoringMethod": "exact_string"
+    },
+    "lastRunScore": 1,
+    "lastRunAt": "2026-03-17T00:57:32.989Z",
+    "lastRunAnswer": "UIC has **470+ registered student organizations** that you can explore at connect.uic.edu.\n\nThis includes everything from academic clubs and cultural organizations to Greek life (30+ chapters across 5"
+  },
+  {
+    "id": "eval_028",
+    "question": "What are the easiest CS courses at UIC by GPA?",
+    "category": "course_gpa",
+    "shouldAbstain": false,
+    "groundTruth": {
+      "mustContain": [
+        "CS",
+        "GPA"
+      ],
+      "mustNotContain": [
+        "I don't have",
+        "can't confirm"
+      ],
+      "scoringMethod": "exact_string"
+    },
+    "lastRunScore": 1,
+    "lastRunAt": "2026-03-17T00:57:42.885Z",
+    "lastRunAnswer": "**CS 582 Information Retrieval**, **CS 550 Advanced Computer Networks**, **CS 506 Intro to Quantum Computing**, and **CS 531 Social Robotics** all tie for the easiest with perfect **4.00 GPAs**. \n\n**C"
+  },
+  {
+    "id": "eval_029",
+    "question": "What is the average GPA in CS 211?",
+    "category": "course_gpa",
+    "shouldAbstain": false,
+    "groundTruth": {
+      "mustContain": [
+        "CS 211",
+        "GPA"
+      ],
+      "mustNotContain": [
+        "I don't have",
+        "can't confirm"
+      ],
+      "scoringMethod": "exact_string"
+    },
+    "lastRunScore": 1,
+    "lastRunAt": "2026-03-17T00:57:52.131Z",
+    "lastRunAnswer": "The average GPA in **CS 211 (Programming Practicum)** is **2.59**, making it one of the more challenging CS courses at UIC with a \"Hard\" difficulty rating.\n\nLooking at the grade distribution from 2,94"
+  },
+  {
+    "id": "eval_030",
+    "question": "What are the easiest MATH courses at UIC by GPA?",
+    "category": "course_gpa",
+    "shouldAbstain": false,
+    "groundTruth": {
+      "mustContain": [
+        "MATH",
+        "GPA"
+      ],
+      "mustNotContain": [
+        "I don't have",
+        "can't confirm"
+      ],
+      "scoringMethod": "exact_string"
+    },
+    "lastRunScore": 1,
+    "lastRunAt": "2026-03-17T00:58:00.061Z",
+    "lastRunAnswer": "**MATH 555** (Complex Manifolds II), **MATH 571** (Adv Topics in Algebraic Geometry), and **MATH 507** (Model Theory II) are tied for easiest with perfect **4.00 GPAs**.\n\nFor more accessible options, "
+  },
+  {
+    "id": "eval_031",
+    "question": "What are the easiest gen ed courses at UIC?",
+    "category": "gen_ed",
+    "shouldAbstain": false,
+    "groundTruth": {
+      "mustContain": [
+        "GPA"
+      ],
+      "mustNotContain": [
+        "I don't have",
+        "can't confirm"
+      ],
+      "scoringMethod": "exact_string"
+    },
+    "lastRunScore": 1,
+    "lastRunAt": "2026-03-17T00:58:08.669Z",
+    "lastRunAnswer": "**ED 450 - Pre-Student Teaching** takes the crown with a **3.98 GPA** from 389 students, but it's restricted to education majors. For unrestricted gen eds, **ED 217 - STEM, Education, and Society** le"
+  },
+  {
+    "id": "eval_032",
+    "question": "What gen ed categories does UIC have?",
+    "category": "gen_ed",
+    "shouldAbstain": false,
+    "groundTruth": {
+      "mustContain": [
+        "Analyzing the Natural World"
+      ],
+      "scoringMethod": "exact_string"
+    },
+    "lastRunScore": 1,
+    "lastRunAt": "2026-03-17T00:58:17.489Z",
+    "lastRunAnswer": "UIC has **six gen ed categories**:\n\n1. **Analyzing the Natural World**\n2. **Understanding the Individual and Society** \n3. **Understanding the Past**\n4. **Understanding the Creative Arts**\n5. **Explor"
+  },
+  {
+    "id": "eval_033",
+    "question": "Who is the easiest professor for CS 211?",
+    "category": "professor_for_course",
+    "shouldAbstain": false,
+    "groundTruth": {
+      "mustContain": [
+        "CS 211",
+        "GPA"
+      ],
+      "mustNotContain": [
+        "I don't have",
+        "can't confirm"
+      ],
+      "scoringMethod": "exact_string"
+    },
+    "lastRunScore": 1,
+    "lastRunAt": "2026-03-17T00:58:26.578Z",
+    "lastRunAnswer": "**Adam Koehler** is the easiest professor for **CS 211** based on grade data. He gives a **3.07 GPA** average with a **43.3% A-rate** and only **3.7% withdrawal rate** across 187 students. That's sign"
+  },
+  {
+    "id": "eval_034",
+    "question": "Who is the easiest professor for MATH 180?",
+    "category": "professor_for_course",
+    "shouldAbstain": false,
+    "groundTruth": {
+      "mustContain": [
+        "MATH 180",
+        "GPA"
+      ],
+      "mustNotContain": [
+        "I don't have",
+        "can't confirm"
+      ],
+      "scoringMethod": "exact_string"
+    },
+    "lastRunScore": 1,
+    "lastRunAt": "2026-03-17T00:58:35.523Z",
+    "lastRunAnswer": "**Victor Protsak** is the easiest grader for **MATH 180** with a **3.05 GPA** and **47.6% A-rate** — significantly above the course average of **2.67 GPA**. He also has a low **4.1% withdrawal rate**,"
+  },
+  {
+    "id": "eval_035",
+    "question": "Which ECON 121 professor gives the most As?",
+    "category": "professor_for_course",
+    "shouldAbstain": false,
+    "groundTruth": {
+      "mustContain": [
+        "ECON 121"
+      ],
+      "mustNotContain": [
+        "I don't have",
+        "can't confirm"
+      ],
+      "scoringMethod": "exact_string"
+    },
+    "lastRunScore": 1,
+    "lastRunAt": "2026-03-17T00:58:44.932Z",
+    "lastRunAnswer": "**Behzod Ahundjanov** is your clear winner for **ECON 121** — he gives **48.7% A-grades** with a **3.21 average GPA**, significantly higher than the course average of **2.88**. He also has an outstand"
+  },
+  {
+    "id": "eval_036",
+    "question": "Who teaches CS 341 and what are their grades like?",
+    "category": "professor_for_course",
+    "shouldAbstain": false,
+    "groundTruth": {
+      "mustContain": [
+        "CS 341",
+        "GPA"
+      ],
+      "mustNotContain": [
+        "I don't have",
+        "can't confirm"
+      ],
+      "scoringMethod": "exact_string"
+    },
+    "lastRunScore": 1,
+    "lastRunAt": "2026-03-17T00:58:56.633Z",
+    "lastRunAnswer": "**CS 341: Programming Language Concepts** has two main instructors with notably different grading patterns:\n\n**Patrick Troy** is your best bet — he gives a **2.83 GPA** average with a **40.3% A-rate**"
+  },
+  {
+    "id": "eval_037",
+    "question": "What are the required courses for a CS major at UIC?",
+    "category": "major_requirements",
+    "shouldAbstain": false,
+    "groundTruth": {
+      "mustContain": [
+        "CS 211"
+      ],
+      "mustNotContain": [
+        "I don't have",
+        "can't confirm"
+      ],
+      "scoringMethod": "exact_string"
+    },
+    "lastRunScore": 0,
+    "lastRunAt": "2026-03-17T00:59:07.766Z",
+    "lastRunAnswer": "I don't have the complete CS degree requirements in my current data, but I can point you to the exact place to find them.\n\nFor the full **Computer Science BS** curriculum and required courses, check t"
+  },
+  {
+    "id": "eval_038",
+    "question": "Can you give me a 4-year plan for a CS major?",
+    "category": "major_requirements",
+    "shouldAbstain": false,
+    "groundTruth": {
+      "mustContain": [
+        "CS 211"
+      ],
+      "mustNotContain": [
+        "I don't have",
+        "can't confirm"
+      ],
+      "scoringMethod": "exact_string"
+    },
+    "lastRunScore": 1,
+    "lastRunAt": "2026-03-17T00:59:32.195Z",
+    "lastRunAnswer": "# 4-Year Computer Science Plan (128 total hours)\n\n## Year 1\n\n**Fall Semester (16 hours)**\n| Course | Title | Hours | GPA |\n|--------|-------|-------|-----|\n| **ENGR 100** | Engineering Orientation | 1"
+  },
+  {
+    "id": "eval_039",
+    "question": "Is CS 341 waitlist typically long in spring?",
+    "category": "should_abstain",
+    "shouldAbstain": true,
+    "groundTruth": {
+      "mustContain": [
+        "don't have",
+        "registrar",
+        "catalog"
+      ],
+      "mustNotContain": [
+        "typically long",
+        "usually fills",
+        "waitlists are"
+      ],
+      "scoringMethod": "abstain_check"
+    },
+    "lastRunScore": 1,
+    "lastRunAt": "2026-03-17T00:59:43.267Z",
+    "lastRunAnswer": "I don't have specific waitlist data for **CS 341** in spring semesters, but I can tell you about the course demand. **CS 341: Programming Language Concepts** has seen **1,910 total students** historic"
+  },
+  {
+    "id": "eval_040",
+    "question": "What does my professor's syllabus say about late work?",
+    "category": "should_abstain",
+    "shouldAbstain": true,
+    "groundTruth": {
+      "mustContain": [
+        "don't have",
+        "syllabus"
+      ],
+      "mustNotContain": [
+        "typically",
+        "usually professors",
+        "most professors"
+      ],
+      "scoringMethod": "abstain_check"
+    },
+    "lastRunScore": 0,
+    "lastRunAt": "2026-03-17T00:59:46.937Z",
+    "lastRunAnswer": "I'm not sure I have reliable information on that. You can reach UIC at 312-996-7000 or visit uic.edu — most offices also have live chat on their pages."
+  },
+  {
+    "id": "eval_041",
+    "question": "Which dining hall has vegan options today?",
+    "category": "should_abstain",
+    "shouldAbstain": true,
+    "groundTruth": {
+      "mustContain": [
+        "don't have",
+        "dining.uic.edu"
+      ],
+      "mustNotContain": [
+        "today",
+        "currently serving",
+        "usually has"
+      ],
+      "scoringMethod": "abstain_check"
+    },
+    "lastRunScore": 1,
+    "lastRunAt": "2026-03-17T00:59:50.303Z",
+    "lastRunAnswer": "I don't have the specific housing information you need. Contact UIC Housing directly: housing.uic.edu | 312-413-5255 | housing@uic.edu."
+  },
+  {
+    "id": "eval_042",
+    "question": "What GPA do I need to transfer to UIUC from UIC?",
+    "category": "should_abstain",
+    "shouldAbstain": true,
+    "groundTruth": {
+      "mustContain": [
+        "don't have"
+      ],
+      "mustNotContain": [
+        "typically",
+        "usually around",
+        "generally"
+      ],
+      "scoringMethod": "abstain_check"
+    },
+    "lastRunScore": 1,
+    "lastRunAt": "2026-03-17T00:59:55.298Z",
+    "lastRunAnswer": "I don't have that admissions detail. Contact Admissions: admissions.uic.edu | 312-996-4350."
+  },
+  {
+    "id": "eval_043",
+    "question": "Is the 606 bus running on time right now?",
+    "category": "should_abstain",
+    "shouldAbstain": true,
+    "groundTruth": {
+      "mustContain": [
+        "don't have",
+        "transitchicago"
+      ],
+      "mustNotContain": [
+        "running on time right now",
+        "currently on schedule"
+      ],
+      "scoringMethod": "abstain_check"
+    },
+    "lastRunScore": 1,
+    "lastRunAt": "2026-03-17T00:59:58.586Z",
+    "lastRunAnswer": "I don't have that athletics detail. Check UICFlames.com for schedules, rosters, and ticket information."
+  },
+  {
+    "id": "eval_044",
+    "question": "What was my GPA last semester?",
+    "category": "should_abstain",
+    "shouldAbstain": true,
+    "groundTruth": {
+      "mustContain": [
+        "don't have",
+        "my.uic.edu"
+      ],
+      "mustNotContain": [
+        "your GPA was"
+      ],
+      "scoringMethod": "abstain_check"
+    },
+    "lastRunScore": 1,
+    "lastRunAt": "2026-03-17T01:00:02.304Z",
+    "lastRunAnswer": "I don't have that athletics detail. Check UICFlames.com for schedules, rosters, and ticket information."
+  },
+  {
+    "id": "eval_045",
+    "question": "Does Professor Smith give makeup exams in CS 211?",
+    "category": "should_abstain",
+    "shouldAbstain": true,
+    "groundTruth": {
+      "mustContain": [
+        "don't have",
+        "syllabus"
+      ],
+      "mustNotContain": [
+        "typically",
+        "usually",
+        "most professors"
+      ],
+      "scoringMethod": "abstain_check"
+    },
+    "lastRunScore": 1,
+    "lastRunAt": "2026-03-17T01:00:05.961Z",
+    "lastRunAnswer": "I don't have reliable data to answer that question. For course information, check the UIC Schedule of Classes at registrar.uic.edu or the course catalog at catalog.uic.edu."
+  },
+  {
+    "id": "eval_046",
+    "question": "Is there a Starbucks inside the engineering building?",
+    "category": "should_abstain",
+    "shouldAbstain": true,
+    "groundTruth": {
+      "mustContain": [
+        "don't have",
+        "dining.uic.edu"
+      ],
+      "mustNotContain": [
+        "yes, there is a Starbucks",
+        "there is a Starbucks inside"
+      ],
+      "scoringMethod": "abstain_check"
+    },
+    "lastRunScore": 0,
+    "lastRunAt": "2026-03-17T01:00:13.633Z",
+    "lastRunAnswer": "No, there's no Starbucks inside the engineering building. The closest Starbucks on campus is at **Student Center West** (7AM-4PM), which is over on the west campus in the medical district.\n\nFor quick "
+  },
+  {
+    "id": "eval_047",
+    "question": "Can I appeal my grade from 3 years ago?",
+    "category": "should_abstain",
+    "shouldAbstain": true,
+    "groundTruth": {
+      "mustContain": [
+        "don't have",
+        "registrar"
+      ],
+      "mustNotContain": [
+        "typically allowed",
+        "usually you can"
+      ],
+      "scoringMethod": "abstain_check"
+    },
+    "lastRunScore": 1,
+    "lastRunAt": "2026-03-17T01:00:18.731Z",
+    "lastRunAnswer": "I don't have reliable data to answer that question. For course information, check the UIC Schedule of Classes at registrar.uic.edu or the course catalog at catalog.uic.edu."
+  },
+  {
+    "id": "eval_048",
+    "question": "What is my F-1 visa cap-out date?",
+    "category": "should_abstain",
+    "shouldAbstain": true,
+    "groundTruth": {
+      "mustContain": [
+        "don't have",
+        "OIS",
+        "ois.uic.edu"
+      ],
+      "mustNotContain": [
+        "your cap-out date is"
+      ],
+      "scoringMethod": "abstain_check"
+    },
+    "lastRunScore": 0,
+    "lastRunAt": "2026-03-17T01:00:31.987Z",
+    "lastRunAnswer": "I don't have access to your specific SEVIS record or visa documents, so I can't tell you your individual F-1 cap-out date. This date is based on your program length and any extensions you may have rec"
+  },
+  {
+    "id": "eval_049",
+    "question": "Can I take 21 credits this semester without special approval?",
+    "category": "should_abstain",
+    "shouldAbstain": true,
+    "groundTruth": {
+      "mustContain": [
+        "don't have",
+        "advisor",
+        "registrar"
+      ],
+      "mustNotContain": [
+        "yes you can",
+        "typically allowed"
+      ],
+      "scoringMethod": "abstain_check"
+    },
+    "lastRunScore": 0,
+    "lastRunAt": "2026-03-17T01:00:42.484Z",
+    "lastRunAnswer": "You'll need **special approval** for 21 credits. UIC's standard full-time load is 12-18 credits per semester, so anything over 18 requires permission from your academic advisor and college.\n\nHere's ho"
+  },
+  {
+    "id": "eval_050",
+    "question": "What was the score of last night's UIC basketball game?",
+    "category": "should_abstain",
+    "shouldAbstain": true,
+    "groundTruth": {
+      "mustContain": [
+        "don't have",
+        "UICFlames.com"
+      ],
+      "mustNotContain": [
+        "the score was",
+        "UIC won",
+        "UIC lost"
+      ],
+      "scoringMethod": "abstain_check"
+    },
+    "lastRunScore": 1,
+    "lastRunAt": "2026-03-17T01:00:46.119Z",
+    "lastRunAnswer": "I don't have that athletics detail. Check UICFlames.com for schedules, rosters, and ticket information."
+  }
+]

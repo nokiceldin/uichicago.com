@@ -10,6 +10,7 @@ model Professor {
   id                String   @id @default(cuid())
   slug              String   @unique
   name              String
+  nameNormalized    String?
   department        String
   school            String
   rmpQuality        Float?
@@ -21,22 +22,47 @@ model Professor {
   updatedAt         DateTime @updatedAt
   aiSummary         String?
 
+  courseStats CourseInstructorTermStats[]
+  reviews     ProfessorReview[]
+
   @@index([name])
+  @@index([nameNormalized])
   @@index([department])
 }
 
+model ProfessorReview {
+  id             String    @id
+  professorId    String
+  reviewText     String    @db.Text
+  quality        Int?
+  difficulty     Int?
+  wouldTakeAgain Boolean?
+  thumbsUp       Int?
+  thumbsDown     Int?
+  grade          String?
+  courseCode     String?
+  forCredit      Boolean?
+  useTextbook    Boolean?
+  attendanceReq  Boolean?
+  rmpReviewId    String?   @unique
+  scrapedAt      DateTime  @default(now())
+
+  professor Professor @relation(fields: [professorId], references: [id], onDelete: Cascade)
+
+  @@index([professorId])
+  @@index([courseCode])
+}
+
 model MissingProfessorReport {
-  id             String   @id @default(cuid())
-  createdAt      DateTime @default(now())
-
-  searchQuery    String?
-  professorName  String
-  department     String?
-  classInput     String?
-  notes          String?
-
-  page           String?
-  userAgent      String?
+  id            String   @id @default(cuid())
+  createdAt     DateTime @default(now())
+  searchQuery   String?
+  professorName String
+  department    String?
+  classInput    String?
+  notes         String?
+  page          String?
+  userAgent     String?
 }
 
 model Term {
@@ -63,14 +89,13 @@ model Course {
   totalRegsAllTime Int                         @default(0)
   instructorStats  CourseInstructorTermStats[]
   termStats        CourseTermStats[]
-  isGenEd       Boolean  @default(false)
-  genEdCategory String?
+  isGenEd          Boolean                     @default(false)
+  genEdCategory    String?
 
   @@unique([subject, number])
   @@index([deptName])
   @@index([subject, number])
 }
-
 
 model NewsItem {
   id          String   @id @default(cuid())
@@ -89,37 +114,46 @@ model NewsItem {
 }
 
 model KnowledgeChunk {
-  id          String   @id @default(cuid())
-  content     String   @db.Text
-  sourceType  String
-  sourceId    String?
-  metadata    String   @db.Text
-  embedding   Unsupported("vector(1024)")?
+  id                 String                     @id @default(cuid())
+  content            String                     @db.Text
+  sourceType         String
+  sourceId           String?
+  chunkType          String?
+  entityId           String?
+  entityType         String?
+  trustLevel         String?
+  validUntil         DateTime?
+  metadata           String                     @db.Text
+  embedding          Unsupported("vector(1024)")?
   embeddingUpdatedAt DateTime?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt          DateTime                   @default(now())
+  updatedAt          DateTime                   @updatedAt
 
   @@index([sourceType])
   @@index([sourceId])
-@@index([embedding])
+  @@index([chunkType])
+  @@index([entityId])
+  @@index([trustLevel])
+  @@index([embedding])
   @@unique([sourceId, sourceType])
 }
 
 model Feedback {
   id        String   @id @default(cuid())
   message   String
-  rating    String   // "up" or "down"
+  rating    String
   createdAt DateTime @default(now())
 }
 
 model ConversationSession {
-  id          String   @id @default(cuid())
-  sessionId   String   @unique        // cookie/browser fingerprint
-  memory      String   @db.Text       // JSON: what Sparky knows about this user
-  messageCount Int     @default(0)
-  lastSeenAt  DateTime @default(now())
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id           String   @id @default(cuid())
+  sessionId    String   @unique
+  memory       String   @db.Text
+  sessionState String   @db.Text @default("{}")
+  messageCount Int      @default(0)
+  lastSeenAt   DateTime @default(now())
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
   @@index([sessionId])
 }
@@ -154,52 +188,73 @@ model CourseTermStats {
   @@index([termId])
 }
 
-
-
 model CourseInstructorTermStats {
-  id             String   @id @default(cuid())
+  id             String    @id @default(cuid())
   courseId       String
   termId         String
   instructorName String
-  gradeRegs      Int      @default(0)
-  a              Int      @default(0)
-  b              Int      @default(0)
-  c              Int      @default(0)
-  d              Int      @default(0)
-  f              Int      @default(0)
-  adv            Int      @default(0)
-  cr             Int      @default(0)
-  dfr            Int      @default(0)
-  i              Int      @default(0)
-  ng             Int      @default(0)
-  nr             Int      @default(0)
-  o              Int      @default(0)
-  pr             Int      @default(0)
-  s              Int      @default(0)
-  u              Int      @default(0)
-  w              Int      @default(0)
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
-  course         Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  term           Term     @relation(fields: [termId], references: [id], onDelete: Cascade)
+  professorId    String?
+  gradeRegs      Int       @default(0)
+  a              Int       @default(0)
+  b              Int       @default(0)
+  c              Int       @default(0)
+  d              Int       @default(0)
+  f              Int       @default(0)
+  adv            Int       @default(0)
+  cr             Int       @default(0)
+  dfr            Int       @default(0)
+  i              Int       @default(0)
+  ng             Int       @default(0)
+  nr             Int       @default(0)
+  o              Int       @default(0)
+  pr             Int       @default(0)
+  s              Int       @default(0)
+  u              Int       @default(0)
+  w              Int       @default(0)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  course         Course    @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  term           Term      @relation(fields: [termId], references: [id], onDelete: Cascade)
+  professor      Professor? @relation(fields: [professorId], references: [id], onDelete: SetNull)
 
   @@unique([courseId, termId, instructorName])
   @@index([termId])
   @@index([instructorName])
+  @@index([professorId])
 }
 
 model CampusKnowledge {
-  id        String   @id @default(cuid())
-  domain    String   // "housing" | "dining" | "tuition" | "health" | etc
-  entity    String   // "ARC" | "JST" | "aspire_grant" | "counseling_center" etc
-  key       String   // "cost_per_semester" | "address" | "phone" | "hours" etc
-  value     String   @db.Text  // the actual fact
-  metadata  String   @db.Text  // JSON: extra structured data
-  lastUpdated String // "2025-2026"
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id          String   @id @default(cuid())
+  domain      String
+  entity      String
+  key         String
+  value       String   @db.Text
+  metadata    String   @db.Text
+  lastUpdated String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   @@index([domain])
   @@index([domain, entity])
   @@index([domain, key])
+}
+
+model QueryLog {
+  id               String   @id
+  sessionId        String
+  query            String   @db.Text
+  answerMode       String?
+  domainsTriggered String?
+  retrievalSources String?
+  topChunkScore    Float?
+  chunkCount       Int?
+  abstained        Boolean  @default(false)
+  abstainReason    String?
+  responseMs       Int?
+  createdAt        DateTime @default(now())
+
+  @@index([sessionId])
+  @@index([createdAt])
+  @@index([abstained])
+  @@index([answerMode])
 }

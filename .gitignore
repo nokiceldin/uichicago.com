@@ -13,8 +13,8 @@
 # large data / generated files
 .playwright-instagram-session
 prof_imports/
-data/
-datasets/
+/data/
+/datasets/
 prisma/*.db
 prisma/dev.db
 *.log
@@ -50,3 +50,4 @@ yarn-error.log*
 next-env.d.ts
 
 /app/generated/prisma
+.env.local

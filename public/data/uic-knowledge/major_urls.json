@@ -1,0 +1,788 @@
+[
+  {
+    "college": "",
+    "department": "Biomedical and Health Information Sciences",
+    "degreeName": "Health Information Management - BS",
+    "degreeUrl": "https://catalog.uic.edu/ucat/colleges-depts/applied-health-sciences/bhis/bs/"
+  },
+  {
+    "college": "",
+    "department": "Biomedical and Health Information Sciences",
+    "degreeName": "Health Information Management/Health Informatics - Joint BS/MS",
+    "degreeUrl": "https://catalog.uic.edu/ucat/colleges-depts/applied-health-sciences/bhis/joint-bshim-mshi/"
+  },
+  {
+    "college": "",
+    "department": "Disability and Human Development",
+    "degreeName": "Disability and Human Development - BS",
+    "degreeUrl": "https://catalog.uic.edu/ucat/colleges-depts/applied-health-sciences/dhd/bs/"
+  },
+  {
+    "college": "",
+    "department": "Kinesiology and Nutrition",
+    "degreeName": "Kinesiology - BS",
+    "degreeUrl": "https://catalog.uic.edu/ucat/colleges-depts/applied-health-sciences/kn/bs-kn/"
+  },
+  {
+    "college": "",
+    "department": "Kinesiology and Nutrition",
+    "degreeName": "• Nutrition Science Concentration",
+    "degreeUrl": "https://catalog.uic.edu/ucat/colleges-depts/applied-health-sciences/kn/bs-nutr-nsc-conc/"
+  },
+  {
+    "college": "",
+    "department": "Rehabilitation Sciences",
+    "degreeName": "Rehabilitation Sciences - BS",
+    "degreeUrl": "https://catalog.uic.edu/ucat/colleges-depts/applied-health-sciences/rs/bs/"
+  },
+  {
+    "college": "",
+    "department": "Architecture",
+    "degreeName": "Architectural Studies - BA",
+    "degreeUrl": "https://catalog.uic.edu/ucat/colleges-depts/architecture-design-arts/arch/ba-arch/"
+  },
+  {
+    "college": "",
+    "department": "Architecture",
+    "degreeName": "Architecture - BS",
+    "degreeUrl": "https://catalog.uic.edu/ucat/colleges-depts/architecture-design-arts/arch/bs-arch/"
+  },
+  {
+    "college": "",
+    "department": "Art",
+    "degreeName": "Art - BFA",
+    "degreeUrl": "https://catalog.uic.edu/ucat/colleges-depts/architecture-design-arts/art-ah/bfa-art/"
+  },
+  {
+    "college": "",
+    "department": "Art",
+    "degreeName": "Art Education - BFA",
+    "degreeUrl": "https://catalog.uic.edu/ucat/colleges-depts/architecture-design-arts/art-ah/bfa-art-ed/"
+  },
+  {
+    "college": "",
+    "department": "Art",
+    "degreeName": "Interdisciplinary Education in the Arts - BA",
+    "degreeUrl": "https://catalog.uic.edu/ucat/colleges-depts/architecture-design-arts/art-ah/ba-ida/"
+  },
+  {
+    "college": "",
+    "department": "Art History",
+    "degreeName": "Art History - BA",
+    "degreeUrl": "https://catalog.uic.edu/ucat/colleges-depts/architecture-design-arts/art-ah/ba-ah/"
+  },
+  {
+    "college": "",
+    "department": "Design",
+    "degreeName": "Graphic Design - BDes",
+    "degreeUrl": "https://catalog.uic.edu/ucat/colleges-depts/architecture-design-arts/des/bdes-gd/"
+  },
+  {
+    "college": "",
+    "department": "Design",
+    "degreeName": "Industrial Design - BDes",
+    "degreeUrl": "https://catalog.uic.edu/ucat/colleges-depts/architecture-design-arts/des/bdes-id/"
+  },
+  {
+    "college": "",
+    "department": "Design",
+    "degreeName": "Design Studies - BA",
+    "degreeUrl": "https://catalog.uic.edu/ucat/colleges-depts/architecture-design-arts/des/ba/"
+  },
+  {
+    "college": "",
+    "department": "Music",
+    "degreeName": "Music - BA",
+    "degreeUrl": "https://catalog.uic.edu/ucat/colleges-depts/architecture-design-arts/thtr-mus/ba-mus/"
+  },
+  {
+    "college": "",
+    "department": "Music",
+    "degreeName": "Music Business - BA",
+    "degreeUrl": "https://catalog.uic.edu/ucat/colleges-depts/architecture-design-arts/thtr-mus/b-mus-bus/"
+  },
+  {
+    "college": "",
+    "department": "Music",
+    "degreeName": "Music Education - BMus",
+    "degreeUrl": "https://catalog.uic.edu/ucat/colleges-depts/architecture-design-arts/thtr-mus/bmus-music-education/"
+  },
+  {
+    "college": "",
+    "department": "Music",
+    "degreeName": "Performance - BMus",
+    "degreeUrl": "https://catalog.uic.edu/ucat/colleges-depts/architecture-design-arts/thtr-mus/bmus-perf/"
+  },
+  {
+    "college": "",
+    "department": "Music",
+    "degreeName": "Jazz Studies - BMus",
+    "degreeUrl": "https://catalog.uic.edu/ucat/colleges-depts/architecture-design-arts/thtr-mus/bmus-jazz/"
+  },
+  {
+    "college": "",
+    "department": "Theatre",
+    "degreeName": "Theatre and Performance - BA",
+    "degreeUrl": "https://catalog.uic.edu/ucat/colleges-depts/architecture-design-arts/thtr-mus/ba-act/"
+  },
+  {
+    "college": "",
+    "department": "Theatre",
+    "degreeName": "Theatre Design Production and Technology - BA",
+    "degreeUrl": "https://catalog.uic.edu/ucat/colleges-depts/architecture-design-arts/thtr-mus/ba-thtr-des/"
+  },
+  {
+    "college": "",
+    "department": "Theatre",
+    "degreeName": "Acting - BFA",
+    "degreeUrl": "https://catalog.uic.edu/ucat/colleges-depts/architecture-design-arts/thtr-mus/bfa-act/"
+  },
+  {
+    "college": "",
+    "department": "Accounting",
+    "degreeName": "Accounting - BS",
+    "degreeUrl": "https://catalog.uic.edu/ucat/colleges-depts/business-administration/actg/bs/"
+  },
+  {
+    "college": "",
+    "department": "Business Administration",
+    "degreeName": "Bachelor of Business Administration Completion Program (on-campus)",
+    "degreeUrl": "https://catalog.uic.edu/ucat/colleges-depts/business-administration/bba/campus/"
+  },
+  {
+    "college": "",
+    "department": "Business Administration",
+    "degreeName": "Bachelor of Business Administration Completion Program (online)",
+    "degreeUrl": "https://catalog.uic.edu/ucat/colleges-depts/business-administration/bba/online/"
+  },
+  {
+    "college": "",
+    "department": "Finance",
+    "degreeName": "Finance - BS",
+    "degreeUrl": "https://catalog.uic.edu/ucat/colleges-depts/business-administration/fin/bs/"
+  },
+  {
+    "college": "",
+    "department": "Information and Decision Sciences (IDS)",
+    "degreeName": "Information and Decision Sciences - BS",
+    "degreeUrl": "https://catalog.uic.edu/ucat/colleges-depts/business-administration/ids/"
+  },
+  {
+    "college": "",
+    "department": "Managerial Studies",
+    "degreeName": "Entrepreneurship - BS",
+    "degreeUrl": "https://catalog.uic.edu/ucat/colleges-depts/business-administration/mgmt/bs-entr/"
+  },
+  {
+    "college": "",
+    "department": "Managerial Studies",
+    "degreeName": "Human Resource Management - BS",
+    "degreeUrl": "https://catalog.uic.edu/ucat/colleges-depts/business-administration/mgmt/bs-human-resource-management/"
+  },
+  {
+    "college": "",
+    "department": "Managerial Studies",
+    "degreeName": "Management - BS",
+    "degreeUrl": "https://catalog.uic.edu/ucat/colleges-depts/business-administration/mgmt/bs-mgmt/"
+  },
+  {
+    "college": "",
+    "department": "Marketing",
+    "degreeName": "Marketing - BS",
+    "degreeUrl": "https://catalog.uic.edu/ucat/colleges-depts/business-administration/marketing/"
+  },
+  {
+    "college": "",
+    "department": "Real Estate",
+    "degreeName": "Real Estate - BS",
+    "degreeUrl": "https://catalog.uic.edu/ucat/colleges-depts/real-estate/bs-res/"
+  },
+  {
+    "college": "",
+    "department": "Curriculum and Instruction",
+    "degreeName": "Urban Education - BA",
+    "degreeUrl": "https://catalog.uic.edu/ucat/colleges-depts/education/ci/ba-urban-edu/"
+  },
+  {
+    "college": "",
+    "department": "Educational Psychology",
+    "degreeName": "Human Development and Learning - BA",
+    "degreeUrl": "https://catalog.uic.edu/ucat/colleges-depts/education/epsy/ba-hdl/"
+  },
+  {
+    "college": "",
+    "department": "Biomedical Engineering",
+    "degreeName": "Biomedical Engineering - BS",
+    "degreeUrl": "https://catalog.uic.edu/ucat/colleges-depts/engineering/bme/bs/"
+  },
+  {
+    "college": "",
+    "department": "Chemical Engineering",
+    "degreeName": "Chemical Engineering - BS",
+    "degreeUrl": "https://catalog.uic.edu/ucat/colleges-depts/engineering/che/bs-che/"
+  },
+  {
+    "college": "",
+    "department": "Chemical Engineering",
+    "degreeName": "Chemical Engineering - Joint BS/MS",
+    "degreeUrl": "https://catalog.uic.edu/ucat/colleges-depts/engineering/che/bs-ms-chemical-engineering/"
+  },
+  {
+    "college": "",
+    "department": "Civil, Materials, and Environmental Engineering",
+    "degreeName": "Civil Engineering - BS",
+    "degreeUrl": "https://catalog.uic.edu/ucat/colleges-depts/engineering/cme/bs-cive/"
+  },
+  {
+    "college": "",
+    "department": "Civil, Materials, and Environmental Engineering",
+    "degreeName": "Environmental Engineering - BS",
+    "degreeUrl": "https://catalog.uic.edu/ucat/colleges-depts/engineering/cme/bs-environe/"
+  },
+  {
+    "college": "",
+    "department": "Computer Science",
+    "degreeName": "Computer Science - BS",
+    "degreeUrl": "https://catalog.uic.edu/ucat/colleges-depts/engineering/cs/bs-cs/"
+  },
+  {
+    "college": "",
+    "department": "Computer Science",
+    "degreeName": "• Computer Systems Concentration",
+    "degreeUrl": "https://catalog.uic.edu/ucat/colleges-depts/engineering/cs/bs-cs-com-syst-conc/"
+  },
+  {
+    "college": "",
+    "department": "Computer Science",
+    "degreeName": "• Human-Centered Computing Concentration",
+    "degreeUrl": "https://catalog.uic.edu/ucat/colleges-depts/engineering/cs/bs-cs-hcc-conc/"
+  },
+  {
+    "college": "",
+    "department": "Computer Science",
+    "degreeName": "• Software Engineering Concentration",
+    "degreeUrl": "https://catalog.uic.edu/ucat/colleges-depts/engineering/cs/bs-cs-se-conc/"
+  },
+  {
+    "college": "",
+    "department": "Computer Science",
+    "degreeName": "Computer Science and Design - BS",
+    "degreeUrl": "https://catalog.uic.edu/ucat/colleges-depts/engineering/cs/bs-cs-design/"
+  },
+  {
+    "college": "",
+    "department": "Computer Science",
+    "degreeName": "Computer Science - Joint BS/MS",
+    "degreeUrl": "https://catalog.uic.edu/ucat/colleges-depts/engineering/cs/joint-bs-ms/"
+  },
+  {
+    "college": "",
+    "department": "Computer Science",
+    "degreeName": "• Bioinformatics Concentration",
+    "degreeUrl": "https://catalog.uic.edu/ucat/colleges-depts/engineering/cs/bs-data-science-bioinformatics/"
+  },
+  {
+    "college": "",
+    "department": "Computer Science",
+    "degreeName": "• Business Analytics Concentration",
+    "degreeUrl": "https://catalog.uic.edu/ucat/colleges-depts/engineering/cs/bs-data-science-business-analytics/"
+  },
+  {
+    "college": "",
+    "department": "Computer Science",
+    "degreeName": "• Computer Science Concentration",
+    "degreeUrl": "https://catalog.uic.edu/ucat/colleges-depts/engineering/cs/bs-data-science-computer-science/"
+  },
+  {
+    "college": "",
+    "department": "Computer Science",
+    "degreeName": "• Data Processing Science and Engineering Concentration",
+    "degreeUrl": "https://catalog.uic.edu/ucat/colleges-depts/engineering/cs/bs-data-science-data-processing-science-engineering/"
+  },
+  {
+    "college": "",
+    "department": "Computer Science",
+    "degreeName": "• Health Data Science Concentration",
+    "degreeUrl": "https://catalog.uic.edu/ucat/colleges-depts/engineering/cs/bs-data-science-health-data-science/"
+  },
+  {
+    "college": "",
+    "department": "Computer Science",
+    "degreeName": "• Industrial Engineering Concentration",
+    "degreeUrl": "https://catalog.uic.edu/ucat/colleges-depts/engineering/cs/bs-data-science-industrial-engineering/"
+  },
+  {
+    "college": "",
+    "department": "Computer Science",
+    "degreeName": "• Social Technology Studies Concentration",
+    "degreeUrl": "https://catalog.uic.edu/ucat/colleges-depts/engineering/cs/bs-data-science-social-technology-studies/"
+  },
+  {
+    "college": "",
+    "department": "Computer Science",
+    "degreeName": "• Statistics Concentration",
+    "degreeUrl": "https://catalog.uic.edu/ucat/colleges-depts/engineering/cs/bs-data-science-statistics/"
+  },
+  {
+    "college": "",
+    "department": "Computer Science",
+    "degreeName": "• Urban Planning and Public Affairs Concentration",
+    "degreeUrl": "https://catalog.uic.edu/ucat/colleges-depts/engineering/cs/bs-data-science-urban-planning-public-affairs/"
+  },
+  {
+    "college": "",
+    "department": "Electrical and Computer Engineering",
+    "degreeName": "Electrical Engineering - BS",
+    "degreeUrl": "https://catalog.uic.edu/ucat/colleges-depts/engineering/ece/bs-ee/"
+  },
+  {
+    "college": "",
+    "department": "Electrical and Computer Engineering",
+    "degreeName": "Computer Engineering - BS",
+    "degreeUrl": "https://catalog.uic.edu/ucat/colleges-depts/engineering/ece/bs-ce/"
+  },
+  {
+    "college": "",
+    "department": "Electrical and Computer Engineering",
+    "degreeName": "Engineering Physics - BS",
+    "degreeUrl": "https://catalog.uic.edu/ucat/colleges-depts/engineering/ece/bs-eng-phys/"
+  },
+  {
+    "college": "",
+    "department": "Electrical and Computer Engineering",
+    "degreeName": "• Computer Engineering/Electrical and Computer Engineering - Joint BS/MS",
+    "degreeUrl": "https://catalog.uic.edu/ucat/colleges-depts/engineering/ece/joint-bs-computer-engineering-ms-ece/"
+  },
+  {
+    "college": "",
+    "department": "Electrical and Computer Engineering",
+    "degreeName": "• Electrical Engineering/ Electrical and Computer Engineering - Joint BS/MS",
+    "degreeUrl": "https://catalog.uic.edu/ucat/colleges-depts/engineering/ece/joint-bs-electrical-engineering-ms-ece/"
+  },
+  {
+    "college": "",
+    "department": "Electrical and Computer Engineering",
+    "degreeName": "• Engineering Physics/ Electrical and Computer Engineering - Joint BS/MS",
+    "degreeUrl": "https://catalog.uic.edu/ucat/colleges-depts/engineering/ece/joint-bs-engineering-physics-ms-ece/"
+  },
+  {
+    "college": "",
+    "department": "Mechanical and Industrial Engineering",
+    "degreeName": "Mechanical Engineering - BS",
+    "degreeUrl": "https://catalog.uic.edu/ucat/colleges-depts/engineering/mie/bs-me/"
+  },
+  {
+    "college": "",
+    "department": "Mechanical and Industrial Engineering",
+    "degreeName": "Industrial Engineering - BS",
+    "degreeUrl": "https://catalog.uic.edu/ucat/colleges-depts/engineering/mie/bs-ie/"
+  },
+  {
+    "college": "",
+    "department": "Mechanical and Industrial Engineering",
+    "degreeName": "Engineering Management - BS",
+    "degreeUrl": "https://catalog.uic.edu/ucat/colleges-depts/engineering/mie/bs-ie-mgmt/"
+  },
+  {
+    "college": "",
+    "department": "Mechanical and Industrial Engineering",
+    "degreeName": "Industrial Engineering - Joint Degrees:",
+    "degreeUrl": "https://catalog.uic.edu/ucat/colleges-depts/engineering/mie/joint-degrees-bsie/"
+  },
+  {
+    "college": "",
+    "department": "Mechanical and Industrial Engineering",
+    "degreeName": "Mechanical Engineering - Joint Degrees:",
+    "degreeUrl": "https://catalog.uic.edu/ucat/colleges-depts/engineering/mie/joint-degrees-bsme/"
+  },
+  {
+    "college": "",
+    "department": "Anthropology",
+    "degreeName": "Anthropology - BA with a Major",
+    "degreeUrl": "https://catalog.uic.edu/ucat/colleges-depts/liberal-arts-sciences/anth/ba/"
+  },
+  {
+    "college": "",
+    "department": "Biochemistry",
+    "degreeName": "Biochemistry - BS",
+    "degreeUrl": "https://catalog.uic.edu/ucat/colleges-depts/liberal-arts-sciences/biochem/bs/"
+  },
+  {
+    "college": "",
+    "department": "Biological Sciences",
+    "degreeName": "• Evolution Ecology and Environmental Biology Concentration",
+    "degreeUrl": "https://catalog.uic.edu/ucat/colleges-depts/liberal-arts-sciences/bios/bs-eeeb/"
+  },
+  {
+    "college": "",
+    "department": "Biological Sciences",
+    "degreeName": "• General Biology Concentration",
+    "degreeUrl": "https://catalog.uic.edu/ucat/colleges-depts/liberal-arts-sciences/bios/bs-generalbiology/"
+  },
+  {
+    "college": "",
+    "department": "Biological Sciences",
+    "degreeName": "• Molecular Cellular and Organismal Biology Concentration",
+    "degreeUrl": "https://catalog.uic.edu/ucat/colleges-depts/liberal-arts-sciences/bios/bs-mcob/"
+  },
+  {
+    "college": "",
+    "department": "Black Studies",
+    "degreeName": "Black Studies - BA with a Major",
+    "degreeUrl": "https://catalog.uic.edu/ucat/colleges-depts/liberal-arts-sciences/blst/ba/"
+  },
+  {
+    "college": "",
+    "department": "Chemistry",
+    "degreeName": "Chemistry - BA with a Major",
+    "degreeUrl": "https://catalog.uic.edu/ucat/colleges-depts/liberal-arts-sciences/chem/ba-chem/"
+  },
+  {
+    "college": "",
+    "department": "Chemistry",
+    "degreeName": "Chemistry - BS",
+    "degreeUrl": "https://catalog.uic.edu/ucat/colleges-depts/liberal-arts-sciences/chem/bs-chem/"
+  },
+  {
+    "college": "",
+    "department": "Classics and Mediterranean Studies",
+    "degreeName": "Classical Studies - BA with a Major",
+    "degreeUrl": "https://catalog.uic.edu/ucat/colleges-depts/liberal-arts-sciences/cl/ba/"
+  },
+  {
+    "college": "",
+    "department": "Communication",
+    "degreeName": "Communication - BA with a Major",
+    "degreeUrl": "https://catalog.uic.edu/ucat/colleges-depts/liberal-arts-sciences/comm/ba/"
+  },
+  {
+    "college": "",
+    "department": "Criminology, Law, and Justice",
+    "degreeName": "Criminology Law and Justice - BA with a Major",
+    "degreeUrl": "https://catalog.uic.edu/ucat/colleges-depts/liberal-arts-sciences/clj/ba-clj"
+  },
+  {
+    "college": "",
+    "department": "Earth and Environmental Sciences",
+    "degreeName": "Earth and Environmental Sciences - BS with a Major",
+    "degreeUrl": "https://catalog.uic.edu/ucat/colleges-depts/liberal-arts-sciences/eaes/bs/"
+  },
+  {
+    "college": "",
+    "department": "Economics",
+    "degreeName": "Economics - BA with a Major",
+    "degreeUrl": "https://catalog.uic.edu/ucat/colleges-depts/liberal-arts-sciences/econ/ba/"
+  },
+  {
+    "college": "",
+    "department": "English",
+    "degreeName": "English - BA with a Major",
+    "degreeUrl": "https://catalog.uic.edu/ucat/colleges-depts/liberal-arts-sciences/engl/ba-engl/"
+  },
+  {
+    "college": "",
+    "department": "English",
+    "degreeName": "Teaching of English - BA",
+    "degreeUrl": "https://catalog.uic.edu/ucat/colleges-depts/liberal-arts-sciences/engl/ba-teachengl/"
+  },
+  {
+    "college": "",
+    "department": "French and Francophone Studies",
+    "degreeName": "French and Francophone Studies - BA with a Major",
+    "degreeUrl": "https://catalog.uic.edu/ucat/colleges-depts/liberal-arts-sciences/fr/"
+  },
+  {
+    "college": "",
+    "department": "French and Francophone Studies",
+    "degreeName": "Teaching of French - BA",
+    "degreeUrl": "https://catalog.uic.edu/ucat/colleges-depts/liberal-arts-sciences/fr/ba-teach-fr/"
+  },
+  {
+    "college": "",
+    "department": "Gender and Women's Studies",
+    "degreeName": "Gender and Women’s Studies - BA with a Major",
+    "degreeUrl": "https://catalog.uic.edu/ucat/colleges-depts/liberal-arts-sciences/gws/ba/"
+  },
+  {
+    "college": "",
+    "department": "Germanic Studies",
+    "degreeName": "Germanic Studies - BA with a Major",
+    "degreeUrl": "https://catalog.uic.edu/ucat/colleges-depts/liberal-arts-sciences/ger/ba-ger/"
+  },
+  {
+    "college": "",
+    "department": "Germanic Studies",
+    "degreeName": "Teaching of German - BA",
+    "degreeUrl": "https://catalog.uic.edu/ucat/colleges-depts/liberal-arts-sciences/ger/ba-teach-ger/"
+  },
+  {
+    "college": "",
+    "department": "Global Asian Studies",
+    "degreeName": "Global Asian Studies - BA with a Major",
+    "degreeUrl": "https://catalog.uic.edu/ucat/colleges-depts/liberal-arts-sciences/glas/ba-glas/"
+  },
+  {
+    "college": "",
+    "department": "Hispanic and Italian Studies",
+    "degreeName": "Spanish - BA with a Major",
+    "degreeUrl": "https://catalog.uic.edu/ucat/colleges-depts/liberal-arts-sciences/hisp-ital/ba-span/"
+  },
+  {
+    "college": "",
+    "department": "Hispanic and Italian Studies",
+    "degreeName": "• Spanish for the Professions Concentration",
+    "degreeUrl": "https://catalog.uic.edu/ucat/colleges-depts/liberal-arts-sciences/hisp-ital/ba-span-concentration-spanish-professions/"
+  },
+  {
+    "college": "",
+    "department": "Hispanic and Italian Studies",
+    "degreeName": "Teaching of Spanish - BA",
+    "degreeUrl": "https://catalog.uic.edu/ucat/colleges-depts/liberal-arts-sciences/hisp-ital/ba-teach-span/"
+  },
+  {
+    "college": "",
+    "department": "History",
+    "degreeName": "History - BA with a Major",
+    "degreeUrl": "https://catalog.uic.edu/ucat/colleges-depts/liberal-arts-sciences/hist/ba-hist/"
+  },
+  {
+    "college": "",
+    "department": "History",
+    "degreeName": "Teaching of History - BA",
+    "degreeUrl": "https://catalog.uic.edu/ucat/colleges-depts/liberal-arts-sciences/hist/ba-teach-hist/"
+  },
+  {
+    "college": "",
+    "department": "Integrated Health Studies",
+    "degreeName": "• Behavioral Health Concentration",
+    "degreeUrl": "https://catalog.uic.edu/ucat/colleges-depts/liberal-arts-sciences/ihs/bs-bh-conc/"
+  },
+  {
+    "college": "",
+    "department": "Integrated Health Studies",
+    "degreeName": "• Health and Science Concentration",
+    "degreeUrl": "https://catalog.uic.edu/ucat/colleges-depts/liberal-arts-sciences/ihs/bs-hs-conc/"
+  },
+  {
+    "college": "",
+    "department": "Interdepartmental",
+    "degreeName": "Liberal Studies - BA with a Major",
+    "degreeUrl": "https://catalog.uic.edu/ucat/colleges-depts/liberal-arts-sciences/liberal-studies/ba/"
+  },
+  {
+    "college": "",
+    "department": "Latin American and Latino Studies",
+    "degreeName": "Latin American and Latino Studies - BA with a Major",
+    "degreeUrl": "https://catalog.uic.edu/ucat/colleges-depts/liberal-arts-sciences/lals/"
+  },
+  {
+    "college": "",
+    "department": "Linguistics",
+    "degreeName": "Linguistics - BA with a Major",
+    "degreeUrl": "https://catalog.uic.edu/ucat/colleges-depts/liberal-arts-sciences/ling/ba/"
+  },
+  {
+    "college": "",
+    "department": "Linguistics",
+    "degreeName": "Computer Science and Linguistics - BS",
+    "degreeUrl": "https://catalog.uic.edu/ucat/colleges-depts/liberal-arts-sciences/ling/cs-linguistics/"
+  },
+  {
+    "college": "",
+    "department": "Mathematics, Statistics, and Computer Science",
+    "degreeName": "Mathematics - BS with a Major",
+    "degreeUrl": "https://catalog.uic.edu/ucat/colleges-depts/liberal-arts-sciences/mscs/bs-math/"
+  },
+  {
+    "college": "",
+    "department": "Mathematics, Statistics, and Computer Science",
+    "degreeName": "Statistics - BS with a Major",
+    "degreeUrl": "https://catalog.uic.edu/ucat/colleges-depts/liberal-arts-sciences/mscs/bs-stat/"
+  },
+  {
+    "college": "",
+    "department": "Mathematics, Statistics, and Computer Science",
+    "degreeName": "Teaching of Mathematics - BS",
+    "degreeUrl": "https://catalog.uic.edu/ucat/colleges-depts/liberal-arts-sciences/mscs/bs-teach-math/"
+  },
+  {
+    "college": "",
+    "department": "Mathematics, Statistics, and Computer Science",
+    "degreeName": "Mathematics and Computer Science - BS with a Major",
+    "degreeUrl": "https://catalog.uic.edu/ucat/colleges-depts/liberal-arts-sciences/mscs/bs-math-cs/"
+  },
+  {
+    "college": "",
+    "department": "Neuroscience",
+    "degreeName": "Neuroscience - BS",
+    "degreeUrl": "https://catalog.uic.edu/ucat/colleges-depts/liberal-arts-sciences/neus/bs/"
+  },
+  {
+    "college": "",
+    "department": "Philosophy",
+    "degreeName": "Philosophy - BA with a Major",
+    "degreeUrl": "https://catalog.uic.edu/ucat/colleges-depts/liberal-arts-sciences/phil/ba/"
+  },
+  {
+    "college": "",
+    "department": "Philosophy",
+    "degreeName": "Computer Science and Philosophy - BS",
+    "degreeUrl": "https://catalog.uic.edu/ucat/colleges-depts/liberal-arts-sciences/phil/bs-cs-philosophy/"
+  },
+  {
+    "college": "",
+    "department": "Physics",
+    "degreeName": "Physics - BA with a Major",
+    "degreeUrl": "https://catalog.uic.edu/ucat/colleges-depts/liberal-arts-sciences/phys/ba-phys/"
+  },
+  {
+    "college": "",
+    "department": "Physics",
+    "degreeName": "Physics - BS",
+    "degreeUrl": "https://catalog.uic.edu/ucat/colleges-depts/liberal-arts-sciences/phys/bs-phys/"
+  },
+  {
+    "college": "",
+    "department": "Polish, Russian, and Lithuanian Studies",
+    "degreeName": "• Central and Eastern European Concentration",
+    "degreeUrl": "https://catalog.uic.edu/ucat/colleges-depts/liberal-arts-sciences/prls/ba-conc-cees/"
+  },
+  {
+    "college": "",
+    "department": "Polish, Russian, and Lithuanian Studies",
+    "degreeName": "• Polish Studies Concentration",
+    "degreeUrl": "https://catalog.uic.edu/ucat/colleges-depts/liberal-arts-sciences/prls/ba-conc-polish/"
+  },
+  {
+    "college": "",
+    "department": "Polish, Russian, and Lithuanian Studies",
+    "degreeName": "• Russian Studies Concentration",
+    "degreeUrl": "https://catalog.uic.edu/ucat/colleges-depts/liberal-arts-sciences/prls/ba-conc-russian/"
+  },
+  {
+    "college": "",
+    "department": "Political Science",
+    "degreeName": "Political Science - BA with a Major",
+    "degreeUrl": "https://catalog.uic.edu/ucat/colleges-depts/liberal-arts-sciences/pols/ba-pols/"
+  },
+  {
+    "college": "",
+    "department": "Political Science",
+    "degreeName": "• Law and Courts Concentration",
+    "degreeUrl": "https://catalog.uic.edu/ucat/colleges-depts/liberal-arts-sciences/pols/ba-pols-lc-conc/"
+  },
+  {
+    "college": "",
+    "department": "Political Science",
+    "degreeName": "• Urban Politics Concentration",
+    "degreeUrl": "https://catalog.uic.edu/ucat/colleges-depts/liberal-arts-sciences/pols/ba-pols-up-conc/"
+  },
+  {
+    "college": "",
+    "department": "Psychology",
+    "degreeName": "Applied Psychology - BA with a Major",
+    "degreeUrl": "https://catalog.uic.edu/ucat/colleges-depts/liberal-arts-sciences/psych/ba-applied-psychology/"
+  },
+  {
+    "college": "",
+    "department": "Psychology",
+    "degreeName": "Psychology - BS with a Major",
+    "degreeUrl": "https://catalog.uic.edu/ucat/colleges-depts/liberal-arts-sciences/psych/bs-psychology/"
+  },
+  {
+    "college": "",
+    "department": "Sociology",
+    "degreeName": "Sociology - BA with a Major",
+    "degreeUrl": "https://catalog.uic.edu/ucat/colleges-depts/liberal-arts-sciences/soc/ba/"
+  },
+  {
+    "college": "",
+    "department": "Sociology",
+    "degreeName": "• Data and Analytics Concentration",
+    "degreeUrl": "https://catalog.uic.edu/ucat/colleges-depts/liberal-arts-sciences/soc/ba-concentration-data-and-analysis/"
+  },
+  {
+    "college": "",
+    "department": "Sociology",
+    "degreeName": "• Health and Medicine Concentration",
+    "degreeUrl": "https://catalog.uic.edu/ucat/colleges-depts/liberal-arts-sciences/soc/ba-concentration-health-and-medicine/"
+  },
+  {
+    "college": "",
+    "department": "Sociology",
+    "degreeName": "• Professions Occupations and Work Concentration",
+    "degreeUrl": "https://catalog.uic.edu/ucat/colleges-depts/liberal-arts-sciences/soc/ba-concentration-professions-organizations-work/"
+  },
+  {
+    "college": "",
+    "department": "Sociology",
+    "degreeName": "• Sociology for Social Work Concentration",
+    "degreeUrl": "https://catalog.uic.edu/ucat/colleges-depts/liberal-arts-sciences/soc/ba-concentration-sociology-for-social-work/"
+  },
+  {
+    "college": "",
+    "department": "Nursing",
+    "degreeName": "Nursing - BS",
+    "degreeUrl": "https://catalog.uic.edu/ucat/colleges-depts/nursing/bs-nursing/"
+  },
+  {
+    "college": "",
+    "department": "Nursing",
+    "degreeName": "RN/BSN Completion Program",
+    "degreeUrl": "https://catalog.uic.edu/ucat/colleges-depts/nursing/rn-bsn/"
+  },
+  {
+    "college": "",
+    "department": "Pharmacy",
+    "degreeName": "Pharmaceutical Sciences - BS",
+    "degreeUrl": "https://catalog.uic.edu/ucat/colleges-depts/pharmacy/bs-pharmaceutical-sciences/"
+  },
+  {
+    "college": "",
+    "department": "Pharmacy",
+    "degreeName": "Pharmacy - Doctor",
+    "degreeUrl": "https://catalog.uic.edu/ucat/colleges-depts/pharmacy/pharmd/"
+  },
+  {
+    "college": "",
+    "department": "Public Policy, Management, and Analytics",
+    "degreeName": "Public Policy - BA",
+    "degreeUrl": "https://catalog.uic.edu/ucat/colleges-depts/urban-planning-public-affairs/pa/ba/"
+  },
+  {
+    "college": "",
+    "department": "Public Policy, Management, and Analytics",
+    "degreeName": "Public Policy - Joint Degrees with BA:",
+    "degreeUrl": "https://catalog.uic.edu/ucat/colleges-depts/urban-planning-public-affairs/pa/joint-degrees/"
+  },
+  {
+    "college": "",
+    "department": "Urban Planning and Policy",
+    "degreeName": "Urban Studies - BA",
+    "degreeUrl": "https://catalog.uic.edu/ucat/colleges-depts/urban-planning-public-affairs/upp/ba/"
+  },
+  {
+    "college": "",
+    "department": "Urban Planning and Policy",
+    "degreeName": "Urban Studies - Joint Degrees with BA:",
+    "degreeUrl": "https://catalog.uic.edu/ucat/colleges-depts/urban-planning-public-affairs/upp/joint-degrees/"
+  },
+  {
+    "college": "",
+    "department": "Public Health",
+    "degreeName": "Public Health - BA",
+    "degreeUrl": "https://catalog.uic.edu/ucat/colleges-depts/public-health/ba-pubh/"
+  },
+  {
+    "college": "",
+    "department": "Public Health",
+    "degreeName": "Public Health - BS",
+    "degreeUrl": "https://catalog.uic.edu/ucat/colleges-depts/public-health/bs-pubh/"
+  },
+  {
+    "college": "",
+    "department": "Public Health",
+    "degreeName": "Public Health - Joint Degrees:",
+    "degreeUrl": "https://catalog.uic.edu/ucat/colleges-depts/public-health/joint-degrees/"
+  }
+]

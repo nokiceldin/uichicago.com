@@ -1,0 +1,1280 @@
+[
+  {
+    "file": "apply2uic_captions.json",
+    "account": "apply2uic",
+    "account_name": "UIC Admissions",
+    "total_posts": 37,
+    "good_posts": 37,
+    "failed_posts": 0,
+    "success_rate": 100
+  },
+  {
+    "file": "arabamcc_captions.json",
+    "account": "arabamcc",
+    "account_name": "UIC Arab American Cultural Center",
+    "total_posts": 55,
+    "good_posts": 55,
+    "failed_posts": 0,
+    "success_rate": 100
+  },
+  {
+    "file": "bccatuic_captions.json",
+    "account": "bccatuic",
+    "account_name": "UIC Black Cultural Center",
+    "total_posts": 54,
+    "good_posts": 54,
+    "failed_posts": 0,
+    "success_rate": 100
+  },
+  {
+    "file": "ifcuic_captions.json",
+    "account": "ifcuic",
+    "account_name": "UIC IFC (Interfraternity Council)",
+    "total_posts": 40,
+    "good_posts": 40,
+    "failed_posts": 0,
+    "success_rate": 100
+  },
+  {
+    "file": "nphc_at_uic_captions.json",
+    "account": "nphc_at_uic",
+    "account_name": "UIC NPHC",
+    "total_posts": 56,
+    "good_posts": 56,
+    "failed_posts": 0,
+    "success_rate": 100
+  },
+  {
+    "file": "thisisuic_captions.json",
+    "account": "thisisuic",
+    "account_name": "UIC Official",
+    "total_posts": 28,
+    "good_posts": 28,
+    "failed_posts": 0,
+    "success_rate": 100
+  },
+  {
+    "file": "uic.dcc_captions.json",
+    "account": "uic.dcc",
+    "account_name": "UIC Disability Cultural Center",
+    "total_posts": 43,
+    "good_posts": 43,
+    "failed_posts": 0,
+    "success_rate": 100
+  },
+  {
+    "file": "uic.drc_captions.json",
+    "account": "uic.drc",
+    "account_name": "UIC Disability Resource Center",
+    "total_posts": 18,
+    "good_posts": 18,
+    "failed_posts": 0,
+    "success_rate": 100
+  },
+  {
+    "file": "uic_baseball_captions.json",
+    "account": "uic_baseball",
+    "account_name": "UIC Baseball",
+    "total_posts": 32,
+    "good_posts": 32,
+    "failed_posts": 0,
+    "success_rate": 100
+  },
+  {
+    "file": "uic_mbb_captions.json",
+    "account": "uic_mbb",
+    "account_name": "UIC Men's Basketball",
+    "total_posts": 42,
+    "good_posts": 42,
+    "failed_posts": 0,
+    "success_rate": 100
+  },
+  {
+    "file": "uic_msoc_captions.json",
+    "account": "uic_msoc",
+    "account_name": "UIC Men's Soccer",
+    "total_posts": 48,
+    "good_posts": 48,
+    "failed_posts": 0,
+    "success_rate": 100
+  },
+  {
+    "file": "uic_saac_captions.json",
+    "account": "uic_saac",
+    "account_name": "UIC SAAC",
+    "total_posts": 30,
+    "good_posts": 30,
+    "failed_posts": 0,
+    "success_rate": 100
+  },
+  {
+    "file": "uic_softball_captions.json",
+    "account": "uic_softball",
+    "account_name": "UIC Softball",
+    "total_posts": 39,
+    "good_posts": 39,
+    "failed_posts": 0,
+    "success_rate": 100
+  },
+  {
+    "file": "uic_wbb_captions.json",
+    "account": "uic_wbb",
+    "account_name": "UIC Women's Basketball",
+    "total_posts": 35,
+    "good_posts": 35,
+    "failed_posts": 0,
+    "success_rate": 100
+  },
+  {
+    "file": "uic_wsoc_captions.json",
+    "account": "uic_wsoc",
+    "account_name": "UIC Women's Soccer",
+    "total_posts": 43,
+    "good_posts": 43,
+    "failed_posts": 0,
+    "success_rate": 100
+  },
+  {
+    "file": "uicalumni_captions.json",
+    "account": "uicalumni",
+    "account_name": "UIC Alumni",
+    "total_posts": 43,
+    "good_posts": 43,
+    "failed_posts": 0,
+    "success_rate": 100
+  },
+  {
+    "file": "uiccsi_captions.json",
+    "account": "uiccsi",
+    "account_name": "UIC Center for Student Involvement",
+    "total_posts": 41,
+    "good_posts": 41,
+    "failed_posts": 0,
+    "success_rate": 100
+  },
+  {
+    "file": "uicfsl_captions.json",
+    "account": "uicfsl",
+    "account_name": "UIC FSL (Fraternity & Sorority Life)",
+    "total_posts": 52,
+    "good_posts": 52,
+    "failed_posts": 0,
+    "success_rate": 100
+  },
+  {
+    "file": "uichousing_captions.json",
+    "account": "uichousing",
+    "account_name": "UIC Housing",
+    "total_posts": 56,
+    "good_posts": 56,
+    "failed_posts": 0,
+    "success_rate": 100
+  },
+  {
+    "file": "uiclares1975_captions.json",
+    "account": "uiclares1975",
+    "account_name": "UIC LARES",
+    "total_posts": 43,
+    "good_posts": 43,
+    "failed_posts": 0,
+    "success_rate": 100
+  },
+  {
+    "file": "uiclcc_captions.json",
+    "account": "uiclcc",
+    "account_name": "UIC Latino Cultural Center",
+    "total_posts": 53,
+    "good_posts": 53,
+    "failed_posts": 0,
+    "success_rate": 100
+  },
+  {
+    "file": "uicpepband_captions.json",
+    "account": "uicpepband",
+    "account_name": "UIC Pep Band",
+    "total_posts": 16,
+    "good_posts": 16,
+    "failed_posts": 0,
+    "success_rate": 100
+  },
+  {
+    "file": "uicradio_captions.json",
+    "account": "uicradio",
+    "account_name": "UIC Radio",
+    "total_posts": 41,
+    "good_posts": 41,
+    "failed_posts": 0,
+    "success_rate": 100
+  },
+  {
+    "file": "uicsab_captions.json",
+    "account": "uicsab",
+    "account_name": "UIC Student Activities Board",
+    "total_posts": 44,
+    "good_posts": 44,
+    "failed_posts": 0,
+    "success_rate": 100
+  },
+  {
+    "file": "uicslce_captions.json",
+    "account": "uicslce",
+    "account_name": "UIC Student Leadership & Civic Engagement",
+    "total_posts": 47,
+    "good_posts": 47,
+    "failed_posts": 0,
+    "success_rate": 100
+  },
+  {
+    "file": "uicstudentaid_captions.json",
+    "account": "uicstudentaid",
+    "account_name": "UIC Student Financial Aid",
+    "total_posts": 29,
+    "good_posts": 29,
+    "failed_posts": 0,
+    "success_rate": 100
+  },
+  {
+    "file": "uicstudentemployment_captions.json",
+    "account": "uicstudentemployment",
+    "account_name": "UIC Student Employment",
+    "total_posts": 52,
+    "good_posts": 52,
+    "failed_posts": 0,
+    "success_rate": 100
+  },
+  {
+    "file": "uicwritingcenter_captions.json",
+    "account": "uicwritingcenter",
+    "account_name": "UIC Writing Center",
+    "total_posts": 44,
+    "good_posts": 44,
+    "failed_posts": 0,
+    "success_rate": 100
+  },
+  {
+    "file": "womensrugbyuic_captions.json",
+    "account": "womensrugbyuic",
+    "account_name": "UIC Women's Rugby",
+    "total_posts": 42,
+    "good_posts": 42,
+    "failed_posts": 0,
+    "success_rate": 100
+  },
+  {
+    "file": "uicwlrc_captions.json",
+    "account": "uicwlrc",
+    "account_name": "UIC WLRC",
+    "total_posts": 56,
+    "good_posts": 41,
+    "failed_posts": 15,
+    "success_rate": 73.2
+  },
+  {
+    "file": "uicvolleyball_captions.json",
+    "account": "uicvolleyball",
+    "account_name": "UIC Volleyball",
+    "total_posts": 45,
+    "good_posts": 19,
+    "failed_posts": 26,
+    "success_rate": 42.2
+  },
+  {
+    "file": "alpfa_atuic_captions.json",
+    "account": "alpfa_atuic",
+    "account_name": "UIC ALPFA",
+    "total_posts": 26,
+    "good_posts": 0,
+    "failed_posts": 26,
+    "success_rate": 0
+  },
+  {
+    "file": "barstooluic_captions.json",
+    "account": "barstooluic",
+    "account_name": null,
+    "total_posts": 0,
+    "good_posts": 0,
+    "failed_posts": 0,
+    "success_rate": 0
+  },
+  {
+    "file": "courtyarduic_captions.json",
+    "account": "courtyarduic",
+    "account_name": "UIC Courtyard",
+    "total_posts": 24,
+    "good_posts": 0,
+    "failed_posts": 24,
+    "success_rate": 0
+  },
+  {
+    "file": "crearfuturosuic_captions.json",
+    "account": "crearfuturosuic",
+    "account_name": "UIC CREAR Futuros",
+    "total_posts": 41,
+    "good_posts": 0,
+    "failed_posts": 41,
+    "success_rate": 0
+  },
+  {
+    "file": "cu1arena_captions.json",
+    "account": "cu1arena",
+    "account_name": "Credit Union 1 Arena",
+    "total_posts": 38,
+    "good_posts": 0,
+    "failed_posts": 38,
+    "success_rate": 0
+  },
+  {
+    "file": "dxpdelta_captions.json",
+    "account": "dxpdelta",
+    "account_name": "Delta Xi Phi UIC",
+    "total_posts": 52,
+    "good_posts": 0,
+    "failed_posts": 52,
+    "success_rate": 0
+  },
+  {
+    "file": "fiauic_captions.json",
+    "account": "fiauic",
+    "account_name": "UIC Filipinos in Alliance",
+    "total_posts": 46,
+    "good_posts": 0,
+    "failed_posts": 46,
+    "success_rate": 0
+  },
+  {
+    "file": "figatuic_captions.json",
+    "account": "figatuic",
+    "account_name": "UIC Finance & Investment Group",
+    "total_posts": 51,
+    "good_posts": 0,
+    "failed_posts": 51,
+    "success_rate": 0
+  },
+  {
+    "file": "hercampusatuic_captions.json",
+    "account": "hercampusatuic",
+    "account_name": "UIC Her Campus",
+    "total_posts": 56,
+    "good_posts": 0,
+    "failed_posts": 56,
+    "success_rate": 0
+  },
+  {
+    "file": "kinesiologyclubatuic_captions.json",
+    "account": "kinesiologyclubatuic",
+    "account_name": "UIC Kinesiology Club",
+    "total_posts": 53,
+    "good_posts": 0,
+    "failed_posts": 53,
+    "success_rate": 0
+  },
+  {
+    "file": "mariachi_uic_captions.json",
+    "account": "mariachi_uic",
+    "account_name": "UIC Mariachi",
+    "total_posts": 15,
+    "good_posts": 0,
+    "failed_posts": 15,
+    "success_rate": 0
+  },
+  {
+    "file": "nsbeatuic_captions.json",
+    "account": "nsbeatuic",
+    "account_name": "UIC NSBE",
+    "total_posts": 50,
+    "good_posts": 0,
+    "failed_posts": 50,
+    "success_rate": 0
+  },
+  {
+    "file": "pasaatuic_captions.json",
+    "account": "pasaatuic",
+    "account_name": "UIC PASA (Polish)",
+    "total_posts": 50,
+    "good_posts": 0,
+    "failed_posts": 50,
+    "success_rate": 0
+  },
+  {
+    "file": "phipsiuic_captions.json",
+    "account": "phipsiuic",
+    "account_name": "Phi Kappa Psi UIC",
+    "total_posts": 52,
+    "good_posts": 0,
+    "failed_posts": 52,
+    "success_rate": 0
+  },
+  {
+    "file": "phisigmasigmauic_captions.json",
+    "account": "phisigmasigmauic",
+    "account_name": "Phi Sigma Sigma UIC",
+    "total_posts": 54,
+    "good_posts": 0,
+    "failed_posts": 54,
+    "success_rate": 0
+  },
+  {
+    "file": "pre_pharmclubatuic_captions.json",
+    "account": "pre_pharmclubatuic",
+    "account_name": "UIC Pre-Pharmacy Club",
+    "total_posts": 56,
+    "good_posts": 0,
+    "failed_posts": 56,
+    "success_rate": 0
+  },
+  {
+    "file": "sgrho_ob_captions.json",
+    "account": "sgrho_ob",
+    "account_name": "Sgrho Omicron Beta (UIC)",
+    "total_posts": 55,
+    "good_posts": 0,
+    "failed_posts": 55,
+    "success_rate": 0
+  },
+  {
+    "file": "sjpuic_captions.json",
+    "account": "sjpuic",
+    "account_name": "UIC SJP",
+    "total_posts": 53,
+    "good_posts": 0,
+    "failed_posts": 53,
+    "success_rate": 0
+  },
+  {
+    "file": "sparkthon_captions.json",
+    "account": "sparkthon",
+    "account_name": "UIC SparkTHON",
+    "total_posts": 30,
+    "good_posts": 0,
+    "failed_posts": 30,
+    "success_rate": 0
+  },
+  {
+    "file": "sparky.uic_captions.json",
+    "account": "sparky.uic",
+    "account_name": "Sparky (UIC Mascot)",
+    "total_posts": 25,
+    "good_posts": 0,
+    "failed_posts": 25,
+    "success_rate": 0
+  },
+  {
+    "file": "sustainableuic_captions.json",
+    "account": "sustainableuic",
+    "account_name": "UIC Sustainability",
+    "total_posts": 56,
+    "good_posts": 0,
+    "failed_posts": 56,
+    "success_rate": 0
+  },
+  {
+    "file": "swe_at_uic_captions.json",
+    "account": "swe_at_uic",
+    "account_name": "UIC SWE",
+    "total_posts": 56,
+    "good_posts": 0,
+    "failed_posts": 56,
+    "success_rate": 0
+  },
+  {
+    "file": "tedxuic_captions.json",
+    "account": "tedxuic",
+    "account_name": "UIC TEDx",
+    "total_posts": 10,
+    "good_posts": 0,
+    "failed_posts": 10,
+    "success_rate": 0
+  },
+  {
+    "file": "theaccountingclub_captions.json",
+    "account": "theaccountingclub",
+    "account_name": "UIC Accounting Club",
+    "total_posts": 41,
+    "good_posts": 0,
+    "failed_posts": 41,
+    "success_rate": 0
+  },
+  {
+    "file": "thlb.uic_captions.json",
+    "account": "thlb.uic",
+    "account_name": "Theta Lambda Beta UIC",
+    "total_posts": 50,
+    "good_posts": 0,
+    "failed_posts": 50,
+    "success_rate": 0
+  },
+  {
+    "file": "tieuic_captions.json",
+    "account": "tieuic",
+    "account_name": "UIC Tutorium (English)",
+    "total_posts": 16,
+    "good_posts": 0,
+    "failed_posts": 16,
+    "success_rate": 0
+  },
+  {
+    "file": "uic.ksa_captions.json",
+    "account": "uic.ksa",
+    "account_name": "UIC KSA (Korean)",
+    "total_posts": 40,
+    "good_posts": 0,
+    "failed_posts": 40,
+    "success_rate": 0
+  },
+  {
+    "file": "uic2026_captions.json",
+    "account": "uic2026",
+    "account_name": null,
+    "total_posts": 0,
+    "good_posts": 0,
+    "failed_posts": 0,
+    "success_rate": 0
+  },
+  {
+    "file": "uic2027_captions.json",
+    "account": "uic2027",
+    "account_name": null,
+    "total_posts": 0,
+    "good_posts": 0,
+    "failed_posts": 0,
+    "success_rate": 0
+  },
+  {
+    "file": "uic2028_captions.json",
+    "account": "uic2028",
+    "account_name": null,
+    "total_posts": 0,
+    "good_posts": 0,
+    "failed_posts": 0,
+    "success_rate": 0
+  },
+  {
+    "file": "uic2029_captions.json",
+    "account": "uic2029",
+    "account_name": null,
+    "total_posts": 0,
+    "good_posts": 0,
+    "failed_posts": 0,
+    "success_rate": 0
+  },
+  {
+    "file": "uic_career_captions.json",
+    "account": "uic_career",
+    "account_name": "UIC Career Services",
+    "total_posts": 52,
+    "good_posts": 0,
+    "failed_posts": 52,
+    "success_rate": 0
+  },
+  {
+    "file": "uic_chance_captions.json",
+    "account": "uic_chance",
+    "account_name": "UIC CHANCE Program",
+    "total_posts": 52,
+    "good_posts": 0,
+    "failed_posts": 52,
+    "success_rate": 0
+  },
+  {
+    "file": "uic_cheer_captions.json",
+    "account": "uic_cheer",
+    "account_name": "UIC Cheer",
+    "total_posts": 43,
+    "good_posts": 0,
+    "failed_posts": 43,
+    "success_rate": 0
+  },
+  {
+    "file": "uic_cs_captions.json",
+    "account": "uic_cs",
+    "account_name": "UIC Computer Science",
+    "total_posts": 40,
+    "good_posts": 0,
+    "failed_posts": 40,
+    "success_rate": 0
+  },
+  {
+    "file": "uic_law_captions.json",
+    "account": "uic_law",
+    "account_name": "UIC Law",
+    "total_posts": 55,
+    "good_posts": 0,
+    "failed_posts": 55,
+    "success_rate": 0
+  },
+  {
+    "file": "uic_mten_captions.json",
+    "account": "uic_mten",
+    "account_name": "UIC Men's Tennis",
+    "total_posts": 51,
+    "good_posts": 0,
+    "failed_posts": 51,
+    "success_rate": 0
+  },
+  {
+    "file": "uic_recwell_captions.json",
+    "account": "uic_recwell",
+    "account_name": "UIC Recreation & Wellbeing",
+    "total_posts": 29,
+    "good_posts": 0,
+    "failed_posts": 29,
+    "success_rate": 0
+  },
+  {
+    "file": "uic_spirit_captions.json",
+    "account": "uic_spirit",
+    "account_name": "UIC Spirit Squad",
+    "total_posts": 33,
+    "good_posts": 0,
+    "failed_posts": 33,
+    "success_rate": 0
+  },
+  {
+    "file": "uic_swimdive_captions.json",
+    "account": "uic_swimdive",
+    "account_name": "UIC Swimming & Diving",
+    "total_posts": 53,
+    "good_posts": 0,
+    "failed_posts": 53,
+    "success_rate": 0
+  },
+  {
+    "file": "uic_ug_research_captions.json",
+    "account": "uic_ug_research",
+    "account_name": "UIC Undergraduate Research",
+    "total_posts": 56,
+    "good_posts": 0,
+    "failed_posts": 56,
+    "success_rate": 0
+  },
+  {
+    "file": "uic_wgolf_captions.json",
+    "account": "uic_wgolf",
+    "account_name": "UIC Women's Golf",
+    "total_posts": 50,
+    "good_posts": 0,
+    "failed_posts": 50,
+    "success_rate": 0
+  },
+  {
+    "file": "uic_wten_captions.json",
+    "account": "uic_wten",
+    "account_name": "UIC Women's Tennis",
+    "total_posts": 37,
+    "good_posts": 0,
+    "failed_posts": 37,
+    "success_rate": 0
+  },
+  {
+    "file": "uic_xctf_captions.json",
+    "account": "uic_xctf",
+    "account_name": "UIC Track & Cross Country",
+    "total_posts": 52,
+    "good_posts": 0,
+    "failed_posts": 52,
+    "success_rate": 0
+  },
+  {
+    "file": "uicabroad_captions.json",
+    "account": "uicabroad",
+    "account_name": "UIC Study Abroad",
+    "total_posts": 54,
+    "good_posts": 0,
+    "failed_posts": 54,
+    "success_rate": 0
+  },
+  {
+    "file": "uicahs_captions.json",
+    "account": "uicahs",
+    "account_name": "UIC Applied Health Sciences",
+    "total_posts": 46,
+    "good_posts": 0,
+    "failed_posts": 46,
+    "success_rate": 0
+  },
+  {
+    "file": "uicaiclub_captions.json",
+    "account": "uicaiclub",
+    "account_name": null,
+    "total_posts": 0,
+    "good_posts": 0,
+    "failed_posts": 0,
+    "success_rate": 0
+  },
+  {
+    "file": "uicakas_captions.json",
+    "account": "uicakas",
+    "account_name": null,
+    "total_posts": 0,
+    "good_posts": 0,
+    "failed_posts": 0,
+    "success_rate": 0
+  },
+  {
+    "file": "uicalphaphialpha_captions.json",
+    "account": "uicalphaphialpha",
+    "account_name": null,
+    "total_posts": 0,
+    "good_posts": 0,
+    "failed_posts": 0,
+    "success_rate": 0
+  },
+  {
+    "file": "uicbaddies_captions.json",
+    "account": "uicbaddies",
+    "account_name": null,
+    "total_posts": 0,
+    "good_posts": 0,
+    "failed_posts": 0,
+    "success_rate": 0
+  },
+  {
+    "file": "uicbookstore_captions.json",
+    "account": "uicbookstore",
+    "account_name": "UIC Bookstore",
+    "total_posts": 56,
+    "good_posts": 0,
+    "failed_posts": 56,
+    "success_rate": 0
+  },
+  {
+    "file": "uicbusiness_captions.json",
+    "account": "uicbusiness",
+    "account_name": "UIC Business",
+    "total_posts": 46,
+    "good_posts": 0,
+    "failed_posts": 46,
+    "success_rate": 0
+  },
+  {
+    "file": "uicchancellor_captions.json",
+    "account": "uicchancellor",
+    "account_name": "UIC Chancellor",
+    "total_posts": 43,
+    "good_posts": 0,
+    "failed_posts": 43,
+    "success_rate": 0
+  },
+  {
+    "file": "uiccmns_captions.json",
+    "account": "uiccmns",
+    "account_name": "UIC Commons North/South",
+    "total_posts": 54,
+    "good_posts": 0,
+    "failed_posts": 54,
+    "success_rate": 0
+  },
+  {
+    "file": "uiccocl_captions.json",
+    "account": "uiccocl",
+    "account_name": "UIC Commuter & Off-Campus Life",
+    "total_posts": 17,
+    "good_posts": 0,
+    "failed_posts": 17,
+    "success_rate": 0
+  },
+  {
+    "file": "uicconfessions_captions.json",
+    "account": "uicconfessions",
+    "account_name": null,
+    "total_posts": 0,
+    "good_posts": 0,
+    "failed_posts": 0,
+    "success_rate": 0
+  },
+  {
+    "file": "uiccrosscountry_captions.json",
+    "account": "uiccrosscountry",
+    "account_name": null,
+    "total_posts": 0,
+    "good_posts": 0,
+    "failed_posts": 0,
+    "success_rate": 0
+  },
+  {
+    "file": "uiccsclub_captions.json",
+    "account": "uiccsclub",
+    "account_name": null,
+    "total_posts": 0,
+    "good_posts": 0,
+    "failed_posts": 0,
+    "success_rate": 0
+  },
+  {
+    "file": "uiccuppa_captions.json",
+    "account": "uiccuppa",
+    "account_name": "UIC CUPPA",
+    "total_posts": 56,
+    "good_posts": 0,
+    "failed_posts": 56,
+    "success_rate": 0
+  },
+  {
+    "file": "uicdatascience_captions.json",
+    "account": "uicdatascience",
+    "account_name": null,
+    "total_posts": 0,
+    "good_posts": 0,
+    "failed_posts": 0,
+    "success_rate": 0
+  },
+  {
+    "file": "uicdentistry_captions.json",
+    "account": "uicdentistry",
+    "account_name": "UIC Dentistry",
+    "total_posts": 54,
+    "good_posts": 0,
+    "failed_posts": 54,
+    "success_rate": 0
+  },
+  {
+    "file": "uicdining_captions.json",
+    "account": "uicdining",
+    "account_name": "UIC Dining Services",
+    "total_posts": 18,
+    "good_posts": 0,
+    "failed_posts": 18,
+    "success_rate": 0
+  },
+  {
+    "file": "uicdphie_captions.json",
+    "account": "uicdphie",
+    "account_name": null,
+    "total_posts": 0,
+    "good_posts": 0,
+    "failed_posts": 0,
+    "success_rate": 0
+  },
+  {
+    "file": "uicdst_captions.json",
+    "account": "uicdst",
+    "account_name": null,
+    "total_posts": 0,
+    "good_posts": 0,
+    "failed_posts": 0,
+    "success_rate": 0
+  },
+  {
+    "file": "uiceconclub_captions.json",
+    "account": "uiceconclub",
+    "account_name": "UIC Econ Club",
+    "total_posts": 54,
+    "good_posts": 0,
+    "failed_posts": 54,
+    "success_rate": 0
+  },
+  {
+    "file": "uiceducation_captions.json",
+    "account": "uiceducation",
+    "account_name": "UIC Education",
+    "total_posts": 55,
+    "good_posts": 0,
+    "failed_posts": 55,
+    "success_rate": 0
+  },
+  {
+    "file": "uiceiep_captions.json",
+    "account": "uiceiep",
+    "account_name": "UIC EIEP",
+    "total_posts": 34,
+    "good_posts": 0,
+    "failed_posts": 34,
+    "success_rate": 0
+  },
+  {
+    "file": "uicengineering_captions.json",
+    "account": "uicengineering",
+    "account_name": "UIC Engineering",
+    "total_posts": 43,
+    "good_posts": 0,
+    "failed_posts": 43,
+    "success_rate": 0
+  },
+  {
+    "file": "uicfirstgen_captions.json",
+    "account": "uicfirstgen",
+    "account_name": null,
+    "total_posts": 0,
+    "good_posts": 0,
+    "failed_posts": 0,
+    "success_rate": 0
+  },
+  {
+    "file": "uicflamesfans_captions.json",
+    "account": "uicflamesfans",
+    "account_name": null,
+    "total_posts": 0,
+    "good_posts": 0,
+    "failed_posts": 0,
+    "success_rate": 0
+  },
+  {
+    "file": "uicfsa_captions.json",
+    "account": "uicfsa",
+    "account_name": null,
+    "total_posts": 0,
+    "good_posts": 0,
+    "failed_posts": 0,
+    "success_rate": 0
+  },
+  {
+    "file": "uicglas_captions.json",
+    "account": "uicglas",
+    "account_name": "UIC Global Asian Studies",
+    "total_posts": 54,
+    "good_posts": 0,
+    "failed_posts": 54,
+    "success_rate": 0
+  },
+  {
+    "file": "uicglobal_captions.json",
+    "account": "uicglobal",
+    "account_name": "UIC International Services",
+    "total_posts": 36,
+    "good_posts": 0,
+    "failed_posts": 36,
+    "success_rate": 0
+  },
+  {
+    "file": "uicglobalengagement_captions.json",
+    "account": "uicglobalengagement",
+    "account_name": "UIC Global Engagement",
+    "total_posts": 55,
+    "good_posts": 0,
+    "failed_posts": 55,
+    "success_rate": 0
+  },
+  {
+    "file": "uicgsc_captions.json",
+    "account": "uicgsc",
+    "account_name": "UIC Gender & Sexuality Center",
+    "total_posts": 53,
+    "good_posts": 0,
+    "failed_posts": 53,
+    "success_rate": 0
+  },
+  {
+    "file": "uichomecoming_captions.json",
+    "account": "uichomecoming",
+    "account_name": null,
+    "total_posts": 0,
+    "good_posts": 0,
+    "failed_posts": 0,
+    "success_rate": 0
+  },
+  {
+    "file": "uichonors_captions.json",
+    "account": "uichonors",
+    "account_name": "UIC Honors College",
+    "total_posts": 64,
+    "good_posts": 0,
+    "failed_posts": 64,
+    "success_rate": 0
+  },
+  {
+    "file": "uicifc_captions.json",
+    "account": "uicifc",
+    "account_name": null,
+    "total_posts": 0,
+    "good_posts": 0,
+    "failed_posts": 0,
+    "success_rate": 0
+  },
+  {
+    "file": "uicisa_captions.json",
+    "account": "uicisa",
+    "account_name": null,
+    "total_posts": 0,
+    "good_posts": 0,
+    "failed_posts": 0,
+    "success_rate": 0
+  },
+  {
+    "file": "uickappas_captions.json",
+    "account": "uickappas",
+    "account_name": null,
+    "total_posts": 0,
+    "good_posts": 0,
+    "failed_posts": 0,
+    "success_rate": 0
+  },
+  {
+    "file": "uicksa_captions.json",
+    "account": "uicksa",
+    "account_name": null,
+    "total_posts": 0,
+    "good_posts": 0,
+    "failed_posts": 0,
+    "success_rate": 0
+  },
+  {
+    "file": "uiclambdathetaalpha_captions.json",
+    "account": "uiclambdathetaalpha",
+    "account_name": null,
+    "total_posts": 0,
+    "good_posts": 0,
+    "failed_posts": 0,
+    "success_rate": 0
+  },
+  {
+    "file": "uiclambdathetaphi_captions.json",
+    "account": "uiclambdathetaphi",
+    "account_name": null,
+    "total_posts": 0,
+    "good_posts": 0,
+    "failed_posts": 0,
+    "success_rate": 0
+  },
+  {
+    "file": "uiclas_captions.json",
+    "account": "uiclas",
+    "account_name": "UIC Liberal Arts and Sciences",
+    "total_posts": 50,
+    "good_posts": 0,
+    "failed_posts": 50,
+    "success_rate": 0
+  },
+  {
+    "file": "uicmemes_captions.json",
+    "account": "uicmemes",
+    "account_name": "UIC Meme Page",
+    "total_posts": 21,
+    "good_posts": 0,
+    "failed_posts": 21,
+    "success_rate": 0
+  },
+  {
+    "file": "uicmslc_captions.json",
+    "account": "uicmslc",
+    "account_name": null,
+    "total_posts": 0,
+    "good_posts": 0,
+    "failed_posts": 0,
+    "success_rate": 0
+  },
+  {
+    "file": "uicneuroscienceclub_captions.json",
+    "account": "uicneuroscienceclub",
+    "account_name": null,
+    "total_posts": 0,
+    "good_posts": 0,
+    "failed_posts": 0,
+    "success_rate": 0
+  },
+  {
+    "file": "uicnursing_captions.json",
+    "account": "uicnursing",
+    "account_name": "UIC Nursing",
+    "total_posts": 46,
+    "good_posts": 0,
+    "failed_posts": 46,
+    "success_rate": 0
+  },
+  {
+    "file": "uicomegas_captions.json",
+    "account": "uicomegas",
+    "account_name": null,
+    "total_posts": 0,
+    "good_posts": 0,
+    "failed_posts": 0,
+    "success_rate": 0
+  },
+  {
+    "file": "uicpanhellenic_captions.json",
+    "account": "uicpanhellenic",
+    "account_name": null,
+    "total_posts": 0,
+    "good_posts": 0,
+    "failed_posts": 0,
+    "success_rate": 0
+  },
+  {
+    "file": "uicpharm_captions.json",
+    "account": "uicpharm",
+    "account_name": "UIC Pharmacy",
+    "total_posts": 56,
+    "good_posts": 0,
+    "failed_posts": 56,
+    "success_rate": 0
+  },
+  {
+    "file": "uicphisigs_captions.json",
+    "account": "uicphisigs",
+    "account_name": null,
+    "total_posts": 0,
+    "good_posts": 0,
+    "failed_posts": 0,
+    "success_rate": 0
+  },
+  {
+    "file": "uicpredental_captions.json",
+    "account": "uicpredental",
+    "account_name": null,
+    "total_posts": 0,
+    "good_posts": 0,
+    "failed_posts": 0,
+    "success_rate": 0
+  },
+  {
+    "file": "uicpremed_captions.json",
+    "account": "uicpremed",
+    "account_name": null,
+    "total_posts": 0,
+    "good_posts": 0,
+    "failed_posts": 0,
+    "success_rate": 0
+  },
+  {
+    "file": "uicpublichealth_captions.json",
+    "account": "uicpublichealth",
+    "account_name": "UIC Public Health",
+    "total_posts": 49,
+    "good_posts": 0,
+    "failed_posts": 49,
+    "success_rate": 0
+  },
+  {
+    "file": "uicrha_captions.json",
+    "account": "uicrha",
+    "account_name": null,
+    "total_posts": 0,
+    "good_posts": 0,
+    "failed_posts": 0,
+    "success_rate": 0
+  },
+  {
+    "file": "uicrobotics_captions.json",
+    "account": "uicrobotics",
+    "account_name": null,
+    "total_posts": 0,
+    "good_posts": 0,
+    "failed_posts": 0,
+    "success_rate": 0
+  },
+  {
+    "file": "uicshpe_captions.json",
+    "account": "uicshpe",
+    "account_name": null,
+    "total_posts": 0,
+    "good_posts": 0,
+    "failed_posts": 0,
+    "success_rate": 0
+  },
+  {
+    "file": "uicsigmalambdabeta_captions.json",
+    "account": "uicsigmalambdabeta",
+    "account_name": null,
+    "total_posts": 0,
+    "good_posts": 0,
+    "failed_posts": 0,
+    "success_rate": 0
+  },
+  {
+    "file": "uicsigmalambdagamma_captions.json",
+    "account": "uicsigmalambdagamma",
+    "account_name": null,
+    "total_posts": 0,
+    "good_posts": 0,
+    "failed_posts": 0,
+    "success_rate": 0
+  },
+  {
+    "file": "uicstudentcenters_captions.json",
+    "account": "uicstudentcenters",
+    "account_name": "UIC Student Centers",
+    "total_posts": 14,
+    "good_posts": 0,
+    "failed_posts": 14,
+    "success_rate": 0
+  },
+  {
+    "file": "uicstudentsection_captions.json",
+    "account": "uicstudentsection",
+    "account_name": "UIC Student Section (Flames Force)",
+    "total_posts": 32,
+    "good_posts": 0,
+    "failed_posts": 32,
+    "success_rate": 0
+  },
+  {
+    "file": "uictheatremusic_captions.json",
+    "account": "uictheatremusic",
+    "account_name": "UIC Theatre and Music",
+    "total_posts": 41,
+    "good_posts": 0,
+    "failed_posts": 41,
+    "success_rate": 0
+  },
+  {
+    "file": "uictrackfield_captions.json",
+    "account": "uictrackfield",
+    "account_name": null,
+    "total_posts": 0,
+    "good_posts": 0,
+    "failed_posts": 0,
+    "success_rate": 0
+  },
+  {
+    "file": "uictsa_captions.json",
+    "account": "uictsa",
+    "account_name": null,
+    "total_posts": 0,
+    "good_posts": 0,
+    "failed_posts": 0,
+    "success_rate": 0
+  },
+  {
+    "file": "uicusg_captions.json",
+    "account": "uicusg",
+    "account_name": "UIC Undergraduate Student Government",
+    "total_posts": 48,
+    "good_posts": 0,
+    "failed_posts": 48,
+    "success_rate": 0
+  },
+  {
+    "file": "uicvsa_captions.json",
+    "account": "uicvsa",
+    "account_name": null,
+    "total_posts": 0,
+    "good_posts": 0,
+    "failed_posts": 0,
+    "success_rate": 0
+  },
+  {
+    "file": "uicwics_captions.json",
+    "account": "uicwics",
+    "account_name": null,
+    "total_posts": 0,
+    "good_posts": 0,
+    "failed_posts": 0,
+    "success_rate": 0
+  },
+  {
+    "file": "uicwomens_swimdive_captions.json",
+    "account": "uicwomens_swimdive",
+    "account_name": "UIC Women's Swimming & Diving",
+    "total_posts": 33,
+    "good_posts": 0,
+    "failed_posts": 33,
+    "success_rate": 0
+  },
+  {
+    "file": "uiczetas_captions.json",
+    "account": "uiczetas",
+    "account_name": null,
+    "total_posts": 0,
+    "good_posts": 0,
+    "failed_posts": 0,
+    "success_rate": 0
+  },
+  {
+    "file": "wicsatuic_captions.json",
+    "account": "wicsatuic",
+    "account_name": "UIC Women in CS",
+    "total_posts": 44,
+    "good_posts": 0,
+    "failed_posts": 44,
+    "success_rate": 0
+  }
+]

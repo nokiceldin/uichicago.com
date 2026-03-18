@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { createPortal } from "react-dom"
+import posthog from "posthog-js"
 
 type Props = {
   page?: string
@@ -63,6 +64,11 @@ export default function MissingProfessorButton({
 
       if (!res.ok) throw new Error("bad")
       setStatus("sent")
+      posthog.capture("missing_professor_submitted", {
+        page,
+        has_class: !!classInput.trim(),
+        has_department: !!department.trim(),
+      })
       setProfessorName("")
       setDepartment("")
       setNotes("")

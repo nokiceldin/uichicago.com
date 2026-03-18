@@ -4,6 +4,7 @@ export const runtime = "nodejs";  // ADD THIS
 export const revalidate = 0;      // ADD
 import { NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
+import { getPostHogClient } from "@/app/lib/posthog-server";
 import { detectIntent, detectCampusIntent } from "@/lib/chat/intent";
 import { classifyIntent } from "@/lib/chat/classify";
 import { vectorSearch, rerankChunks } from "@/lib/chat/vectors";
@@ -24,6 +25,8 @@ import instagramData from "@/public/data/uic-knowledge/instagram-accounts.json";
 import healthData from "@/public/data/uic-knowledge/health-academics.json";
 import buildingsData from "@/public/data/uic-knowledge/campus-buildings.json";
 import advisingData from "@/public/data/uic-knowledge/advising-support.json";
+// ── Trust decision layer ──────────────────────────────────────────────────
+import { makeTrustDecision, getTrustInstruction } from "@/lib/chat/trust-decision";
 import tuitionData from "@/public/data/uic-knowledge/tuition.json";
 import specialPopData from "@/public/data/uic-knowledge/special-populations.json";
 import {
@@ -215,7 +218,39 @@ function analyzeQuery(msg: string, conversationHistory: ChatMessage[]): QueryAna
   if (words.some(w => ["international","visa","ois","cpt","opt","f-1","study abroad","abroad"].includes(w))) domainConfidence["international"] = 0.9;
   if (words.some(w => ["safe","safety","police","escort","emergency","title ix","conduct","ferpa","legal"].includes(w))) domainConfidence["safety"] = 0.85;
   if (lower.includes("instagram") || lower.includes(" ig ") || lower.includes("insta") || lower.includes("follow") || lower.includes("@uic")) domainConfidence["instagram"] = 0.95;
+  // ── Program / major / institutional structure ─────────────────────────
+  if (
+    lower.match(/\b(major|program|degree|school|college|department|dept)\b/) ||
+    lower.match(/\b(switch|change|declare|add|double).{0,15}(major|minor|program|degree)\b/) ||
+    lower.match(/\b(does uic (have|offer)|is there a|do you have).{0,25}(major|program|school|college|department)\b/) ||
+    lower.match(/\b(does uic (have|offer)|is there|uic (have|offer)).{0,25}(phd|ph\.d|master|bachelor|mba|ms\b|ma\b|minor)\b/i) ||
+    lower.match(/\b(phd|ph\.d|masters?\s+program|bachelor.s\s+degree)\b/i)
+  ) {
+    domainConfidence["admissions"] = Math.max(domainConfidence["admissions"] ?? 0, 0.80);
+    domainConfidence["academic_policy"] = Math.max(domainConfidence["academic_policy"] ?? 0, 0.75);
+  }
 
+  // ── Subject-to-subject switch without "major" keyword ────────────────
+  if (lower.match(/\b(switch|change|transfer|move).{0,20}(from|to).{0,30}(nursing|biology|engineering|computer science|cs\b|business|chemistry|physics|math|psychology|education|art|music|accounting|finance|kinesiology)\b/i)) {
+    domainConfidence["admissions"] = Math.max(domainConfidence["admissions"] ?? 0, 0.82);
+    domainConfidence["academic_policy"] = Math.max(domainConfidence["academic_policy"] ?? 0, 0.78);
+  }
+
+  // ── Graduation / credit hour requirements ─────────────────────────────
+  if (
+    lower.match(/\b(credits?|credit hours?)\b/) ||
+    lower.match(/\b(requirements?|hours?).{0,10}(to |for )?(graduate|graduation|degree|finish|complete)\b/) ||
+    lower.match(/\bhow (many|much).{0,15}(credit|hour)\b/) ||
+    lower.match(/\bgraduation requirements?\b/)
+  ) {
+    domainConfidence["academic_policy"] = Math.max(domainConfidence["academic_policy"] ?? 0, 0.85);
+    domainConfidence["calendar"] = Math.max(domainConfidence["calendar"] ?? 0, 0.80);
+  }
+
+  // ── U-Pass / Ventra ───────────────────────────────────────────────────
+  if (lower.match(/\bu.?pass\b|transit pass|ventra/i)) {
+    domainConfidence["transportation"] = Math.max(domainConfidence["transportation"] ?? 0, 0.92);
+  }
   // ── Query decomposition ───────────────────────────────────────────────────
   const subIntents = decomposeQuery(lower, domainConfidence, constraints, answerMode);
 
@@ -261,7 +296,7 @@ function analyzeQuery(msg: string, conversationHistory: ChatMessage[]): QueryAna
   const athleticsMatch =
   allRosterPlayers.some(p => {
     const pParts = p.split(/\s+/).filter(part => part.length >= 3 && !["ii","iii","jr","sr","iv"].includes(part));
-    const qParts = lower.split(/\s+/).filter(w => w.length >= 3 && !["who","is","the","are","about","tell","me"].includes(w));
+    const qParts = lower.split(/\s+/).filter(w => w.length >= 5 && !["who","is","the","are","about","tell","me","many","need","does","have","available","credits","dorms","graduate"].includes(w));
     return pParts.some(part => lower.includes(part)) || qParts.some(w => p.includes(w));
   }) ||
     allCoaches.some(c => {
@@ -772,14 +807,13 @@ async function retrieveProfessors(intent: any, query: QueryAnalysis): Promise<Re
   } catch { /* tolerate */ }
   return chunks;
 }
-
 async function retrieveMajorPlan(query: QueryAnalysis): Promise<RetrievedChunk[]> {
   try {
     const { readFileSync } = await import("fs");
     const { join } = await import("path");
     const data = JSON.parse(readFileSync(join(process.cwd(), "public/data/uic-knowledge/major-requirements.json"), "utf8"));
     const lower = query.rawQuery.toLowerCase();
-
+ 
     const majorMatch = data.majors?.filter((m: any) => {
       const n = m.name.toLowerCase();
       return lower.includes(n) ||
@@ -804,35 +838,99 @@ async function retrieveMajorPlan(query: QueryAnalysis): Promise<RetrievedChunk[]
       const scoreB = (b.name.includes(" BS") || b.name.includes(" BA") ? 10 : 0) + (b.requiredCourses?.length ?? 0);
       return scoreB - scoreA;
     })[0] ?? null;
-
+ 
     if (!majorMatch) {
       const list = data.majors?.slice(0, 40).map((m: any) => `- ${m.name}`).join("\n") || "";
       return [makeChunk("major_plan", `=== AVAILABLE MAJORS FOR 4-YEAR PLANS ===\n${list}\n\nSpecify your major for a detailed plan.`, 0.7, query)];
     }
-
-    const required = majorMatch.requiredCourses.slice(0, 50).map((c: any) => `${c.code}: ${c.title} (${c.hours} hrs)`).join("\n");
+ 
+    // ── REQUIRED COURSES — with credit hours from source data ──────────────
+    const required = majorMatch.requiredCourses.slice(0, 60).map((c: any) =>
+      `${c.code}: ${c.title} — ${c.hours ?? "?"} credit hours`
+    ).join("\n");
+ 
+    // ── ELECTIVE RULES — pulled directly from majorMatch if available ───────
+    const electiveRules = majorMatch.electiveRequirements
+      ? Object.entries(majorMatch.electiveRequirements as Record<string, any>).map(([group, rule]: [string, any]) =>
+          `${group}: ${typeof rule === "object" ? `choose ${rule.choose ?? "?"} courses from ${rule.options?.join(", ") ?? "see catalog"}` : rule}`
+        ).join("\n")
+      : majorMatch.electiveGroups
+        ? majorMatch.electiveGroups.map((g: any) =>
+            `${g.label ?? g.name ?? "Elective group"}: choose ${g.credits ?? g.count ?? "?"} credit hours`
+          ).join("\n")
+        : null;
+ 
+    // ── SAMPLE SCHEDULE — include credit hours per semester ─────────────────
+    // Enrich each course code in the schedule with hours from requiredCourses lookup
+    const courseHourMap: Record<string, number> = {};
+    for (const c of majorMatch.requiredCourses ?? []) {
+      if (c.code && c.hours) courseHourMap[c.code] = c.hours;
+    }
+ 
     const schedule = majorMatch.sampleSchedule?.length > 0
-      ? majorMatch.sampleSchedule.map((s: any) => `${s.year} ${s.semester} (${s.total_hours || "?"} hrs): ${s.courses.join(", ")}`).join("\n")
-      : "Build from required courses below.";
-
-    let easyText = "";
+      ? majorMatch.sampleSchedule.map((s: any) => {
+          const coursesWithHours = (s.courses ?? []).map((code: string) => {
+            const hrs = courseHourMap[code];
+            return hrs ? `${code} (${hrs} hrs)` : code;
+          });
+          return `${s.year} ${s.semester} [${s.total_hours ?? "?"} hrs total]: ${coursesWithHours.join(", ")}`;
+        }).join("\n")
+      : "No official sample schedule available. Use REQUIRED COURSES list above to build semester by semester.";
+ 
+    // ── UNDERGRAD-ONLY ELECTIVES — filter out 500+ level ──────────────────
+    // 500+ courses are graduate level. An undergrad plan must not default to them.
+    let electiveSuggestions = "";
     try {
-      const subj = majorMatch.requiredCourses[0]?.subject;
+      const subj = majorMatch.requiredCourses[0]?.code?.split(" ")[0];
       if (subj) {
-        const easy = await fetchCoursesBySubjectOrDept(subj, null, 8, true);
-        easyText = easy.map((c: any) => `${c.subject} ${c.number} ${c.title}: GPA ${c.avgGpa?.toFixed(2)}`).join("\n");
+        const allDeptCourses = await fetchCoursesBySubjectOrDept(subj, null, 20, true);
+        // Filter: only include courses numbered 100–499 (undergrad level)
+        const undergradOnly = allDeptCourses.filter((c: any) => {
+          const num = parseInt(String(c.number), 10);
+          return !isNaN(num) && num < 500;
+        }).slice(0, 8);
+ 
+        if (undergradOnly.length > 0) {
+          electiveSuggestions = undergradOnly
+            .map((c: any) => `${c.subject} ${c.number} — ${c.title}: ${c.avgGpa?.toFixed(2) ?? "N/A"} avg GPA, ${c.totalRegsAllTime ?? "?"} students`)
+            .join("\n");
+        }
       }
-    } catch { /* ok */ }
-
-    const content = `=== ${majorMatch.name.toUpperCase()} — 4-YEAR DEGREE PLAN ===\n` +
-      `Total hours: ${majorMatch.totalHours} | College: ${majorMatch.college}\n\n` +
-      `REQUIRED COURSES:\n${required}\n\n` +
-      `OFFICIAL SEMESTER SCHEDULE:\n${schedule}` +
-      (easyText ? `\n\nEASIEST DEPT ELECTIVES (auto-select for optional slots):\n${easyText}` : "") +
-      `\n\nINSTRUCTION: Build a complete semester-by-semester plan. For optional slots, use the easiest courses by GPA. Do NOT use markdown tables. Use sections labeled YEAR 1, YEAR 2, YEAR 3, YEAR 4, with Fall Semester and Spring Semester under each, and bullet lists for the courses.`;
-    return [makeChunk("major_plan", content, 0.95, query)];
+    } catch { /* tolerate */ }
+ 
+    // ── ASSEMBLE CONTENT ────────────────────────────────────────────────────
+    let content = `=== ${majorMatch.name.toUpperCase()} — OFFICIAL DEGREE REQUIREMENTS ===\n`;
+    content += `Total credits required: ${majorMatch.totalHours ?? "see catalog"} | College: ${majorMatch.college ?? "N/A"}\n\n`;
+ 
+    content += `MANDATORY REQUIRED COURSES (must complete all):\n${required}\n\n`;
+ 
+    if (electiveRules) {
+      content += `ELECTIVE REQUIREMENTS:\n${electiveRules}\n\n`;
+    }
+ 
+    content += `OFFICIAL SAMPLE SCHEDULE (semester by semester):\n${schedule}\n`;
+ 
+    if (electiveSuggestions) {
+      content += `\nUNDERGRAD ELECTIVE OPTIONS (courses 100-499 only, sorted by avg GPA):\n${electiveSuggestions}\n`;
+    }
+ 
+    // ── PLANNING INSTRUCTION — strict grounding, no invention ───────────────
+    content += `
+PLANNING RULES — FOLLOW STRICTLY:
+1. Use ONLY courses listed in MANDATORY REQUIRED COURSES and OFFICIAL SAMPLE SCHEDULE above
+2. Use credit hours EXACTLY as listed in the source data — do NOT guess or change them
+3. If a course has no credit hours listed, write "? hrs" — do not invent a number
+4. Do NOT add courses not in the retrieved data — not even high-GPA ones
+5. Do NOT include any course numbered 500 or above unless it appears in MANDATORY REQUIRED COURSES
+6. Use OFFICIAL SAMPLE SCHEDULE as the primary semester layout — only deviate if truly necessary
+7. Fill elective slots with courses from UNDERGRAD ELECTIVE OPTIONS (100-499 level only)
+8. If elective requirements specify group rules, follow them — do not freely choose any course
+9. After building the plan, state total credit count and flag if it doesn't match required total
+10. End with: "This is a draft plan based on official requirements. Verify with your academic advisor before registering."`;
+ 
+    return [makeChunk("major_plan", content, 0.97, query)];
   } catch {
-    return [makeChunk("major_plan", "Visit catalog.uic.edu for official degree requirements.", 0.3, query)];
+    return [makeChunk("major_plan", "Visit catalog.uic.edu for official degree requirements. I was unable to retrieve the specific requirement data.", 0.3, query)];
   }
 }
 
@@ -1184,7 +1282,19 @@ function retrieveCampusMap(query: QueryAnalysis): RetrievedChunk[] {
     const sfc = kb.recreation[1];
     chunks.push(makeChunk("campus_map", `SFC (Sport and Fitness Center): ${sfc.address} | ${sfc.whats_inside}`, 0.98, query));
   }
-
+  // ── U-Pass / Ventra ───────────────────────────────────────────────────────
+  if (lower.match(/\bu.?pass\b|transit pass|ventra/i)) {
+    chunks.push(makeChunk("transportation",
+      `CTA U-PASS (UIC Ventra Transit Pass):
+All UIC students enrolled in 6+ credit hours automatically receive a U-Pass as part of their semester fees.
+Cost: $163/semester — already included in mandatory fees. No extra charge.
+What it covers: Unlimited rides on all CTA buses and rail lines (Blue Line, Pink Line, Red Line, all buses) for the full semester.
+How to get it: Your Ventra card is automatically activated each semester when enrolled and fees are paid. Pick up a new Ventra card at the UIC Card Office in Student Center East (750 S Halsted St) or any CTA station.
+Renewal: Reactivates automatically every semester you're enrolled and fees are current.
+Lost card: Replace at any CTA customer service location ($5 replacement fee).
+Questions: transportation.uic.edu | CTA: 888-968-7282`,
+      0.97, query));
+  }
   // ── Transportation ────────────────────────────────────────────────────────
   if (lower.match(/\bcta\b|blue line|pink line|\bbus\b|train|transit|how (do i )?get (to|there)/)) {
     const t = b.transportation;
@@ -1303,6 +1413,38 @@ function retrieveHealth(query: QueryAnalysis): RetrievedChunk[] {
 }
 
 function retrieveCalendar(query: QueryAnalysis): RetrievedChunk[] {
+  const lower = query.rawQuery.toLowerCase();
+  const isGraduationQuery = lower.match(
+    /\b(how many|credit|credits|hours?|requirements?).{0,25}(graduate|graduation|degree|finish|complete)\b/
+  ) || lower.match(/\bgraduation requirements?\b/);
+
+  if (isGraduationQuery) {
+    const ha2 = healthData as any;
+    const ap = ha2?.academic_policies;
+    const gr = ap?.graduation_requirements;
+    const lh = ap?.latin_honors;
+
+    const gradContent = gr
+      ? `GRADUATION REQUIREMENTS AT UIC:
+Minimum credit hours: 120 (most undergraduate programs; some require more)
+Minimum cumulative GPA: ${gr.minimum_gpa}
+General Education: ${gr.gen_ed}
+Residency: Last 30 credit hours must be completed at UIC.
+Latin Honors: Cum Laude ${lh?.cum_laude ?? "3.50+"} | Magna Cum Laude ${lh?.magna_cum_laude ?? "3.75+"} | Summa Cum Laude ${lh?.summa_cum_laude ?? "3.90+"}
+Apply to graduate: registrar.uic.edu — apply by the deadline each semester.
+Contact: Registrar's Office, SSB Suite 1200 | registrar.uic.edu | 312-996-4350`
+      : `GRADUATION REQUIREMENTS AT UIC:
+Minimum credit hours: 120 (most undergraduate programs; some require more)
+Minimum cumulative GPA: 2.00
+General Education: 24+ credit hours across 6 gen ed categories
+Residency: Last 30 credit hours must be completed at UIC.
+Latin Honors: Cum Laude 3.50+ | Magna Cum Laude 3.75+ | Summa Cum Laude 3.90+
+Apply to graduate: registrar.uic.edu — apply by the deadline each semester.
+Contact: Registrar's Office, SSB Suite 1200 | registrar.uic.edu | 312-996-4350`;
+
+    return [makeChunk("academic_policy", gradContent, 0.97, query)];
+  }
+
   const cal = academicCalendarData as any;
   const fall = cal.academic_calendar?.fall_2025;
   const spring = cal.academic_calendar?.spring_2026;
@@ -1436,6 +1578,8 @@ function retrieveAdmissions(query: QueryAnalysis): RetrievedChunk[] {
     `Merit Tuition Award: ${sc.merit_tuition_award.amount}\n\n` +
     `AFTER ADMISSION: Activate NetID | Placement tests by June 30 | Apply housing (housing.uic.edu) | File FAFSA | Register orientation\n` +
     `Visits: ${adm.campus_visits.url} | Admitted hub: ${adm.campus_visits.admitted_students}`;
+      `UIC COLLEGES & SCHOOLS: Liberal Arts and Sciences (LAS) | Engineering | Business Administration | Architecture Design and the Arts (CADA) | Education | Applied Health Sciences | Nursing | Public Health | Pharmacy | Medicine | Dentistry | Social Work | Urban Planning and Public Affairs | School of Law (formerly John Marshall Law School) | Honors College`;
+
   return [makeChunk("admissions", content, 0.97, query)];
 }
 
@@ -1729,7 +1873,7 @@ function buildSystemPrompt(
     comparison: "COMPARISON: Structure as clear A vs B with parallel criteria. Acknowledge the real tradeoffs. End with a concrete recommendation tailored to the implied student profile.",
     recommendation: "RECOMMENDATION: You detected specific constraints about this student. Use them. Give a direct, personalized answer — not 'it depends,' but 'given that you care about X and Y, here is what I recommend and why.'",
     logistics: "LOGISTICS: Be precise. Lead with exact addresses, phone numbers, deadlines, URLs, hours. Zero editorializing. Students need to act — give them exactly what they need.",
-    planning: "PLANNING: Build a complete, specific semester-by-semester plan. Use real course codes. For all optional and elective slots, auto-select the easiest options from the GPA data. DO NOT use markdown tables or ASCII tables. Format the answer with headings like YEAR 1, Fall Semester, Spring Semester, and use bullet lists for courses.",
+planning: "PLANNING: Build the semester plan using ONLY the courses and credit hours in the MANDATORY REQUIRED COURSES and OFFICIAL SAMPLE SCHEDULE sections of the retrieved data. Do NOT invent courses. Do NOT change credit hours. Do NOT add graduate-level (500+) courses unless they appear in the mandatory list. For elective slots, use only courses from UNDERGRAD ELECTIVE OPTIONS (numbered below 500). Follow the PLANNING RULES listed in the retrieved data. Format: YEAR 1, YEAR 2, YEAR 3, YEAR 4 with Fall and Spring subsections. Use bullet lists. End with total credit count and an advisor verification note.",
     hybrid: "HYBRID: This is a multi-part question. Break it into organized sections. Answer each well. Synthesize with a crisp bottom line that ties it together.",
   };
 
@@ -1834,6 +1978,16 @@ export async function POST(req: Request) {
   } catch {
     return NextResponse.json({ error: "Malformed request" }, { status: 400 });
   }
+
+  const posthog = getPostHogClient();
+  posthog.capture({
+    distinctId: "anonymous",
+    event: "chat_api_request",
+    properties: {
+      message_count: messages.length,
+      last_message_length: lastMsg.length,
+    },
+  });
 
 // ── Session & query analysis ──────────────────────────────────────────────
 // ── Casual message fast path ──────────────────────────────────────────────
@@ -2019,7 +2173,28 @@ if (userMemory?.interests?.some(i => i.toLowerCase().includes("sport") || i.toLo
   syncChunks.push(...retrieveInstagram(query));
 }
   if ((dc["recreation"] ?? 0) > 0.5 && !(dc["health"] ?? 0)) syncChunks.push(...retrieveRecreation(query));
+  // ── Program/major queries: force admissions + advising ───────────────
+  if (
+    lower.match(/\b(major|program|degree|school|college|department)\b/) &&
+    lower.match(/\b(does|have|offer|switch|change|declare|add|double|what|which|how)\b/)
+  ) {
+    if (!syncChunks.some(c => c.domain === "admissions")) {
+      syncChunks.push(...retrieveAdmissions(query));
+    }
+    if (!syncChunks.some(c => c.domain === "academic_policy")) {
+      syncChunks.push(...retrieveAdvising(query));
+    }
+  }
 
+  // ── Graduation credit queries: force calendar ─────────────────────────
+  if (
+    lower.match(/\b(credits?|credit hours?|requirements?).{0,20}(graduate|graduation|degree|finish)\b/) ||
+    lower.match(/\bhow (many|much).{0,15}(credit|hour)\b/)
+  ) {
+    if (!syncChunks.some(c => c.domain === "calendar" || c.domain === "academic_policy")) {
+      syncChunks.push(...retrieveCalendar(query));
+    }
+  }
   if (lower.match(/\bhonors\b|veteran|commuter|first.?gen|bridge program|academic recovery|eop\b/)) {
   const sp = specialPopData as any;
   const lower2 = lower;
@@ -2204,24 +2379,32 @@ const isLiveDataQuery =
   // Syllabus/professor-specific policy queries — no syllabus data ingested
   lowerQuery.match(/syllabus|late (work|policy|submission|assignment)|makeup (exam|test|quiz)|office hours (today|this week)|does (prof|professor|instructor).{0,30}(allow|accept|give|offer)/) !== null;
 
-const shouldAbstain = noChunks || evidenceTooWeak || domainMismatch || isLiveDataQuery;
+const trust = makeTrustDecision(
+  {
+    rawQuery:         lastMsg,
+    isFact:           query.isFact,
+    answerMode:       query.answerMode,
+    domainConfidence: query.domainConfidence,
+  },
+  rerankedChunks.map(c => ({
+    domain:           c.domain,
+    content:          c.content,
+    relevanceScore:   c.relevanceScore,
+    sourceConfidence: c.sourceConfidence,
+    publishedAt:      null, // extend later when chunks carry dates
+  }))
+);
+console.log(`[trust] q=${lastMsg.slice(0,40)} | class=${trust.explanation.query_class} | domain=${trust.explanation.primary_domain} | score=${trust.explanation.top_score} | chunks=${trust.explanation.relevant_chunk_count} | decision=${trust.decision}`);
 
-const abstainReason: string | null = shouldAbstain
-  ? noChunks          ? "no_chunks"
-  : isLiveDataQuery   ? "live_or_personal_data"
-  : domainMismatch    ? "domain_mismatch"
-  :                     "low_score"
-  : null;
-
-// ── QueryLog write (runs on every request, abstained or not) ─────────────
+// ── QueryLog ──────────────────────────────────────────────────────────────
 const domainsTriggered = Object.entries(query.domainConfidence)
   .filter(([, score]) => score > 0.5)
   .map(([domain]) => domain);
 
 const retrievalSources: string[] = [
-  ...(syncChunks.length > 0                                                         ? ["json"]   : []),
-  ...(asyncChunks.length > 0                                                         ? ["sql"]    : []),
-  ...((vectorResults as any[]).some((r: any) => r.similarity > 0.65)               ? ["vector"] : []),
+  ...(syncChunks.length > 0                                                   ? ["json"]   : []),
+  ...(asyncChunks.length > 0                                                   ? ["sql"]    : []),
+  ...((vectorResults as any[]).some((r: any) => r.similarity > 0.65)         ? ["vector"] : []),
 ];
 
 prisma.queryLog.create({
@@ -2232,17 +2415,16 @@ prisma.queryLog.create({
     answerMode:       query.answerMode,
     domainsTriggered: JSON.stringify(domainsTriggered),
     retrievalSources: JSON.stringify(retrievalSources),
-    topChunkScore:    topChunkScore > 0 ? topChunkScore : null,
+    topChunkScore:    trust.explanation.top_score > 0 ? trust.explanation.top_score : null,
     chunkCount:       rerankedChunks.length,
-    abstained:        shouldAbstain,
-    abstainReason,
+    abstained:        trust.decision === "abstain",
+    abstainReason:    trust.decision !== "answer" ? trust.reason : null,
     responseMs:       Date.now() - requestStartMs,
   },
 }).catch(() => {});
-// ── End QueryLog ──────────────────────────────────────────────────────────
 
-// ── Return abstention response without calling Sonnet ────────────────────
-if (shouldAbstain) {
+// ── Abstain gate ──────────────────────────────────────────────────────────
+if (trust.decision === "abstain") {
   const abstainText = getAbstainResponse(query);
   const encoder = new TextEncoder();
   const readable = new ReadableStream({
@@ -2252,17 +2434,16 @@ if (shouldAbstain) {
     },
   });
   const headers: Record<string, string> = {
-    "Content-Type":          "text/plain; charset=utf-8",
-    "Cache-Control":         "no-store",
-    "X-Abstained":           "true",
-    "X-Abstain-Reason":      abstainReason ?? "unknown",
+    "Content-Type":     "text/plain; charset=utf-8",
+    "Cache-Control":    "no-store",
+    "X-Abstained":      "true",
+    "X-Abstain-Reason": trust.reason,
   };
   if (isNew) {
     headers["Set-Cookie"] = `sparky_session=${sessionId}; Path=/; Max-Age=${60 * 60 * 24 * 365}; SameSite=Lax`;
   }
   return new Response(readable, { headers });
 }
-// ── End abstention gate ───────────────────────────────────────────────────
 
 const brief = buildAnswerBrief(query, rerankedChunks);
 const context = assembleContext(rerankedChunks, brief);

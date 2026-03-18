@@ -1,0 +1,702 @@
+[
+  {
+    "id": "q101",
+    "question": "what's the easiest CS class at UIC?",
+    "category": "courses",
+    "difficulty": "easy",
+    "expected_behavior": "answer"
+  },
+  {
+    "id": "q102",
+    "question": "who gives the best grades in CS 211?",
+    "category": "courses",
+    "difficulty": "medium",
+    "expected_behavior": "answer"
+  },
+  {
+    "id": "q103",
+    "question": "is MATH 180 hard",
+    "category": "courses",
+    "difficulty": "easy",
+    "expected_behavior": "answer"
+  },
+  {
+    "id": "q104",
+    "question": "what are the prereqs for CS 251?",
+    "category": "courses",
+    "difficulty": "medium",
+    "expected_behavior": "answer"
+  },
+  {
+    "id": "q105",
+    "question": "can you make me a 4 year plan for a CS major",
+    "category": "courses",
+    "difficulty": "hard",
+    "expected_behavior": "answer"
+  },
+  {
+    "id": "q106",
+    "question": "whats the average gpa for CHEM 122",
+    "category": "courses",
+    "difficulty": "easy",
+    "expected_behavior": "answer"
+  },
+  {
+    "id": "q107",
+    "question": "what gen ed counts for exploring world cultures",
+    "category": "courses",
+    "difficulty": "medium",
+    "expected_behavior": "answer"
+  },
+  {
+    "id": "q108",
+    "question": "i failed a class last semester, what happens to my gpa",
+    "category": "courses",
+    "difficulty": "medium",
+    "expected_behavior": "answer"
+  },
+  {
+    "id": "q109",
+    "question": "are there any online only courses at uic",
+    "category": "courses",
+    "difficulty": "medium",
+    "expected_behavior": "hedge"
+  },
+  {
+    "id": "q110",
+    "question": "what section of bio 101 is easiest",
+    "category": "courses",
+    "difficulty": "medium",
+    "expected_behavior": "answer"
+  },
+  {
+    "id": "q111",
+    "question": "who is the best rated professor in the engineering department",
+    "category": "professors",
+    "difficulty": "easy",
+    "expected_behavior": "answer"
+  },
+  {
+    "id": "q112",
+    "question": "is professor Smith good for intro to psych",
+    "category": "professors",
+    "difficulty": "hard",
+    "expected_behavior": "hedge"
+  },
+  {
+    "id": "q113",
+    "question": "what do students say about the nursing professors",
+    "category": "professors",
+    "difficulty": "medium",
+    "expected_behavior": "answer"
+  },
+  {
+    "id": "q114",
+    "question": "who teaches organic chemistry and how are they",
+    "category": "professors",
+    "difficulty": "medium",
+    "expected_behavior": "answer"
+  },
+  {
+    "id": "q115",
+    "question": "what professor has the most 5 star reviews at uic",
+    "category": "professors",
+    "difficulty": "medium",
+    "expected_behavior": "answer"
+  },
+  {
+    "id": "q116",
+    "question": "my prof is impossible and never responds to emails, what do i do",
+    "category": "professors",
+    "difficulty": "hard",
+    "expected_behavior": "answer"
+  },
+  {
+    "id": "q117",
+    "question": "does uic have a tuition payment plan",
+    "category": "financial",
+    "difficulty": "easy",
+    "expected_behavior": "answer"
+  },
+  {
+    "id": "q118",
+    "question": "my family makes around 60k a year, would we qualify for free tuition",
+    "category": "financial",
+    "difficulty": "medium",
+    "expected_behavior": "answer"
+  },
+  {
+    "id": "q119",
+    "question": "is uic cheaper than depaul",
+    "category": "financial",
+    "difficulty": "medium",
+    "expected_behavior": "answer"
+  },
+  {
+    "id": "q120",
+    "question": "when is my tuition bill due this fall",
+    "category": "financial",
+    "difficulty": "hard",
+    "expected_behavior": "hedge"
+  },
+  {
+    "id": "q121",
+    "question": "what scholarships can a transfer student get",
+    "category": "financial",
+    "difficulty": "medium",
+    "expected_behavior": "answer"
+  },
+  {
+    "id": "q122",
+    "question": "i missed the fafsa deadline, can i still get aid",
+    "category": "financial",
+    "difficulty": "hard",
+    "expected_behavior": "hedge"
+  },
+  {
+    "id": "q123",
+    "question": "how much is the chancellors fellows scholarship worth",
+    "category": "financial",
+    "difficulty": "easy",
+    "expected_behavior": "answer"
+  },
+  {
+    "id": "q124",
+    "question": "does uic offer any grants besides aspire",
+    "category": "financial",
+    "difficulty": "medium",
+    "expected_behavior": "answer"
+  },
+  {
+    "id": "q125",
+    "question": "what is out of state tuition per year",
+    "category": "financial",
+    "difficulty": "easy",
+    "expected_behavior": "answer"
+  },
+  {
+    "id": "q126",
+    "question": "which dorm should i pick if i want to be social",
+    "category": "housing",
+    "difficulty": "medium",
+    "expected_behavior": "answer"
+  },
+  {
+    "id": "q127",
+    "question": "can sophomores live in arc",
+    "category": "housing",
+    "difficulty": "easy",
+    "expected_behavior": "answer"
+  },
+  {
+    "id": "q128",
+    "question": "do any dorms have kitchens",
+    "category": "housing",
+    "difficulty": "medium",
+    "expected_behavior": "answer"
+  },
+  {
+    "id": "q129",
+    "question": "what is the cheapest way to live on campus",
+    "category": "housing",
+    "difficulty": "medium",
+    "expected_behavior": "answer"
+  },
+  {
+    "id": "q130",
+    "question": "how far are the dorms from the main academic buildings",
+    "category": "housing",
+    "difficulty": "medium",
+    "expected_behavior": "answer"
+  },
+  {
+    "id": "q131",
+    "question": "i want to live near campus but off campus, whats a good neighborhood",
+    "category": "housing",
+    "difficulty": "medium",
+    "expected_behavior": "answer"
+  },
+  {
+    "id": "q132",
+    "question": "is the jst dorm co-ed",
+    "category": "housing",
+    "difficulty": "easy",
+    "expected_behavior": "answer"
+  },
+  {
+    "id": "q133",
+    "question": "when does housing applications open for next year",
+    "category": "housing",
+    "difficulty": "hard",
+    "expected_behavior": "hedge"
+  },
+  {
+    "id": "q134",
+    "question": "what LLCs does uic have",
+    "category": "housing",
+    "difficulty": "medium",
+    "expected_behavior": "answer"
+  },
+  {
+    "id": "q135",
+    "question": "is there 24 hour food on campus",
+    "category": "dining",
+    "difficulty": "easy",
+    "expected_behavior": "answer"
+  },
+  {
+    "id": "q136",
+    "question": "where can i find halal food at uic",
+    "category": "dining",
+    "difficulty": "easy",
+    "expected_behavior": "answer"
+  },
+  {
+    "id": "q137",
+    "question": "what meal plan is best if i live off campus",
+    "category": "dining",
+    "difficulty": "medium",
+    "expected_behavior": "answer"
+  },
+  {
+    "id": "q138",
+    "question": "does the dining hall close over spring break",
+    "category": "dining",
+    "difficulty": "hard",
+    "expected_behavior": "hedge"
+  },
+  {
+    "id": "q139",
+    "question": "can i use my meal swipes at chick fil a",
+    "category": "dining",
+    "difficulty": "medium",
+    "expected_behavior": "answer"
+  },
+  {
+    "id": "q140",
+    "question": "where is the starbucks on campus",
+    "category": "dining",
+    "difficulty": "easy",
+    "expected_behavior": "answer"
+  },
+  {
+    "id": "q141",
+    "question": "how do i get free tickets to flames games",
+    "category": "athletics",
+    "difficulty": "easy",
+    "expected_behavior": "answer"
+  },
+  {
+    "id": "q142",
+    "question": "who is the head coach of womens basketball",
+    "category": "athletics",
+    "difficulty": "easy",
+    "expected_behavior": "answer"
+  },
+  {
+    "id": "q143",
+    "question": "did uic make the ncaa tournament recently",
+    "category": "athletics",
+    "difficulty": "hard",
+    "expected_behavior": "hedge"
+  },
+  {
+    "id": "q144",
+    "question": "where does uic baseball play",
+    "category": "athletics",
+    "difficulty": "easy",
+    "expected_behavior": "answer"
+  },
+  {
+    "id": "q145",
+    "question": "i played soccer in high school, how do i try out for uic",
+    "category": "athletics",
+    "difficulty": "hard",
+    "expected_behavior": "hedge"
+  },
+  {
+    "id": "q146",
+    "question": "what conference is uic softball in",
+    "category": "athletics",
+    "difficulty": "easy",
+    "expected_behavior": "answer"
+  },
+  {
+    "id": "q147",
+    "question": "does uic have a swim team",
+    "category": "athletics",
+    "difficulty": "easy",
+    "expected_behavior": "answer"
+  },
+  {
+    "id": "q148",
+    "question": "whats the flames fast pass and is it worth it",
+    "category": "athletics",
+    "difficulty": "medium",
+    "expected_behavior": "answer"
+  },
+  {
+    "id": "q149",
+    "question": "how do i get to credit union 1 arena by cta",
+    "category": "campus",
+    "difficulty": "easy",
+    "expected_behavior": "answer"
+  },
+  {
+    "id": "q150",
+    "question": "where is the financial aid office located",
+    "category": "campus",
+    "difficulty": "easy",
+    "expected_behavior": "answer"
+  },
+  {
+    "id": "q151",
+    "question": "is there parking on campus for students",
+    "category": "campus",
+    "difficulty": "medium",
+    "expected_behavior": "answer"
+  },
+  {
+    "id": "q152",
+    "question": "how do i get from east to west campus",
+    "category": "campus",
+    "difficulty": "easy",
+    "expected_behavior": "answer"
+  },
+  {
+    "id": "q153",
+    "question": "where can i study late at night on campus",
+    "category": "campus",
+    "difficulty": "medium",
+    "expected_behavior": "answer"
+  },
+  {
+    "id": "q154",
+    "question": "what building is the computer science department in",
+    "category": "campus",
+    "difficulty": "easy",
+    "expected_behavior": "answer"
+  },
+  {
+    "id": "q155",
+    "question": "does uic have a night ride shuttle",
+    "category": "campus",
+    "difficulty": "easy",
+    "expected_behavior": "answer"
+  },
+  {
+    "id": "q156",
+    "question": "how far is uic from downtown chicago",
+    "category": "campus",
+    "difficulty": "easy",
+    "expected_behavior": "answer"
+  },
+  {
+    "id": "q157",
+    "question": "where is the writing center",
+    "category": "campus",
+    "difficulty": "easy",
+    "expected_behavior": "answer"
+  },
+  {
+    "id": "q158",
+    "question": "i need to see a doctor on campus, where do i go",
+    "category": "health",
+    "difficulty": "easy",
+    "expected_behavior": "answer"
+  },
+  {
+    "id": "q159",
+    "question": "is therapy free at uic",
+    "category": "health",
+    "difficulty": "easy",
+    "expected_behavior": "answer"
+  },
+  {
+    "id": "q160",
+    "question": "how do i get disability accommodations",
+    "category": "health",
+    "difficulty": "medium",
+    "expected_behavior": "answer"
+  },
+  {
+    "id": "q161",
+    "question": "does uic have a pharmacy on campus",
+    "category": "health",
+    "difficulty": "easy",
+    "expected_behavior": "answer"
+  },
+  {
+    "id": "q162",
+    "question": "can i waive the campuscare insurance",
+    "category": "health",
+    "difficulty": "medium",
+    "expected_behavior": "answer"
+  },
+  {
+    "id": "q163",
+    "question": "i'm really stressed and don't know who to talk to",
+    "category": "health",
+    "difficulty": "hard",
+    "expected_behavior": "answer"
+  },
+  {
+    "id": "q164",
+    "question": "where is the campus gym and what are the hours",
+    "category": "health",
+    "difficulty": "easy",
+    "expected_behavior": "answer"
+  },
+  {
+    "id": "q165",
+    "question": "does uic have intramural sports",
+    "category": "health",
+    "difficulty": "easy",
+    "expected_behavior": "answer"
+  },
+  {
+    "id": "q166",
+    "question": "when does spring registration open",
+    "category": "registration",
+    "difficulty": "easy",
+    "expected_behavior": "answer"
+  },
+  {
+    "id": "q167",
+    "question": "what is a time ticket",
+    "category": "registration",
+    "difficulty": "easy",
+    "expected_behavior": "answer"
+  },
+  {
+    "id": "q168",
+    "question": "the class i need is full, how do i get in",
+    "category": "registration",
+    "difficulty": "medium",
+    "expected_behavior": "answer"
+  },
+  {
+    "id": "q169",
+    "question": "how many W's am i allowed to have",
+    "category": "registration",
+    "difficulty": "medium",
+    "expected_behavior": "answer"
+  },
+  {
+    "id": "q170",
+    "question": "what's the last day to drop spring semester classes",
+    "category": "registration",
+    "difficulty": "easy",
+    "expected_behavior": "answer"
+  },
+  {
+    "id": "q171",
+    "question": "can i take 20 credit hours in one semester",
+    "category": "registration",
+    "difficulty": "medium",
+    "expected_behavior": "answer"
+  },
+  {
+    "id": "q172",
+    "question": "when can i register for fall 2026 classes",
+    "category": "registration",
+    "difficulty": "hard",
+    "expected_behavior": "hedge"
+  },
+  {
+    "id": "q173",
+    "question": "how do i add a class after the semester started",
+    "category": "registration",
+    "difficulty": "medium",
+    "expected_behavior": "answer"
+  },
+  {
+    "id": "q174",
+    "question": "what is the uic application deadline for fall 2026",
+    "category": "admissions",
+    "difficulty": "easy",
+    "expected_behavior": "answer"
+  },
+  {
+    "id": "q175",
+    "question": "i got rejected from uic, can i appeal",
+    "category": "admissions",
+    "difficulty": "hard",
+    "expected_behavior": "hedge"
+  },
+  {
+    "id": "q176",
+    "question": "what sat score do i need to get into uic",
+    "category": "admissions",
+    "difficulty": "easy",
+    "expected_behavior": "answer"
+  },
+  {
+    "id": "q177",
+    "question": "does uic accept community college students",
+    "category": "admissions",
+    "difficulty": "easy",
+    "expected_behavior": "answer"
+  },
+  {
+    "id": "q178",
+    "question": "what happens after i submit my application",
+    "category": "admissions",
+    "difficulty": "medium",
+    "expected_behavior": "answer"
+  },
+  {
+    "id": "q179",
+    "question": "does uic have early decision",
+    "category": "admissions",
+    "difficulty": "easy",
+    "expected_behavior": "answer"
+  },
+  {
+    "id": "q180",
+    "question": "i transferred from a 4-year school with 60 credits, how long until i graduate",
+    "category": "admissions",
+    "difficulty": "hard",
+    "expected_behavior": "hedge"
+  },
+  {
+    "id": "q181",
+    "question": "is uic test optional for grad school",
+    "category": "admissions",
+    "difficulty": "hard",
+    "expected_behavior": "hedge"
+  },
+  {
+    "id": "q182",
+    "question": "how do i find a job on campus",
+    "category": "careers",
+    "difficulty": "easy",
+    "expected_behavior": "answer"
+  },
+  {
+    "id": "q183",
+    "question": "when are the career fairs this year",
+    "category": "careers",
+    "difficulty": "hard",
+    "expected_behavior": "hedge"
+  },
+  {
+    "id": "q184",
+    "question": "does uic have resume help",
+    "category": "careers",
+    "difficulty": "easy",
+    "expected_behavior": "answer"
+  },
+  {
+    "id": "q185",
+    "question": "what's handshake and how does it work at uic",
+    "category": "careers",
+    "difficulty": "easy",
+    "expected_behavior": "answer"
+  },
+  {
+    "id": "q186",
+    "question": "how much do on-campus jobs pay",
+    "category": "careers",
+    "difficulty": "easy",
+    "expected_behavior": "answer"
+  },
+  {
+    "id": "q187",
+    "question": "can international students work on campus without extra paperwork",
+    "category": "careers",
+    "difficulty": "medium",
+    "expected_behavior": "answer"
+  },
+  {
+    "id": "q188",
+    "question": "how do i get a graduate assistantship",
+    "category": "careers",
+    "difficulty": "medium",
+    "expected_behavior": "answer"
+  },
+  {
+    "id": "q189",
+    "question": "i'm an f1 student, when do i apply for opt",
+    "category": "international",
+    "difficulty": "medium",
+    "expected_behavior": "answer"
+  },
+  {
+    "id": "q190",
+    "question": "how do i get a travel signature for my i-20",
+    "category": "international",
+    "difficulty": "medium",
+    "expected_behavior": "answer"
+  },
+  {
+    "id": "q191",
+    "question": "where is the ois office and what are the hours",
+    "category": "international",
+    "difficulty": "easy",
+    "expected_behavior": "answer"
+  },
+  {
+    "id": "q192",
+    "question": "can i work off campus as an f1 student",
+    "category": "international",
+    "difficulty": "medium",
+    "expected_behavior": "answer"
+  },
+  {
+    "id": "q193",
+    "question": "what is stem opt and do i qualify",
+    "category": "international",
+    "difficulty": "hard",
+    "expected_behavior": "hedge"
+  },
+  {
+    "id": "q194",
+    "question": "my visa expires next month, what do i do",
+    "category": "international",
+    "difficulty": "hard",
+    "expected_behavior": "answer"
+  },
+  {
+    "id": "q195",
+    "question": "does uic have programs for studying abroad",
+    "category": "international",
+    "difficulty": "easy",
+    "expected_behavior": "answer"
+  },
+  {
+    "id": "q196",
+    "question": "someone followed me on campus and i felt unsafe, who do i call",
+    "category": "safety",
+    "difficulty": "easy",
+    "expected_behavior": "answer"
+  },
+  {
+    "id": "q197",
+    "question": "what is the uic safe app",
+    "category": "safety",
+    "difficulty": "easy",
+    "expected_behavior": "answer"
+  },
+  {
+    "id": "q198",
+    "question": "how do i report a title ix incident",
+    "category": "safety",
+    "difficulty": "medium",
+    "expected_behavior": "answer"
+  },
+  {
+    "id": "q199",
+    "question": "is uic campus safe at night",
+    "category": "safety",
+    "difficulty": "hard",
+    "expected_behavior": "hedge"
+  },
+  {
+    "id": "q200",
+    "question": "i saw something suspicious near my dorm, is there someone i can tell anonymously",
+    "category": "safety",
+    "difficulty": "medium",
+    "expected_behavior": "answer"
+  }
+]

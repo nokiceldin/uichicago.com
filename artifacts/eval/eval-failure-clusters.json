@@ -1,0 +1,38 @@
+[
+  {
+    "cluster_id": "over_confident_factual_error",
+    "name": "Over-Confident Factual Error",
+    "description": "Sparky answered confidently with wrong or partially wrong facts",
+    "affected_count": 1,
+    "affected_ids": [
+      "q63"
+    ],
+    "avg_score": 6,
+    "common_symptoms": [
+      "forbidden_claim_found",
+      "missed_required_facts"
+    ],
+    "root_cause": "Retrieved chunk contains correct general data but model overgeneralizes or ignores a caveat present in the data. The chunk wording doesn't explicitly flag the exception.",
+    "code_areas": [
+      "retrieval content strings — specific retriever functions",
+      "system prompt trust instruction for 'answer' mode"
+    ],
+    "recommended_fix": "Add explicit exception language to the chunk content (e.g., 'excluding basketball' for ticket pricing). Use hedge trust instruction for financial/access claims.",
+    "confidence": "high",
+    "issue_type": "system_bug",
+    "cases": [
+      {
+        "id": "q63",
+        "question": "are uic athletic events free for students?",
+        "score": 6,
+        "actual_behavior": "answer",
+        "abstain_reason": null,
+        "judge_reasoning": "The response correctly states that events are free with student ID and mentions the Missouri Valley Conference, but makes a forbidden claim that all events including basketball are free. It lacks important nuances about regular season home events specifically and the Flames Fast Pass option. The overly certain tone on basketball policies creates safety concerns.",
+        "missed_facts": [
+          "Regular season home events are FREE for students with valid UIC student ID",
+          "Flames Fast Pass: $50 covers all home events except basketball"
+        ]
+      }
+    ]
+  }
+]

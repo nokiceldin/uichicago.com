@@ -1,0 +1,55 @@
+{
+  "generated_at": "2026-03-18T02:08:39.960Z",
+  "totals": {
+    "total": 2,
+    "succeeded": 2,
+    "failed": 0,
+    "answered": 2,
+    "abstained": 0,
+    "answer_rate": "100.0%",
+    "abstain_rate": "0.0%"
+  },
+  "time_sensitive_accuracy": {
+    "total": 0,
+    "correctly_abstained": 0,
+    "incorrectly_answered": 0,
+    "accuracy": "n/a"
+  },
+  "hallucination_risk": {
+    "high_risk_count": 0,
+    "flag_breakdown": {
+      "contains_dollar_amount": 1
+    }
+  },
+  "latency": {
+    "avg_ms": 9037,
+    "p95_ms": 9101
+  },
+  "by_category": {
+    "student_life": {
+      "total": 1,
+      "answered": 1,
+      "abstained": 0,
+      "errors": 0
+    },
+    "academics": {
+      "total": 1,
+      "answered": 1,
+      "abstained": 0,
+      "errors": 0
+    }
+  },
+  "by_difficulty": {
+    "easy": {
+      "total": 1,
+      "answered": 1,
+      "errors": 0
+    },
+    "medium": {
+      "total": 1,
+      "answered": 1,
+      "errors": 0
+    }
+  },
+  "needs_review": []
+}

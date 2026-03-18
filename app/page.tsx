@@ -152,7 +152,6 @@ export default function Home() {
       <footer className="border-t border-zinc-800 py-10 px-6">
         <div className="max-w-4xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4 text-zinc-500 text-sm">
           <div className="flex items-center gap-2 font-bold text-white">
-            <span className="text-red-500 text-xl">🔥</span> UIC SPARKY
           </div>
           <div className="text-center">Powered by real grade data · uicratings@gmail.com</div>
           <div className="text-xs">Not affiliated with UIC or RateMyProfessors</div>

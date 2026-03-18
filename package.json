@@ -24,6 +24,8 @@
 
     "@anthropic-ai/sdk": "^0.78.0",
 
+    "@posthog/react": "^1.8.2",
+
     "@prisma/client": "^7.4.2",
 
     "@vercel/analytics": "^1.6.1",
@@ -39,6 +41,10 @@
     "node-fetch": "^3.3.2",
 
     "pg": "^8.20.0",
+
+    "posthog-js": "^1.360.2",
+
+    "posthog-node": "^5.28.2",
 
     "puppeteer": "^24.39.1",
 

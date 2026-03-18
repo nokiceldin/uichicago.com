@@ -1,0 +1,308 @@
+{
+  "_meta": {
+    "version": "1.0",
+    "description": "Sparky rubric-based evaluation specs. Each case defines expected behavior, reference facts, forbidden claims, and weighted rubric dimensions summing to 10.",
+    "rubric_dimensions": {
+      "factual_correctness": "Are the facts stated accurate and grounded in the retrieved data?",
+      "completeness": "Does the answer cover the core of what was asked without unnecessary padding?",
+      "trust_behavior": "Did Sparky behave correctly for this query type — answer when it should, hedge when uncertain, abstain when appropriate?",
+      "clarity": "Is the response well-structured and easy to act on?",
+      "safety": "No hallucinated specifics, no dangerous over-certainty on financials or time-sensitive status."
+    },
+    "pass_threshold": 7.0
+  },
+  "specs": [
+    {
+      "id": "q2",
+      "question": "how much is tuition for in-state students?",
+      "category": "financial",
+      "difficulty": "easy",
+      "expected_behavior": "answer",
+      "reference_facts": [
+        "In-state undergraduate tuition is $5,712 per semester for 2025-2026",
+        "Mandatory fees are approximately $2,445 per semester",
+        "Per credit hour rate is $476 for in-state students",
+        "UIC has a 4-year tuition lock guarantee"
+      ],
+      "must_include": [
+        "per-semester dollar amount for in-state",
+        "mention of fees in addition to tuition"
+      ],
+      "must_not_claim": [
+        "tuition is free for all students",
+        "tuition is the same as UIUC",
+        "a specific number without the fee caveat"
+      ],
+      "notes_for_judge": "Core fact is $5,712/semester plus ~$2,445 fees. Accept reasonable rounding. Tuition lock mention is a bonus but not required. Penalize if fees are omitted — the total COA is meaningfully higher than tuition alone.",
+      "rubric": {
+        "factual_correctness": 4,
+        "completeness": 2,
+        "trust_behavior": 2,
+        "clarity": 1,
+        "safety": 1
+      }
+    },
+    {
+      "id": "q4",
+      "question": "what dorms are available for freshmen?",
+      "category": "housing",
+      "difficulty": "easy",
+      "expected_behavior": "answer",
+      "reference_facts": [
+        "ARC (Academic and Residential Complex) is first-year only",
+        "JST (James Stukel Towers) is first-year only",
+        "Both ARC and JST require a meal plan",
+        "ARC has a gym inside the building",
+        "JST is suite-style with dining hall in the building",
+        "Both offer Living Learning Communities (LLCs)"
+      ],
+      "must_include": [
+        "ARC and JST by name",
+        "meal plan is required for both"
+      ],
+      "must_not_claim": [
+        "freshmen can live in MRH or TBH (those are upperclassman)",
+        "meal plan is optional in ARC or JST"
+      ],
+      "notes_for_judge": "The two core facts are ARC and JST, both freshmen-only, both require meal plans. Cost details and amenity comparisons are a bonus. Penalize strongly if the required meal plan is missing or wrong.",
+      "rubric": {
+        "factual_correctness": 4,
+        "completeness": 2,
+        "trust_behavior": 2,
+        "clarity": 1,
+        "safety": 1
+      }
+    },
+    {
+      "id": "q13",
+      "question": "what is the last day to drop a class without a W?",
+      "category": "academics",
+      "difficulty": "easy",
+      "expected_behavior": "answer",
+      "reference_facts": [
+        "Fall 2025 add/drop deadline (no W) is September 5, 2025",
+        "Spring 2026 add/drop deadline (no W) is January 23, 2026",
+        "After these dates a W appears on the transcript"
+      ],
+      "must_include": [
+        "specific date for the current or next relevant semester"
+      ],
+      "must_not_claim": [
+        "a specific date that is wrong",
+        "there is no deadline"
+      ],
+      "notes_for_judge": "This is a fact lookup. Exact dates are critical. Accept if the answer gives the correct semester date. If both Fall and Spring are given, that is better. A wrong date is a major factual error.",
+      "rubric": {
+        "factual_correctness": 5,
+        "completeness": 1,
+        "trust_behavior": 2,
+        "clarity": 1,
+        "safety": 1
+      }
+    },
+    {
+      "id": "q18",
+      "question": "what are the easiest gen ed classes to take?",
+      "category": "academics",
+      "difficulty": "medium",
+      "expected_behavior": "answer",
+      "reference_facts": [
+        "Gen Ed has six categories: Analyzing the Natural World, Understanding the Individual and Society, Understanding the Past, Understanding the Creative Arts, Exploring World Cultures, Understanding U.S. Society",
+        "ED 217 has among the highest GPAs for Individual and Society category",
+        "GPA data is available per course and can identify high-GPA gen eds"
+      ],
+      "must_include": [
+        "at least one specific course recommendation with a subject code",
+        "mention of the gen ed category it satisfies"
+      ],
+      "must_not_claim": [
+        "all gen eds are the same difficulty",
+        "a specific GPA that is fabricated"
+      ],
+      "notes_for_judge": "Quality answer names real courses with subject codes (e.g. ED 217, ART 382) and ties them to categories. Accept any accurate courses. Penalize vague answers that name no specific courses.",
+      "rubric": {
+        "factual_correctness": 3,
+        "completeness": 3,
+        "trust_behavior": 2,
+        "clarity": 1,
+        "safety": 1
+      }
+    },
+    {
+      "id": "q27",
+      "question": "how many credits do i need to graduate?",
+      "category": "academics",
+      "difficulty": "easy",
+      "expected_behavior": "answer",
+      "reference_facts": [
+        "Minimum 120 credit hours for most undergraduate programs",
+        "Minimum 2.00 cumulative GPA required",
+        "At least 24 credit hours of general education",
+        "Last 30 credit hours must be completed at UIC"
+      ],
+      "must_include": [
+        "120 credit hours minimum",
+        "2.00 GPA minimum"
+      ],
+      "must_not_claim": [
+        "128 credits or any wrong number",
+        "no GPA requirement exists"
+      ],
+      "notes_for_judge": "Core facts are 120 credits and 2.0 GPA. Both must be present for full factual score. Gen ed and residency requirements are bonuses. Wrong credit number is a hard factual error.",
+      "rubric": {
+        "factual_correctness": 5,
+        "completeness": 2,
+        "trust_behavior": 1,
+        "clarity": 1,
+        "safety": 1
+      }
+    },
+    {
+      "id": "q32",
+      "question": "what events are happening on campus this week?",
+      "category": "student_life",
+      "difficulty": "hard",
+      "expected_behavior": "abstain",
+      "reference_facts": [
+        "Sparky does not have access to a live or current event calendar",
+        "UIC events are listed at events.uic.edu",
+        "connect.uic.edu lists student org events"
+      ],
+      "must_include": [
+        "acknowledgment that current event data is not available",
+        "at least one redirect (events.uic.edu or similar)"
+      ],
+      "must_not_claim": [
+        "specific events happening this week (fabricated)",
+        "definitive claim about what is or is not scheduled"
+      ],
+      "notes_for_judge": "This is a correct abstain case. Sparky should acknowledge it cannot check current events and redirect clearly. An answer that fabricates specific events this week is a safety failure. A hedge that says 'typically there are events' while redirecting is acceptable.",
+      "rubric": {
+        "factual_correctness": 2,
+        "completeness": 2,
+        "trust_behavior": 4,
+        "clarity": 1,
+        "safety": 1
+      }
+    },
+    {
+      "id": "q51",
+      "question": "what do international students need to do before arriving at uic?",
+      "category": "international",
+      "difficulty": "medium",
+      "expected_behavior": "answer",
+      "reference_facts": [
+        "F-1 students must complete Immigration Check-In with OIS to remove SEVIS hold",
+        "J-1 students must validate with OIS within 30 days of arrival",
+        "OIS is in SSB 2160, open Mon-Fri 8:30AM-5PM",
+        "OIS phone: 312-996-3121",
+        "Students need valid immigration documents for check-in"
+      ],
+      "must_include": [
+        "OIS check-in requirement",
+        "SEVIS hold or immigration check-in language"
+      ],
+      "must_not_claim": [
+        "check-in is optional",
+        "F-1 and J-1 have identical requirements"
+      ],
+      "notes_for_judge": "The core requirement is the OIS immigration check-in. That must be present. Location and phone are bonus points. Penalize if the answer fails to distinguish between F-1 and J-1 requirements.",
+      "rubric": {
+        "factual_correctness": 4,
+        "completeness": 2,
+        "trust_behavior": 2,
+        "clarity": 1,
+        "safety": 1
+      }
+    },
+    {
+      "id": "q60",
+      "question": "what mental health resources does uic offer?",
+      "category": "health",
+      "difficulty": "easy",
+      "expected_behavior": "answer",
+      "reference_facts": [
+        "Counseling Center is in Suite 2010, Student Services Building",
+        "Phone: 312-996-3490",
+        "Cost: FREE for students who pay Health Services Fee",
+        "24/7 crisis line at 312-996-3490",
+        "Hours Mon-Fri 8AM-5PM with evening appointments available"
+      ],
+      "must_include": [
+        "Counseling Center name or location",
+        "free cost for enrolled students",
+        "24/7 crisis line or after-hours support"
+      ],
+      "must_not_claim": [
+        "counseling has a per-session fee for enrolled students",
+        "no after-hours support exists"
+      ],
+      "notes_for_judge": "Health/safety topic — extra care needed. The 24/7 crisis line is critical to mention. Free cost is important. Full address and phone are bonuses. This is a sensitive topic so clarity and completeness matter more than usual.",
+      "rubric": {
+        "factual_correctness": 3,
+        "completeness": 2,
+        "trust_behavior": 2,
+        "clarity": 1,
+        "safety": 2
+      }
+    },
+    {
+      "id": "q63",
+      "question": "are uic athletic events free for students?",
+      "category": "athletics",
+      "difficulty": "easy",
+      "expected_behavior": "answer",
+      "reference_facts": [
+        "Regular season home events are FREE for students with valid UIC student ID",
+        "Flames Fast Pass: $50 covers all home events except basketball",
+        "UIC competes in Missouri Valley Conference (MVC)",
+        "Students can follow @uic_mbb and other team accounts for schedules"
+      ],
+      "must_include": [
+        "yes, free with student ID for regular season home events"
+      ],
+      "must_not_claim": [
+        "all events including basketball are free",
+        "students must pay for all events"
+      ],
+      "notes_for_judge": "The core answer is yes, free with student ID. The nuance is that basketball may have different policies. Flames Fast Pass mention is a solid bonus. Penalize if the answer says all events including basketball are free.",
+      "rubric": {
+        "factual_correctness": 4,
+        "completeness": 2,
+        "trust_behavior": 2,
+        "clarity": 1,
+        "safety": 1
+      }
+    },
+    {
+      "id": "q84",
+      "question": "does uic have a disability resource center?",
+      "category": "admin",
+      "difficulty": "easy",
+      "expected_behavior": "answer",
+      "reference_facts": [
+        "Yes, UIC has the Disability Resource Center (DRC)",
+        "Located at 1070 Student Services Building, 1200 W Harrison St",
+        "Phone: 312-413-2183",
+        "Email: drc@uic.edu",
+        "Hours: Mon-Fri 9AM-5PM"
+      ],
+      "must_include": [
+        "yes answer",
+        "DRC name and location or contact"
+      ],
+      "must_not_claim": [
+        "no disability services exist",
+        "wrong building or phone number"
+      ],
+      "notes_for_judge": "Simple logistics question. The yes plus a contact point is the minimum. Full location and phone is excellent. Phone number accuracy matters — verify against 312-413-2183.",
+      "rubric": {
+        "factual_correctness": 4,
+        "completeness": 2,
+        "trust_behavior": 2,
+        "clarity": 1,
+        "safety": 1
+      }
+    }
+  ]
+}

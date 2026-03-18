@@ -1,0 +1,54 @@
+{
+  "_meta": {
+    "generated_at": "2026-03-18T02:08:39.961Z",
+    "total_queries": 2,
+    "elapsed_sec": 9.1,
+    "endpoint": "http://localhost:3000/api/chat"
+  },
+  "results": [
+    {
+      "id": "q4",
+      "question": "what dorms are available for freshmen?",
+      "category": "student_life",
+      "difficulty": "easy",
+      "type": "factual",
+      "response": "**Three residence halls** are available for first-year students at UIC:\n\n**Academic and Residential Complex (ARC)** - First-year students only. This is your most modern option with a gym inside the building and the strongest academics-housing integration. Traditional private rooms cost **$7,292**, traditional shared **$6,342**, semi-suite private **$9,005**, and semi-suite shared **$7,531**. Best choice if you want community and convenience.\n\n**James Stukel Towers (JST)** - Also for first-year students. You'll get suite-style living with the dining hall literally in the building, plus the most Living Learning Community (LLC) options of any dorm. Great Chicago views from this high-rise. Suite private rooms cost **$6,871** and suite shared **$6,181**.\n\nAll first-year residence halls **require a meal plan**. Both ARC and JST are designed specifically for the freshman experience and building community among new students.",
+      "error": null,
+      "latency_ms": 9101,
+      "ttfb_ms": 0,
+      "server_abstained": false,
+      "abstain_reason": null,
+      "scores": {
+        "answered": true,
+        "abstained": false,
+        "abstain_correct": null,
+        "hallucination_flags": [
+          "contains_dollar_amount"
+        ],
+        "response_length": 930,
+        "notes": []
+      }
+    },
+    {
+      "id": "q27",
+      "question": "how many credits do i need to graduate?",
+      "category": "academics",
+      "difficulty": "medium",
+      "type": "factual",
+      "response": "You need **120 credit hours** to graduate from most undergraduate programs at UIC, though some majors require more.\n\nYou'll also need to maintain a **2.00 cumulative GPA** in all your UIC coursework, in your major, and in your combined transfer + UIC work. Plus you have to complete your last **30 credit hours** at UIC (the residency requirement).\n\nMost students also need **24 semester hours** of General Education requirements across 6 categories, plus writing proficiency through **ENGL 160** and **ENGL 161**.",
+      "error": null,
+      "latency_ms": 8972,
+      "ttfb_ms": 0,
+      "server_abstained": false,
+      "abstain_reason": null,
+      "scores": {
+        "answered": true,
+        "abstained": false,
+        "abstain_correct": null,
+        "hallucination_flags": [],
+        "response_length": 514,
+        "notes": []
+      }
+    }
+  ]
+}

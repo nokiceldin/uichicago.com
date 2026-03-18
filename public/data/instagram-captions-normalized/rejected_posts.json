@@ -1,0 +1,51 @@
+{
+  "_meta": {
+    "generated_at": "2026-03-17T20:22:24.471Z",
+    "total_rejected": 2,
+    "pipeline_stage": "normalized"
+  },
+  "rejected_posts": [
+    {
+      "raw": {
+        "source": "instagram",
+        "account": "uicwritingcenter",
+        "account_name": "UIC Writing Center",
+        "category": "verified",
+        "confirmed": true,
+        "post_url": "https://www.instagram.com/p/CzFaynyN_FM/",
+        "caption": "&quot;🎃👻&quot;.",
+        "caption_raw": "23 likes, 0 comments - uicwritingcenter October 31, 2023: &quot;🎃👻&quot;. ",
+        "published_at": null
+      },
+      "caption_clean": "\"🎃👻\".",
+      "rejection_reason": "too_short",
+      "quality_flags": [
+        "too_short",
+        "low_context"
+      ],
+      "source_file": "uicwritingcenter_captions_good.json",
+      "normalized_at": "2026-03-17T20:22:24.471Z"
+    },
+    {
+      "raw": {
+        "source": "instagram",
+        "account": "uicwritingcenter",
+        "account_name": "UIC Writing Center",
+        "category": "verified",
+        "confirmed": true,
+        "post_url": "https://www.instagram.com/p/CrjDiXEurB6/",
+        "caption": "&quot;📝📝&quot;.",
+        "caption_raw": "11 likes, 0 comments - uicwritingcenter April 27, 2023: &quot;📝📝&quot;. ",
+        "published_at": null
+      },
+      "caption_clean": "\"📝📝\".",
+      "rejection_reason": "too_short",
+      "quality_flags": [
+        "too_short",
+        "low_context"
+      ],
+      "source_file": "uicwritingcenter_captions_good.json",
+      "normalized_at": "2026-03-17T20:22:24.471Z"
+    }
+  ]
+}

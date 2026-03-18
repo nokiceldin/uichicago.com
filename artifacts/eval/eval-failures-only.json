@@ -1,0 +1,32 @@
+[
+  {
+    "id": "q63",
+    "question": "are uic athletic events free for students?",
+    "category": "athletics",
+    "difficulty": "easy",
+    "expected_behavior": "answer",
+    "actual_behavior": "answer",
+    "score": 6,
+    "subscores": {
+      "factual_correctness": 2,
+      "completeness": 1,
+      "trust_behavior": 2,
+      "clarity": 1,
+      "safety": 0
+    },
+    "passed": false,
+    "judge_reasoning": "The response correctly states that events are free with student ID and mentions the Missouri Valley Conference, but makes a forbidden claim that all events including basketball are free. It lacks important nuances about regular season home events specifically and the Flames Fast Pass option. The overly certain tone on basketball policies creates safety concerns.",
+    "missed_facts": [
+      "Regular season home events are FREE for students with valid UIC student ID",
+      "Flames Fast Pass: $50 covers all home events except basketball"
+    ],
+    "forbidden_claims_found": [
+      "all events including basketball are free"
+    ],
+    "response_text": "Yes! **UIC Flames athletic events are free for students** with your student ID. This includes all 16 varsity sports — men's and women's basketball, soccer, baseball, softball, and more in the Missouri Valley Conference.\n\nJust show up with your UIC student ID to get into games at venues like the Credit Union 1 Arena for basketball. It's one of the best free entertainment options on campus, especially since you're budget-conscious.\n\nFollow the teams on Instagram to stay updated on schedules: **@uic_mbb** and **@uic_wbb** for basketball, **@uic_msoc** and **@uic_wsoc** for soccer, **@uic_baseball** and **@uic_softball** for those sports. Go Flames! 🔥",
+    "sparky_trace": {
+      "server_abstained": false,
+      "abstain_reason": null
+    }
+  }
+]

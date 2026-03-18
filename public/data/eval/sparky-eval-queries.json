@@ -1,0 +1,704 @@
+{
+  "queries": [
+    {
+      "id": "q1",
+      "question": "when is the deadline to apply for fall 2025?",
+      "category": "admissions",
+      "difficulty": "easy",
+      "type": "factual"
+    },
+    {
+      "id": "q2",
+      "question": "how much is tuition for in-state students?",
+      "category": "financial",
+      "difficulty": "easy",
+      "type": "factual"
+    },
+    {
+      "id": "q3",
+      "question": "does uic have a computer science major?",
+      "category": "academics",
+      "difficulty": "easy",
+      "type": "factual"
+    },
+    {
+      "id": "q4",
+      "question": "what dorms are available for freshmen?",
+      "category": "student_life",
+      "difficulty": "easy",
+      "type": "factual"
+    },
+    {
+      "id": "q5",
+      "question": "how do i contact the admissions office?",
+      "category": "admin",
+      "difficulty": "easy",
+      "type": "factual"
+    },
+    {
+      "id": "q6",
+      "question": "what GPA do i need to get into uic?",
+      "category": "admissions",
+      "difficulty": "easy",
+      "type": "factual"
+    },
+    {
+      "id": "q7",
+      "question": "is there a meal plan requirement for freshmen?",
+      "category": "student_life",
+      "difficulty": "easy",
+      "type": "factual"
+    },
+    {
+      "id": "q8",
+      "question": "what is the aspire grant?",
+      "category": "financial",
+      "difficulty": "easy",
+      "type": "factual"
+    },
+    {
+      "id": "q9",
+      "question": "where is the registrar office?",
+      "category": "admin",
+      "difficulty": "easy",
+      "type": "factual"
+    },
+    {
+      "id": "q10",
+      "question": "does uic have a mens basketball team?",
+      "category": "athletics",
+      "difficulty": "easy",
+      "type": "factual"
+    },
+    {
+      "id": "q11",
+      "question": "what bus do i take to get to uic from the loop?",
+      "category": "admin",
+      "difficulty": "easy",
+      "type": "factual"
+    },
+    {
+      "id": "q12",
+      "question": "how do i apply for financial aid at uic?",
+      "category": "financial",
+      "difficulty": "easy",
+      "type": "factual"
+    },
+    {
+      "id": "q13",
+      "question": "what is the last day to drop a class without a W?",
+      "category": "academics",
+      "difficulty": "easy",
+      "type": "factual"
+    },
+    {
+      "id": "q14",
+      "question": "does uic have greek life?",
+      "category": "student_life",
+      "difficulty": "easy",
+      "type": "factual"
+    },
+    {
+      "id": "q15",
+      "question": "when does spring semester start?",
+      "category": "academics",
+      "difficulty": "easy",
+      "type": "factual"
+    },
+    {
+      "id": "q16",
+      "question": "what scholarships are available for incoming freshmen?",
+      "category": "financial",
+      "difficulty": "medium",
+      "type": "factual"
+    },
+    {
+      "id": "q17",
+      "question": "how do i switch my major at uic?",
+      "category": "academics",
+      "difficulty": "medium",
+      "type": "factual"
+    },
+    {
+      "id": "q18",
+      "question": "what are the easiest gen ed classes to take?",
+      "category": "academics",
+      "difficulty": "medium",
+      "type": "factual"
+    },
+    {
+      "id": "q19",
+      "question": "can i transfer to uic from community college?",
+      "category": "admissions",
+      "difficulty": "medium",
+      "type": "factual"
+    },
+    {
+      "id": "q20",
+      "question": "whats the difference between arc and jst dorms?",
+      "category": "student_life",
+      "difficulty": "medium",
+      "type": "factual"
+    },
+    {
+      "id": "q21",
+      "question": "how does the tuition lock work at uic?",
+      "category": "financial",
+      "difficulty": "medium",
+      "type": "factual"
+    },
+    {
+      "id": "q22",
+      "question": "what do i need to do after i get accepted to uic?",
+      "category": "admissions",
+      "difficulty": "medium",
+      "type": "multi_intent"
+    },
+    {
+      "id": "q23",
+      "question": "how do i get involved on campus as a freshman?",
+      "category": "student_life",
+      "difficulty": "medium",
+      "type": "multi_intent"
+    },
+    {
+      "id": "q24",
+      "question": "what are my options if i cant afford the tuition bill?",
+      "category": "financial",
+      "difficulty": "medium",
+      "type": "multi_intent"
+    },
+    {
+      "id": "q25",
+      "question": "is uic good for pre-med students?",
+      "category": "academics",
+      "difficulty": "medium",
+      "type": "ambiguous"
+    },
+    {
+      "id": "q26",
+      "question": "what happens if i miss registration?",
+      "category": "academics",
+      "difficulty": "medium",
+      "type": "factual"
+    },
+    {
+      "id": "q27",
+      "question": "how many credits do i need to graduate?",
+      "category": "academics",
+      "difficulty": "medium",
+      "type": "factual"
+    },
+    {
+      "id": "q28",
+      "question": "does uic offer any merit scholarships for out of state students?",
+      "category": "financial",
+      "difficulty": "medium",
+      "type": "factual"
+    },
+    {
+      "id": "q29",
+      "question": "what sports does uic compete in?",
+      "category": "athletics",
+      "difficulty": "easy",
+      "type": "factual"
+    },
+    {
+      "id": "q30",
+      "question": "how do i get a CTA u-pass as a uic student?",
+      "category": "admin",
+      "difficulty": "medium",
+      "type": "factual"
+    },
+    {
+      "id": "q31",
+      "question": "is the application still open for spring admission?",
+      "category": "admissions",
+      "difficulty": "hard",
+      "type": "time_sensitive"
+    },
+    {
+      "id": "q32",
+      "question": "what events are happening on campus this week?",
+      "category": "student_life",
+      "difficulty": "hard",
+      "type": "time_sensitive"
+    },
+    {
+      "id": "q33",
+      "question": "is the financial aid deadline still open?",
+      "category": "financial",
+      "difficulty": "hard",
+      "type": "time_sensitive"
+    },
+    {
+      "id": "q34",
+      "question": "what are the deadlines i need to know about right now?",
+      "category": "academics",
+      "difficulty": "hard",
+      "type": "time_sensitive"
+    },
+    {
+      "id": "q35",
+      "question": "is there anything going on at uic today?",
+      "category": "student_life",
+      "difficulty": "hard",
+      "type": "time_sensitive"
+    },
+    {
+      "id": "q36",
+      "question": "did uic flames win last night?",
+      "category": "athletics",
+      "difficulty": "hard",
+      "type": "time_sensitive"
+    },
+    {
+      "id": "q37",
+      "question": "when is the next home basketball game?",
+      "category": "athletics",
+      "difficulty": "hard",
+      "type": "time_sensitive"
+    },
+    {
+      "id": "q38",
+      "question": "is housing still available for next semester?",
+      "category": "student_life",
+      "difficulty": "hard",
+      "type": "time_sensitive"
+    },
+    {
+      "id": "q39",
+      "question": "has the chancellor made any announcements recently?",
+      "category": "admin",
+      "difficulty": "hard",
+      "type": "time_sensitive"
+    },
+    {
+      "id": "q40",
+      "question": "whats the fafsa deadline this year?",
+      "category": "financial",
+      "difficulty": "hard",
+      "type": "time_sensitive"
+    },
+    {
+      "id": "q41",
+      "question": "deadline uic",
+      "category": "admissions",
+      "difficulty": "hard",
+      "type": "edge_case"
+    },
+    {
+      "id": "q42",
+      "question": "this event?",
+      "category": "student_life",
+      "difficulty": "hard",
+      "type": "edge_case"
+    },
+    {
+      "id": "q43",
+      "question": "uic",
+      "category": "admin",
+      "difficulty": "hard",
+      "type": "edge_case"
+    },
+    {
+      "id": "q44",
+      "question": "how much",
+      "category": "financial",
+      "difficulty": "hard",
+      "type": "edge_case"
+    },
+    {
+      "id": "q45",
+      "question": "i need help",
+      "category": "admin",
+      "difficulty": "hard",
+      "type": "edge_case"
+    },
+    {
+      "id": "q46",
+      "question": "does uic have the same tuition as uiuc?",
+      "category": "financial",
+      "difficulty": "medium",
+      "type": "ambiguous"
+    },
+    {
+      "id": "q47",
+      "question": "my professor hasnt posted grades yet what do i do",
+      "category": "academics",
+      "difficulty": "hard",
+      "type": "edge_case"
+    },
+    {
+      "id": "q48",
+      "question": "i think i applied to the wrong program can i change it",
+      "category": "admissions",
+      "difficulty": "hard",
+      "type": "edge_case"
+    },
+    {
+      "id": "q49",
+      "question": "the website says one thing and you said another",
+      "category": "admin",
+      "difficulty": "hard",
+      "type": "edge_case"
+    },
+    {
+      "id": "q50",
+      "question": "can i live off campus as a freshman?",
+      "category": "student_life",
+      "difficulty": "medium",
+      "type": "factual"
+    },
+    {
+      "id": "q51",
+      "question": "what do international students need to do before arriving at uic?",
+      "category": "admissions",
+      "difficulty": "medium",
+      "type": "multi_intent"
+    },
+    {
+      "id": "q52",
+      "question": "im an f1 student can i work on campus?",
+      "category": "admissions",
+      "difficulty": "medium",
+      "type": "factual"
+    },
+    {
+      "id": "q53",
+      "question": "how do i renew my i-20?",
+      "category": "admissions",
+      "difficulty": "medium",
+      "type": "factual"
+    },
+    {
+      "id": "q54",
+      "question": "what is opt and when should i apply?",
+      "category": "admissions",
+      "difficulty": "medium",
+      "type": "factual"
+    },
+    {
+      "id": "q55",
+      "question": "can international students apply for financial aid at uic?",
+      "category": "financial",
+      "difficulty": "medium",
+      "type": "factual"
+    },
+    {
+      "id": "q56",
+      "question": "does uic accept duolingo for english proficiency?",
+      "category": "admissions",
+      "difficulty": "medium",
+      "type": "factual"
+    },
+    {
+      "id": "q57",
+      "question": "what is the cost of living in chicago for a student?",
+      "category": "financial",
+      "difficulty": "hard",
+      "type": "ambiguous"
+    },
+    {
+      "id": "q58",
+      "question": "how do i get from o'hare airport to uic?",
+      "category": "admin",
+      "difficulty": "medium",
+      "type": "factual"
+    },
+    {
+      "id": "q59",
+      "question": "does uic have support for first generation college students?",
+      "category": "student_life",
+      "difficulty": "medium",
+      "type": "factual"
+    },
+    {
+      "id": "q60",
+      "question": "what mental health resources does uic offer?",
+      "category": "admin",
+      "difficulty": "easy",
+      "type": "factual"
+    },
+    {
+      "id": "q61",
+      "question": "i want to play college soccer am i too late to get recruited?",
+      "category": "athletics",
+      "difficulty": "hard",
+      "type": "ambiguous"
+    },
+    {
+      "id": "q62",
+      "question": "how do i walk on to the uic basketball team?",
+      "category": "athletics",
+      "difficulty": "hard",
+      "type": "factual"
+    },
+    {
+      "id": "q63",
+      "question": "are uic athletic events free for students?",
+      "category": "athletics",
+      "difficulty": "easy",
+      "type": "factual"
+    },
+    {
+      "id": "q64",
+      "question": "what conference does uic play in?",
+      "category": "athletics",
+      "difficulty": "easy",
+      "type": "factual"
+    },
+    {
+      "id": "q65",
+      "question": "who is the coach of the uic womens volleyball team?",
+      "category": "athletics",
+      "difficulty": "medium",
+      "type": "factual"
+    },
+    {
+      "id": "q66",
+      "question": "how do i register for classes for the first time?",
+      "category": "academics",
+      "difficulty": "medium",
+      "type": "factual"
+    },
+    {
+      "id": "q67",
+      "question": "what happens if i fail a class at uic?",
+      "category": "academics",
+      "difficulty": "medium",
+      "type": "factual"
+    },
+    {
+      "id": "q68",
+      "question": "can i take classes at another university and transfer the credits?",
+      "category": "academics",
+      "difficulty": "medium",
+      "type": "factual"
+    },
+    {
+      "id": "q69",
+      "question": "whats the difference between a major and a concentration?",
+      "category": "academics",
+      "difficulty": "medium",
+      "type": "ambiguous"
+    },
+    {
+      "id": "q70",
+      "question": "does uic have a law school?",
+      "category": "academics",
+      "difficulty": "easy",
+      "type": "factual"
+    },
+    {
+      "id": "q71",
+      "question": "is uic a good school for nursing?",
+      "category": "academics",
+      "difficulty": "medium",
+      "type": "ambiguous"
+    },
+    {
+      "id": "q72",
+      "question": "what research opportunities are available for undergrads?",
+      "category": "academics",
+      "difficulty": "hard",
+      "type": "ambiguous"
+    },
+    {
+      "id": "q73",
+      "question": "how do i appeal a grade at uic?",
+      "category": "academics",
+      "difficulty": "hard",
+      "type": "factual"
+    },
+    {
+      "id": "q74",
+      "question": "can i take more than 18 credit hours in a semester?",
+      "category": "academics",
+      "difficulty": "medium",
+      "type": "factual"
+    },
+    {
+      "id": "q75",
+      "question": "what is the honors college at uic?",
+      "category": "academics",
+      "difficulty": "easy",
+      "type": "factual"
+    },
+    {
+      "id": "q76",
+      "question": "how do i apply for on campus housing?",
+      "category": "student_life",
+      "difficulty": "easy",
+      "type": "factual"
+    },
+    {
+      "id": "q77",
+      "question": "whats the cheapest dorm at uic?",
+      "category": "student_life",
+      "difficulty": "medium",
+      "type": "factual"
+    },
+    {
+      "id": "q78",
+      "question": "are there quiet dorms at uic?",
+      "category": "student_life",
+      "difficulty": "medium",
+      "type": "factual"
+    },
+    {
+      "id": "q79",
+      "question": "how do i find clubs to join at uic?",
+      "category": "student_life",
+      "difficulty": "easy",
+      "type": "factual"
+    },
+    {
+      "id": "q80",
+      "question": "does uic have a student newspaper?",
+      "category": "student_life",
+      "difficulty": "easy",
+      "type": "factual"
+    },
+    {
+      "id": "q81",
+      "question": "what is spark fest?",
+      "category": "student_life",
+      "difficulty": "easy",
+      "type": "factual"
+    },
+    {
+      "id": "q82",
+      "question": "how do i report a safety concern on campus?",
+      "category": "admin",
+      "difficulty": "easy",
+      "type": "factual"
+    },
+    {
+      "id": "q83",
+      "question": "where can i print documents on campus?",
+      "category": "admin",
+      "difficulty": "easy",
+      "type": "factual"
+    },
+    {
+      "id": "q84",
+      "question": "does uic have a disability resource center?",
+      "category": "admin",
+      "difficulty": "easy",
+      "type": "factual"
+    },
+    {
+      "id": "q85",
+      "question": "how do i get a student id?",
+      "category": "admin",
+      "difficulty": "easy",
+      "type": "factual"
+    },
+    {
+      "id": "q86",
+      "question": "what are the library hours?",
+      "category": "admin",
+      "difficulty": "easy",
+      "type": "factual"
+    },
+    {
+      "id": "q87",
+      "question": "i got waitlisted what are my chances?",
+      "category": "admissions",
+      "difficulty": "hard",
+      "type": "ambiguous"
+    },
+    {
+      "id": "q88",
+      "question": "does uic require sat scores?",
+      "category": "admissions",
+      "difficulty": "easy",
+      "type": "factual"
+    },
+    {
+      "id": "q89",
+      "question": "what is the acceptance rate at uic?",
+      "category": "admissions",
+      "difficulty": "easy",
+      "type": "factual"
+    },
+    {
+      "id": "q90",
+      "question": "can i defer my enrollment?",
+      "category": "admissions",
+      "difficulty": "medium",
+      "type": "factual"
+    },
+    {
+      "id": "q91",
+      "question": "my parents want to know how much ill actually owe after aid",
+      "category": "financial",
+      "difficulty": "hard",
+      "type": "multi_intent"
+    },
+    {
+      "id": "q92",
+      "question": "is it cheaper to live on campus or off campus?",
+      "category": "financial",
+      "difficulty": "medium",
+      "type": "multi_intent"
+    },
+    {
+      "id": "q93",
+      "question": "what happens if i dont pay my tuition bill on time?",
+      "category": "financial",
+      "difficulty": "medium",
+      "type": "factual"
+    },
+    {
+      "id": "q94",
+      "question": "can i get a refund if i withdraw from uic?",
+      "category": "financial",
+      "difficulty": "hard",
+      "type": "factual"
+    },
+    {
+      "id": "q95",
+      "question": "does uic have work study programs?",
+      "category": "financial",
+      "difficulty": "medium",
+      "type": "factual"
+    },
+    {
+      "id": "q96",
+      "question": "i heard uic is free for some students is that true?",
+      "category": "financial",
+      "difficulty": "medium",
+      "type": "ambiguous"
+    },
+    {
+      "id": "q97",
+      "question": "what do uic students think about the food on campus?",
+      "category": "student_life",
+      "difficulty": "hard",
+      "type": "ambiguous"
+    },
+    {
+      "id": "q98",
+      "question": "is uic safe?",
+      "category": "admin",
+      "difficulty": "hard",
+      "type": "ambiguous"
+    },
+    {
+      "id": "q99",
+      "question": "should i go to uic or uiuc for computer science?",
+      "category": "academics",
+      "difficulty": "hard",
+      "type": "multi_intent"
+    },
+    {
+      "id": "q100",
+      "question": "what makes uic different from other schools in chicago?",
+      "category": "admissions",
+      "difficulty": "hard",
+      "type": "ambiguous"
+    }
+  ]
+}

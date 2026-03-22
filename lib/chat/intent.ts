@@ -132,7 +132,7 @@ export function detectCampusIntent(msg: string) {
     isAboutDining: /dining|eat|food|restaurant|cafe|cafeteria|chick.?fil|panda|starbucks|subway|sushi|halal|dunkin|market|where to eat|lunch|breakfast|dinner/i.test(m),
     isAboutOffCampus: /off.?campus|apartment|neighborhood|pilsen|west loop|university village|little italy|near campus/i.test(m),
     isAboutLLC: /llc|living learning|affinity|spectrum|honors.*housing|innovate|ventures|sisters|la casa|bayt|lead asia|pbma|dusable/i.test(m),
-    isAboutStudentLife: /student org|club|join|greek|fraternity|sorority|frat|sorority|greek life|involvement|quad day|involvement fair|spark.*concert|homecoming|wow|weeks of welcome|student activities/i.test(m),
+    isAboutStudentLife: /student org|club|join|greek|fraternity|sorority|frat|sorority|greek life|involvement|quad day|involvement fair|spark.?fest|spark.*concert|homecoming|wow|weeks of welcome|student activities|student newspaper|student paper|student media|student publication|the flame|wuic|student radio/i.test(m),
     isAboutAthletics: /flames|athletics|basketball|baseball|soccer|volleyball|softball|swimming|tennis|golf|track|cross country|credit union.*arena|uic pavilion|sports|game|ticket|student section|flame force|mvc|horizon league|coach|roster/i.test(m),
     isAboutCampusMap: /building|where is|how to get to|directions|library|daley|lhs|student center|ssb|parking|shuttle|night ride|cta|blue line|pink line|bus|train|transit|campus map/i.test(m),
     isAboutHealth: /health service|counseling|therapy|mental health|doctor|sick|nurse|campus care|campuscare|pharmacy|dental|eye|urgent care|disability|drc|accommodation/i.test(m),

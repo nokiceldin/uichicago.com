@@ -19,7 +19,13 @@
         "Social sciences",
         "Engineering",
         "Special Collections & University Archives"
-      ]
+      ],
+      "hours": {
+        "regular_semester": "Mon-Thu 8AM-midnight, Fri 8AM-10PM, Sat 10AM-8PM, Sun 10AM-midnight",
+        "finals_week": "24/7 (extended hours during finals)",
+        "breaks": "Mon-Fri 8AM-5PM (reduced hours during breaks)",
+        "note": "Hours vary \u2014 check library.uic.edu/hours for current schedule"
+      }
     },
     {
       "name": "Library of the Health Sciences-Chicago",
@@ -38,7 +44,11 @@
         "Dentistry",
         "Pharmacology",
         "Health sciences history"
-      ]
+      ],
+      "hours": {
+        "regular_semester": "Mon-Thu 7:30AM-10PM, Fri 7:30AM-7PM, Sat-Sun 11AM-7PM",
+        "note": "Check library.uic.edu/libraries/lhs-chicago for current schedule"
+      }
     }
   ],
   "borrowing": {

@@ -1,242 +1,13 @@
 {
   "_meta": {
-    "generated_at": "2026-03-18T02:48:10.501Z",
-    "total_cases": 10,
-    "elapsed_sec": 53.8,
+    "generated_at": "2026-03-22T08:32:44.651Z",
+    "total_cases": 1,
+    "elapsed_sec": 10.5,
     "judge_model": "claude-sonnet-4-20250514",
     "pass_threshold": 7,
     "mode": "live"
   },
   "results": [
-    {
-      "id": "q2",
-      "question": "how much is tuition for in-state students?",
-      "category": "financial",
-      "difficulty": "easy",
-      "expected_behavior": "answer",
-      "actual_behavior": "answer",
-      "behavior_correct": true,
-      "score": 10,
-      "subscores": {
-        "factual_correctness": 4,
-        "completeness": 2,
-        "trust_behavior": 2,
-        "clarity": 1,
-        "safety": 1
-      },
-      "passed": true,
-      "judge_reasoning": "The response provides accurate core facts: $5,712 per semester tuition and $2,445 in fees, plus the correct per-credit rate of $476. It meets both must-include requirements and provides additional helpful information about financial aid. The response is clear, well-structured, and appropriately answers the direct question without forbidden claims.",
-      "missed_facts": [],
-      "forbidden_claims_found": [],
-      "response_text": "For in-state undergraduates, tuition is **$5,712 per semester** plus $2,445 in fees, which comes to $16,314 total per year. If you're taking classes part-time, it's $476 per credit hour.\n\nIf your family earns under $75k, check out the **Aspire Grant** — it covers 100% of tuition and fees for free. Just apply via FAFSA by March 15 at free.uic.edu.",
-      "response_length": 348,
-      "sparky_trace": {
-        "server_abstained": false,
-        "abstain_reason": null
-      },
-      "judge_error": null
-    },
-    {
-      "id": "q4",
-      "question": "what dorms are available for freshmen?",
-      "category": "housing",
-      "difficulty": "easy",
-      "expected_behavior": "answer",
-      "actual_behavior": "answer",
-      "behavior_correct": true,
-      "score": 8,
-      "subscores": {
-        "factual_correctness": 3,
-        "completeness": 2,
-        "trust_behavior": 2,
-        "clarity": 1,
-        "safety": 0
-      },
-      "passed": true,
-      "judge_reasoning": "The response correctly identifies ARC and JST as freshmen-only dorms and mentions the required meal plans. However, it includes specific dollar amounts for housing costs that aren't in the reference facts, which constitutes hallucinated financial information and creates safety concerns. The core required information is present and the response is well-structured.",
-      "missed_facts": [],
-      "forbidden_claims_found": [],
-      "response_text": "For freshmen at UIC, you have **two main residence hall options** that require meal plans:\n\n**Academic and Residential Complex (ARC)** is the premium choice — first-year students only, with a gym inside the building and the strongest academics-housing integration. You'll pay **$6,342 for traditional shared** or **$7,292 for traditional private** rooms. There are also semi-suite options at **$7,531 shared** or **$9,005 private**.\n\n**James Stukel Towers (JST)** offers suite-style living with **$6,181 for suite shared** or **$6,871 for suite private**. JST has the dining hall literally in the building, the most Living Learning Community (LLC) options, and great Chicago skyline views from the high-rise floors.\n\nBoth require meal plans since they're designed for first-year students. ARC is newer with better amenities, while JST gives you more LLC opportunities and convenient dining access.",
-      "response_length": 897,
-      "sparky_trace": {
-        "server_abstained": false,
-        "abstain_reason": null
-      },
-      "judge_error": null
-    },
-    {
-      "id": "q13",
-      "question": "what is the last day to drop a class without a W?",
-      "category": "academics",
-      "difficulty": "easy",
-      "expected_behavior": "answer",
-      "actual_behavior": "answer",
-      "behavior_correct": true,
-      "score": 10,
-      "subscores": {
-        "factual_correctness": 5,
-        "completeness": 1,
-        "trust_behavior": 2,
-        "clarity": 1,
-        "safety": 1
-      },
-      "passed": true,
-      "judge_reasoning": "The response provides exactly the correct dates for both Fall 2025 (September 5, 2025) and Spring 2026 (January 23, 2026) that match the reference facts. It appropriately answers the question as expected, includes the required specific dates, and provides helpful additional context about what happens after these deadlines. The response is clear, well-structured, and contains no factual errors or forbidden claims.",
-      "missed_facts": [],
-      "forbidden_claims_found": [],
-      "response_text": "For **Fall 2025**, the last day to drop a class without a W is **September 5, 2025**. For **Spring 2026**, it's **January 23, 2026**.\n\nAfter these dates, you'll need to contact your college office to make changes, and withdrawals will result in a W notation on your transcript.",
-      "response_length": 277,
-      "sparky_trace": {
-        "server_abstained": false,
-        "abstain_reason": null
-      },
-      "judge_error": null
-    },
-    {
-      "id": "q18",
-      "question": "what are the easiest gen ed classes to take?",
-      "category": "academics",
-      "difficulty": "medium",
-      "expected_behavior": "answer",
-      "actual_behavior": "answer",
-      "behavior_correct": true,
-      "score": 7,
-      "subscores": {
-        "factual_correctness": 1,
-        "completeness": 3,
-        "trust_behavior": 2,
-        "clarity": 1,
-        "safety": 0
-      },
-      "passed": true,
-      "judge_reasoning": "The response provides specific course recommendations with subject codes and ties them to gen ed categories as required. However, it contains fabricated specific GPA numbers (3.98, 3.94, 3.71, etc.) which are forbidden assertions and represent safety violations. While ED 217 is mentioned correctly for Individual and Society category, the specific GPAs appear to be hallucinated rather than from actual data.",
-      "missed_facts": [],
-      "forbidden_claims_found": [
-        "specific GPA numbers that appear fabricated (3.98, 3.94, 3.71, 3.65, 3.61)"
-      ],
-      "response_text": "**ED 450** (Pre-Student Teaching) tops the list with a **3.98 GPA** and \"Very Easy\" difficulty, though it's likely restricted to education majors. For open gen eds, **ART 382** (Thinking is Making) is your best bet with a **3.94 GPA** and 94% A-rate — it's practically GPA insurance.\n\n**ED 217** (STEM, Education, and Society) offers a solid **3.71 GPA** for the \"Understanding the Individual and Society\" requirement, while **ED 101** (Critical Literacies in a Digital World) sits at **3.65 GPA** in the same category. **HON 142** (Honors Core Creative Arts) averages **3.61 GPA** with 77% A-rate if you're in the Honors College.\n\nThe clear winner for most students: **ART 382** — easy A, creative arts requirement knocked out, and you'll actually enjoy making stuff.",
-      "response_length": 768,
-      "sparky_trace": {
-        "server_abstained": false,
-        "abstain_reason": null
-      },
-      "judge_error": null
-    },
-    {
-      "id": "q27",
-      "question": "how many credits do i need to graduate?",
-      "category": "academics",
-      "difficulty": "easy",
-      "expected_behavior": "answer",
-      "actual_behavior": "answer",
-      "behavior_correct": true,
-      "score": 10,
-      "subscores": {
-        "factual_correctness": 5,
-        "completeness": 2,
-        "trust_behavior": 1,
-        "clarity": 1,
-        "safety": 1
-      },
-      "passed": true,
-      "judge_reasoning": "The response correctly provides both core requirements: 120 credit hours minimum and 2.00 GPA requirement. It also includes helpful additional details about general education (24 hours) and residency requirements (last 30 hours at UIC). The answer is well-structured, appropriately answers the question as expected, and includes proper caveats about program variation.",
-      "missed_facts": [],
-      "forbidden_claims_found": [],
-      "response_text": "You need a minimum of **120 credit hours** to graduate from most undergraduate programs at UIC, though some programs require more.\n\nYou also need to maintain at least a **2.00 cumulative GPA** in all your UIC work, in your major, and in any combined transfer + UIC coursework. Plus you'll need to complete UIC's General Education requirements (at least 24 hours across 6 categories) and finish your last **30 credit hours** at UIC.\n\nFor the exact credit requirements in your specific major, check with your college's advising office since requirements can vary by program.",
-      "response_length": 572,
-      "sparky_trace": {
-        "server_abstained": false,
-        "abstain_reason": null
-      },
-      "judge_error": null
-    },
-    {
-      "id": "q32",
-      "question": "what events are happening on campus this week?",
-      "category": "student_life",
-      "difficulty": "hard",
-      "expected_behavior": "abstain",
-      "actual_behavior": "abstain",
-      "behavior_correct": true,
-      "score": 7,
-      "subscores": {
-        "factual_correctness": 1,
-        "completeness": 0,
-        "trust_behavior": 4,
-        "clarity": 1,
-        "safety": 1
-      },
-      "passed": true,
-      "judge_reasoning": "Sparky correctly abstains from providing specific event information it doesn't have access to. However, the response fails to include the required redirects to events.uic.edu or connect.uic.edu, instead providing only generic contact information. The trust behavior is excellent as it appropriately declines to fabricate information, and safety is maintained by not making forbidden claims.",
-      "missed_facts": [
-        "UIC events are listed at events.uic.edu",
-        "connect.uic.edu lists student org events"
-      ],
-      "forbidden_claims_found": [],
-      "response_text": "I'm not sure I have reliable information on that. You can reach UIC at 312-996-7000 or visit uic.edu — most offices also have live chat on their pages.",
-      "response_length": 151,
-      "sparky_trace": {
-        "server_abstained": true,
-        "abstain_reason": "time_sensitive_no_useful_evidence"
-      },
-      "judge_error": null
-    },
-    {
-      "id": "q51",
-      "question": "what do international students need to do before arriving at uic?",
-      "category": "international",
-      "difficulty": "medium",
-      "expected_behavior": "answer",
-      "actual_behavior": "answer",
-      "behavior_correct": true,
-      "score": 10,
-      "subscores": {
-        "factual_correctness": 4,
-        "completeness": 2,
-        "trust_behavior": 2,
-        "clarity": 1,
-        "safety": 1
-      },
-      "passed": true,
-      "judge_reasoning": "The response accurately covers all key facts: F-1 students need Immigration Check-In with OIS to remove SEVIS hold, J-1 students must validate within 30 days, and includes correct location, phone, and hours. It properly distinguishes between F-1 and J-1 requirements and includes all must-include items. The answer is well-structured, appropriately certain for factual information, and contains no forbidden claims.",
-      "missed_facts": [],
-      "forbidden_claims_found": [],
-      "response_text": "**F-1 students** need to complete **Immigration Check-In with OIS** (Office of International Services) when they arrive — this removes your SEVIS hold so you can register for classes.\n\n**J-1 students** must validate their status within **30 days** of arrival.\n\n**OIS is located in SSB 2160** and you can reach them at **(312) 996-3121** or **ois@uic.edu**. They're open **Mon-Fri 8:30AM-5PM**.\n\nThe immigration check-in is required before you can fully get started at UIC, so make it one of your first stops when you get to campus!",
-      "response_length": 531,
-      "sparky_trace": {
-        "server_abstained": false,
-        "abstain_reason": null
-      },
-      "judge_error": null
-    },
-    {
-      "id": "q60",
-      "question": "what mental health resources does uic offer?",
-      "category": "health",
-      "difficulty": "easy",
-      "expected_behavior": "answer",
-      "actual_behavior": "answer",
-      "behavior_correct": true,
-      "score": 10,
-      "subscores": {
-        "factual_correctness": 3,
-        "completeness": 2,
-        "trust_behavior": 2,
-        "clarity": 1,
-        "safety": 2
-      },
-      "passed": true,
-      "judge_reasoning": "The response provides highly accurate information matching all reference facts, including the Counseling Center name, location, phone number, hours, and free cost for students. All three core requirements are clearly addressed: Counseling Center identification, free cost for enrolled students, and 24/7 crisis line availability. The response appropriately answers rather than hedging or abstaining, and includes helpful additional context about student organizations.",
-      "missed_facts": [],
-      "forbidden_claims_found": [],
-      "response_text": "UIC offers comprehensive mental health support through the **Counseling Center** in **Suite 2010, Student Services Building** (1200 W Harrison St). They provide free counseling for all students who pay the Health Services Fee, regardless of insurance status. You can call **312-996-3490** to schedule appointments or walk in for initial consultations during business hours (Mon-Fri 8AM-5PM), with evening appointments also available.\n\nMost importantly, UIC has a **24/7 crisis line** at the same number (**312-996-3490**) — you can call anytime, day or night, for immediate crisis counseling support. This means help is always available when you need it most.\n\nBeyond professional counseling, UIC has **470+ student organizations** at connect.uic.edu where you can find community and peer support around shared interests, identities, or causes — often a crucial part of mental wellness on campus.",
-      "response_length": 896,
-      "sparky_trace": {
-        "server_abstained": false,
-        "abstain_reason": null
-      },
-      "judge_error": null
-    },
     {
       "id": "q63",
       "question": "are uic athletic events free for students?",
@@ -245,39 +16,6 @@
       "expected_behavior": "answer",
       "actual_behavior": "answer",
       "behavior_correct": true,
-      "score": 6,
-      "subscores": {
-        "factual_correctness": 2,
-        "completeness": 1,
-        "trust_behavior": 2,
-        "clarity": 1,
-        "safety": 0
-      },
-      "passed": false,
-      "judge_reasoning": "The response correctly states that events are free with student ID and mentions the Missouri Valley Conference, but makes a forbidden claim that all events including basketball are free. It lacks important nuances about regular season home events specifically and the Flames Fast Pass option. The overly certain tone on basketball policies creates safety concerns.",
-      "missed_facts": [
-        "Regular season home events are FREE for students with valid UIC student ID",
-        "Flames Fast Pass: $50 covers all home events except basketball"
-      ],
-      "forbidden_claims_found": [
-        "all events including basketball are free"
-      ],
-      "response_text": "Yes! **UIC Flames athletic events are free for students** with your student ID. This includes all 16 varsity sports — men's and women's basketball, soccer, baseball, softball, and more in the Missouri Valley Conference.\n\nJust show up with your UIC student ID to get into games at venues like the Credit Union 1 Arena for basketball. It's one of the best free entertainment options on campus, especially since you're budget-conscious.\n\nFollow the teams on Instagram to stay updated on schedules: **@uic_mbb** and **@uic_wbb** for basketball, **@uic_msoc** and **@uic_wsoc** for soccer, **@uic_baseball** and **@uic_softball** for those sports. Go Flames! 🔥",
-      "response_length": 656,
-      "sparky_trace": {
-        "server_abstained": false,
-        "abstain_reason": null
-      },
-      "judge_error": null
-    },
-    {
-      "id": "q84",
-      "question": "does uic have a disability resource center?",
-      "category": "admin",
-      "difficulty": "easy",
-      "expected_behavior": "answer",
-      "actual_behavior": "answer",
-      "behavior_correct": true,
       "score": 10,
       "subscores": {
         "factual_correctness": 4,
@@ -287,11 +25,11 @@
         "safety": 1
       },
       "passed": true,
-      "judge_reasoning": "The response provides a direct, accurate answer with all core facts correct: confirms UIC has a DRC, gives exact location (1070 SSB at 1200 W Harrison St), correct phone number (312-413-2183), email, and hours. The response goes beyond minimum requirements by including helpful procedural information about getting started with services. All factual details match the reference facts perfectly.",
+      "judge_reasoning": "The response correctly states that UIC students get free admission to regular season home events with valid student ID, meeting both core requirements. It accurately provides basketball student section details (Flame Force, Gate 3, sections 110-112) and the correct social media handle. The final sentence about 'separate student ticketing' is slightly confusing but doesn't contradict the free admission fact.",
       "missed_facts": [],
       "forbidden_claims_found": [],
-      "response_text": "Yes! UIC has a **Disability Resource Center (DRC)** located in **1070 SSB** (Student Services Building) at 1200 W Harrison St.\n\nYou can reach them at **312-413-2183** or **drc@uic.edu**. They're open Monday-Friday 9AM-5PM. To get started, you can begin the process online or call directly, then schedule an intake appointment through iAdvise. They may even provide provisional accommodations while your documentation is being gathered.",
-      "response_length": 435,
+      "response_text": "Yes! **UIC students get FREE admission** to all regular season home athletic events with a valid UIC student ID.\n\nFor basketball games, students use the **Flame Force student section** (Gate 3, Credit Union 1 Arena, sections 110-112) — follow **@uic_studentsection** for access details.\n\nThe only exception is that basketball has separate student ticketing through the student section system, but it's still free for students.",
+      "response_length": 426,
       "sparky_trace": {
         "server_abstained": false,
         "abstain_reason": null

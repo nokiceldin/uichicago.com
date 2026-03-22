@@ -1,20 +1,41 @@
 {
   "_meta": {
-    "generated_at": "2026-03-18T02:08:39.961Z",
-    "total_queries": 2,
-    "elapsed_sec": 9.1,
+    "generated_at": "2026-03-22T08:30:45.263Z",
+    "total_queries": 100,
+    "elapsed_sec": 327.7,
     "endpoint": "http://localhost:3000/api/chat"
   },
   "results": [
     {
-      "id": "q4",
-      "question": "what dorms are available for freshmen?",
-      "category": "student_life",
+      "id": "q1",
+      "question": "when is the deadline to apply for fall 2025?",
+      "category": "admissions",
       "difficulty": "easy",
       "type": "factual",
-      "response": "**Three residence halls** are available for first-year students at UIC:\n\n**Academic and Residential Complex (ARC)** - First-year students only. This is your most modern option with a gym inside the building and the strongest academics-housing integration. Traditional private rooms cost **$7,292**, traditional shared **$6,342**, semi-suite private **$9,005**, and semi-suite shared **$7,531**. Best choice if you want community and convenience.\n\n**James Stukel Towers (JST)** - Also for first-year students. You'll get suite-style living with the dining hall literally in the building, plus the most Living Learning Community (LLC) options of any dorm. Great Chicago views from this high-rise. Suite private rooms cost **$6,871** and suite shared **$6,181**.\n\nAll first-year residence halls **require a meal plan**. Both ARC and JST are designed specifically for the freshman experience and building community among new students.",
+      "response": "The priority deadline for Fall 2025 first-year applications is **November 3, 2025**, and the regular deadline is **February 2, 2026**.\n\nFor transfer students, the Fall deadline is **April 1, 2026**.",
       "error": null,
-      "latency_ms": 9101,
+      "latency_ms": 5506,
+      "ttfb_ms": 1,
+      "server_abstained": false,
+      "abstain_reason": null,
+      "scores": {
+        "answered": true,
+        "abstained": false,
+        "abstain_correct": null,
+        "hallucination_flags": [],
+        "response_length": 198,
+        "notes": []
+      }
+    },
+    {
+      "id": "q2",
+      "question": "how much is tuition for in-state students?",
+      "category": "financial",
+      "difficulty": "easy",
+      "type": "factual",
+      "response": "In-state undergraduate tuition is **$5,712 per semester** plus **$2,445 in fees**, which works out to **$476 per credit hour**. The total cost of attendance for in-state students living on-campus is approximately **$39,510** per year.\n\nIf you're from an Illinois family earning under $75k, check out the **Aspire Grant** at free.uic.edu — it covers 100% of tuition and fees. Verify current rates at bursar.uic.edu.",
+      "error": null,
+      "latency_ms": 6799,
       "ttfb_ms": 0,
       "server_abstained": false,
       "abstain_reason": null,
@@ -25,7 +46,539 @@
         "hallucination_flags": [
           "contains_dollar_amount"
         ],
-        "response_length": 930,
+        "response_length": 414,
+        "notes": []
+      }
+    },
+    {
+      "id": "q3",
+      "question": "does uic have a computer science major?",
+      "category": "academics",
+      "difficulty": "easy",
+      "type": "factual",
+      "response": "Yes! UIC has a **Computer Science major** through the College of Engineering. You can find academic advising at **123 SEO** or call **(312) 996-3463**.\n\nUIC offers both undergraduate and graduate CS courses — I can see advanced classes like **CS 529** (Visual Data Science) and **CS 506** (Intro to Quantum Computing) in the catalog, so there's definitely a full CS program.\n\nFor CS admissions, UIC is **test-optional** (no ACT/SAT required) and uses the Common Application. The priority deadline for Fall 2025 is **November 3, 2025**.",
+      "error": null,
+      "latency_ms": 7839,
+      "ttfb_ms": 0,
+      "server_abstained": false,
+      "abstain_reason": null,
+      "scores": {
+        "answered": true,
+        "abstained": false,
+        "abstain_correct": null,
+        "hallucination_flags": [
+          "overconfident_language"
+        ],
+        "response_length": 535,
+        "notes": []
+      }
+    },
+    {
+      "id": "q4",
+      "question": "what dorms are available for freshmen?",
+      "category": "student_life",
+      "difficulty": "easy",
+      "type": "factual",
+      "response": "**Academic and Residential Complex (ARC)** and **James Stukel Towers (JST)** are the two dorms available for freshmen at UIC.\n\n**ARC** is first-year students only with traditional private rooms (**$7,292**), traditional shared (**$6,342**), semi-suite private (**$9,005**), and semi-suite shared (**$7,531**). It's the most modern building with the best amenities, including a gym inside and strong academics-housing integration.\n\n**JST** is also for first-year students with suite-style living — suite private (**$6,871**) and suite shared (**$6,181**). It has the dining hall literally in the building, the most Living Learning Community (LLC) options, and great Chicago views from the high-rise.\n\nBoth require meal plans and are designed specifically for the freshman experience with built-in community and convenience.",
+      "error": null,
+      "latency_ms": 6736,
+      "ttfb_ms": 0,
+      "server_abstained": false,
+      "abstain_reason": null,
+      "scores": {
+        "answered": true,
+        "abstained": false,
+        "abstain_correct": null,
+        "hallucination_flags": [
+          "contains_dollar_amount"
+        ],
+        "response_length": 822,
+        "notes": []
+      }
+    },
+    {
+      "id": "q5",
+      "question": "how do i contact the admissions office?",
+      "category": "admin",
+      "difficulty": "easy",
+      "type": "factual",
+      "response": "The UIC Admissions Office is located in **Suite 1100, 1200 W Harrison St**. You can visit their website at **admissions.uic.edu** or stop by the visitors center at **1220 W Harrison St**.",
+      "error": null,
+      "latency_ms": 4706,
+      "ttfb_ms": 0,
+      "server_abstained": false,
+      "abstain_reason": null,
+      "scores": {
+        "answered": true,
+        "abstained": false,
+        "abstain_correct": null,
+        "hallucination_flags": [
+          "contains_suite_number"
+        ],
+        "response_length": 187,
+        "notes": []
+      }
+    },
+    {
+      "id": "q6",
+      "question": "what GPA do i need to get into uic?",
+      "category": "admissions",
+      "difficulty": "easy",
+      "type": "factual",
+      "response": "UIC doesn't publish a minimum GPA requirement, but here's what you need to know:\n\n**Typical admitted student stats:** The middle 50% of admitted freshmen usually have around a 3.4-3.8 high school GPA, though this varies by program. Competitive programs like engineering, business, and nursing typically expect higher GPAs.\n\n**Holistic admissions:** UIC uses holistic review, so they also consider your test scores, essays, extracurriculars, and course rigor - not just GPA. A slightly lower GPA can be offset by strong performance in other areas.\n\n**Transfer students:** If you're transferring, different rules apply. Generally, you'll need a college GPA of 2.5+ for most programs, but competitive majors want 3.0+.\n\nFor the most current admissions criteria and to see how your profile stacks up, check with UIC Admissions at **(312) 996-4350** or visit their office at **1200 West Harrison Street**. They can give you program-specific guidance based on your intended major.",
+      "error": null,
+      "latency_ms": 10119,
+      "ttfb_ms": 0,
+      "server_abstained": false,
+      "abstain_reason": null,
+      "scores": {
+        "answered": true,
+        "abstained": false,
+        "abstain_correct": null,
+        "hallucination_flags": [],
+        "response_length": 974,
+        "notes": []
+      }
+    },
+    {
+      "id": "q7",
+      "question": "is there a meal plan requirement for freshmen?",
+      "category": "student_life",
+      "difficulty": "easy",
+      "type": "factual",
+      "response": "Yes, **meal plans are required for first-year students** living in these residence halls: **ARC, CTY, CMN, CMW, CMS, and JST**.\n\nIf you're living in **MRH, TBH, SSR, or PSR**, meal plans are optional. The required plans are **Ignite Unlimited** ($2,800/semester) and **Ignite 15** ($2,060/semester).",
+      "error": null,
+      "latency_ms": 5427,
+      "ttfb_ms": 0,
+      "server_abstained": false,
+      "abstain_reason": null,
+      "scores": {
+        "answered": true,
+        "abstained": false,
+        "abstain_correct": null,
+        "hallucination_flags": [
+          "contains_dollar_amount"
+        ],
+        "response_length": 299,
+        "notes": []
+      }
+    },
+    {
+      "id": "q8",
+      "question": "what is the aspire grant?",
+      "category": "financial",
+      "difficulty": "easy",
+      "type": "factual",
+      "response": "The **Aspire Grant** covers **100% of tuition and mandatory fees** — essentially free tuition — for eligible Illinois students whose families earn under **$75,000** annually.\n\nTo apply, just submit your **FAFSA by March 15** and get admitted to UIC. There's no separate application needed. You can learn more and check your eligibility at **free.uic.edu**.",
+      "error": null,
+      "latency_ms": 5552,
+      "ttfb_ms": 1,
+      "server_abstained": false,
+      "abstain_reason": null,
+      "scores": {
+        "answered": true,
+        "abstained": false,
+        "abstain_correct": null,
+        "hallucination_flags": [
+          "contains_dollar_amount"
+        ],
+        "response_length": 356,
+        "notes": []
+      }
+    },
+    {
+      "id": "q9",
+      "question": "where is the registrar office?",
+      "category": "admin",
+      "difficulty": "easy",
+      "type": "factual",
+      "response": "The Registrar's Office is located in **Suite 1200, Student Services Building (SSB)** at **1200 W Harrison St**. They're open Monday-Friday 9AM-4PM, and you can find more info at registrar.uic.edu.",
+      "error": null,
+      "latency_ms": 4540,
+      "ttfb_ms": 0,
+      "server_abstained": false,
+      "abstain_reason": null,
+      "scores": {
+        "answered": true,
+        "abstained": false,
+        "abstain_correct": null,
+        "hallucination_flags": [
+          "contains_suite_number"
+        ],
+        "response_length": 196,
+        "notes": []
+      }
+    },
+    {
+      "id": "q10",
+      "question": "does uic have a mens basketball team?",
+      "category": "athletics",
+      "difficulty": "easy",
+      "type": "factual",
+      "response": "Yes! UIC has a men's basketball team called the **Flames**. They're coached by **Rob Ehsan**, who was hired in April 2024. \n\nThe team plays at **Credit Union 1 Arena** (formerly UIC Pavilion) at 525 S Racine Ave. UIC competes in the Missouri Valley Conference (MVC), and their main rivalry is with Loyola Chicago — UIC actually holds a 31-30 all-time edge in that matchup as of 2023.\n\nYou can follow them on Instagram **@uic_mbb** for updates and game info!",
+      "error": null,
+      "latency_ms": 6800,
+      "ttfb_ms": 1,
+      "server_abstained": false,
+      "abstain_reason": null,
+      "scores": {
+        "answered": true,
+        "abstained": false,
+        "abstain_correct": null,
+        "hallucination_flags": [
+          "year_anchored_claim"
+        ],
+        "response_length": 457,
+        "notes": []
+      }
+    },
+    {
+      "id": "q11",
+      "question": "what bus do i take to get to uic from the loop?",
+      "category": "admin",
+      "difficulty": "easy",
+      "type": "factual",
+      "response": "From the Loop, take the **Blue Line** west to get to UIC. You have three UIC stops to choose from:\n\n- **UIC-Halsted** (closest to Student Center East, Daley Library, east campus)\n- **Racine** (closest to Student Services Building, Credit Union 1 Arena, ARC)  \n- **Illinois Medical District** (closest to College of Nursing, Library of Health Sciences, Sport and Fitness Center)\n\nThe Blue Line runs directly from downtown Loop stations like Clark/Lake, Washington, and Monroe straight to campus.",
+      "error": null,
+      "latency_ms": 7271,
+      "ttfb_ms": 0,
+      "server_abstained": false,
+      "abstain_reason": null,
+      "scores": {
+        "answered": false,
+        "abstained": false,
+        "abstain_correct": null,
+        "hallucination_flags": [],
+        "response_length": 494,
+        "notes": []
+      }
+    },
+    {
+      "id": "q12",
+      "question": "how do i apply for financial aid at uic?",
+      "category": "financial",
+      "difficulty": "easy",
+      "type": "factual",
+      "response": "**Financial Aid Office**: 1200 W. Harrison St, Student Services Building (SSB), Room 1200 | **Phone**: (312) 996-3126\n\n**Key Steps**:\n1. **Submit FAFSA by March 15** at studentaid.gov (UIC school code: 001776)\n2. **Illinois residents**: Also complete the **RISE Act Alternative Application** if needed\n3. **Get admitted to UIC** - no separate financial aid application required for most aid\n\n**Major Opportunities**:\n- **Aspire Grant**: 100% tuition + fees FREE for IL families earning under $75k (FAFSA deadline March 15)\n- **Chancellor's Fellows**: $7,500/year for 3.70+ GPA + ACT 33/SAT 1450 (deadline November 3)\n- **Merit scholarships** automatically considered with admission\n\n**Complete info**: financialaid.uic.edu | **Questions**: Walk-in hours M-F 9am-4pm or call the number above.",
+      "error": null,
+      "latency_ms": 8810,
+      "ttfb_ms": 0,
+      "server_abstained": false,
+      "abstain_reason": null,
+      "scores": {
+        "answered": true,
+        "abstained": false,
+        "abstain_correct": null,
+        "hallucination_flags": [
+          "contains_dollar_amount"
+        ],
+        "response_length": 791,
+        "notes": []
+      }
+    },
+    {
+      "id": "q13",
+      "question": "what is the last day to drop a class without a W?",
+      "category": "academics",
+      "difficulty": "easy",
+      "type": "factual",
+      "response": "For **Fall 2025**, the last day to drop a class without a W is **September 5, 2025**. For **Spring 2026**, it's **January 23, 2026**.",
+      "error": null,
+      "latency_ms": 4381,
+      "ttfb_ms": 0,
+      "server_abstained": false,
+      "abstain_reason": null,
+      "scores": {
+        "answered": true,
+        "abstained": false,
+        "abstain_correct": null,
+        "hallucination_flags": [],
+        "response_length": 133,
+        "notes": []
+      }
+    },
+    {
+      "id": "q14",
+      "question": "does uic have greek life?",
+      "category": "student_life",
+      "difficulty": "easy",
+      "type": "factual",
+      "response": "Yes! UIC has a solid Greek life community with **30+ chapters** organized across **5 different councils**:\n\n- **IFC** (Interfraternity Council): Phi Kappa Psi, Delta Sigma Phi, Pi Kappa Phi, Tau Kappa Epsilon, Lambda Chi Alpha, Sigma Pi, and more\n- **CPC** (College Panhellenic Council): Alpha Phi, Delta Gamma, Phi Sigma Sigma, Sigma Sigma Sigma, Alpha Omicron Pi, Delta Phi Epsilon, and more  \n- **NPHC** (National Pan-Hellenic Council): The Divine Nine organizations\n- **GPAAC** (Pan-Asian American Council): Multiple Asian-interest fraternities and sororities\n- **One additional council** (based on my data showing 5 total)\n\nThey're pretty active — they participate in the Fall Involvement Fair, host recruitment events, and have their own Instagram account **@UIC FSL** (Fraternity & Sorority Life). You can find all Greek organizations along with UIC's 470+ other student orgs at **connect.uic.edu**.\n\nFor the most current chapter list and recruitment info, check with the **Office of Student Life** or follow @UIC_FSL on Instagram.",
+      "error": null,
+      "latency_ms": 9111,
+      "ttfb_ms": 0,
+      "server_abstained": false,
+      "abstain_reason": null,
+      "scores": {
+        "answered": true,
+        "abstained": false,
+        "abstain_correct": null,
+        "hallucination_flags": [],
+        "response_length": 1038,
+        "notes": []
+      }
+    },
+    {
+      "id": "q15",
+      "question": "when does spring semester start?",
+      "category": "academics",
+      "difficulty": "easy",
+      "type": "factual",
+      "response": "**Spring 2026** starts **January 12, 2026**.",
+      "error": null,
+      "latency_ms": 4097,
+      "ttfb_ms": 1,
+      "server_abstained": false,
+      "abstain_reason": null,
+      "scores": {
+        "answered": true,
+        "abstained": false,
+        "abstain_correct": null,
+        "hallucination_flags": [],
+        "response_length": 44,
+        "notes": []
+      }
+    },
+    {
+      "id": "q16",
+      "question": "what scholarships are available for incoming freshmen?",
+      "category": "financial",
+      "difficulty": "medium",
+      "type": "factual",
+      "response": "UIC offers several major scholarships for incoming freshmen:\n\n**Top Merit Awards:**\n- **Chancellor's Fellows**: **$7,500/year** — requires 3.70+ GPA and ACT 33/SAT 1450. Deadline **November 3**.\n- **President's Award**: **$5,000/year** or full tuition + housing for Honors College students. Deadline **February 1**.\n- **Merit Tuition Award**: **$9,128/year** for strong academic performance.\n\n**Need-Based:**\n- **Aspire Grant**: **100% tuition + mandatory fees FREE** for Illinois families earning under $75k. Just submit FAFSA by **March 15** — no separate application needed. Details at free.uic.edu.\n\nThe Aspire Grant is huge if you qualify — it essentially makes UIC free tuition for eligible Illinois students. For merit scholarships, apply early since the best ones have November/February deadlines. UIC uses the Common Application and doesn't charge an enrollment deposit, making it easy to apply and secure your aid.",
+      "error": null,
+      "latency_ms": 9124,
+      "ttfb_ms": 0,
+      "server_abstained": false,
+      "abstain_reason": null,
+      "scores": {
+        "answered": true,
+        "abstained": false,
+        "abstain_correct": null,
+        "hallucination_flags": [
+          "contains_dollar_amount"
+        ],
+        "response_length": 924,
+        "notes": []
+      }
+    },
+    {
+      "id": "q17",
+      "question": "how do i switch my major at uic?",
+      "category": "academics",
+      "difficulty": "medium",
+      "type": "factual",
+      "response": "Contact your current college's advising office directly to start the major change process:\n\n**College Advising Offices:**\n- **Applied Health Sciences:** 516 AHSB, **(312) 996-2079**\n- **Architecture, Design, and the Arts:** 208 Jefferson Hall, **(312) 996-2006**\n- **Business Administration:** Douglass Hall Suite 110, **(312) 996-2700**\n- **Education:** 3145 ETMSW, **(312) 996-4532**\n- **Engineering:** 123 SEO, **(312) 996-3463**\n- **Liberal Arts and Sciences:** 3rd Floor University Hall, **(312) 996-3366**\n- **Nursing:** 5th Floor NURS, **(312) 996-7800**\n- **Public Health:** SPHPI Building, **(312) 355-2536**\n- **Urban Planning and Public Affairs:** 115 CUPPA Hall, **(312) 413-8088**\n\nYou can also use **iAdvise** in myUIC to connect with advisors. If switching between colleges (not just majors within your current college), you'll likely need approval from both your current college and the receiving college.\n\nFor detailed requirements and forms, visit **https://advising.uic.edu/student-resources/**",
+      "error": null,
+      "latency_ms": 7987,
+      "ttfb_ms": 0,
+      "server_abstained": false,
+      "abstain_reason": null,
+      "scores": {
+        "answered": true,
+        "abstained": false,
+        "abstain_correct": null,
+        "hallucination_flags": [
+          "contains_suite_number"
+        ],
+        "response_length": 1013,
+        "notes": []
+      }
+    },
+    {
+      "id": "q18",
+      "question": "what are the easiest gen ed classes to take?",
+      "category": "academics",
+      "difficulty": "medium",
+      "type": "factual",
+      "response": "**ED 217 — STEM, Education, and Society** is your best bet for an easy gen ed with a **3.71 GPA** and fulfills Understanding the Individual and Society. **ED 101 — Critical Literacies in a Digital World** is another solid choice at **3.65 GPA** for the same requirement.\n\nIf you need Creative Arts, **ART 382 — Thinking is Making** has a stellar **3.94 GPA** with 94% of students earning A's, though it's a smaller class. **POL 150 — Intro to Polish Cinema** is more accessible at **3.36 GPA** with 75% A-rate for Creative Arts.\n\nBased on what I have, these represent some of the highest-GPA gen eds, but there may be other easy options not in my current data. For the complete list of gen ed requirements and course options, check the Academic Catalog at catalog.uic.edu or contact your academic advisor.",
+      "error": null,
+      "latency_ms": 9849,
+      "ttfb_ms": 0,
+      "server_abstained": false,
+      "abstain_reason": null,
+      "scores": {
+        "answered": true,
+        "abstained": false,
+        "abstain_correct": null,
+        "hallucination_flags": [],
+        "response_length": 805,
+        "notes": []
+      }
+    },
+    {
+      "id": "q19",
+      "question": "can i transfer to uic from community college?",
+      "category": "admissions",
+      "difficulty": "medium",
+      "type": "factual",
+      "response": "Yes! UIC actively welcomes community college transfers. You need a minimum **2.50 GPA** and **24 transferable credit hours** when you apply, with **36 hours** completed by the time you enroll.\n\n**Application deadlines:**\n- **Fall 2026:** April 1, 2026\n- **Spring 2026:** October 15, 2025\n\nUIC uses the Common Application and is **test-optional** — no ACT/SAT required for transfers. Plus, there's no enrollment deposit to pay.\n\nSince you mentioned being social, you'll find plenty of opportunities at UIC with **470+ student organizations** and a vibrant campus life. The transfer process is straightforward, and each college has dedicated advisors to help you plan your transition. Once you know your intended major, you can contact the specific college office for personalized guidance on which community college courses will transfer best.",
+      "error": null,
+      "latency_ms": 8636,
+      "ttfb_ms": 0,
+      "server_abstained": false,
+      "abstain_reason": null,
+      "scores": {
+        "answered": true,
+        "abstained": false,
+        "abstain_correct": null,
+        "hallucination_flags": [],
+        "response_length": 842,
+        "notes": []
+      }
+    },
+    {
+      "id": "q20",
+      "question": "whats the difference between arc and jst dorms?",
+      "category": "student_life",
+      "difficulty": "medium",
+      "type": "factual",
+      "response": "**Academic and Residential Complex (ARC) vs James Stukel Towers (JST)**\n\n**WHO CAN LIVE THERE:**\nBoth are first-year student housing only with **required meal plans**.\n\n**ROOM STYLES:**\n- **ARC**: Traditional doubles/singles + semi-suites (private bedroom, shared common area)\n- **JST**: Suite-style living (private bedrooms with shared common spaces)\n\n**COSTS (2025-2026):**\n- **ARC**: $6,342 (traditional shared) to $9,005 (semi-suite private)\n- **JST**: $6,181 (suite shared) to $6,871 (suite private)\n\n**BUILDING FEATURES:**\n- **ARC**: Newest residence hall, **gym inside the building**, strongest academics-housing integration, most modern amenities\n- **JST**: High-rise with **great Chicago skyline views**, dining hall literally in the building, most Living-Learning Community (LLC) options\n\n**LOCATION & CONVENIENCE:**\n- **ARC**: More academic integration with study spaces and programming\n- **JST**: Direct dining access without leaving the building\n\n**RECOMMENDATION:**\nChoose **ARC** if you want the newest facilities, a gym steps from your room, and tight academic-residential integration. Choose **JST** if you prefer suite-style privacy, want the most LLC options to connect with students in your major, and love city views. JST is also slightly cheaper across all room types.\n\nBoth offer great first-year community — it really comes down to whether you prioritize modern amenities (ARC) or suite privacy + views (JST).",
+      "error": null,
+      "latency_ms": 11457,
+      "ttfb_ms": 0,
+      "server_abstained": false,
+      "abstain_reason": null,
+      "scores": {
+        "answered": true,
+        "abstained": false,
+        "abstain_correct": null,
+        "hallucination_flags": [
+          "contains_dollar_amount"
+        ],
+        "response_length": 1433,
+        "notes": []
+      }
+    },
+    {
+      "id": "q21",
+      "question": "how does the tuition lock work at uic?",
+      "category": "financial",
+      "difficulty": "medium",
+      "type": "factual",
+      "response": "UIC offers a **4-year tuition lock** that guarantees your tuition rate stays the same for your entire undergraduate program. When you enter UIC, you're locked into that year's tuition rate — so if you start in fall 2025, you'll pay the 2025-2026 rate of **$5,712/semester** (in-state) for all four years, even if tuition increases for newer students.\n\nThis applies specifically to your entering cohort, so you're protected from tuition hikes during your time at UIC. The lock covers tuition but not mandatory fees, which can still change year to year.\n\nFor the exact terms and any specific conditions, check with the **Bursar's Office** at bursar.uic.edu or call them directly — they can walk you through how it applies to your specific situation and enrollment timeline.",
+      "error": null,
+      "latency_ms": 8609,
+      "ttfb_ms": 0,
+      "server_abstained": false,
+      "abstain_reason": null,
+      "scores": {
+        "answered": true,
+        "abstained": false,
+        "abstain_correct": null,
+        "hallucination_flags": [
+          "contains_dollar_amount"
+        ],
+        "response_length": 771,
+        "notes": []
+      }
+    },
+    {
+      "id": "q22",
+      "question": "what do i need to do after i get accepted to uic?",
+      "category": "admissions",
+      "difficulty": "medium",
+      "type": "multi_intent",
+      "response": "Once you're accepted to UIC, here are the key steps you'll need to complete:\n\n**1. Submit your enrollment deposit** - This secures your spot and is typically due by the deadline stated in your acceptance letter.\n\n**2. Complete orientation** - All new students must attend New Student Orientation, which covers registration, academic planning, and campus resources.\n\n**3. Register for classes** - Work with your college advisor to select courses. Fall 2025 registration varies by college, and Spring 2026 registration opens **November 3, 2025**.\n\n**4. Set up housing** (if needed) - Submit your housing application and contract if you plan to live on campus.\n\n**5. Complete financial aid** - Submit your FAFSA and any required documents to finalize your aid package.\n\n**6. Get your UIC ID card** - You'll need this for campus access, dining, and library services.\n\n**7. Meet with your academic advisor** - Each college handles advising differently. Contact your college office directly:\n- **Liberal Arts & Sciences**: 3rd Floor University Hall **(312) 996-3366**\n- **Business**: Douglass Hall Suite 110 **(312) 996-2700**\n- **Engineering**: 123 SEO **(312) 996-3463**\n- And others based on your major\n\nFor the most current checklist and deadlines, visit **admissions.uic.edu** or call **(312) 996-4350** to verify these steps haven't been updated.",
+      "error": null,
+      "latency_ms": 11954,
+      "ttfb_ms": 1,
+      "server_abstained": false,
+      "abstain_reason": null,
+      "scores": {
+        "answered": true,
+        "abstained": false,
+        "abstain_correct": null,
+        "hallucination_flags": [
+          "contains_suite_number"
+        ],
+        "response_length": 1346,
+        "notes": []
+      }
+    },
+    {
+      "id": "q23",
+      "question": "how do i get involved on campus as a freshman?",
+      "category": "student_life",
+      "difficulty": "medium",
+      "type": "multi_intent",
+      "response": "As a freshman, **connect.uic.edu** is your starting point — UIC has **470+ registered student organizations** covering every interest imaginable.\n\n**Easy first steps:**\n- Check out **Spark** (orientation week) and **Week of Welcome** events where orgs actively recruit\n- Visit the **Student Center East** where many groups meet and have info tables\n- Follow **@uiccocl** (Commuter & Off-Campus Life) for events since 91% of students commute\n\n**Popular options for freshmen:**\n- **Greek life** with 30+ chapters across 5 councils (IFC, CPC, NPHC, etc.)\n- Academic clubs related to your major\n- **Student Government**, volunteer groups, cultural organizations\n- **Her Campus UIC** (@hercampusatuic) if you're interested in writing/media\n\nThe key is showing up to a few meetings early in the semester when groups are most welcoming to new members. Most orgs are designed to help freshmen get connected, so don't hesitate to reach out even if you're nervous!",
+      "error": null,
+      "latency_ms": 9190,
+      "ttfb_ms": 0,
+      "server_abstained": false,
+      "abstain_reason": null,
+      "scores": {
+        "answered": true,
+        "abstained": false,
+        "abstain_correct": null,
+        "hallucination_flags": [],
+        "response_length": 954,
+        "notes": []
+      }
+    },
+    {
+      "id": "q24",
+      "question": "what are my options if i cant afford the tuition bill?",
+      "category": "financial",
+      "difficulty": "medium",
+      "type": "multi_intent",
+      "response": "If you can't afford your tuition bill at UIC, you have several options:\n\n**Immediate Financial Aid:**\n- **Aspire Grant**: Covers 100% tuition + fees FREE for Illinois families earning under $75k. Apply via FAFSA by March 15 at free.uic.edu\n- **Merit scholarships**: Chancellor's Fellows ($7,500/yr), President's Award ($5,000/yr), Merit Tuition Award ($9,128/yr)\n- **Payment plans**: UIC offers installment payment options to spread costs over the semester\n\n**Other Options:**\n- **Emergency grants**: UIC often has emergency financial aid for students facing unexpected hardships\n- **Work-study programs**: Part-time campus jobs that work around your class schedule\n- **Private scholarships**: External scholarships from organizations, employers, or community groups\n- **Federal/state aid**: Pell Grants, Illinois MAP grants, and student loans through FAFSA\n\n**If you're already enrolled and struggling:**\n- Contact the **Financial Aid Office** immediately - they can review your situation for additional aid or payment deferrals\n- **Withdrawal considerations**: Be aware of refund policies and financial aid implications\n\nFor immediate help, contact UIC Financial Aid at **(312) 996-3126** or visit **financialaid.uic.edu**. They can review your specific situation and explore all available options. Don't wait until the payment deadline - reach out as soon as possible.",
+      "error": null,
+      "latency_ms": 10760,
+      "ttfb_ms": 0,
+      "server_abstained": false,
+      "abstain_reason": null,
+      "scores": {
+        "answered": true,
+        "abstained": false,
+        "abstain_correct": null,
+        "hallucination_flags": [
+          "contains_dollar_amount"
+        ],
+        "response_length": 1371,
+        "notes": []
+      }
+    },
+    {
+      "id": "q25",
+      "question": "is uic good for pre-med students?",
+      "category": "academics",
+      "difficulty": "medium",
+      "type": "ambiguous",
+      "response": "UIC is actually **excellent** for pre-med students! Here's why:\n\n**Strong Medical Foundation**: UIC has its own **College of Medicine** right on campus, which means robust pre-med advising, research opportunities, and direct connections to medical faculty. The university understands what med schools want.\n\n**Diverse Student Body**: UIC ranks **37th nationally for campus ethnic diversity**, which medical schools highly value since they're actively seeking diverse cohorts. This diversity also means you'll learn alongside students from many backgrounds - great preparation for medicine.\n\n**Research Opportunities**: As Chicago's only public Research I university with ~33,000 students, UIC offers extensive undergraduate research opportunities in biomedical fields, which are crucial for competitive med school applications.\n\nFor specific pre-med advising, GPA data for required courses like **CHEM 112/113** or **BIOS 100**, and medical school acceptance rates, I'd recommend contacting the **Pre-Health Professions Office** directly. You can find their current contact info and specific pre-med statistics at the UIC Pre-Health website or by calling the main advising line at **(312) 996-3000**.\n\nThe combination of medical school on-campus, research opportunities, and diverse learning environment makes UIC a solid choice for pre-med preparation.",
+      "error": null,
+      "latency_ms": 11115,
+      "ttfb_ms": 0,
+      "server_abstained": false,
+      "abstain_reason": null,
+      "scores": {
+        "answered": true,
+        "abstained": false,
+        "abstain_correct": null,
+        "hallucination_flags": [],
+        "response_length": 1353,
+        "notes": []
+      }
+    },
+    {
+      "id": "q26",
+      "question": "what happens if i miss registration?",
+      "category": "academics",
+      "difficulty": "medium",
+      "type": "factual",
+      "response": "**Late registration** runs through the first week of classes with a **$100 late fee**. After that, you'll need permission from your college dean's office to register.\n\nIf you miss both periods entirely, you'll have to wait for the next semester. **Spring 2026 registration** opens **March 30, 2026** for summer/fall courses.\n\nContact your college advising office ASAP if you're in this situation - they can help with the dean's permission process if needed. Find your college office at https://advising.uic.edu/student-resources/",
+      "error": null,
+      "latency_ms": 9597,
+      "ttfb_ms": 0,
+      "server_abstained": false,
+      "abstain_reason": null,
+      "scores": {
+        "answered": true,
+        "abstained": false,
+        "abstain_correct": null,
+        "hallucination_flags": [],
+        "response_length": 529,
         "notes": []
       }
     },
@@ -35,9 +588,53 @@
       "category": "academics",
       "difficulty": "medium",
       "type": "factual",
-      "response": "You need **120 credit hours** to graduate from most undergraduate programs at UIC, though some majors require more.\n\nYou'll also need to maintain a **2.00 cumulative GPA** in all your UIC coursework, in your major, and in your combined transfer + UIC work. Plus you have to complete your last **30 credit hours** at UIC (the residency requirement).\n\nMost students also need **24 semester hours** of General Education requirements across 6 categories, plus writing proficiency through **ENGL 160** and **ENGL 161**.",
+      "response": "You need **120 credit hours** to graduate from most undergraduate programs at UIC, though some programs require more.\n\nYou'll also need to maintain a **2.00 cumulative GPA** in all your UIC coursework, in your major, and in any combined transfer + UIC work. Plus, your last **30 credit hours** must be completed at UIC.\n\nFor specific requirements in your major, contact your college's advising office — they're listed at https://advising.uic.edu/student-resources/ or you can use iAdvise in myUIC to connect with your advisor.",
       "error": null,
-      "latency_ms": 8972,
+      "latency_ms": 9748,
+      "ttfb_ms": 1,
+      "server_abstained": false,
+      "abstain_reason": null,
+      "scores": {
+        "answered": true,
+        "abstained": false,
+        "abstain_correct": null,
+        "hallucination_flags": [],
+        "response_length": 526,
+        "notes": []
+      }
+    },
+    {
+      "id": "q28",
+      "question": "does uic offer any merit scholarships for out of state students?",
+      "category": "financial",
+      "difficulty": "medium",
+      "type": "factual",
+      "response": "Yes! UIC offers several merit scholarships for out-of-state students:\n\n**Chancellor's Fellows Program**: **$7,500/year** for students with **3.70+ GPA** and **ACT 33/SAT 1450**. Deadline is **November 3**.\n\n**President's Award Program**: **$5,000/year** for qualified students, or **full tuition + housing** if you're selected as an Honors College Scholar. Deadline is **February 1**.\n\n**Merit Tuition Award**: **$9,128/year** for academically strong students.\n\nThese are all renewable scholarships based on academic achievement. The Chancellor's Fellows and President's Award have early deadlines, so if you're applying for fall 2025, make sure to get your application in by those dates to be considered.\n\nFor complete details and application requirements, check UIC's financial aid website or contact the Office of Student Financial Aid at **(312) 996-3126**.",
+      "error": null,
+      "latency_ms": 8626,
+      "ttfb_ms": 0,
+      "server_abstained": false,
+      "abstain_reason": null,
+      "scores": {
+        "answered": true,
+        "abstained": false,
+        "abstain_correct": null,
+        "hallucination_flags": [
+          "contains_dollar_amount"
+        ],
+        "response_length": 861,
+        "notes": []
+      }
+    },
+    {
+      "id": "q29",
+      "question": "what sports does uic compete in?",
+      "category": "athletics",
+      "difficulty": "easy",
+      "type": "factual",
+      "response": "UIC competes in **16 varsity sports** as the **Flames** in the **Missouri Valley Conference (MVC)**:\n\n**Men's Sports:** Baseball, Basketball, Soccer, Swimming & Diving, Tennis, Track & Field, Cross Country, Golf, Gymnastics\n\n**Women's Sports:** Basketball, Soccer, Softball, Swimming & Diving, Tennis, Track & Field, Cross Country, Volleyball\n\nThe baseball team plays at a stadium named for UIC legend and MLB star **Curtis Granderson**, and the program has won **13 Horizon League championships**. All **regular season home games are FREE** for students with UIC ID, and non-students can get a **Flames Fast Pass for $50** covering all home events except basketball.\n\nYou can follow the teams on Instagram - **@uic_mbb** and **@uic_wbb** for basketball, **@uic_msoc** and **@uic_wsoc** for soccer, plus **@uic_baseball** and **@uic_softball**.",
+      "error": null,
+      "latency_ms": 8154,
       "ttfb_ms": 0,
       "server_abstained": false,
       "abstain_reason": null,
@@ -46,7 +643,1598 @@
         "abstained": false,
         "abstain_correct": null,
         "hallucination_flags": [],
-        "response_length": 514,
+        "response_length": 844,
+        "notes": []
+      }
+    },
+    {
+      "id": "q30",
+      "question": "how do i get a CTA u-pass as a uic student?",
+      "category": "admin",
+      "difficulty": "medium",
+      "type": "factual",
+      "response": "All UIC students enrolled in **6+ credit hours** automatically receive a U-Pass as part of their semester fees — it costs **$163/semester** but is already included in your mandatory fees, so there's no extra charge.\n\nYou don't need to apply or do anything special to get it. The U-Pass gives you unlimited rides on all CTA buses and rail lines for the full semester.",
+      "error": null,
+      "latency_ms": 6631,
+      "ttfb_ms": 0,
+      "server_abstained": false,
+      "abstain_reason": null,
+      "scores": {
+        "answered": true,
+        "abstained": false,
+        "abstain_correct": null,
+        "hallucination_flags": [],
+        "response_length": 366,
+        "notes": []
+      }
+    },
+    {
+      "id": "q31",
+      "question": "is the application still open for spring admission?",
+      "category": "admissions",
+      "difficulty": "hard",
+      "type": "time_sensitive",
+      "response": "No, the spring 2025 admission deadline was **October 1, 2025**, so applications are now closed.\n\nHowever, you can still apply for **fall 2026** with these deadlines:\n- **Priority deadline**: November 3, 2025 \n- **Regular deadline**: February 2, 2026\n\nUIC uses the Common Application and is test-optional (no ACT/SAT required). Contact admissions at **(312) 996-4350** if you need specific guidance about your situation.",
+      "error": null,
+      "latency_ms": 6368,
+      "ttfb_ms": 0,
+      "server_abstained": false,
+      "abstain_reason": null,
+      "scores": {
+        "answered": true,
+        "abstained": false,
+        "abstain_correct": false,
+        "hallucination_flags": [],
+        "response_length": 419,
+        "notes": [
+          "should_have_abstained"
+        ]
+      }
+    },
+    {
+      "id": "q32",
+      "question": "what events are happening on campus this week?",
+      "category": "student_life",
+      "difficulty": "hard",
+      "type": "time_sensitive",
+      "response": "Based on what I have, here are some upcoming events I can see:\n\n**This Week:**\n- **Ruth E. George Memorial Birthday Celebration** - Tuesday, April 8, 2025, 1-3 PM on the UIC Quad. Free cupcakes, coffee, and interactive activities focused on campus safety and community connection.\n- **\"What's Going On?\" Mental Health Discussion** - Friday, April 5th, 10-11 AM. Monthly mental health initiative with presentations and discussions, particularly focusing on Black mental health experiences.\n- **On-Campus Job Fair prep** - Federal Work Study presentation and Resume Pop-Up events (check @uicstudentemployment for registration links).\n\nThe **Women's Leadership and Resource Center** (@uicwlrc) frequently hosts events, and **UIC Commuter & Off-Campus Life** (@uiccocl) also promotes campus activities.\n\nFor the most current and complete event calendar, I'd recommend checking the official UIC events page at uic.edu/events or following key UIC Instagram accounts like @uic, @uicstudentlife, and @uiccocl. The Campus Activities Board and Student Involvement also maintain updated event listings that would have everything happening this week.",
+      "error": null,
+      "latency_ms": 10816,
+      "ttfb_ms": 0,
+      "server_abstained": false,
+      "abstain_reason": null,
+      "scores": {
+        "answered": true,
+        "abstained": false,
+        "abstain_correct": false,
+        "hallucination_flags": [],
+        "response_length": 1138,
+        "notes": [
+          "should_have_abstained"
+        ]
+      }
+    },
+    {
+      "id": "q33",
+      "question": "is the financial aid deadline still open?",
+      "category": "financial",
+      "difficulty": "hard",
+      "type": "time_sensitive",
+      "response": "Yes! The **FAFSA deadline is March 15** for the **Aspire Grant** and other financial aid, so you still have time.\n\nThe Aspire Grant covers **100% of tuition + mandatory fees** (essentially free tuition) for Illinois families earning under $75k. Just submit your FAFSA by March 15 — no separate application needed. More info at **free.uic.edu**.",
+      "error": null,
+      "latency_ms": 5735,
+      "ttfb_ms": 0,
+      "server_abstained": false,
+      "abstain_reason": null,
+      "scores": {
+        "answered": true,
+        "abstained": false,
+        "abstain_correct": false,
+        "hallucination_flags": [],
+        "response_length": 344,
+        "notes": [
+          "should_have_abstained"
+        ]
+      }
+    },
+    {
+      "id": "q34",
+      "question": "what are the deadlines i need to know about right now?",
+      "category": "academics",
+      "difficulty": "hard",
+      "type": "time_sensitive",
+      "response": "**Key deadlines for Spring 2026:**\n\n- **January 23, 2026**: Last day to add/drop classes without a W grade\n- **March 20, 2026**: Last day to withdraw from classes (with W grade)\n- **March 30, 2026**: Summer/Fall 2026 registration opens\n- **May 4-8, 2026**: Final exams\n\n**If you're graduating this spring:**\n- **January 30, 2026**: Commencement application deadline\n\n**Spring break** is March 23-27, 2026.\n\nFor the most current deadlines and any updates, check the official academic calendar at **registrar.uic.edu** or call the Registrar at **(312) 996-4350**.",
+      "error": null,
+      "latency_ms": 6794,
+      "ttfb_ms": 0,
+      "server_abstained": false,
+      "abstain_reason": null,
+      "scores": {
+        "answered": true,
+        "abstained": false,
+        "abstain_correct": false,
+        "hallucination_flags": [],
+        "response_length": 561,
+        "notes": [
+          "should_have_abstained"
+        ]
+      }
+    },
+    {
+      "id": "q35",
+      "question": "is there anything going on at uic today?",
+      "category": "student_life",
+      "difficulty": "hard",
+      "type": "time_sensitive",
+      "response": "I'm not sure I have reliable information on that. You can reach UIC at 312-996-7000 or visit uic.edu — most offices also have live chat on their pages.",
+      "error": null,
+      "latency_ms": 2651,
+      "ttfb_ms": 0,
+      "server_abstained": true,
+      "abstain_reason": "time_sensitive_no_useful_evidence",
+      "scores": {
+        "answered": true,
+        "abstained": true,
+        "abstain_correct": true,
+        "hallucination_flags": [
+          "contains_phone_number"
+        ],
+        "response_length": 151,
+        "notes": [
+          "server_abstained:time_sensitive_no_useful_evidence"
+        ]
+      }
+    },
+    {
+      "id": "q36",
+      "question": "did uic flames win last night?",
+      "category": "athletics",
+      "difficulty": "hard",
+      "type": "time_sensitive",
+      "response": "I don't have access to real-time game results, so I can't tell you what happened last night specifically. \n\nFor the most current UIC Flames scores and schedules, check **uicflames.com** or follow @UICFlames on social media. The Flames compete in 16 sports across the **Missouri Valley Conference (MVC)**, so there's often something happening!\n\nWhat sport were you thinking about? I can share more details about specific Flames teams and their recent seasons.",
+      "error": null,
+      "latency_ms": 8897,
+      "ttfb_ms": 0,
+      "server_abstained": false,
+      "abstain_reason": null,
+      "scores": {
+        "answered": true,
+        "abstained": false,
+        "abstain_correct": false,
+        "hallucination_flags": [],
+        "response_length": 458,
+        "notes": [
+          "should_have_abstained"
+        ]
+      }
+    },
+    {
+      "id": "q37",
+      "question": "when is the next home basketball game?",
+      "category": "athletics",
+      "difficulty": "hard",
+      "type": "time_sensitive",
+      "response": "I don't have current schedule information for UIC basketball games in my data. For the most up-to-date home game schedule, check:\n\n- **UIC Athletics website**: uicflames.com\n- **UIC Men's Basketball Instagram**: @uic_mbb  \n- **UIC Women's Basketball Instagram**: @uic_wbb\n\nAll home games are played at **Credit Union 1 Arena** (525 S Racine Ave). You can also call the athletics department for schedule information.",
+      "error": null,
+      "latency_ms": 5953,
+      "ttfb_ms": 0,
+      "server_abstained": false,
+      "abstain_reason": null,
+      "scores": {
+        "answered": true,
+        "abstained": false,
+        "abstain_correct": false,
+        "hallucination_flags": [],
+        "response_length": 415,
+        "notes": [
+          "should_have_abstained"
+        ]
+      }
+    },
+    {
+      "id": "q38",
+      "question": "is housing still available for next semester?",
+      "category": "student_life",
+      "difficulty": "hard",
+      "type": "time_sensitive",
+      "response": "I don't have specific availability data for spring 2025 housing in my current information. Housing availability changes frequently based on applications, cancellations, and room changes.\n\n**Contact UIC Housing directly for current availability:**\n- **Phone:** (312) 996-3108\n- **Email:** housing@uic.edu\n- **Office:** Student Services Building (SSB), 1200 W Harrison St\n- **Instagram:** @uichousing for updates\n\nThey'll have real-time availability for all residence halls and can walk you through the application process if spots are open.",
+      "error": null,
+      "latency_ms": 6889,
+      "ttfb_ms": 1,
+      "server_abstained": false,
+      "abstain_reason": null,
+      "scores": {
+        "answered": true,
+        "abstained": false,
+        "abstain_correct": false,
+        "hallucination_flags": [],
+        "response_length": 539,
+        "notes": [
+          "should_have_abstained"
+        ]
+      }
+    },
+    {
+      "id": "q39",
+      "question": "has the chancellor made any announcements recently?",
+      "category": "admin",
+      "difficulty": "hard",
+      "type": "time_sensitive",
+      "response": "I don't have access to recent announcements from Chancellor Marie Lynn Miranda or the UIC administration in my current data. For the most up-to-date information about chancellor announcements, I'd recommend checking:\n\n- **UIC Today** (news.uic.edu) - the main campus news site\n- **Chancellor's Office** directly at (312) 996-3041\n- **UIC's main website** announcements section\n\nYou could also follow UIC's official social media accounts for breaking news and announcements. Is there something specific you were hoping to learn about from recent university communications?",
+      "error": null,
+      "latency_ms": 6237,
+      "ttfb_ms": 0,
+      "server_abstained": false,
+      "abstain_reason": null,
+      "scores": {
+        "answered": true,
+        "abstained": false,
+        "abstain_correct": false,
+        "hallucination_flags": [],
+        "response_length": 571,
+        "notes": [
+          "should_have_abstained"
+        ]
+      }
+    },
+    {
+      "id": "q40",
+      "question": "whats the fafsa deadline this year?",
+      "category": "financial",
+      "difficulty": "hard",
+      "type": "time_sensitive",
+      "response": "The FAFSA deadline at UIC is **March 15** for the 2025-2026 academic year.\n\nThis is especially important if you're eligible for UIC's **Aspire Grant**, which covers 100% of tuition and fees for Illinois families earning under $75k — you must submit your FAFSA by March 15 to be considered.",
+      "error": null,
+      "latency_ms": 6286,
+      "ttfb_ms": 0,
+      "server_abstained": false,
+      "abstain_reason": null,
+      "scores": {
+        "answered": true,
+        "abstained": false,
+        "abstain_correct": false,
+        "hallucination_flags": [],
+        "response_length": 289,
+        "notes": [
+          "should_have_abstained"
+        ]
+      }
+    },
+    {
+      "id": "q41",
+      "question": "deadline uic",
+      "category": "admissions",
+      "difficulty": "hard",
+      "type": "edge_case",
+      "response": "**Key UIC Deadlines:**\n\n**Spring 2026 Admissions:**\n- First-Year: **February 2, 2026** (regular deadline)\n- Transfer: **October 15, 2025** \n\n**Spring 2026 Academic:**\n- Add/drop (no W): **January 23, 2026**\n- Last day to withdraw (W): **March 20, 2026**\n- Commencement application: **January 30, 2026**\n\n**Fall 2026 Registration:**\n- Opens: **March 30, 2026**\n\n**Fall 2026 Admissions:**\n- First-Year priority: **November 3, 2025**\n- Transfer: **April 1, 2026**\n\nNeed a specific deadline? Let me know what you're looking for!",
+      "error": null,
+      "latency_ms": 6856,
+      "ttfb_ms": 0,
+      "server_abstained": false,
+      "abstain_reason": null,
+      "scores": {
+        "answered": true,
+        "abstained": false,
+        "abstain_correct": null,
+        "hallucination_flags": [],
+        "response_length": 524,
+        "notes": [
+          "edge_case_handled"
+        ]
+      }
+    },
+    {
+      "id": "q42",
+      "question": "this event?",
+      "category": "student_life",
+      "difficulty": "hard",
+      "type": "edge_case",
+      "response": "I don't see any specific event mentioned in our conversation. Could you let me know which event you're asking about? \n\nAre you looking for:\n- **Campus events** happening soon?\n- **Greek life** events (with 30+ chapters across 5 councils)?\n- **Student org** activities (470+ orgs at connect.uic.edu)?\n- **Athletics** - Flames games and events?\n\nJust let me know what type of event you're interested in and I can help you find the details!",
+      "error": null,
+      "latency_ms": 6437,
+      "ttfb_ms": 0,
+      "server_abstained": false,
+      "abstain_reason": null,
+      "scores": {
+        "answered": false,
+        "abstained": false,
+        "abstain_correct": null,
+        "hallucination_flags": [],
+        "response_length": 437,
+        "notes": [
+          "edge_case_handled"
+        ]
+      }
+    },
+    {
+      "id": "q43",
+      "question": "uic",
+      "category": "admin",
+      "difficulty": "hard",
+      "type": "edge_case",
+      "response": "I'm not sure I have reliable information on that. You can reach UIC at 312-996-7000 or visit uic.edu — most offices also have live chat on their pages.",
+      "error": null,
+      "latency_ms": 3315,
+      "ttfb_ms": 0,
+      "server_abstained": true,
+      "abstain_reason": "insufficient_evidence",
+      "scores": {
+        "answered": true,
+        "abstained": true,
+        "abstain_correct": null,
+        "hallucination_flags": [
+          "contains_phone_number"
+        ],
+        "response_length": 151,
+        "notes": [
+          "server_abstained:insufficient_evidence",
+          "edge_case_handled"
+        ]
+      }
+    },
+    {
+      "id": "q44",
+      "question": "how much",
+      "category": "financial",
+      "difficulty": "hard",
+      "type": "edge_case",
+      "response": "Based on what I have for **2025-2026 tuition**:\n\n**In-state undergrad**: $5,712/semester + $2,445 fees = **$16,314/year**\n**Out-of-state undergrad**: $13,763/semester + $2,445 fees = **$32,416/year**\n\nUIC has a 4-year tuition lock, so your rate stays the same once you're admitted. Total cost of attendance (including room/board if you live on campus) runs about **$39,510/year** for in-state students.\n\nSince tuition details can change, I'd verify the exact current rates with the **Student Business Services office** at (312) 996-4857 or check sbs.uic.edu for the most up-to-date numbers.",
+      "error": null,
+      "latency_ms": 9540,
+      "ttfb_ms": 0,
+      "server_abstained": false,
+      "abstain_reason": null,
+      "scores": {
+        "answered": true,
+        "abstained": false,
+        "abstain_correct": null,
+        "hallucination_flags": [
+          "contains_dollar_amount"
+        ],
+        "response_length": 590,
+        "notes": [
+          "edge_case_handled"
+        ]
+      }
+    },
+    {
+      "id": "q45",
+      "question": "i need help",
+      "category": "admin",
+      "difficulty": "hard",
+      "type": "edge_case",
+      "response": "Hey, I'm here to help! What's going on? Are you looking for info about classes, professors, campus resources, or something else UIC-related?\n\nIf you're feeling overwhelmed or stressed, UIC has great support services too — the **Counseling Center** (312-996-3490) offers free counseling for all students, and they're really good at helping with academic stress, personal stuff, or just figuring things out.\n\nWhat specifically can I help you with?",
+      "error": null,
+      "latency_ms": 6740,
+      "ttfb_ms": 0,
+      "server_abstained": false,
+      "abstain_reason": null,
+      "scores": {
+        "answered": true,
+        "abstained": false,
+        "abstain_correct": null,
+        "hallucination_flags": [
+          "contains_phone_number"
+        ],
+        "response_length": 445,
+        "notes": [
+          "edge_case_handled"
+        ]
+      }
+    },
+    {
+      "id": "q46",
+      "question": "does uic have the same tuition as uiuc?",
+      "category": "financial",
+      "difficulty": "medium",
+      "type": "ambiguous",
+      "response": "No, **UIC has significantly lower tuition than UIUC**. Here's the direct comparison:\n\n**UIC (2025-2026):**\n- In-state: **$5,712/semester** + $2,445 fees\n- Out-of-state: **$13,763/semester** + $2,445 fees\n\n**UIUC:**\nI don't have UIUC's exact 2025-2026 tuition in my data, but historically UIUC charges considerably more — typically several thousand dollars higher per semester for both in-state and out-of-state students.\n\n**Bottom line:** UIC is the more affordable option between the two, often saving students thousands per year while still offering a Research I university education in Chicago.\n\nFor UIUC's exact current rates, check their bursar website directly. For UIC financial aid options that could reduce costs further, contact **Student Financial Aid** at (312) 996-3126 or visit financialaid.uic.edu.",
+      "error": null,
+      "latency_ms": 8134,
+      "ttfb_ms": 1,
+      "server_abstained": false,
+      "abstain_reason": null,
+      "scores": {
+        "answered": true,
+        "abstained": false,
+        "abstain_correct": null,
+        "hallucination_flags": [
+          "contains_dollar_amount"
+        ],
+        "response_length": 813,
+        "notes": []
+      }
+    },
+    {
+      "id": "q47",
+      "question": "my professor hasnt posted grades yet what do i do",
+      "category": "academics",
+      "difficulty": "hard",
+      "type": "edge_case",
+      "response": "Check **myUIC** first — grades might be posted there even if not in Blackboard yet. Professors have until **5 business days after the final exam** to submit final grades.\n\nIf it's been longer than that, email your professor directly or contact your college's advising office for help following up. You can also check with the **Office of the Registrar** at **(312) 996-4350** if you need official intervention.\n\nThe grade deadline is firm, so if it's past due, the registrar's office can help get it resolved quickly.",
+      "error": null,
+      "latency_ms": 7731,
+      "ttfb_ms": 0,
+      "server_abstained": false,
+      "abstain_reason": null,
+      "scores": {
+        "answered": true,
+        "abstained": false,
+        "abstain_correct": null,
+        "hallucination_flags": [],
+        "response_length": 517,
+        "notes": [
+          "edge_case_handled"
+        ]
+      }
+    },
+    {
+      "id": "q48",
+      "question": "i think i applied to the wrong program can i change it",
+      "category": "admissions",
+      "difficulty": "hard",
+      "type": "edge_case",
+      "response": "You can change your program, but the process depends on whether you're already enrolled or still in the application stage.\n\n**If you haven't started at UIC yet:** Contact the Office of Undergraduate Admissions at **(312) 996-4350** to request a program change on your application.\n\n**If you're already enrolled:** You'll need to change majors through your current college's advising office. Each college handles this differently:\n\n- **Applied Health Sciences**: 516 AHSB, **(312) 996-2079**\n- **Business**: Douglass Hall Suite 110, **(312) 996-2700** \n- **Engineering**: 123 SEO, **(312) 996-3463**\n- **Liberal Arts & Sciences**: 3rd Floor University Hall, **(312) 996-3366**\n- **Education**: 3145 ETMSW, **(312) 996-4532**\n\nSome programs have specific GPA or prerequisite requirements for internal transfers. The advising office in your target college can walk you through exactly what you need.\n\nWhat program did you apply to, and what are you hoping to switch into?",
+      "error": null,
+      "latency_ms": 8549,
+      "ttfb_ms": 0,
+      "server_abstained": false,
+      "abstain_reason": null,
+      "scores": {
+        "answered": true,
+        "abstained": false,
+        "abstain_correct": null,
+        "hallucination_flags": [
+          "contains_suite_number"
+        ],
+        "response_length": 968,
+        "notes": [
+          "edge_case_handled"
+        ]
+      }
+    },
+    {
+      "id": "q49",
+      "question": "the website says one thing and you said another",
+      "category": "admin",
+      "difficulty": "hard",
+      "type": "edge_case",
+      "response": "I can see there might be some confusion! I don't have the specific details about what you're seeing on the website versus what I mentioned earlier.\n\nBased on what I have, the **Aspire Grant** covers 100% of tuition and mandatory fees for eligible Illinois students, with a March 15 FAFSA deadline. But this may have been updated since my data was collected.\n\nFor the most current and accurate information, I'd recommend checking directly with:\n- **UIC Financial Aid Office**: (312) 996-3126\n- **free.uic.edu** for the latest Aspire Grant details\n- Or visit the Student Services Building at 1200 W Harrison St\n\nWhat specific information are you seeing that differs? I want to make sure you get the right details for your situation.",
+      "error": null,
+      "latency_ms": 8119,
+      "ttfb_ms": 0,
+      "server_abstained": false,
+      "abstain_reason": null,
+      "scores": {
+        "answered": true,
+        "abstained": false,
+        "abstain_correct": null,
+        "hallucination_flags": [],
+        "response_length": 730,
+        "notes": [
+          "edge_case_handled"
+        ]
+      }
+    },
+    {
+      "id": "q50",
+      "question": "can i live off campus as a freshman?",
+      "category": "student_life",
+      "difficulty": "medium",
+      "type": "factual",
+      "response": "Yes, you can live off-campus as a freshman at UIC! Unlike many universities, UIC doesn't require freshmen to live on campus since **91% of students are commuters**.\n\n**Popular freshman off-campus areas:**\n- **University Village/Little Italy**: Closest and walkable to campus, ~$900-1,400/month for a 1BR\n- **Medical District**: Great for west campus access, ~$1,000-1,600/month\n- **Pilsen**: More affordable option, ~$800-1,200/month, just 1-2 Pink Line stops away\n\nOff-campus typically saves **$3-8k per year** compared to dorms. Use **offcampushousing.uic.edu** to find verified listings. Just keep in mind that if you do choose on-campus housing later, **ARC** and **JST** are designed specifically for first-year students and require meal plans.",
+      "error": null,
+      "latency_ms": 8118,
+      "ttfb_ms": 0,
+      "server_abstained": false,
+      "abstain_reason": null,
+      "scores": {
+        "answered": true,
+        "abstained": false,
+        "abstain_correct": null,
+        "hallucination_flags": [
+          "contains_dollar_amount"
+        ],
+        "response_length": 749,
+        "notes": []
+      }
+    },
+    {
+      "id": "q51",
+      "question": "what do international students need to do before arriving at uic?",
+      "category": "admissions",
+      "difficulty": "medium",
+      "type": "multi_intent",
+      "response": "**Immigration Check-In with OIS is required** before you can fully start at UIC:\n\n**Office of International Services (OIS)**\n- **Location:** SSB 2160\n- **Phone:** (312) 996-3121\n- **Email:** ois@uic.edu\n- **Hours:** Mon-Fri 8:30AM-5PM\n\n**Required by visa type:**\n- **F-1 students:** Complete check-in to remove SEVIS hold\n- **J-1 students:** Must validate within 30 days of arrival\n\nFollow **@uicglobal** on Instagram for updates and connect with other international students. The check-in process is mandatory — you won't be able to register for classes until it's completed.",
+      "error": null,
+      "latency_ms": 6443,
+      "ttfb_ms": 0,
+      "server_abstained": false,
+      "abstain_reason": null,
+      "scores": {
+        "answered": true,
+        "abstained": false,
+        "abstain_correct": null,
+        "hallucination_flags": [],
+        "response_length": 576,
+        "notes": []
+      }
+    },
+    {
+      "id": "q52",
+      "question": "im an f1 student can i work on campus?",
+      "category": "admissions",
+      "difficulty": "medium",
+      "type": "factual",
+      "response": "Yes! As an **F-1 student**, you can work on campus immediately — up to **20 hours per week** during the school year and full-time during breaks.\n\nThe current on-campus rate is **$15.20/hour**. You'll need to complete immigration check-in with the **Office of International Services (OIS)** first to remove your SEVIS hold. They're in **SSB 2160** — you can call them at **(312) 996-3121** or email **ois@uic.edu**.\n\nMany positions require Federal Work Study, so check your financial aid package to see if you qualify for FWS funding.",
+      "error": null,
+      "latency_ms": 6650,
+      "ttfb_ms": 0,
+      "server_abstained": false,
+      "abstain_reason": null,
+      "scores": {
+        "answered": true,
+        "abstained": false,
+        "abstain_correct": null,
+        "hallucination_flags": [],
+        "response_length": 533,
+        "notes": []
+      }
+    },
+    {
+      "id": "q53",
+      "question": "how do i renew my i-20?",
+      "category": "admissions",
+      "difficulty": "medium",
+      "type": "factual",
+      "response": "You'll need to contact the **Office of International Services (OIS)** directly for I-20 renewal. They're located in **SSB 2160**, phone **(312) 996-3121**, email **ois@uic.edu**, open **Mon-Fri 8:30AM-5PM**.\n\nI don't have the specific I-20 renewal process in my data, but OIS handles all SEVIS/immigration documentation and will walk you through the exact requirements and timeline for your renewal.",
+      "error": null,
+      "latency_ms": 7223,
+      "ttfb_ms": 1,
+      "server_abstained": false,
+      "abstain_reason": null,
+      "scores": {
+        "answered": true,
+        "abstained": false,
+        "abstain_correct": null,
+        "hallucination_flags": [],
+        "response_length": 399,
+        "notes": []
+      }
+    },
+    {
+      "id": "q54",
+      "question": "what is opt and when should i apply?",
+      "category": "admissions",
+      "difficulty": "medium",
+      "type": "factual",
+      "response": "**OPT (Optional Practical Training)** is work authorization for F-1 students to gain hands-on experience in their field of study. There are two types:\n\n**Pre-completion OPT:** Work while still enrolled (part-time during school, full-time during breaks)\n**Post-completion OPT:** Work after graduation for up to 12 months (36 months total for STEM majors)\n\n**When to apply:** You must apply through **OIS (Office of International Services)** at **SSB 2160** before starting any OPT work. For post-completion OPT, apply during your final semester but no earlier than 90 days before graduation.\n\nContact **OIS at (312) 996-3121 or ois@uic.edu** for specific timing and application requirements. They're open **Mon-Fri 8:30AM-5PM** and handle all work authorization applications for international students.\n\nThe exact application deadlines and processing times aren't in my current data, so definitely check with OIS directly for the most current requirements and timeline for your situation.",
+      "error": null,
+      "latency_ms": 10653,
+      "ttfb_ms": 0,
+      "server_abstained": false,
+      "abstain_reason": null,
+      "scores": {
+        "answered": true,
+        "abstained": false,
+        "abstain_correct": null,
+        "hallucination_flags": [
+          "overconfident_language"
+        ],
+        "response_length": 987,
+        "notes": []
+      }
+    },
+    {
+      "id": "q55",
+      "question": "can international students apply for financial aid at uic?",
+      "category": "financial",
+      "difficulty": "medium",
+      "type": "factual",
+      "response": "Unfortunately, **international students are not eligible for most financial aid at UIC**, including the major programs like the **Aspire Grant** (which covers 100% tuition for IL families under $75k) and federal aid through FAFSA.\n\nHowever, international students can apply for **merit-based scholarships** that don't require U.S. citizenship, such as:\n- **Chancellor's Fellows**: $7,500/year (3.70+ GPA, ACT 33/SAT 1450, deadline Nov 3)\n- **President's Award**: $5,000/year (deadline Feb 1)\n\nFor specific international student funding options and deadlines, contact the **Office of International Services** at SSB 2160, (312) 996-3121, or ois@uic.edu. They'll have the most current info on what's available for international students.",
+      "error": null,
+      "latency_ms": 8289,
+      "ttfb_ms": 0,
+      "server_abstained": false,
+      "abstain_reason": null,
+      "scores": {
+        "answered": true,
+        "abstained": false,
+        "abstain_correct": null,
+        "hallucination_flags": [
+          "contains_dollar_amount"
+        ],
+        "response_length": 735,
+        "notes": []
+      }
+    },
+    {
+      "id": "q56",
+      "question": "does uic accept duolingo for english proficiency?",
+      "category": "admissions",
+      "difficulty": "medium",
+      "type": "factual",
+      "response": "Yes, UIC accepts the **Duolingo English Test** for English proficiency requirements. The minimum score is **105**.\n\nUIC also accepts **TOEFL** (minimum 80 iBT) and **IELTS** (minimum 6.5). You can get exemptions if you're a native English speaker, attended an English-medium institution, or graduated from a US high school.\n\nFor complete details, check oaa.uic.edu/undergraduate-admission.",
+      "error": null,
+      "latency_ms": 5945,
+      "ttfb_ms": 0,
+      "server_abstained": false,
+      "abstain_reason": null,
+      "scores": {
+        "answered": true,
+        "abstained": false,
+        "abstain_correct": null,
+        "hallucination_flags": [],
+        "response_length": 389,
+        "notes": []
+      }
+    },
+    {
+      "id": "q57",
+      "question": "what is the cost of living in chicago for a student?",
+      "category": "financial",
+      "difficulty": "hard",
+      "type": "ambiguous",
+      "response": "For UIC students, here's the cost breakdown:\n\n**On-campus living** runs about **$39,510 total** for in-state students (including tuition, room, board, fees). The cheapest dorms like Courtyard start at **$5,275** but require meal plans that add **$4,000-5,500**.\n\n**Off-campus living** typically saves **$3-8k per year** compared to on-campus after factoring in meal plans. Your total cost drops to about **$37,410** for in-state students. You'll need a CTA pass for **$163/semester** to get around Chicago (this is already included in on-campus fees).\n\nThe biggest variable is housing choice - living off-campus gives you more flexibility and usually costs less, but you'll handle your own meals and commute. Most UIC students (91%) commute, so off-campus living is very doable here.",
+      "error": null,
+      "latency_ms": 9301,
+      "ttfb_ms": 0,
+      "server_abstained": false,
+      "abstain_reason": null,
+      "scores": {
+        "answered": true,
+        "abstained": false,
+        "abstain_correct": null,
+        "hallucination_flags": [
+          "contains_dollar_amount"
+        ],
+        "response_length": 783,
+        "notes": []
+      }
+    },
+    {
+      "id": "q58",
+      "question": "how do i get from o'hare airport to uic?",
+      "category": "admin",
+      "difficulty": "medium",
+      "type": "factual",
+      "response": "Take the **Blue Line** directly from O'Hare Airport to UIC — it's one continuous train line with no transfers needed.\n\n**Your best UIC stops:**\n- **UIC-Halsted** (closest to Student Center East, Daley Library, east campus)\n- **Racine** (closest to Student Services Building, Credit Union 1 Arena, ARC)\n\nThe trip takes about 45-50 minutes. Blue Line trains run 24/7, so you can get to campus any time. Just follow signs for \"Blue Line to Forest Park\" at O'Hare and ride it straight to UIC.",
+      "error": null,
+      "latency_ms": 6815,
+      "ttfb_ms": 0,
+      "server_abstained": false,
+      "abstain_reason": null,
+      "scores": {
+        "answered": true,
+        "abstained": false,
+        "abstain_correct": null,
+        "hallucination_flags": [],
+        "response_length": 488,
+        "notes": []
+      }
+    },
+    {
+      "id": "q59",
+      "question": "does uic have support for first generation college students?",
+      "category": "student_life",
+      "difficulty": "medium",
+      "type": "factual",
+      "response": "Yes! UIC has several dedicated programs specifically for first-generation college students:\n\n**TRIO Student Support Services**, **First-at-LAS**, **LARES Leaders**, and **EIEP FIRST GEN** are all available through UIC's Student Success programs. These provide academic support, mentoring, and resources tailored to first-gen students' unique needs.\n\nThere's also a financial opportunity — the **UIC Navigator Scholarship** awards up to **$2,600** for faculty-directed study abroad programs, specifically for first-year, first-generation students. They're awarding 25 scholarships total.\n\nFor complete details on all first-gen support programs, check https://studentsuccess.uic.edu/programs-and-supports/ or contact Student Success directly to learn which programs might be the best fit for your situation.",
+      "error": null,
+      "latency_ms": 9815,
+      "ttfb_ms": 0,
+      "server_abstained": false,
+      "abstain_reason": null,
+      "scores": {
+        "answered": true,
+        "abstained": false,
+        "abstain_correct": null,
+        "hallucination_flags": [
+          "contains_dollar_amount"
+        ],
+        "response_length": 805,
+        "notes": []
+      }
+    },
+    {
+      "id": "q60",
+      "question": "what mental health resources does uic offer?",
+      "category": "admin",
+      "difficulty": "easy",
+      "type": "factual",
+      "response": "UIC offers several mental health resources for students:\n\n**Counseling Center** is your main hub - located in **Suite 2010, Student Services Building** (1200 W Harrison St). They're open **Mon-Fri 8AM-5PM** with evening appointments available. Call **312-996-3490** for appointments or walk-ins. Best part: it's **free for students** who pay the Health Services Fee, regardless of your insurance.\n\nFor emergencies, they have a **24/7 crisis line** at the same number (**312-996-3490**) - you can call anytime for immediate crisis counseling support.\n\nBeyond the Counseling Center, UIC promotes mental health awareness campus-wide. The Black Cultural Center runs **Black Wellness Wednesdays** for mindfulness and stress relief, and Student-Athlete Advisory Committee (SAAC) actively promotes mental health awareness. With **470+ student orgs** available at connect.uic.edu, you'll also find peer support groups and wellness-focused organizations.\n\nThe university clearly prioritizes mental health - from professional counseling to cultural wellness programs to peer communities.",
+      "error": null,
+      "latency_ms": 9006,
+      "ttfb_ms": 0,
+      "server_abstained": false,
+      "abstain_reason": null,
+      "scores": {
+        "answered": true,
+        "abstained": false,
+        "abstain_correct": null,
+        "hallucination_flags": [
+          "contains_phone_number",
+          "contains_suite_number"
+        ],
+        "response_length": 1077,
+        "notes": []
+      }
+    },
+    {
+      "id": "q61",
+      "question": "i want to play college soccer am i too late to get recruited?",
+      "category": "athletics",
+      "difficulty": "hard",
+      "type": "ambiguous",
+      "response": "I can't tell you about recruitment timelines since that's not in my UIC data, but I can share what I know about **UIC's soccer programs**!\n\nUIC has both men's and women's soccer teams that compete in the **Missouri Valley Conference (MVC)**. The men's team is coached by **Sean Phillips** and plays at **Flames Field** (901 W Roosevelt Rd) — it was completely rebuilt in 2022 with a grass pitch, new video board, and awesome Chicago skyline views.\n\nFor recruitment specifics and whether you're still in the timeline, you'd need to contact the coaching staff directly or check the official UIC Athletics website at **uicflames.com**. They'll have the real scoop on walk-on opportunities, recruitment cycles, and what they're looking for in players.\n\nIf you're already a UIC student, definitely reach out — sometimes coaches are looking for talent right on campus!",
+      "error": null,
+      "latency_ms": 10106,
+      "ttfb_ms": 0,
+      "server_abstained": false,
+      "abstain_reason": null,
+      "scores": {
+        "answered": true,
+        "abstained": false,
+        "abstain_correct": null,
+        "hallucination_flags": [
+          "overconfident_language"
+        ],
+        "response_length": 862,
+        "notes": []
+      }
+    },
+    {
+      "id": "q62",
+      "question": "how do i walk on to the uic basketball team?",
+      "category": "athletics",
+      "difficulty": "hard",
+      "type": "factual",
+      "response": "To walk on to the **UIC Men's Basketball** team, contact **Head Coach Rob Ehsan** directly through UICFlames.com → Men's Basketball → Coaching Staff. \n\nThe typical process is: (1) email the coaching staff expressing interest, (2) request to attend a practice or open tryout, (3) demonstrate your skills during the tryout.\n\nYou can also reach out to the UIC Athletics main office for additional guidance on the walk-on process.",
+      "error": null,
+      "latency_ms": 6925,
+      "ttfb_ms": 0,
+      "server_abstained": false,
+      "abstain_reason": null,
+      "scores": {
+        "answered": true,
+        "abstained": false,
+        "abstain_correct": null,
+        "hallucination_flags": [],
+        "response_length": 426,
+        "notes": []
+      }
+    },
+    {
+      "id": "q63",
+      "question": "are uic athletic events free for students?",
+      "category": "athletics",
+      "difficulty": "easy",
+      "type": "factual",
+      "response": "Yes! **UIC students get FREE admission** to all regular season home athletic events with a valid UIC student ID.\n\nFor basketball games, students use the **Flame Force student section** (Gate 3, Credit Union 1 Arena, sections 110-112) — follow **@uic_studentsection** on Instagram for access details.\n\nThe only exception is that basketball requires going through the Flame Force system rather than just showing your ID at the gate.",
+      "error": null,
+      "latency_ms": 5638,
+      "ttfb_ms": 0,
+      "server_abstained": false,
+      "abstain_reason": null,
+      "scores": {
+        "answered": true,
+        "abstained": false,
+        "abstain_correct": null,
+        "hallucination_flags": [],
+        "response_length": 430,
+        "notes": []
+      }
+    },
+    {
+      "id": "q64",
+      "question": "what conference does uic play in?",
+      "category": "athletics",
+      "difficulty": "easy",
+      "type": "factual",
+      "response": "UIC Flames compete in the **Missouri Valley Conference (MVC)**. \n\nAll UIC home games are **free for students** with a UIC ID, and there's a **Flames Fast Pass** for $50 that covers all home events except basketball for non-students.",
+      "error": null,
+      "latency_ms": 4791,
+      "ttfb_ms": 0,
+      "server_abstained": false,
+      "abstain_reason": null,
+      "scores": {
+        "answered": true,
+        "abstained": false,
+        "abstain_correct": null,
+        "hallucination_flags": [],
+        "response_length": 232,
+        "notes": []
+      }
+    },
+    {
+      "id": "q65",
+      "question": "who is the coach of the uic womens volleyball team?",
+      "category": "athletics",
+      "difficulty": "medium",
+      "type": "factual",
+      "response": "The head coach of the UIC women's volleyball team is **Justin Ingram**. The team plays at both the Flames Athletic Center and Credit Union 1 Arena.",
+      "error": null,
+      "latency_ms": 4484,
+      "ttfb_ms": 0,
+      "server_abstained": false,
+      "abstain_reason": null,
+      "scores": {
+        "answered": true,
+        "abstained": false,
+        "abstain_correct": null,
+        "hallucination_flags": [],
+        "response_length": 147,
+        "notes": []
+      }
+    },
+    {
+      "id": "q66",
+      "question": "how do i register for classes for the first time?",
+      "category": "academics",
+      "difficulty": "medium",
+      "type": "factual",
+      "response": "For **first-time registration** at UIC, you'll need to complete these steps:\n\n1. **Meet with your academic advisor first** - this is required before your first registration. For Engineering students, that's **123 SEO** or call **(312) 996-3463**. Other majors have different advising locations.\n\n2. **Wait for your registration time** - you'll get a specific date/time when your registration opens (new students typically register later than continuing students).\n\n3. **Use my.UIC.edu** to register through Student Self-Service once your time opens.\n\n**Key dates**: Spring 2026 registration opens **March 30, 2026** for summer/fall courses, and Fall 2025 registration likely opened in early November 2024.\n\nSince you're asking about first-time registration, I'd recommend calling your college's advising office ASAP to schedule that required advising appointment - they'll walk you through course selection and registration procedures specific to your major.\n\nWhat's your intended major? I can give you the exact advising office contact.",
+      "error": null,
+      "latency_ms": 11441,
+      "ttfb_ms": 1,
+      "server_abstained": false,
+      "abstain_reason": null,
+      "scores": {
+        "answered": true,
+        "abstained": false,
+        "abstain_correct": null,
+        "hallucination_flags": [],
+        "response_length": 1037,
+        "notes": []
+      }
+    },
+    {
+      "id": "q67",
+      "question": "what happens if i fail a class at uic?",
+      "category": "academics",
+      "difficulty": "medium",
+      "type": "factual",
+      "response": "If you fail a class at UIC, here's what happens based on the academic policies I have:\n\n**Grade Impact**: A failing grade (F) will factor into your GPA calculation and may affect your academic standing. If your cumulative GPA drops too low, you could face academic probation or other consequences.\n\n**Retaking Options**: You'll typically need to retake the course if it's required for your degree. UIC generally allows grade replacement policies for repeated courses, though specific rules vary by college.\n\n**Academic Standing**: Multiple failed courses or a low GPA can lead to academic probation, which comes with registration holds and mandatory advising requirements.\n\nSince academic policies can vary significantly by college and situation, I'd recommend contacting your college's advising office directly for specific guidance on your situation. Each college handles these policies slightly differently, and they can walk you through your options for retaking courses, grade replacement policies, and getting back on track.\n\nYour college advising office can be reached through the numbers I listed, or you can check **iAdvise** in myUIC for more details. The **Office of the Registrar** at **(312) 996-8600** can also clarify specific grade policies.",
+      "error": null,
+      "latency_ms": 11069,
+      "ttfb_ms": 0,
+      "server_abstained": false,
+      "abstain_reason": null,
+      "scores": {
+        "answered": true,
+        "abstained": false,
+        "abstain_correct": null,
+        "hallucination_flags": [],
+        "response_length": 1257,
+        "notes": []
+      }
+    },
+    {
+      "id": "q68",
+      "question": "can i take classes at another university and transfer the credits?",
+      "category": "academics",
+      "difficulty": "medium",
+      "type": "factual",
+      "response": "Yes, you can take classes at another university and transfer the credits to UIC, but there are specific policies you'll need to follow.\n\nSince advising is decentralized at UIC, you'll need to work with your **major college's advising office** to get approval. Each college has different requirements - for example, if you're in Engineering, you'd contact **123 SEO at (312) 996-3463**, or Business would be **Douglass Hall Suite 110 at (312) 996-2700**.\n\nThe key is getting **prior approval** before taking courses elsewhere to ensure they'll transfer and count toward your degree. You can also use **iAdvise in myUIC** to help with the planning process.\n\nBased on what I have, I don't have the complete transfer credit policy details. For the full requirements, deadlines, and approval process, contact your college's advising office directly or check the official transfer credit policies at **advising.uic.edu** to get the most current information.",
+      "error": null,
+      "latency_ms": 10432,
+      "ttfb_ms": 0,
+      "server_abstained": false,
+      "abstain_reason": null,
+      "scores": {
+        "answered": true,
+        "abstained": false,
+        "abstain_correct": null,
+        "hallucination_flags": [
+          "contains_suite_number"
+        ],
+        "response_length": 951,
+        "notes": []
+      }
+    },
+    {
+      "id": "q69",
+      "question": "whats the difference between a major and a concentration?",
+      "category": "academics",
+      "difficulty": "medium",
+      "type": "ambiguous",
+      "response": "At UIC, a **major** is your primary field of study that appears on your degree — like Computer Science, Psychology, or Business Administration. It's the main academic program you're enrolled in and determines most of your required coursework.\n\nA **concentration** is a specialized focus area within your major. It's a subset of courses that lets you dive deeper into a specific aspect of your field. For example:\n\n- **Computer Science major** might have concentrations in Software Engineering, Data Science, or Cybersecurity\n- **Business Administration major** might offer concentrations in Marketing, Finance, or Management\n- **Psychology major** could have concentrations in Clinical Psychology or Cognitive Science\n\n**Key differences:**\n- **Major** = required, appears on diploma, ~40-60+ credit hours\n- **Concentration** = optional in most cases, may appear on transcript, typically 15-18 credit hours within your major\n\nSome majors require you to choose a concentration, while others make it optional. The concentration courses count toward your major requirements — you're not adding extra coursework, just focusing your existing major credits in a specific direction.\n\nFor specifics about concentrations in your major, contact your college's advising office. Each of UIC's colleges handles this differently, and they'll have the exact requirements and options available to you.",
+      "error": null,
+      "latency_ms": 10350,
+      "ttfb_ms": 0,
+      "server_abstained": false,
+      "abstain_reason": null,
+      "scores": {
+        "answered": true,
+        "abstained": false,
+        "abstain_correct": null,
+        "hallucination_flags": [],
+        "response_length": 1384,
+        "notes": []
+      }
+    },
+    {
+      "id": "q70",
+      "question": "does uic have a law school?",
+      "category": "academics",
+      "difficulty": "easy",
+      "type": "factual",
+      "response": "Yes! UIC has the **UIC School of Law**, which is one of UIC's 16 colleges and schools. \n\nThe law school offers JD courses like **JD 401** (Experiential Learning) and specialized law courses such as **LAW 480** (Illinois Constitutional Law) and **LAW 403** (Legal Studies Institute: Intellectual Property). Based on enrollment data, it's an active program with courses taught by faculty like Professor Ann M. Lousin and others.\n\nFor specific admissions info, programs, or visiting the law school, you'd want to check their dedicated website or contact them directly since law school admissions typically have different requirements and timelines than undergraduate programs.",
+      "error": null,
+      "latency_ms": 7663,
+      "ttfb_ms": 0,
+      "server_abstained": false,
+      "abstain_reason": null,
+      "scores": {
+        "answered": true,
+        "abstained": false,
+        "abstain_correct": null,
+        "hallucination_flags": [],
+        "response_length": 673,
+        "notes": []
+      }
+    },
+    {
+      "id": "q71",
+      "question": "is uic a good school for nursing?",
+      "category": "academics",
+      "difficulty": "medium",
+      "type": "ambiguous",
+      "response": "I'm not sure I have reliable information on that. You can reach UIC at 312-996-7000 or visit uic.edu — most offices also have live chat on their pages.",
+      "error": null,
+      "latency_ms": 4194,
+      "ttfb_ms": 1,
+      "server_abstained": true,
+      "abstain_reason": "insufficient_evidence",
+      "scores": {
+        "answered": true,
+        "abstained": true,
+        "abstain_correct": null,
+        "hallucination_flags": [
+          "contains_phone_number"
+        ],
+        "response_length": 151,
+        "notes": [
+          "server_abstained:insufficient_evidence"
+        ]
+      }
+    },
+    {
+      "id": "q72",
+      "question": "what research opportunities are available for undergrads?",
+      "category": "academics",
+      "difficulty": "hard",
+      "type": "ambiguous",
+      "response": "UIC has **undergraduate research opportunities** across all colleges, though I don't have the complete catalog of specific programs in my data.\n\nWhat I can tell you: UIC has a dedicated **@uic_ug_research** Instagram account that showcases undergraduate research, and as Chicago's only public Research I university, there are extensive opportunities to work with faculty on real projects.\n\nFor the full scope of undergraduate research programs, funding opportunities, and how to get connected with faculty in your field, check out **UIC's Undergraduate Research** website or contact them directly. They'll have details on research scholarships, summer programs, presentation opportunities, and how to find faculty mentors in your specific area of interest.\n\nWhat field are you most interested in researching? That might help narrow down the best starting points for you.",
+      "error": null,
+      "latency_ms": 8143,
+      "ttfb_ms": 1,
+      "server_abstained": false,
+      "abstain_reason": null,
+      "scores": {
+        "answered": true,
+        "abstained": false,
+        "abstain_correct": null,
+        "hallucination_flags": [],
+        "response_length": 870,
+        "notes": []
+      }
+    },
+    {
+      "id": "q73",
+      "question": "how do i appeal a grade at uic?",
+      "category": "academics",
+      "difficulty": "hard",
+      "type": "factual",
+      "response": "To appeal a grade at UIC, you'll need to follow your college's specific appeals process since grading policies are handled at the college level.\n\n**Start here:**\n- Contact your college's student affairs office first (see addresses/phones below)\n- Use the iAdvise system in myUIC for academic advising support\n- Visit https://advising.uic.edu/student-resources/ for general guidance\n\n**College offices:**\n- **Applied Health Sciences:** 516 AHSB, (312) 996-2079\n- **Architecture, Design, and the Arts:** 208 Jefferson Hall, (312) 996-2006  \n- **Business Administration:** Douglass Hall Suite 110, (312) 996-2700\n- **Education:** 3145 ETMSW, (312) 996-4532\n- **Engineering:** 123 SEO, (312) 996-3463\n- **Liberal Arts and Sciences:** 3rd Floor University Hall, (312) 996-3366\n- **Nursing:** 5th Floor NURS, (312) 996-7800\n- **Public Health:** SPHPI Building, (312) 355-2536\n- **Urban Planning and Public Affairs:** 115 CUPPA Hall, (312) 413-8088\n\nEach college has different deadlines and procedures, so contact yours directly for the specific steps and required documentation.",
+      "error": null,
+      "latency_ms": 8744,
+      "ttfb_ms": 0,
+      "server_abstained": false,
+      "abstain_reason": null,
+      "scores": {
+        "answered": true,
+        "abstained": false,
+        "abstain_correct": null,
+        "hallucination_flags": [
+          "contains_suite_number"
+        ],
+        "response_length": 1072,
+        "notes": []
+      }
+    },
+    {
+      "id": "q74",
+      "question": "can i take more than 18 credit hours in a semester?",
+      "category": "academics",
+      "difficulty": "medium",
+      "type": "factual",
+      "response": "You can typically take **more than 18 credit hours** per semester, but you'll need approval. Most colleges at UIC require permission from your academic advisor or dean's office for course overloads beyond the standard limit.\n\nThe specific approval process varies by college, so contact your college's advising office directly. For example, **Business students** go to Douglass Hall Suite 110 **(312) 996-2700**, while **Engineering students** would check with their college office.\n\nKeep in mind that taking more than 18 hours significantly increases your tuition since UIC charges **$476 per credit hour** for in-state students beyond the standard semester rate.",
+      "error": null,
+      "latency_ms": 7317,
+      "ttfb_ms": 0,
+      "server_abstained": false,
+      "abstain_reason": null,
+      "scores": {
+        "answered": true,
+        "abstained": false,
+        "abstain_correct": null,
+        "hallucination_flags": [
+          "contains_suite_number"
+        ],
+        "response_length": 663,
+        "notes": []
+      }
+    },
+    {
+      "id": "q75",
+      "question": "what is the honors college at uic?",
+      "category": "academics",
+      "difficulty": "easy",
+      "type": "factual",
+      "response": "The **UIC Honors College** is a selective academic program that requires maintaining a **3.40/4.00 minimum GPA** and completing **18 honors units** (prorated for transfer students). It's designed for high-achieving students who want enhanced academic experiences and closer faculty interaction.\n\nThe Honors College has its own dedicated advising services and Instagram account (@uichonors). For detailed program requirements, course offerings, and application information, check out **honors.uic.edu** or their advising page at honors.uic.edu/resources/advising/.\n\nIf you're considering applying or want to learn more about specific benefits and opportunities, the Honors College website will have the most comprehensive details about what makes the program unique at UIC.",
+      "error": null,
+      "latency_ms": 8287,
+      "ttfb_ms": 1,
+      "server_abstained": false,
+      "abstain_reason": null,
+      "scores": {
+        "answered": true,
+        "abstained": false,
+        "abstain_correct": null,
+        "hallucination_flags": [],
+        "response_length": 772,
+        "notes": []
+      }
+    },
+    {
+      "id": "q76",
+      "question": "how do i apply for on campus housing?",
+      "category": "student_life",
+      "difficulty": "easy",
+      "type": "factual",
+      "response": "**Apply online at housing.uic.edu** or call Housing Services at **(312) 996-3000**.\n\n**Key deadlines for Fall 2025:**\n- **First-year students:** Priority deadline **November 3, 2025** | Regular deadline **February 2, 2026**\n- **Transfer students:** **April 1, 2026** (need 24+ transferable hours at application, 36+ by enrollment)\n\nYou'll need to complete your UIC admissions application first, then apply for housing through the housing portal. No enrollment deposit required at UIC, which makes the process simpler than most schools.",
+      "error": null,
+      "latency_ms": 10999,
+      "ttfb_ms": 1,
+      "server_abstained": false,
+      "abstain_reason": null,
+      "scores": {
+        "answered": true,
+        "abstained": false,
+        "abstain_correct": null,
+        "hallucination_flags": [],
+        "response_length": 535,
+        "notes": []
+      }
+    },
+    {
+      "id": "q77",
+      "question": "whats the cheapest dorm at uic?",
+      "category": "student_life",
+      "difficulty": "medium",
+      "type": "factual",
+      "response": "**Commons West (CMW)** has the cheapest dorm option at UIC with **shared rooms at $5,275/semester**. However, since CMW requires a meal plan (adding ~$2,000+ per semester), your total cost will be around **$7,275+/semester**.\n\nIf you want the absolute lowest housing cost, consider **Marie Robinson Hall (MRH)** or **Thomas Beckham Hall (TBH)** which have optional meal plans and may end up cheaper overall depending on your eating habits.",
+      "error": null,
+      "latency_ms": 6757,
+      "ttfb_ms": 0,
+      "server_abstained": false,
+      "abstain_reason": null,
+      "scores": {
+        "answered": true,
+        "abstained": false,
+        "abstain_correct": null,
+        "hallucination_flags": [
+          "contains_dollar_amount"
+        ],
+        "response_length": 439,
+        "notes": []
+      }
+    },
+    {
+      "id": "q78",
+      "question": "are there quiet dorms at uic?",
+      "category": "student_life",
+      "difficulty": "medium",
+      "type": "factual",
+      "response": "Yes! **Commons North (CMN)** is your best bet for quieter dorm living. It's for sophomores and above, so you'll have more mature residents, plus it has suite-style living with private bedrooms and smaller bathroom groups (**$6,403-6,510**). The east campus location is also less hectic than the main campus hub.\n\n**Academic and Residential Complex (ARC)** has some quieter options too - the **traditional private rooms** (**$7,292**) give you your own space, and it has strong academics-housing integration, so residents tend to be more study-focused.\n\n**James Stukel Towers (JST)** can be hit-or-miss since it's all first-years, but the **suite private rooms** (**$6,871**) at least give you a quiet retreat space even if common areas get lively.\n\nAll dorms require meal plans, so factor that into your housing decision. Want specific details about any of these halls?",
+      "error": null,
+      "latency_ms": 10563,
+      "ttfb_ms": 0,
+      "server_abstained": false,
+      "abstain_reason": null,
+      "scores": {
+        "answered": true,
+        "abstained": false,
+        "abstain_correct": null,
+        "hallucination_flags": [
+          "contains_dollar_amount"
+        ],
+        "response_length": 869,
+        "notes": []
+      }
+    },
+    {
+      "id": "q79",
+      "question": "how do i find clubs to join at uic?",
+      "category": "student_life",
+      "difficulty": "easy",
+      "type": "factual",
+      "response": "You can find clubs to join at **connect.uic.edu** — that's UIC's official platform for all **470+ registered student organizations**.\n\n**Greek life** is also big at UIC with **30+ chapters across 5 councils** (IFC, CPC, NPHC, etc.). They host events like \"Meet FSL!\" early in the fall semester in the Student Center East to showcase all the fraternity and sorority options.\n\nFor the most current club fair dates and recruitment events, check with Student Life at **(312) 996-4636** or visit the Student Center East offices — they coordinate all the major involvement fairs throughout the year.",
+      "error": null,
+      "latency_ms": 7802,
+      "ttfb_ms": 1,
+      "server_abstained": false,
+      "abstain_reason": null,
+      "scores": {
+        "answered": true,
+        "abstained": false,
+        "abstain_correct": null,
+        "hallucination_flags": [],
+        "response_length": 593,
+        "notes": []
+      }
+    },
+    {
+      "id": "q80",
+      "question": "does uic have a student newspaper?",
+      "category": "student_life",
+      "difficulty": "easy",
+      "type": "factual",
+      "response": "Yes! UIC has **The Flame** — an independent student-run newspaper that covers UIC news, campus events, sports, and opinion pieces. You can find them online at theflame.uic.edu or follow @theflameuic on social media.\n\nThey distribute free print copies around campus and operate under the UIC Student Media Board along with **WUIC**, the student radio station.",
+      "error": null,
+      "latency_ms": 7338,
+      "ttfb_ms": 0,
+      "server_abstained": false,
+      "abstain_reason": null,
+      "scores": {
+        "answered": true,
+        "abstained": false,
+        "abstain_correct": null,
+        "hallucination_flags": [],
+        "response_length": 358,
+        "notes": []
+      }
+    },
+    {
+      "id": "q81",
+      "question": "what is spark fest?",
+      "category": "student_life",
+      "difficulty": "easy",
+      "type": "factual",
+      "response": "**Spark Fest** is UIC's annual fall music festival that's free for students! It's one of the biggest events on campus and has featured some major headliners over the years including **Kid Cudi, Kendrick Lamar, J. Cole, Twenty One Pilots, H.E.R., Flo Milli, Party Next Door**, and **Remi Wolf**.\n\nThe festival happens each fall on campus and is a huge part of UIC's social calendar. It's a great way to see big-name artists without paying concert prices — definitely one of the perks of being a UIC student!",
+      "error": null,
+      "latency_ms": 6134,
+      "ttfb_ms": 0,
+      "server_abstained": false,
+      "abstain_reason": null,
+      "scores": {
+        "answered": true,
+        "abstained": false,
+        "abstain_correct": null,
+        "hallucination_flags": [
+          "overconfident_language"
+        ],
+        "response_length": 506,
+        "notes": []
+      }
+    },
+    {
+      "id": "q82",
+      "question": "how do i report a safety concern on campus?",
+      "category": "admin",
+      "difficulty": "easy",
+      "type": "factual",
+      "response": "For safety concerns at UIC:\n\n**Emergency:** Call **(312) 355-5555** (UIC Police emergency line)\n\n**Non-emergency safety concerns:** Call **(312) 996-2830** (UIC Police non-emergency)\n\nYou can also use the **UIC Safe app** to report incidents or request the 24/7 free Safety Escort service.\n\nFor Title IX-related safety concerns (harassment, discrimination, sexual misconduct), contact the Office for Access and Equity at **(312) 996-8670**, or for confidential support, call the Campus Advocacy Network at **(312) 413-8206**.",
+      "error": null,
+      "latency_ms": 6891,
+      "ttfb_ms": 0,
+      "server_abstained": false,
+      "abstain_reason": null,
+      "scores": {
+        "answered": true,
+        "abstained": false,
+        "abstain_correct": null,
+        "hallucination_flags": [],
+        "response_length": 525,
+        "notes": []
+      }
+    },
+    {
+      "id": "q83",
+      "question": "where can i print documents on campus?",
+      "category": "admin",
+      "difficulty": "easy",
+      "type": "factual",
+      "response": "You can print documents at **Daley Library** (801 S. Morgan) - they have computer labs and printing services available during their regular hours: Mon-Thu 8AM-midnight, Fri 8AM-10PM, Sat 10AM-8PM, Sun 10AM-midnight.\n\nMost **residence halls** also have computer labs with printing available for residents. Additionally, the **Student Center East** and **Student Center West** have computer areas with printing services.\n\nFor specific printing costs and locations of all computer labs across campus, contact the library at **(312) 996-2724** or check the UIC Technology Services website.",
+      "error": null,
+      "latency_ms": 6826,
+      "ttfb_ms": 0,
+      "server_abstained": false,
+      "abstain_reason": null,
+      "scores": {
+        "answered": true,
+        "abstained": false,
+        "abstain_correct": null,
+        "hallucination_flags": [],
+        "response_length": 585,
+        "notes": []
+      }
+    },
+    {
+      "id": "q84",
+      "question": "does uic have a disability resource center?",
+      "category": "admin",
+      "difficulty": "easy",
+      "type": "factual",
+      "response": "Yes, UIC has a **Disability Resource Center (DRC)** located at **1070 SSB, 1200 W Harrison St**. You can reach them at **312-413-2183** or **drc@uic.edu**. They're open **Monday-Friday 9AM-5PM**.\n\nTo register for services, you can start online or call directly. You'll need to schedule an intake appointment through iAdvise, and they may provide provisional accommodations while your documentation is being processed.",
+      "error": null,
+      "latency_ms": 5073,
+      "ttfb_ms": 0,
+      "server_abstained": false,
+      "abstain_reason": null,
+      "scores": {
+        "answered": true,
+        "abstained": false,
+        "abstain_correct": null,
+        "hallucination_flags": [
+          "contains_phone_number"
+        ],
+        "response_length": 417,
+        "notes": []
+      }
+    },
+    {
+      "id": "q85",
+      "question": "how do i get a student id?",
+      "category": "admin",
+      "difficulty": "easy",
+      "type": "factual",
+      "response": "You get your student ID (i-card) at the **ID Center** in the Student Center East (SCE), Room 1100. \n\n**Location**: 750 S Halsted Street, Room 1100  \n**Hours**: Monday-Friday 8:30 AM - 5:00 PM  \n**Phone**: (312) 996-5678\n\nBring a government-issued photo ID and be prepared to pay the $25 replacement fee if this isn't your first card. New students get their first i-card free during orientation or when they first arrive on campus.",
+      "error": null,
+      "latency_ms": 7158,
+      "ttfb_ms": 0,
+      "server_abstained": false,
+      "abstain_reason": null,
+      "scores": {
+        "answered": true,
+        "abstained": false,
+        "abstain_correct": null,
+        "hallucination_flags": [],
+        "response_length": 430,
+        "notes": []
+      }
+    },
+    {
+      "id": "q86",
+      "question": "what are the library hours?",
+      "category": "admin",
+      "difficulty": "easy",
+      "type": "factual",
+      "response": "**Daley Library** (main campus): Mon-Thu 8AM-midnight, Fri 8AM-10PM, Sat 10AM-8PM, Sun 10AM-midnight. During finals week, it's open **24/7**. During breaks, hours are reduced to Mon-Fri 8AM-5PM.\n\nThe library is located at **801 S. Morgan** and you can call them at **(312) 996-2724**.",
+      "error": null,
+      "latency_ms": 6508,
+      "ttfb_ms": 1,
+      "server_abstained": false,
+      "abstain_reason": null,
+      "scores": {
+        "answered": true,
+        "abstained": false,
+        "abstain_correct": null,
+        "hallucination_flags": [],
+        "response_length": 284,
+        "notes": []
+      }
+    },
+    {
+      "id": "q87",
+      "question": "i got waitlisted what are my chances?",
+      "category": "admissions",
+      "difficulty": "hard",
+      "type": "ambiguous",
+      "response": "I understand getting waitlisted can be stressful! Unfortunately, I don't have specific data on UIC's waitlist statistics or historical acceptance rates from the waitlist in my information.\n\nWhat I can tell you is that waitlist outcomes vary significantly year to year based on how many admitted students actually enroll. Your chances depend on factors like your program, when you submitted your application, and how this year's enrollment shapes up.\n\nFor the most accurate information about your specific situation and current waitlist trends, I'd recommend contacting **UIC Admissions directly at (312) 996-4350** or checking your applicant portal regularly. They can give you better insight into where things stand this cycle and any steps you can take while waiting.\n\nHang in there — waitlists do move, and UIC reviews them as space becomes available!",
+      "error": null,
+      "latency_ms": 8424,
+      "ttfb_ms": 0,
+      "server_abstained": false,
+      "abstain_reason": null,
+      "scores": {
+        "answered": true,
+        "abstained": false,
+        "abstain_correct": null,
+        "hallucination_flags": [],
+        "response_length": 854,
+        "notes": []
+      }
+    },
+    {
+      "id": "q88",
+      "question": "does uic require sat scores?",
+      "category": "admissions",
+      "difficulty": "easy",
+      "type": "factual",
+      "response": "No, **UIC does not require SAT scores**. UIC is **test-optional** — you can submit ACT or SAT scores if you want, but they're not required for admission.\n\nThis applies to both first-year and transfer students. UIC uses a holistic review process, so they'll evaluate your application based on your GPA, coursework, essays, and other factors even without test scores.",
+      "error": null,
+      "latency_ms": 6387,
+      "ttfb_ms": 0,
+      "server_abstained": false,
+      "abstain_reason": null,
+      "scores": {
+        "answered": true,
+        "abstained": false,
+        "abstain_correct": null,
+        "hallucination_flags": [],
+        "response_length": 365,
+        "notes": []
+      }
+    },
+    {
+      "id": "q89",
+      "question": "what is the acceptance rate at uic?",
+      "category": "admissions",
+      "difficulty": "easy",
+      "type": "factual",
+      "response": "UIC has a **78.5% acceptance rate**, making it moderately selective. This data comes from the official US Department of Education College Scorecard.\n\nUIC uses the Common Application and is **test-optional** — you don't need to submit ACT or SAT scores. For first-year students, the priority deadline is **November 3, 2025** and regular deadline is **February 2, 2026**.",
+      "error": null,
+      "latency_ms": 5731,
+      "ttfb_ms": 0,
+      "server_abstained": false,
+      "abstain_reason": null,
+      "scores": {
+        "answered": true,
+        "abstained": false,
+        "abstain_correct": null,
+        "hallucination_flags": [],
+        "response_length": 369,
+        "notes": []
+      }
+    },
+    {
+      "id": "q90",
+      "question": "can i defer my enrollment?",
+      "category": "admissions",
+      "difficulty": "medium",
+      "type": "factual",
+      "response": "Yes, UIC allows enrollment deferral. You'll need to submit a **deferral request** through the Office of Admissions.\n\n**Key details:**\n- **Contact:** Office of Admissions at **(312) 996-4350** or **uicadmit@uic.edu**\n- **Location:** Student Services Building (SSB), 1200 West Harrison Street\n- Deferral is typically granted for one academic year\n- Must be requested before your intended enrollment term begins\n\nSince UIC doesn't charge an enrollment deposit, the deferral process should be straightforward. Contact admissions directly to get the specific form and confirm any deadlines for your situation.\n\n**Admissions website:** https://admissions.uic.edu/",
+      "error": null,
+      "latency_ms": 7529,
+      "ttfb_ms": 0,
+      "server_abstained": false,
+      "abstain_reason": null,
+      "scores": {
+        "answered": true,
+        "abstained": false,
+        "abstain_correct": null,
+        "hallucination_flags": [],
+        "response_length": 657,
+        "notes": []
+      }
+    },
+    {
+      "id": "q91",
+      "question": "my parents want to know how much ill actually owe after aid",
+      "category": "financial",
+      "difficulty": "hard",
+      "type": "multi_intent",
+      "response": "Based on what I have, your actual cost depends heavily on your family's income and academic profile:\n\n**If your family earns under $75k/year:** UIC's **Aspire Grant** covers 100% of tuition + fees (worth ~$16,314/year). You'd only pay for housing, food, books, and personal expenses. For on-campus living, that's roughly $23k total instead of the full ~$39k cost of attendance.\n\n**Merit aid can stack on top:** Strong stats get you additional money — **Chancellor's Fellows** ($7,500/year for 3.70+ GPA, 33+ ACT), **President's Award** ($5,000+/year), or **Merit Tuition Award** ($9,128/year). These can cover housing costs too.\n\n**The key step:** Submit your FAFSA by **March 15** to qualify for the Aspire Grant and see your full aid package. UIC will show you exactly what you'll owe after all aid is applied.\n\nSince financial aid varies significantly by family situation, I'd recommend calling UIC's Financial Aid Office at (312) 996-3126 or visiting **financialaid.uic.edu** for a personalized estimate based on your specific circumstances.",
+      "error": null,
+      "latency_ms": 10839,
+      "ttfb_ms": 0,
+      "server_abstained": false,
+      "abstain_reason": null,
+      "scores": {
+        "answered": true,
+        "abstained": false,
+        "abstain_correct": null,
+        "hallucination_flags": [
+          "contains_dollar_amount"
+        ],
+        "response_length": 1045,
+        "notes": []
+      }
+    },
+    {
+      "id": "q92",
+      "question": "is it cheaper to live on campus or off campus?",
+      "category": "financial",
+      "difficulty": "medium",
+      "type": "multi_intent",
+      "response": "**Off-campus is significantly cheaper** — you'll typically save **$3-8k per year** compared to on-campus housing.\n\n## Cost Breakdown:\n\n**On-Campus (ARC/JST):**\n- **$6,342-9,005/year** for housing\n- **Meal plan required** (adds ~$4-5k)\n- **Total: ~$10-14k/year**\n\n**Off-Campus:**\n- **$800-2,500/month** depending on neighborhood\n- **$9,600-30k/year** (but you control meal costs)\n- **Popular student areas:**\n  - Pilsen: **~$800-1,200/month** (1-2 Pink Line stops to campus)\n  - University Village: **~$900-1,400/month** (walkable to campus)\n  - Medical District: **~$1,000-1,600/month** (close to west campus)\n\n## The Real Tradeoff:\nOff-campus saves money but adds commute time/costs. Since **91% of UIC students commute**, you'd be in the majority. On-campus gives you convenience and community but costs significantly more.\n\n**Bottom line:** Off-campus typically saves **$3-8k annually**, especially in areas like Pilsen or University Village where you're still close to campus.\n\nCheck **offcampushousing.uic.edu** for current listings and roommate matching.",
+      "error": null,
+      "latency_ms": 11664,
+      "ttfb_ms": 0,
+      "server_abstained": false,
+      "abstain_reason": null,
+      "scores": {
+        "answered": true,
+        "abstained": false,
+        "abstain_correct": null,
+        "hallucination_flags": [
+          "contains_dollar_amount"
+        ],
+        "response_length": 1060,
+        "notes": []
+      }
+    },
+    {
+      "id": "q93",
+      "question": "what happens if i dont pay my tuition bill on time?",
+      "category": "financial",
+      "difficulty": "medium",
+      "type": "factual",
+      "response": "If you don't pay your tuition bill on time at UIC, you'll face **registration holds** and **late fees**. The university will place a hold on your account that prevents you from registering for future classes, accessing transcripts, or receiving your diploma.\n\nUIC typically sends multiple billing notices before the payment deadline. If payment isn't received, you'll accumulate late charges and your account will be referred to collections if it remains unpaid for an extended period.\n\nFor payment plans, extensions, or financial hardship assistance, contact **Student Accounts** at **(312) 996-4840** or visit the **Student Services Building (SSB)**. They can often work with students to set up payment arrangements before holds are placed.\n\nYour **4-year tuition lock** (guaranteed rate of **$5,712/semester** for in-state students) remains valid as long as you stay continuously enrolled, but holds could disrupt your enrollment status.",
+      "error": null,
+      "latency_ms": 9086,
+      "ttfb_ms": 0,
+      "server_abstained": false,
+      "abstain_reason": null,
+      "scores": {
+        "answered": true,
+        "abstained": false,
+        "abstain_correct": null,
+        "hallucination_flags": [
+          "overconfident_language",
+          "contains_dollar_amount"
+        ],
+        "response_length": 940,
+        "notes": []
+      }
+    },
+    {
+      "id": "q94",
+      "question": "can i get a refund if i withdraw from uic?",
+      "category": "financial",
+      "difficulty": "hard",
+      "type": "factual",
+      "response": "I can't confirm that financial aid detail. Contact the Office of Student Financial Aid: SSB Suite 1800 | 312-996-3126 | financialaid.uic.edu.",
+      "error": null,
+      "latency_ms": 3949,
+      "ttfb_ms": 0,
+      "server_abstained": true,
+      "abstain_reason": "insufficient_evidence",
+      "scores": {
+        "answered": true,
+        "abstained": true,
+        "abstain_correct": null,
+        "hallucination_flags": [
+          "contains_phone_number",
+          "contains_suite_number"
+        ],
+        "response_length": 141,
+        "notes": [
+          "server_abstained:insufficient_evidence"
+        ]
+      }
+    },
+    {
+      "id": "q95",
+      "question": "does uic have work study programs?",
+      "category": "financial",
+      "difficulty": "medium",
+      "type": "factual",
+      "response": "Yes, UIC offers **Federal Work-Study** programs! Work-study provides part-time jobs for students with financial need, allowing you to earn money to help pay for education expenses while gaining valuable work experience.\n\nTo be eligible, you need to complete your **FAFSA by March 15** and demonstrate financial need. Work-study positions are available both on-campus and with approved community service organizations off-campus. The jobs are typically flexible around your class schedule.\n\nSince the specific details about work-study wages and available positions aren't in my current data, I'd recommend checking **financialaid.uic.edu** or calling the Financial Aid Office at **(312) 996-3126** to learn about current openings and pay rates.",
+      "error": null,
+      "latency_ms": 8803,
+      "ttfb_ms": 0,
+      "server_abstained": false,
+      "abstain_reason": null,
+      "scores": {
+        "answered": true,
+        "abstained": false,
+        "abstain_correct": null,
+        "hallucination_flags": [],
+        "response_length": 743,
+        "notes": []
+      }
+    },
+    {
+      "id": "q96",
+      "question": "i heard uic is free for some students is that true?",
+      "category": "financial",
+      "difficulty": "medium",
+      "type": "ambiguous",
+      "response": "Yes! UIC's **Aspire Grant** covers **100% of tuition AND mandatory fees** — essentially free tuition — for Illinois families earning under **$75k**. That's saving you over **$16,000 per year** in tuition and fees.\n\nTo qualify, just submit your **FAFSA by March 15** and get admitted to UIC. No separate application needed. Check your eligibility at **free.uic.edu**.\n\nEven if you don't qualify for the Aspire Grant, UIC's in-state tuition is only **$5,712 per semester** plus **$2,445 in fees** — already one of the most affordable ways to get a degree from a top Research I university in Chicago.",
+      "error": null,
+      "latency_ms": 7788,
+      "ttfb_ms": 0,
+      "server_abstained": false,
+      "abstain_reason": null,
+      "scores": {
+        "answered": true,
+        "abstained": false,
+        "abstain_correct": null,
+        "hallucination_flags": [
+          "contains_dollar_amount"
+        ],
+        "response_length": 597,
+        "notes": []
+      }
+    },
+    {
+      "id": "q97",
+      "question": "what do uic students think about the food on campus?",
+      "category": "student_life",
+      "difficulty": "hard",
+      "type": "ambiguous",
+      "response": "I don't have student review data about UIC's dining options in my current information, but I can tell you what's available on campus for dining.\n\nUIC has two main dining halls: **605 Commons** in the Student Center East (Mon-Fri 7:30AM-8PM, weekends 10AM-8PM) and **JST Cafe** with similar hours. The Student Center East also has plenty of chain options like **Chick-fil-A**, **Panda Express**, **Dunkin'**, **Subway**, **Sushi Do**, **Halal Shack**, and **Moe's**. There's also the **Market at Halsted** which is open **24 hours**.\n\nFor actual student opinions and reviews, you'd want to check UIC's dining services feedback page or student forums. The official dining services would have the most up-to-date info on meal plans and any recent changes to the food quality or options.",
+      "error": null,
+      "latency_ms": 9795,
+      "ttfb_ms": 0,
+      "server_abstained": false,
+      "abstain_reason": null,
+      "scores": {
+        "answered": true,
+        "abstained": false,
+        "abstain_correct": null,
+        "hallucination_flags": [],
+        "response_length": 783,
+        "notes": []
+      }
+    },
+    {
+      "id": "q98",
+      "question": "is uic safe?",
+      "category": "admin",
+      "difficulty": "hard",
+      "type": "ambiguous",
+      "response": "UIC has several safety measures in place. You can reach **UIC Police at (312) 355-5555 for emergencies** or **(312) 996-2830 for non-emergencies**. They also offer **24/7 free safety escorts** — just call that same non-emergency number.\n\nThe campus uses the **UIC Safe app** and **UIC Alert system** for emergency notifications (auto-email plus optional phone alerts). For any Title IX concerns, you can contact the **Office for Access and Equity at (312) 996-8670** or the **Confidential Advisor Network (CAN) at (312) 413-8206**.\n\nLike any urban campus, staying aware of your surroundings and using available resources like the safety escort service helps ensure a safer experience.",
+      "error": null,
+      "latency_ms": 8071,
+      "ttfb_ms": 0,
+      "server_abstained": false,
+      "abstain_reason": null,
+      "scores": {
+        "answered": true,
+        "abstained": false,
+        "abstain_correct": null,
+        "hallucination_flags": [],
+        "response_length": 684,
+        "notes": []
+      }
+    },
+    {
+      "id": "q99",
+      "question": "should i go to uic or uiuc for computer science?",
+      "category": "academics",
+      "difficulty": "hard",
+      "type": "multi_intent",
+      "response": "## UIC vs UIUC for Computer Science\n\n**UIC Computer Science:**\n- **Cost**: $5,712/semester tuition + $2,445 fees (in-state) — significantly more affordable\n- **Location**: Downtown Chicago with direct access to tech companies, startups, and internships\n- **Program**: Solid CS program with practical focus, though not as prestigious as UIUC\n- **Campus**: Urban commuter school (~91% commuters), diverse student body\n- **Class sizes**: Generally smaller, more accessible professors\n- **Job market**: Immediate access to Chicago's tech scene\n\n**UIUC Computer Science:**\n- **Cost**: Higher tuition (exact amount not in my data, but typically $2,000-4,000+ more per semester)\n- **Reputation**: Top 5 CS program nationally — significantly higher prestige and alumni network\n- **Campus**: Traditional college town experience in Urbana-Champaign\n- **Competition**: Extremely competitive admission and coursework\n- **Research**: More extensive research opportunities\n- **Job prospects**: Target school for top tech companies (Google, Meta, Microsoft recruit heavily)\n\n**My recommendation**: If you can get into UIUC CS and cost isn't a major factor, **go to UIUC**. The program's reputation opens doors that UIC simply can't match in computer science specifically. However, if you need to minimize debt or prefer the urban environment and practical experience that comes with Chicago, UIC is still a solid choice that can lead to good career outcomes.\n\nFor the most current UIUC tuition comparison, check with UIC Financial Aid at (312) 996-3126 or admissions.uic.edu.",
+      "error": null,
+      "latency_ms": 15802,
+      "ttfb_ms": 0,
+      "server_abstained": false,
+      "abstain_reason": null,
+      "scores": {
+        "answered": true,
+        "abstained": false,
+        "abstain_correct": null,
+        "hallucination_flags": [
+          "contains_dollar_amount"
+        ],
+        "response_length": 1560,
+        "notes": []
+      }
+    },
+    {
+      "id": "q100",
+      "question": "what makes uic different from other schools in chicago?",
+      "category": "admissions",
+      "difficulty": "hard",
+      "type": "ambiguous",
+      "response": "UIC is **Chicago's only public Research I university** — that's the biggest differentiator. While schools like Northwestern, DePaul, and Loyola are private with hefty price tags, UIC offers top-tier research opportunities at **$5,712/semester for in-state students** (vs. $30K+ at privates).\n\nUIC is also uniquely diverse and commuter-focused. We're **91% commuters** serving a **majority-minority student body** of ~33,000 — very different from the residential, more homogeneous experience at other Chicago schools. You get big university resources (470+ student orgs, D-I athletics, major research labs) with the accessibility of a public institution.\n\nThe location is pretty special too — right in the heart of the city with direct CTA access, not tucked away in a neighborhood like many others. You're literally integrated into Chicago's professional and cultural scene from day one.",
+      "error": null,
+      "latency_ms": 9759,
+      "ttfb_ms": 0,
+      "server_abstained": false,
+      "abstain_reason": null,
+      "scores": {
+        "answered": true,
+        "abstained": false,
+        "abstain_correct": null,
+        "hallucination_flags": [
+          "contains_dollar_amount"
+        ],
+        "response_length": 887,
         "notes": []
       }
     }

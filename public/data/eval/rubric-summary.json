@@ -1,66 +1,24 @@
 {
-  "generated_at": "2026-03-18T02:48:10.498Z",
+  "generated_at": "2026-03-22T08:32:44.650Z",
   "pass_threshold": 7,
   "totals": {
-    "count": 10,
-    "scored": 10,
+    "count": 1,
+    "scored": 1,
     "judge_errors": 0,
-    "avg_score": 8.8,
+    "avg_score": 10,
     "median_score": 10,
-    "pass_rate": "90.0%",
+    "pass_rate": "100.0%",
     "behavior_accuracy": "100.0%"
   },
   "dimension_averages": {
-    "factual_correctness": 3.2,
-    "completeness": 1.7,
-    "trust_behavior": 2.1,
+    "factual_correctness": 4,
+    "completeness": 2,
+    "trust_behavior": 2,
     "clarity": 1,
-    "safety": 0.8
+    "safety": 1
   },
   "by_category": {
-    "financial": {
-      "count": 1,
-      "passed": 1,
-      "avg_score": 10,
-      "pass_rate": "100.0%"
-    },
-    "housing": {
-      "count": 1,
-      "passed": 1,
-      "avg_score": 8,
-      "pass_rate": "100.0%"
-    },
-    "academics": {
-      "count": 3,
-      "passed": 3,
-      "avg_score": 9,
-      "pass_rate": "100.0%"
-    },
-    "student_life": {
-      "count": 1,
-      "passed": 1,
-      "avg_score": 7,
-      "pass_rate": "100.0%"
-    },
-    "international": {
-      "count": 1,
-      "passed": 1,
-      "avg_score": 10,
-      "pass_rate": "100.0%"
-    },
-    "health": {
-      "count": 1,
-      "passed": 1,
-      "avg_score": 10,
-      "pass_rate": "100.0%"
-    },
     "athletics": {
-      "count": 1,
-      "passed": 0,
-      "avg_score": 6,
-      "pass_rate": "0.0%"
-    },
-    "admin": {
       "count": 1,
       "passed": 1,
       "avg_score": 10,
@@ -69,108 +27,27 @@
   },
   "by_difficulty": {
     "easy": {
-      "count": 7,
-      "passed": 6,
-      "avg_score": 9.1,
-      "pass_rate": "85.7%"
-    },
-    "medium": {
-      "count": 2,
-      "passed": 2,
-      "avg_score": 8.5,
-      "pass_rate": "100.0%"
-    },
-    "hard": {
       "count": 1,
       "passed": 1,
-      "avg_score": 7,
+      "avg_score": 10,
       "pass_rate": "100.0%"
     }
   },
   "by_expected_behavior": {
     "answer": {
-      "count": 9,
-      "behavior_correct": 9,
-      "avg_score": 9,
-      "behavior_accuracy": "100.0%"
-    },
-    "abstain": {
       "count": 1,
       "behavior_correct": 1,
-      "avg_score": 7,
+      "avg_score": 10,
       "behavior_accuracy": "100.0%"
     }
   },
   "lowest_scoring_queries": [
     {
       "id": "q63",
-      "score": 6,
+      "score": 10,
       "question": "are uic athletic events free for students?",
       "category": "athletics",
-      "judge_reasoning": "The response correctly states that events are free with student ID and mentions the Missouri Valley Conference, but make"
-    },
-    {
-      "id": "q18",
-      "score": 7,
-      "question": "what are the easiest gen ed classes to take?",
-      "category": "academics",
-      "judge_reasoning": "The response provides specific course recommendations with subject codes and ties them to gen ed categories as required."
-    },
-    {
-      "id": "q32",
-      "score": 7,
-      "question": "what events are happening on campus this week?",
-      "category": "student_life",
-      "judge_reasoning": "Sparky correctly abstains from providing specific event information it doesn't have access to. However, the response fai"
-    },
-    {
-      "id": "q4",
-      "score": 8,
-      "question": "what dorms are available for freshmen?",
-      "category": "housing",
-      "judge_reasoning": "The response correctly identifies ARC and JST as freshmen-only dorms and mentions the required meal plans. However, it i"
-    },
-    {
-      "id": "q2",
-      "score": 10,
-      "question": "how much is tuition for in-state students?",
-      "category": "financial",
-      "judge_reasoning": "The response provides accurate core facts: $5,712 per semester tuition and $2,445 in fees, plus the correct per-credit r"
-    },
-    {
-      "id": "q13",
-      "score": 10,
-      "question": "what is the last day to drop a class without a W?",
-      "category": "academics",
-      "judge_reasoning": "The response provides exactly the correct dates for both Fall 2025 (September 5, 2025) and Spring 2026 (January 23, 2026"
-    },
-    {
-      "id": "q27",
-      "score": 10,
-      "question": "how many credits do i need to graduate?",
-      "category": "academics",
-      "judge_reasoning": "The response correctly provides both core requirements: 120 credit hours minimum and 2.00 GPA requirement. It also inclu"
-    },
-    {
-      "id": "q51",
-      "score": 10,
-      "question": "what do international students need to do before arriving at",
-      "category": "international",
-      "judge_reasoning": "The response accurately covers all key facts: F-1 students need Immigration Check-In with OIS to remove SEVIS hold, J-1 "
-    },
-    {
-      "id": "q60",
-      "score": 10,
-      "question": "what mental health resources does uic offer?",
-      "category": "health",
-      "judge_reasoning": "The response provides highly accurate information matching all reference facts, including the Counseling Center name, lo"
-    },
-    {
-      "id": "q84",
-      "score": 10,
-      "question": "does uic have a disability resource center?",
-      "category": "admin",
-      "judge_reasoning": "The response provides a direct, accurate answer with all core facts correct: confirms UIC has a DRC, gives exact locatio"
+      "judge_reasoning": "The response correctly states that UIC students get free admission to regular season home events with valid student ID, "
     }
   ]
 }

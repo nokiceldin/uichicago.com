@@ -29,7 +29,9 @@
     "toefl_minimum": "80",
     "ielts_minimum": "6.5",
     "transcript_note": "ATA-certified translations required for non-English documents",
-    "international_eval_fee": "$100"
+    "international_eval_fee": "$100",
+    "duolingo_minimum": "105",
+    "english_proficiency_note": "Accepted tests: TOEFL (min 80 iBT), IELTS (min 6.5), Duolingo English Test (min 105). Exemptions: native English speakers, students from English-medium institutions, US high school graduates."
   },
   "admitted_next_steps": {
     "intent_to_enroll": "First-year: May 1 (fall), Dec 1 (spring). Transfer: June 1 (fall), Dec 1 (spring)",

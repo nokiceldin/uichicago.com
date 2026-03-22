@@ -1,55 +1,170 @@
 {
-  "generated_at": "2026-03-18T02:08:39.960Z",
+  "generated_at": "2026-03-22T08:30:45.261Z",
   "totals": {
-    "total": 2,
-    "succeeded": 2,
+    "total": 100,
+    "succeeded": 100,
     "failed": 0,
-    "answered": 2,
-    "abstained": 0,
-    "answer_rate": "100.0%",
-    "abstain_rate": "0.0%"
+    "answered": 98,
+    "abstained": 4,
+    "answer_rate": "98.0%",
+    "abstain_rate": "4.0%"
   },
   "time_sensitive_accuracy": {
-    "total": 0,
-    "correctly_abstained": 0,
-    "incorrectly_answered": 0,
-    "accuracy": "n/a"
+    "total": 10,
+    "correctly_abstained": 1,
+    "incorrectly_answered": 9,
+    "accuracy": "10.0%"
   },
   "hallucination_risk": {
-    "high_risk_count": 0,
+    "high_risk_count": 3,
     "flag_breakdown": {
-      "contains_dollar_amount": 1
+      "contains_dollar_amount": 24,
+      "overconfident_language": 5,
+      "contains_suite_number": 10,
+      "year_anchored_claim": 1,
+      "contains_phone_number": 7
     }
   },
   "latency": {
-    "avg_ms": 9037,
-    "p95_ms": 9101
+    "avg_ms": 7847,
+    "p95_ms": 11441
   },
   "by_category": {
-    "student_life": {
-      "total": 1,
-      "answered": 1,
+    "admissions": {
+      "total": 17,
+      "answered": 17,
       "abstained": 0,
       "errors": 0
     },
+    "financial": {
+      "total": 19,
+      "answered": 19,
+      "abstained": 1,
+      "errors": 0
+    },
     "academics": {
-      "total": 1,
-      "answered": 1,
+      "total": 21,
+      "answered": 21,
+      "abstained": 1,
+      "errors": 0
+    },
+    "student_life": {
+      "total": 18,
+      "answered": 17,
+      "abstained": 1,
+      "errors": 0
+    },
+    "admin": {
+      "total": 16,
+      "answered": 15,
+      "abstained": 1,
+      "errors": 0
+    },
+    "athletics": {
+      "total": 9,
+      "answered": 9,
       "abstained": 0,
       "errors": 0
     }
   },
   "by_difficulty": {
     "easy": {
-      "total": 1,
-      "answered": 1,
+      "total": 32,
+      "answered": 31,
       "errors": 0
     },
     "medium": {
-      "total": 1,
-      "answered": 1,
+      "total": 38,
+      "answered": 38,
+      "errors": 0
+    },
+    "hard": {
+      "total": 30,
+      "answered": 29,
       "errors": 0
     }
   },
-  "needs_review": []
+  "needs_review": [
+    {
+      "id": "q31",
+      "question": "is the application still open for spring admission?",
+      "reason": "should_have_abstained",
+      "flags": []
+    },
+    {
+      "id": "q32",
+      "question": "what events are happening on campus this week?",
+      "reason": "should_have_abstained",
+      "flags": []
+    },
+    {
+      "id": "q33",
+      "question": "is the financial aid deadline still open?",
+      "reason": "should_have_abstained",
+      "flags": []
+    },
+    {
+      "id": "q34",
+      "question": "what are the deadlines i need to know about right now?",
+      "reason": "should_have_abstained",
+      "flags": []
+    },
+    {
+      "id": "q36",
+      "question": "did uic flames win last night?",
+      "reason": "should_have_abstained",
+      "flags": []
+    },
+    {
+      "id": "q37",
+      "question": "when is the next home basketball game?",
+      "reason": "should_have_abstained",
+      "flags": []
+    },
+    {
+      "id": "q38",
+      "question": "is housing still available for next semester?",
+      "reason": "should_have_abstained",
+      "flags": []
+    },
+    {
+      "id": "q39",
+      "question": "has the chancellor made any announcements recently?",
+      "reason": "should_have_abstained",
+      "flags": []
+    },
+    {
+      "id": "q40",
+      "question": "whats the fafsa deadline this year?",
+      "reason": "should_have_abstained",
+      "flags": []
+    },
+    {
+      "id": "q60",
+      "question": "what mental health resources does uic offer?",
+      "reason": "abstained_on_factual",
+      "flags": [
+        "contains_phone_number",
+        "contains_suite_number"
+      ]
+    },
+    {
+      "id": "q93",
+      "question": "what happens if i dont pay my tuition bill on time?",
+      "reason": "abstained_on_factual",
+      "flags": [
+        "overconfident_language",
+        "contains_dollar_amount"
+      ]
+    },
+    {
+      "id": "q94",
+      "question": "can i get a refund if i withdraw from uic?",
+      "reason": "abstained_on_factual",
+      "flags": [
+        "contains_phone_number",
+        "contains_suite_number"
+      ]
+    }
+  ]
 }

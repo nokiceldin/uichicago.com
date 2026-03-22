@@ -1,4 +1,3 @@
-
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";  // ADD THIS
 export const revalidate = 0;      // ADD
@@ -121,7 +120,7 @@ interface AnswerBrief {
 
 function analyzeQuery(msg: string, conversationHistory: ChatMessage[]): QueryAnalysis {
   const lower = msg.toLowerCase();
-  const words = lower.split(/\s+/);
+  const words = lower.split(/\s+/).map(w => w.replace(/^[^a-z0-9]+|[^a-z0-9]+$/g, ''));
 
   // ── Answer mode detection (ordered by specificity) ──────────────────────
   const answerMode = detectAnswerMode(lower);
@@ -178,7 +177,7 @@ function analyzeQuery(msg: string, conversationHistory: ChatMessage[]): QueryAna
 
   if (words.some(w => ["professor","prof","instructor","teacher","teach","lecture"].includes(w))) domainConfidence["professors"] = 0.9;
   if (lower.includes("gen ed") || lower.includes("general education") || lower.includes("gen-ed")) domainConfidence["gen_ed"] = 0.95;
-  if (lower.match(/4.?year|four.?year|degree plan|course plan|semester.?plan|what should i take/)) domainConfidence["major_plan"] = 0.9;
+  if (isPlanningQuery(lower)) domainConfidence["major_plan"] = 0.9;
 
   // Financial signals
   if (words.some(w => ["tuition","cost","fee","price","pay","afford","how much","billing"].includes(w))) domainConfidence["tuition"] = 0.85;
@@ -419,8 +418,35 @@ function getAbstainResponse(query: QueryAnalysis): string {
   );
 }
 
+// ─── Planning query detector — single source of truth used in two places ──────
+// Matches any question about degree requirements, course sequences, graduation
+// plans, or semester scheduling — regardless of whether the user says "plan".
+function isPlanningQuery(lower: string): boolean {
+  return (
+    // Explicit plan/schedule requests
+    /\b(4.?year|four.?year|degree plan|course plan|semester.?plan|sequence)\b/.test(lower) ||
+    // "what courses / classes do I need / should I take for [major]?"
+    /\bwhat (courses?|classes?) (do|should|must) i (need|take|complete|finish)\b/.test(lower) ||
+    // "required courses for nursing", "degree requirements for cs"
+    /\b(required courses?|degree requirements?|major requirements?) (for|to)\b/.test(lower) ||
+    // "what do I need to graduate / to finish my degree"
+    /\bwhat do i need (to graduate|to finish|to complete (my|the) degree)\b/.test(lower) ||
+    // "can I graduate in 3 years", "on track to graduate"
+    /\bcan i graduate in\b/.test(lower) ||
+    /\bon track to graduate\b/.test(lower) ||
+    // "requirements left", "requirements remaining", "requirements still needed"
+    /\brequirements? (left|remaining|still needed)\b/.test(lower) ||
+    // "what should I take next semester / this semester"
+    /\bwhat should i take (next|this) (semester|year|term)\b/.test(lower) ||
+    // "my next semester schedule", "this semester plan"
+    /\b(next|this) semester (schedule|plan|courses?|classes?)\b/.test(lower) ||
+    // "can I fit a minor", "room for a minor"
+    /\b(fit|room for|add) a minor\b/.test(lower)
+  );
+}
+
 function detectAnswerMode(lower: string): AnswerMode {
-  if (lower.match(/\b4.?year|four.?year|degree plan|course plan|semester.?plan|sequence\b/)) return "planning";
+  if (isPlanningQuery(lower)) return "planning";
   if (lower.match(/\b(should i|recommend|suggest|good for|worth it|would you|best for|which is better for me)\b/)) return "recommendation";
   if (lower.match(/\b(vs|versus|difference between|compare|which is better|or the)\b/)) return "comparison";
   if (lower.match(/\b(easiest|hardest|best|worst|top|cheapest|highest gpa|lowest|most|least)\b/)) return "ranking";
@@ -555,8 +581,7 @@ function resolveSession(req: Request) {
 // rather than returning the full blob. This ensures the exact fact is at
 // the top of context and Claude quotes it verbatim rather than paraphrasing.
 function extractFact(content: string, queryWords: string[]): string | null {
-  const significantWords = queryWords.filter(w => w.length > 3 &&
-    !["what","where","when","does","that","this","have","from","with","about","the","for","how","its","who","are","and","can","you","uic"].includes(w));
+  const significantWords = queryWords.map(w => w.replace(/^[^a-z0-9]+|[^a-z0-9]+$/g, '')).filter(w => w.length >= 3 && !STOPWORDS_SHORT.has(w));
   if (significantWords.length === 0) return null;
 
   const lines = content.split("\n").filter(l => l.trim() && !l.startsWith("==="));
@@ -573,16 +598,29 @@ function extractFact(content: string, queryWords: string[]): string | null {
   return scored.slice(0, 3).map(x => x.line).join("\n");
 }
 
+// Short common words that carry no signal — excluded even when length >= 3.
+// Does NOT exclude UIC acronyms (ARC, JST, GPA, RMP, IDS, CS, etc.).
+const STOPWORDS_SHORT = new Set([
+  "and","but","not","for","are","was","has","had","its","the","can",
+  "did","how","his","her","our","you","all","any","one","who","get",
+  "use","two","out","may","uic","they","them","that","this","with",
+  "from","will","been","were","what","when","than","then","also",
+]);
+
 function scoreChunk(content: string, query: QueryAnalysis, domain: Domain): number {
   const lower = content.toLowerCase();
-  const queryWords = query.rawQuery.toLowerCase().split(/\s+/).filter(w => w.length > 3);
+  const rawWords = query.rawQuery.toLowerCase().split(/\s+/).map(w => w.replace(/^[^a-z0-9]+|[^a-z0-9]+$/g, ''));
+  // Also include any inherited entity from session (e.g. hall abbreviation for housing follow-ups)
+  const inheritedHall = (query as any)._inheritedHall as string | undefined;
+  if (inheritedHall) rawWords.push(inheritedHall.toLowerCase());
+  const queryWords = rawWords.filter(w => w.length >= 3 && !STOPWORDS_SHORT.has(w));
 
   // Word overlap score
   const overlapCount = queryWords.filter(w => lower.includes(w)).length;
   const overlapScore = Math.min(overlapCount / Math.max(queryWords.length, 1), 1);
 
   // Domain confidence score
-  const domainScore = query.domainConfidence[domain] ?? 0.5;
+  const domainScore = query.domainConfidence[domain] ?? 0.2;
 
   // Constraint relevance
   let constraintScore = 0;
@@ -807,129 +845,363 @@ async function retrieveProfessors(intent: any, query: QueryAnalysis): Promise<Re
   } catch { /* tolerate */ }
   return chunks;
 }
+// ─── Plan validation — runs before the chunk is sent to the model ─────────────
+// Checks credit totals, per-semester consistency, and schedule existence.
+// Returns warning strings injected into the planning context so the model
+// (and the student) can see known data issues without the model hallucinating around them.
+interface PlanValidation {
+  warnings: string[];
+  creditTotal: number;
+  expectedTotal: number | null;
+}
+
+function validatePlanData(majorMatch: any): PlanValidation {
+  const warnings: string[] = [];
+  const sched: any[] = majorMatch.sampleSchedule ?? [];
+
+  // No schedule at all
+  if (sched.length === 0) {
+    warnings.push("No official sample schedule on file — sequence below is generated from required course list; verify order with advisor");
+    return { warnings, creditTotal: 0, expectedTotal: majorMatch.totalHours ?? null };
+  }
+
+  // Per-semester credit consistency
+  let creditTotal = 0;
+  for (const sem of sched) {
+    const declared: number = sem.total_hours ?? 0;
+    const courseSum: number = (sem.courses ?? []).reduce(
+      (acc: number, c: any) => acc + (c.hours ?? 0), 0
+    );
+    // Use declared if present, otherwise sum from courses
+    creditTotal += declared || courseSum;
+    if (declared && courseSum > 0 && Math.abs(declared - courseSum) > 1) {
+      warnings.push(`${sem.year} ${sem.semester}: schedule lists ${declared}h but individual courses sum to ${courseSum}h`);
+    }
+    // Flag unusually heavy/light semesters
+    const semHours = declared || courseSum;
+    if (semHours > 19) warnings.push(`${sem.year} ${sem.semester}: ${semHours}h is above normal full-time load (≤18h) — confirm with advisor`);
+  }
+
+  // Total credit check
+  const expectedTotal: number | null = majorMatch.totalHours ?? null;
+  if (expectedTotal && creditTotal > 0 && Math.abs(creditTotal - expectedTotal) > 3) {
+    const delta = creditTotal - expectedTotal;
+    warnings.push(`Schedule totals ${creditTotal} credits; degree requires ${expectedTotal} (${delta > 0 ? "+" : ""}${delta} delta — electives or gen-eds may account for gap)`);
+  }
+
+  return { warnings, creditTotal, expectedTotal };
+}
+
 async function retrieveMajorPlan(query: QueryAnalysis): Promise<RetrievedChunk[]> {
   try {
     const { readFileSync } = await import("fs");
     const { join } = await import("path");
-    const data = JSON.parse(readFileSync(join(process.cwd(), "public/data/uic-knowledge/major-requirements.json"), "utf8"));
+    // Load from individual major files via index
+const indexPath = join(process.cwd(), "public/data/uic-knowledge/majors/_index.json");
+const index = JSON.parse(readFileSync(indexPath, "utf8"));
+const data = {
+  majors: index.majors.map((m: any) => {
+    try {
+      const filePath = join(process.cwd(), "public/data/uic-knowledge", m.file);
+      return JSON.parse(readFileSync(filePath, "utf8"));
+    } catch {
+      return { name: m.name, requiredCourses: [], sampleSchedule: [] };
+    }
+  })
+};
     const lower = query.rawQuery.toLowerCase();
  
     const majorMatch = data.majors?.filter((m: any) => {
-      const n = m.name.toLowerCase();
-      return lower.includes(n) ||
-        (n.includes("computer science") && (lower.includes(" cs ") || lower.includes("cs major") || lower.includes("computer science"))) ||
-        (n.includes("biology") && lower.includes("biol")) ||
-        (n.includes("psychology") && lower.includes("psych")) ||
-        (n.includes("kinesiology") && lower.includes("kin")) ||
-        (n.includes("nursing") && lower.includes("nurs")) ||
-        (n.includes("accounting") && lower.includes("account")) ||
-        (n.includes("finance") && lower.includes("finance")) ||
-        (n.includes("marketing") && lower.includes("marketing")) ||
-        (n.includes("management") && lower.includes("management")) ||
-        (n.includes("economics") && lower.includes("econ")) ||
-        (n.includes("chemistry") && lower.includes("chem") && !lower.includes("biochem")) ||
-        (n.includes("mechanical engineering") && lower.includes("mechanical")) ||
-        (n.includes("electrical engineering") && lower.includes("electrical")) ||
-        (n.includes("civil engineering") && lower.includes("civil")) ||
-        (n.includes("biomedical engineering") && lower.includes("bioengin")) ||
-        (n.includes("public health") && lower.includes("public health"));
+      // Normalize new "Name - DEGREE" format → "name degree" for substring matching
+      const n = m.name.toLowerCase()
+        .replace(/ - (bs|ba|bfa|bmus|ms|joint bs\/ms|joint degrees with ba)/gi, " $1")
+        .replace(" with a major", "")
+        .replace(" with a major", "")  // handle doubled
+        .trim();
+
+      // Direct name match (handles most cases automatically)
+      if (lower.includes(n)) return true;
+
+      // Also try matching just the base name without degree suffix
+      const baseName = n.replace(/\s+(bs|ba|bfa|bmus|ms)$/, "").trim();
+      if (baseName.length > 4 && lower.includes(baseName)) return true;
+
+      // Explicit aliases for common queries / abbreviations
+      if (n.includes("computer science") && !n.includes("design") && !n.includes("philosophy") && !n.includes("linguistics") && !n.includes("mathematics") &&
+          (/\bcs\b/.test(lower) || lower.includes("computer science"))) return true;
+      if (n.includes("computer science and design") && (lower.includes("cs and design") || lower.includes("computer science and design"))) return true;
+      if (n.includes("information and decision sciences") && (lower.includes("ids") || lower.includes("information and decision"))) return true;
+      if (n.includes("biochemistry") && lower.includes("biochem")) return true;
+      if (n.includes("chemistry") && !n.includes("biochemistry") && lower.includes("chem") && !lower.includes("biochem")) return true;
+      if (n.includes("biology") && (lower.includes("biol") || lower.includes("biology"))) return true;
+      if (n.includes("psychology") && lower.includes("psych")) return true;
+      if (n.includes("kinesiology") && (lower.includes("kin") || lower.includes("kinesiology"))) return true;
+      if (n.includes("nursing") && lower.includes("nurs")) return true;
+      if (n.includes("accounting") && lower.includes("account")) return true;
+      if (n.includes("finance") && lower.includes("finance")) return true;
+      if (n.includes("marketing") && lower.includes("marketing")) return true;
+      if (n.includes("management") && !n.includes("engineering") && !n.includes("health") && lower.includes("management")) return true;
+      if (n.includes("economics") && lower.includes("econ")) return true;
+      if (n.includes("mechanical engineering") && lower.includes("mechanical")) return true;
+      if (n.includes("electrical engineering") && lower.includes("electrical")) return true;
+      if (n.includes("civil engineering") && lower.includes("civil")) return true;
+      if (n.includes("biomedical engineering") && (lower.includes("biomed") || lower.includes("bme") || lower.includes("biomedical"))) return true;
+      if (n.includes("environmental engineering") && lower.includes("environmental eng")) return true;
+      if (n.includes("industrial engineering") && lower.includes("industrial")) return true;
+      if (n.includes("computer engineering") && lower.includes("computer eng")) return true;
+      if (n.includes("public health") && lower.includes("public health")) return true;
+      if (n.includes("neuroscience") && lower.includes("neuro")) return true;
+      if (n.includes("criminology") && (lower.includes("crim") || lower.includes("criminal justice"))) return true;
+      if (n.includes("political science") && (lower.includes("poli sci") || lower.includes("political science"))) return true;
+      if (n.includes("communication") && lower.includes("comm") && !lower.includes("telecomm")) return true;
+      if (n.includes("mathematics") && !n.includes("computer") && (lower.includes("math") && !lower.includes("cs"))) return true;
+      if (n.includes("statistics") && lower.includes("stat")) return true;
+      if (n.includes("physics") && lower.includes("physics")) return true;
+      if (n.includes("philosophy") && lower.includes("phil")) return true;
+      if (n.includes("sociology") && lower.includes("sociol")) return true;
+      if (n.includes("anthropology") && lower.includes("anthro")) return true;
+      if (n.includes("english") && lower.includes("english") && !lower.includes("engineering")) return true;
+      if (n.includes("history") && lower.includes("history")) return true;
+      if (n.includes("architecture") && !n.includes("architectural studies") && lower.includes("architecture")) return true;
+      if (n.includes("architectural studies") && lower.includes("architectural studies")) return true;
+      if (n.includes("entrepreneurship") && (lower.includes("entrepreneur") || lower.includes("entrep"))) return true;
+      if (n.includes("pharmaceutical sciences") && (lower.includes("pharm") || lower.includes("pharmaceutical"))) return true;
+      if (n.includes("urban studies") && lower.includes("urban stud")) return true;
+      if (n.includes("public policy") && lower.includes("public policy")) return true;
+
+      return false;
     }).sort((a: any, b: any) => {
-      const scoreA = (a.name.includes(" BS") || a.name.includes(" BA") ? 10 : 0) + (a.requiredCourses?.length ?? 0);
-      const scoreB = (b.name.includes(" BS") || b.name.includes(" BA") ? 10 : 0) + (b.requiredCourses?.length ?? 0);
+      // Prefer standalone BS/BA over joint or completion programs; break ties by course count
+      const isStandard = (name: string) => /- (BS|BA|BFA|BMus)$/.test(name) ? 10 : 0;
+      const scoreA = isStandard(a.name) + (a.requiredCourses?.length ?? 0);
+      const scoreB = isStandard(b.name) + (b.requiredCourses?.length ?? 0);
       return scoreB - scoreA;
     })[0] ?? null;
  
     if (!majorMatch) {
-      const list = data.majors?.slice(0, 40).map((m: any) => `- ${m.name}`).join("\n") || "";
-      return [makeChunk("major_plan", `=== AVAILABLE MAJORS FOR 4-YEAR PLANS ===\n${list}\n\nSpecify your major for a detailed plan.`, 0.7, query)];
+      const list = data.majors?.map((m: any) => `- ${m.name}`).join("\n") || "";
+      return [makeChunk("major_plan", `=== NO PLAN DATA FOUND ===
+CRITICAL INSTRUCTION — DO NOT HALLUCINATE A PLAN:
+The requested major was not found in the current dataset.
+You MUST NOT generate, invent, or approximate a semester-by-semester plan.
+You MUST NOT list courses from memory — your training data may be outdated or wrong.
+
+Tell the student:
+- Their major was not found in the current plan data
+- Direct them to: catalog.uic.edu (search for their major)
+- Direct them to: their academic advisor or the department advising office
+- Offer to help with other topics (professors, courses, housing, etc.)
+
+Available majors in data (suggest they check if their major appears under a different name):
+${list}`, 0.7, query)];
     }
  
     // ── REQUIRED COURSES — with credit hours from source data ──────────────
-    const required = majorMatch.requiredCourses.slice(0, 60).map((c: any) =>
+    const required = majorMatch.requiredCourses.slice(0, 90).map((c: any) =>
       `${c.code}: ${c.title} — ${c.hours ?? "?"} credit hours`
     ).join("\n");
- 
-    // ── ELECTIVE RULES — pulled directly from majorMatch if available ───────
-    const electiveRules = majorMatch.electiveRequirements
-      ? Object.entries(majorMatch.electiveRequirements as Record<string, any>).map(([group, rule]: [string, any]) =>
-          `${group}: ${typeof rule === "object" ? `choose ${rule.choose ?? "?"} courses from ${rule.options?.join(", ") ?? "see catalog"}` : rule}`
-        ).join("\n")
-      : majorMatch.electiveGroups
-        ? majorMatch.electiveGroups.map((g: any) =>
-            `${g.label ?? g.name ?? "Elective group"}: choose ${g.credits ?? g.count ?? "?"} credit hours`
+
+    // ── ELECTIVE RULES — 500+ filtered out, no GPA-optimization by default ──
+    const slotTypeHint = (label: string) => {
+      const l = label.toLowerCase();
+      if (l.includes("free elective")) return " → fills [free_elective] slots";
+      if (l.includes("rubric") || l.includes("technical")) return " → fills [technical_elective] slots";
+      if (l.includes("math") || l.includes("stat")) return " → fills [required_math] slots";
+      if (l.includes("science")) return " → fills [science_elective] slots";
+      if (l.includes("humanities") || l.includes("social science")) return " → fills [humanities_elective] slots";
+      return "";
+    };
+
+    // Set of required course codes — exempted from 500+ filter
+    const requiredCodesSet = new Set(
+      (majorMatch.requiredCourses ?? []).map((c: any) => c.code?.toUpperCase()).filter(Boolean)
+    );
+
+    // Fetch DB data — filter elective options to undergrad level (100-499) only
+    const rankedGroups: Array<{ g: any; ranked: any[] }> = await Promise.all(
+      (majorMatch.electiveGroups ?? []).map(async (g: any) => {
+        if (!(g.options?.length > 0)) return { g, ranked: [] };
+        const undergradCodes = (g.options as any[])
+          .map((o: any) => o.code as string)
+          .filter((code: string) => {
+            const num = parseInt(code?.match(/\d+/)?.[0] ?? "0", 10);
+            return num < 500 || requiredCodesSet.has(code?.toUpperCase());
+          });
+        if (undergradCodes.length === 0) return { g, ranked: [] };
+        const ranked = await fetchCoursesByCodesRanked(undergradCodes, true).catch(() => []);
+        return { g, ranked };
+      })
+    );
+
+    // Only show GPA/difficulty data if student asked for easiest options
+    const wantsEasy = (query as any).wantsEasiest === true;
+    const electiveRules = rankedGroups.length > 0
+      ? rankedGroups.map(({ g, ranked }) => {
+          const label = g.label ?? g.name ?? "Elective group";
+          const hint = slotTypeHint(label);
+          const optStr = ranked.length > 0
+            ? (wantsEasy
+                ? `\n  ELIGIBLE COURSES — sorted by easiness (GPA/difficulty):\n` +
+                  ranked.map((c: any) =>
+                    `    ${c.subject} ${c.number} — ${c.title}: GPA ${c.avgGpa?.toFixed(2) ?? "N/A"}, ${diffLabel(c.difficultyScore ?? 0)}`
+                  ).join("\n")
+                : `\n  ELIGIBLE COURSES (all approved options for this slot):\n` +
+                  ranked.map((c: any) =>
+                    `    ${c.subject} ${c.number} — ${c.title}`
+                  ).join("\n"))
+            : `\n  No specific course list in data — pick any approved 100-499 level course; confirm with catalog`;
+          return `${label}${hint}:\n  Choose ${g.credits ?? "?"} credit hours${optStr}`;
+        }).join("\n\n")
+      : majorMatch.electiveRequirements
+        ? Object.entries(majorMatch.electiveRequirements as Record<string, any>).map(([group, rule]: [string, any]) =>
+            `${group}: ${typeof rule === "object" ? `choose ${rule.choose ?? "?"} courses from ${rule.options?.join(", ") ?? "see catalog"}` : rule}`
           ).join("\n")
         : null;
- 
-    // ── SAMPLE SCHEDULE — include credit hours per semester ─────────────────
-    // Enrich each course code in the schedule with hours from requiredCourses lookup
+
+    // ── PLAN TIER — determines what the model is allowed to generate ─────────
+    const hasSchedule = (majorMatch.sampleSchedule?.length ?? 0) > 0;
+    const hasElectiveOptions = rankedGroups.some(({ ranked }) => ranked.length > 0);
+    const hasCourses = (majorMatch.requiredCourses?.length ?? 0) >= 5;
+    const planTier: "full" | "schedule" | "courses_only" | "minimal" =
+      hasSchedule && hasCourses && hasElectiveOptions ? "full"
+      : hasSchedule && hasCourses ? "schedule"
+      : hasCourses ? "courses_only"
+      : "minimal";
+
+    // ── SAMPLE SCHEDULE — semester by semester with real course objects ──────
     const courseHourMap: Record<string, number> = {};
     for (const c of majorMatch.requiredCourses ?? []) {
       if (c.code && c.hours) courseHourMap[c.code] = c.hours;
     }
- 
-    const schedule = majorMatch.sampleSchedule?.length > 0
+
+    const schedule = hasSchedule
       ? majorMatch.sampleSchedule.map((s: any) => {
-          const coursesWithHours = (s.courses ?? []).map((code: string) => {
-            const hrs = courseHourMap[code];
-            return hrs ? `${code} (${hrs} hrs)` : code;
+          const lines = (s.courses ?? []).map((c: any) => {
+            if (c.isElective) {
+              return `  [${c.electiveType ?? "elective"}] ${c.title ?? "Elective"} — ${c.hours ?? "?"}h`;
+            }
+            const hrs = c.hours ?? courseHourMap[c.code] ?? "?";
+            return `  ${c.code} — ${c.title} (${hrs}h)`;
           });
-          return `${s.year} ${s.semester} [${s.total_hours ?? "?"} hrs total]: ${coursesWithHours.join(", ")}`;
-        }).join("\n")
-      : "No official sample schedule available. Use REQUIRED COURSES list above to build semester by semester.";
- 
-    // ── UNDERGRAD-ONLY ELECTIVES — filter out 500+ level ──────────────────
-    // 500+ courses are graduate level. An undergrad plan must not default to them.
-    let electiveSuggestions = "";
-    try {
-      const subj = majorMatch.requiredCourses[0]?.code?.split(" ")[0];
-      if (subj) {
-        const allDeptCourses = await fetchCoursesBySubjectOrDept(subj, null, 20, true);
-        // Filter: only include courses numbered 100–499 (undergrad level)
-        const undergradOnly = allDeptCourses.filter((c: any) => {
-          const num = parseInt(String(c.number), 10);
-          return !isNaN(num) && num < 500;
-        }).slice(0, 8);
- 
-        if (undergradOnly.length > 0) {
-          electiveSuggestions = undergradOnly
-            .map((c: any) => `${c.subject} ${c.number} — ${c.title}: ${c.avgGpa?.toFixed(2) ?? "N/A"} avg GPA, ${c.totalRegsAllTime ?? "?"} students`)
-            .join("\n");
-        }
-      }
-    } catch { /* tolerate */ }
- 
+          return `${s.year} ${s.semester} [${s.total_hours ?? "?"}h total]:\n${lines.join("\n")}`;
+        }).join("\n\n")
+      : null;
+
+    // ── VALIDATE PLAN DATA ───────────────────────────────────────────────────
+    const validation = validatePlanData(majorMatch);
+
     // ── ASSEMBLE CONTENT ────────────────────────────────────────────────────
     let content = `=== ${majorMatch.name.toUpperCase()} — OFFICIAL DEGREE REQUIREMENTS ===\n`;
-    content += `Total credits required: ${majorMatch.totalHours ?? "see catalog"} | College: ${majorMatch.college ?? "N/A"}\n\n`;
- 
-    content += `MANDATORY REQUIRED COURSES (must complete all):\n${required}\n\n`;
- 
+    content += `Total credits required: ${majorMatch.totalHours ?? "see catalog"} | College: ${majorMatch.college ?? "N/A"}\n`;
+    content += `PLAN TIER: ${planTier.toUpperCase()}\n`;
+
+    // Credit breakdown by category
+    const summaryEntries = Object.entries(majorMatch.summaryRequirements ?? {})
+      .filter(([k]) => k !== "Total Hours")
+      .map(([k, v]) => `${k}: ${v}h`);
+    if (summaryEntries.length > 0) {
+      content += `Credit breakdown: ${summaryEntries.join(" | ")}\n`;
+    }
+    content += "\n";
+
+    // Enumerate all required course codes explicitly so model can cross-check
+    const requiredCourseCodes = (majorMatch.requiredCourses ?? [])
+      .filter((c: any) => c.code && !/^\[/.test(c.code.trim()))
+      .map((c: any) => c.code);
+    content += `MANDATORY REQUIRED COURSES — ALL MUST APPEAR IN YOUR PLAN:\n${required}\n`;
+    content += `REQUIRED COURSE CODE MANIFEST: ${requiredCourseCodes.join(", ")}\n\n`;
+
     if (electiveRules) {
-      content += `ELECTIVE REQUIREMENTS:\n${electiveRules}\n\n`;
+      const electiveHeader = (planTier === "full" || planTier === "schedule")
+        ? "ELECTIVE REQUIREMENTS (use these to fill elective slots in the schedule):"
+        : "ELECTIVE REQUIREMENTS (available options — include only if data supports it):";
+      content += `${electiveHeader}\n${electiveRules}\n\n`;
     }
- 
-    content += `OFFICIAL SAMPLE SCHEDULE (semester by semester):\n${schedule}\n`;
- 
-    if (electiveSuggestions) {
-      content += `\nUNDERGRAD ELECTIVE OPTIONS (courses 100-499 only, sorted by avg GPA):\n${electiveSuggestions}\n`;
+
+    if (schedule) {
+      content += `OFFICIAL SAMPLE SCHEDULE (semester by semester):\n${schedule}\n`;
     }
- 
-    // ── PLANNING INSTRUCTION — strict grounding, no invention ───────────────
-    content += `
+
+    // ── VALIDATION WARNINGS ──────────────────────────────────────────────────
+    if (validation.warnings.length > 0) {
+      content += `\nDATA NOTES (surface these to the student):\n${validation.warnings.map(w => `\u26a0 ${w}`).join("\n")}\n`;
+    }
+
+    // ── TIER-BASED PLANNING RULES ────────────────────────────────────────────
+    if (planTier === "full") {
+      content += `
+PLAN TIER: FULL — schedule + required courses + elective options all present.
 PLANNING RULES — FOLLOW STRICTLY:
-1. Use ONLY courses listed in MANDATORY REQUIRED COURSES and OFFICIAL SAMPLE SCHEDULE above
-2. Use credit hours EXACTLY as listed in the source data — do NOT guess or change them
-3. If a course has no credit hours listed, write "? hrs" — do not invent a number
-4. Do NOT add courses not in the retrieved data — not even high-GPA ones
-5. Do NOT include any course numbered 500 or above unless it appears in MANDATORY REQUIRED COURSES
-6. Use OFFICIAL SAMPLE SCHEDULE as the primary semester layout — only deviate if truly necessary
-7. Fill elective slots with courses from UNDERGRAD ELECTIVE OPTIONS (100-499 level only)
-8. If elective requirements specify group rules, follow them — do not freely choose any course
-9. After building the plan, state total credit count and flag if it doesn't match required total
-10. End with: "This is a draft plan based on official requirements. Verify with your academic advisor before registering."`;
- 
+1. Reproduce the OFFICIAL SAMPLE SCHEDULE semester by semester as the backbone
+2. For required course slots: use ONLY codes from REQUIRED COURSE CODE MANIFEST — never invent a course
+3. For elective slots [technical_elective], [required_math], [free_elective], etc:
+   - Fill from the ELECTIVE REQUIREMENTS list matching that slot type
+   - Use ONLY 100-499 level courses unless the 500+ code is in REQUIRED COURSE CODE MANIFEST
+   - Do NOT write placeholder text like "Technical Elective" — use a real course code and title
+4. Cross-check: every code in REQUIRED COURSE CODE MANIFEST must appear somewhere in your plan
+5. Use credit hours exactly as listed — write "?" if unknown, never guess
+6. After the plan: count total credits and compare to ${majorMatch.totalHours ?? "?"} required
+7. End with: "This is a draft based on official UIC requirements. Verify with your academic advisor before registering."`;
+    } else if (planTier === "schedule") {
+      content += `
+PLAN TIER: SCHEDULE — official schedule exists but elective course lists are not in data.
+PLANNING RULES — FOLLOW STRICTLY:
+1. Reproduce the OFFICIAL SAMPLE SCHEDULE semester by semester as the backbone
+2. For required course slots: use ONLY codes from REQUIRED COURSE CODE MANIFEST
+3. For elective slots: show the slot label (e.g., [technical_elective]) and note:
+   "Approved courses for this slot require advisor confirmation — see catalog"
+   Do NOT invent course names or codes for elective slots
+4. Do NOT include 500+ level courses unless in REQUIRED COURSE CODE MANIFEST
+5. Cross-check: every code in REQUIRED COURSE CODE MANIFEST must appear in your plan
+6. After the plan: count total credits and compare to ${majorMatch.totalHours ?? "?"} required
+7. End with: "This is a draft based on official UIC requirements. Elective slots require advisor confirmation."`;
+    } else if (planTier === "courses_only") {
+      content += `
+PLAN TIER: COURSES ONLY — required courses exist but NO official semester schedule is on file.
+PLANNING RULES — FOLLOW STRICTLY:
+\u26a0 CRITICAL: No official semester-by-semester sequence exists for this major in the current data.
+   You MUST NOT generate, invent, or improvise a semester sequence.
+   Doing so would produce an unreliable plan that could mislead the student.
+
+Instead, present requirements in this exact structure:
+
+SECTION 1 — CORE REQUIRED COURSES
+  List every course from REQUIRED COURSE CODE MANIFEST with: code | title | credit hours
+  Do NOT skip any course from the manifest.
+
+SECTION 2 — ELECTIVE REQUIREMENTS
+  For each elective group: state the credit requirement and list available courses (if any).
+  If no options are in data, say: "See catalog or advisor for approved options — do not guess."
+
+SECTION 3 — PLANNING NOTES
+  - State total credit requirement (${majorMatch.totalHours ?? "see catalog"} credits for this degree)
+  - Write explicitly: "No official semester sequence is available for this major. Work with your academic advisor to determine the best course order and prerequisites."
+  - Do NOT write "Year 1", "Year 2", "Semester 1", or any semester-by-semester structure.
+
+Additional constraints:
+- Do NOT include any 500+ level courses
+- Do NOT write placeholder text like "General Education Course" or "Elective TBD"
+- Do NOT invent prerequisites or course sequences`;
+    } else {
+      content += `
+PLAN TIER: MINIMAL — insufficient course data for this major.
+PLANNING RULES — FOLLOW STRICTLY:
+\u26a0 CRITICAL: Course data for this major is too limited to construct any plan.
+   You MUST NOT generate a course list, semester sequence, or credit breakdown.
+
+Respond with:
+  "Official course data for this major is not yet fully available in my system.
+   For an accurate 4-year plan, please:
+   \u2022 Visit catalog.uic.edu and search for [major name]
+   \u2022 Contact your academic advisor or the department directly
+   \u2022 Visit the UIC advising center (SSB 1220)"
+
+Do NOT invent courses. Do NOT show any plan structure.`;
+    }
+
     return [makeChunk("major_plan", content, 0.97, query)];
-  } catch {
+  } catch (err) {
+    console.error("[retrieveMajorPlan] ERROR:", err);
     return [makeChunk("major_plan", "Visit catalog.uic.edu for official degree requirements. I was unable to retrieve the specific requirement data.", 0.3, query)];
   }
 }
@@ -1091,6 +1363,17 @@ function retrieveStudentLife(query: QueryAnalysis): RetrievedChunk[] {
     c += `CULTURAL CENTERS: AARCC (723 W Maxwell) | Arab American CC (B01 BSB) | Black Cultural Center (209 Addams) | Disability CC (235 BSB) | Gender & Sexuality Center (181 BSB) | Latino Cultural Center (LC B2) | WLRC (SSB 1700)\n\n`;
   }
 
+  if (lower.match(/newspaper|publication|student media|the flame|wuic|student radio|student paper/)) {
+    return [makeChunk("student_life",
+      `UIC STUDENT MEDIA: Yes, UIC has a student newspaper — The Flame (theflame.uic.edu | @theflameuic). Independent student-run publication covering UIC news, campus events, sports, and opinion. Free print copies on campus. Also: WUIC (student radio). Both operate under the UIC Student Media Board.`,
+      0.99, query)];
+  }
+  if (lower.match(/spark.?fest|spark festival|homecoming|weeks of welcome|wow event|involvement fair|major event/)) {
+    return [makeChunk("student_life",
+      `UIC MAJOR EVENTS:\nSpark Festival (Spark Fest) — annual fall music festival, free for students. Past headliners: ${sparkArtists}. Held on campus each fall.\nHomecoming — fall. Includes Homecoming Parade, tailgates, alumni events.\nWeeks of Welcome (WOW) — start of semester orientation events.\nInvolvement Fair — each semester, discover 470+ student orgs.\nFlames Finish Strong — finals week study support events.\nInstagram: @thisisuic for announcements.`,
+      0.99, query)];
+  }
+  c += `STUDENT MEDIA: The Flame (student newspaper) — theflame.uic.edu | @theflameuic on Instagram/X. Independent student-run publication covering UIC news, campus events, sports, opinion. Free print copies on campus. Also: WUIC student radio.\n\n`;
   c += `STUDY SPOTS: Daley Library quiet floors 3+4 + Circle Reading Room | SCE Lounges | CSRC (commuter lounge hidden gem)\n` +
     `EMERGENCY: Pop-Up Pantry (free food) | U&I Care Fund (~$500 aid) | Basic Needs: dos.uic.edu\n` +
     `APPS: my.UIC | UIC Connection | UIC Safe | UIC Ride | IMLeagues | Handshake`;
@@ -1106,6 +1389,56 @@ async function retrieveAthletics(query: QueryAnalysis): Promise<RetrievedChunk[]
 
     // ── Person lookup: player or coach name mentioned ──────────────────────
     const allTeams = [...ath.teams.mens, ...ath.teams.womens];
+
+    // ── Fast-path: specific coach query ───────────────────────────────────
+    if (lower.match(/\bcoach\b|\bhead coach\b|\bwho coach/)) {
+      const coachSportMatch = allTeams.find((t: any) =>
+        lower.includes(t.sport.toLowerCase()) ||
+        (t.sport.toLowerCase().includes("volleyball") && lower.includes("volleyball")) ||
+        (t.sport.toLowerCase().includes("basketball") && lower.match(/basketball|mbb|wbb/)) ||
+        (t.sport.toLowerCase().includes("soccer") && lower.includes("soccer")) ||
+        (t.sport.toLowerCase().includes("baseball") && lower.includes("baseball")) ||
+        (t.sport.toLowerCase().includes("softball") && lower.includes("softball")) ||
+        (t.sport.toLowerCase().includes("tennis") && lower.includes("tennis")) ||
+        (t.sport.toLowerCase().includes("swimming") && lower.match(/swim|diving/)) ||
+        (t.sport.toLowerCase().includes("golf") && lower.includes("golf")) ||
+        (t.sport.toLowerCase().includes("cross country") && lower.match(/cross country|track/)));
+      if (coachSportMatch) {
+        const gender = ath.teams.mens.includes(coachSportMatch) ? "Men's" : "Women's";
+        return [makeChunk("athletics",
+          `${gender} ${coachSportMatch.sport}: Head Coach ${coachSportMatch.coach}${coachSportMatch.venue ? ` | Venue: ${coachSportMatch.venue}` : ""}${coachSportMatch.notes ? `\n${coachSportMatch.notes}` : ""}`,
+          0.99, query)];
+      }
+      // No specific sport — return all coaches list
+      return [makeChunk("athletics",
+        `UIC FLAMES COACHING STAFF:\n` +
+        allTeams.map((t: any) => {
+          const g = ath.teams.mens.includes(t) ? "Men's" : "Women's";
+          return `${g} ${t.sport}: Coach ${t.coach}`;
+        }).join("\n"),
+        0.95, query)];
+    }
+
+    // ── Fast-path: walk-on / tryout queries ───────────────────────────────
+    if (lower.match(/walk.?on|tryout|try out|how.*(make|join).*(team)/)) {
+      const sportTeam = allTeams.find((t: any) =>
+        lower.includes(t.sport.toLowerCase()) ||
+        (t.sport.toLowerCase().includes("basketball") && lower.match(/basketball|mbb|wbb/)) ||
+        (t.sport.toLowerCase().includes("soccer") && lower.includes("soccer")) ||
+        (t.sport.toLowerCase().includes("baseball") && lower.includes("baseball")) ||
+        (t.sport.toLowerCase().includes("softball") && lower.includes("softball")) ||
+        (t.sport.toLowerCase().includes("volleyball") && lower.includes("volleyball")));
+      const teamName = sportTeam ? `${ath.teams.mens.includes(sportTeam) ? "Men's" : "Women's"} ${sportTeam.sport}` : "the team";
+      const coachName = sportTeam?.coach ?? "the coaching staff";
+      return [makeChunk("athletics",
+        `UIC WALK-ON / TRYOUT INFO:\n` +
+        `To walk on to the UIC ${teamName}: contact Head Coach ${coachName} directly.\n` +
+        `Typical process: (1) email the coaching staff expressing interest, (2) request to attend a practice or open tryout, (3) demonstrate skills.\n` +
+        `Find coach contact details at UICFlames.com → [sport page] → Coaching Staff.\n` +
+        `UIC Athletics main office: Flames Athletics Center (FAC), 901 W Roosevelt Rd.`,
+        0.92, query)];
+    }
+
     const isPersonQuery = lower.match(/\bwho is\b|\bwho('s| is)\b|\btell me about\b|\babout\b/);
 
     // Search rosters for the person
@@ -1174,11 +1507,23 @@ async function retrieveAthletics(query: QueryAnalysis): Promise<RetrievedChunk[]
       chunks.push(makeChunk("athletics", `RECENT RESULTS 2025-2026:\n${results}`, 0.95, query));
     }
 
+    // ── Ticket / cost queries ──────────────────────────────────────────────
+    if (lower.match(/ticket|free|cost|price|pay|admission|how much/)) {
+      const ticketContent =
+        `UIC FLAMES TICKETS:\n` +
+        `STUDENTS: FREE with valid UIC student ID for regular season home events.\n` +
+        `Flames Fast Pass: $50/year — covers ALL home events EXCEPT basketball (for non-students wanting a season pass).\n` +
+        `Basketball: Students use the Flame Force student section — Gate 3, Credit Union 1 Arena, sections 110-112. Follow @uic_studentsection for access details.\n` +
+        `Basketball non-student prices: lower/baseline $18, lower/sideline $28, Women's GA $12 adult / $6 youth.\n` +
+        `Buy tickets: Ticketmaster, UICFlames.com/Tickets, or call 312-413-UIC1.`;
+      chunks.push(makeChunk("athletics", ticketContent, 0.95, query));
+    }
+
     // ── General overview if nothing specific matched ───────────────────────
     if (chunks.length === 0) {
       const content = `UIC FLAMES ATHLETICS — Conference: MVC | Website: UICFlames.com\n` +
-        `TICKETS: FREE for students with UIC ID (regular season home events)\n` +
-        `Flames Fast Pass: $50 — all home events except basketball\n\n` +
+        `TICKETS: FREE for students with UIC ID — regular season home events.\n` +
+        `Flames Fast Pass: $50 — non-student season pass covering all home events except basketball.\n\n` +
         `TEAMS:\n` +
         ath.teams.mens.map((t: any) => `Men's ${t.sport}: Coach ${t.coach}${t.notes ? ` — ${t.notes}` : ""}`).join("\n") + "\n" +
         ath.teams.womens.map((t: any) => `Women's ${t.sport}: Coach ${t.coach}${t.notes ? ` — ${t.notes}` : ""}`).join("\n");
@@ -1296,12 +1641,15 @@ Questions: transportation.uic.edu | CTA: 888-968-7282`,
       0.97, query));
   }
   // ── Transportation ────────────────────────────────────────────────────────
-  if (lower.match(/\bcta\b|blue line|pink line|\bbus\b|train|transit|how (do i )?get (to|there)/)) {
+  if (lower.match(/\bcta\b|blue line|pink line|\bbus\b|train|transit|how (do i )?get (to|there)|o.?hare|midway|airport|getting.?to.?uic|from.?airport/)) {
     const t = b.transportation;
     const trains = t.cta_trains.map((s: any) => `${s.line} — ${s.station}: closest to ${s.closest_to}`).join("\n");
     const buses = t.key_cta_buses.slice(0, 4).map((s: any) => `${s.route}: ${s.notes}`).join("\n");
+    const airportDirections = lower.match(/o.?hare|airport|midway/)
+      ? `\n\nFROM O'HARE AIRPORT: Take the Blue Line (Forest Park direction) → ride to UIC-Halsted station (~45 min, $2.50 fare or use U-Pass). UIC-Halsted is the main east campus stop.\nFROM MIDWAY AIRPORT: Take Orange Line → transfer at Harold Washington Library or Roosevelt → connect to Pink Line → Polk station (west campus). Or take the #60 bus to UIC.`
+      : "";
     chunks.push(makeChunk("transportation",
-      `CTA TO UIC:\n${trains}\n\nKEY BUSES:\n${buses}`,
+      `CTA TO UIC:\n${trains}\n\nKEY BUSES:\n${buses}${airportDirections}`,
       0.97, query));
   }
   if (lower.match(/shuttle|night ride|intracampus/)) {
@@ -1565,6 +1913,30 @@ function retrieveAdmissions(query: QueryAnalysis): RetrievedChunk[] {
   const fy = adm.first_year;
   const tr = adm.transfer;
   const sc = adm.scholarships;
+  const lower = query.rawQuery.toLowerCase();
+
+  // ── Fast-path: English proficiency / Duolingo queries ─────────────────────
+  const chunks: RetrievedChunk[] = [];
+  if (lower.match(/duolingo|english proficiency|toefl|ielts|language test|esl|english.*test|test.*english/)) {
+    const intl = (admissionsData as any).international ?? {};
+    return [makeChunk("admissions",
+      `UIC ENGLISH PROFICIENCY REQUIREMENTS:\n` +
+      `Accepted tests: TOEFL (minimum ${intl.toefl_minimum ?? "80"} iBT), IELTS (minimum ${intl.ielts_minimum ?? "6.5"}), Duolingo English Test (minimum ${intl.duolingo_minimum ?? "105"}).\n` +
+      `${intl.english_proficiency_note ?? ""}\n` +
+      `For more info: oaa.uic.edu/undergraduate-admissions or contact the Office of Admissions.`,
+      0.99, query)];
+  }
+
+  // ── Fast-path: college/school existence queries ──────────────────────────
+  if (lower.match(/\b(law school|john marshall|college of|school of|colleges|schools|nursing school|medical school|dental school|pharmacy school|architecture school|education school|public health|social work|engineering school|business school)\b/)) {
+    chunks.push(makeChunk("admissions",
+      `UIC COLLEGES & SCHOOLS: UIC has 16 colleges and schools:\n` +
+      `Liberal Arts and Sciences (LAS) | Engineering | Business Administration (UIC Business) | Architecture Design and the Arts (CADA) | Education | Applied Health Sciences | Nursing | Public Health | Pharmacy | Medicine (UIC College of Medicine) | Dentistry | Social Work | Urban Planning and Public Affairs (CUPPA) | School of Law (UIC John Marshall Law School, downtown Chicago, 300 S State St — full JD program, LLM, law clinics, founded 1899 merged with UIC 2015) | Honors College | Graduate College`,
+      0.99, query));
+    if (chunks.length > 0 && !lower.match(/\b(deadline|apply|application|scholarship|transfer|aspire|gpa|test|sat|act)\b/)) {
+      return chunks; // College existence query — return fast, no need for full admissions chunk
+    }
+  }
 
   const content = `=== UIC ADMISSIONS 2025-2026 ===\n` +
     `Platform: ${fy.application_platform} | Test policy: ${fy.test_policy} | ${fy.no_enrollment_deposit}\n` +
@@ -1577,7 +1949,7 @@ function retrieveAdmissions(query: QueryAnalysis): RetrievedChunk[] {
     `President's Award: ${sc.presidents_award.amount}. Deadline ${sc.presidents_award.deadline}\n` +
     `Merit Tuition Award: ${sc.merit_tuition_award.amount}\n\n` +
     `AFTER ADMISSION: Activate NetID | Placement tests by June 30 | Apply housing (housing.uic.edu) | File FAFSA | Register orientation\n` +
-    `Visits: ${adm.campus_visits.url} | Admitted hub: ${adm.campus_visits.admitted_students}`;
+    `Visits: ${adm.campus_visits.url} | Admitted hub: ${adm.campus_visits.admitted_students}\n\n` +
       `UIC COLLEGES & SCHOOLS: Liberal Arts and Sciences (LAS) | Engineering | Business Administration | Architecture Design and the Arts (CADA) | Education | Applied Health Sciences | Nursing | Public Health | Pharmacy | Medicine | Dentistry | Social Work | Urban Planning and Public Affairs | School of Law (formerly John Marshall Law School) | Honors College`;
 
   return [makeChunk("admissions", content, 0.97, query)];
@@ -1596,22 +1968,25 @@ function retrieveCareers(query: QueryAnalysis): RetrievedChunk[] {
 
 function retrieveLibrary(query: QueryAnalysis): RetrievedChunk[] {
   const lib = libraryData as any;
-  const daley = lib.libraries?.daley_library;
-  const lhs = lib.libraries?.lhs_chicago;
-  const borrowing = lib.borrowing_policies;
-  const research = lib.research_help;
+  // libraries is an array — find by name/abbreviation
+  const libraries: any[] = Array.isArray(lib.libraries) ? lib.libraries : Object.values(lib.libraries ?? {});
+  const daley = libraries.find((l: any) => l.abbreviation === "Daley" || l.name?.includes("Daley")) ?? {};
+  const lhs = libraries.find((l: any) => l.abbreviation?.includes("LHS") || l.name?.includes("Health Sciences")) ?? {};
+  const borrowing = lib.borrowing ?? lib.borrowing_policies ?? {};
+  const research = lib.research_support ?? lib.research_help ?? {};
 
   const content = `=== LIBRARY ===\n` +
-    `Daley: ${daley?.address} | ${daley?.phone} | Hours: ${daley?.hours?.regular_semester ?? "see library.uic.edu"}\n` +
-    `Quiet floors: ${daley?.quiet_areas?.join(", ") ?? "3rd+4th floors, Circle Reading Room"}\n` +
-    `LHS Chicago: ${lhs?.address} | ${lhs?.phone} | Hours: ${lhs?.hours?.regular_semester ?? "see library.uic.edu"}\n` +
-    `Study rooms: libcal.uic.edu\n\n` +
+    `Daley Library: ${daley.address ?? "801 S Morgan"} | ${daley.phone ?? "(312) 996-2724"} | Hours: ${daley.hours?.regular_semester ?? "Mon-Thu 8AM-midnight, Fri 8AM-10PM, Sat 10AM-8PM, Sun 10AM-midnight"}\n` +
+    `Finals week: ${daley.hours?.finals_week ?? "24/7 extended hours"}. Breaks: ${daley.hours?.breaks ?? "Mon-Fri 8AM-5PM"}\n` +
+    `Quiet areas: ${(daley.quiet_floors ?? daley.quiet_areas ?? ["3rd floor", "4th floor", "Circle Reading Room"]).join(", ")}\n` +
+    `LHS Chicago: ${lhs.address ?? "1750 W Polk St"} | ${lhs.phone ?? "(312) 996-8966"} | Hours: ${lhs.hours?.regular_semester ?? "Mon-Thu 7:30AM-10PM, Fri 7:30AM-7PM, Sat-Sun 11AM-7PM"}\n` +
+    `Study rooms: libcal.uic.edu | Current hours: library.uic.edu/hours\n\n` +
     `BORROWING:\n` +
     `${Object.entries(borrowing?.loan_periods ?? {}).map(([k, v]) => `${k.replace(/_/g, " ")}: ${v}`).join(" | ")}\n` +
     `Fines: ${borrowing?.fines ?? "No fines until 39 days past due"}. Lost item: ${borrowing?.lost_item_fee ?? "$125+"}\n` +
-    `PRINTING: ${lib.printing?.system ?? "Wepa stations campus-wide"}\n` +
-    `ILL: ${lib.interlibrary_loan?.i_share ?? "I-Share 3-5 days"} | ${lib.interlibrary_loan?.illiad ?? "ILLiad 7-10 days"}\n` +
-    `Research help: ${research?.ask_a_librarian ?? "ask.library.uic.edu"} | Guides: ${research?.research_guides ?? "researchguides.uic.edu"}`;
+    `PRINTING: Wepa stations campus-wide\n` +
+    `ILL: I-Share 3-5 days | ILLiad 7-10 days\n` +
+    `Research help: ask.library.uic.edu | Guides: researchguides.uic.edu`;
   return [makeChunk("library", content, 0.9, query)];
 }
 
@@ -1744,11 +2119,32 @@ function buildAnswerBrief(
 // STAGE 5: CONTEXT ASSEMBLY — relevance-scored deduplication + token budget
 // ═══════════════════════════════════════════════════════════════════════════════
 
-function assembleContext(chunks: RetrievedChunk[], brief: AnswerBrief): string {
-  // Score = relevance * source confidence, with boost for answer mode alignment
-  const scored = chunks.map(c => ({
+function assembleContext(
+  chunks: RetrievedChunk[],
+  brief: AnswerBrief,
+  isFact = false,
+  domainConfidence: Partial<Record<string, number>> = {}
+): string {
+  // P2.4: Domain isolation — filter noise from unrelated domains when one domain is clearly dominant.
+  // "Dominant" = single domain >= 0.80 confidence, no co-domain >= 0.60.
+  const dcEntries = Object.entries(domainConfidence).sort(([, a], [, b]) => (b ?? 0) - (a ?? 0));
+  const topScore = dcEntries[0]?.[1] ?? 0;
+  const codomainCount = dcEntries.filter(([, s]) => (s ?? 0) >= 0.60).length;
+  const isDominant = topScore >= 0.80 && codomainCount <= 1;
+
+  const eligible = isDominant
+    ? chunks.filter(c => (domainConfidence[c.domain] ?? 0) >= 0.25)
+    : chunks;
+  // Safety: if filtering removes everything, fall back to all chunks
+  const filtered = eligible.length > 0 ? eligible : chunks;
+
+  // For fact queries: trust the source more than keyword overlap.
+  // For all others: relevance leads.
+  const scored = filtered.map(c => ({
     ...c,
-    finalScore: c.relevanceScore * 0.6 + c.sourceConfidence * 0.4,
+    finalScore: isFact
+      ? c.relevanceScore * 0.4 + c.sourceConfidence * 0.6
+      : c.relevanceScore * 0.6 + c.sourceConfidence * 0.4,
   })).sort((a, b) => b.finalScore - a.finalScore);
 
   // Deduplicate by content fingerprint
@@ -1758,7 +2154,10 @@ function assembleContext(chunks: RetrievedChunk[], brief: AnswerBrief): string {
   const TOKEN_LIMIT = 4000;
 
   for (const chunk of scored) {
-    const fingerprint = chunk.content.slice(0, 80);
+    // Normalize whitespace before fingerprinting so domain-prefix variations
+    // don't mask true duplicates, and increase length to 150 so near-identical
+    // chunks with different prefixes are distinguished correctly.
+    const fingerprint = chunk.content.replace(/\s+/g, " ").slice(0, 150);
     if (seen.has(fingerprint)) continue;
     if (totalTokens + chunk.tokenEstimate > TOKEN_LIMIT) break;
     seen.add(fingerprint);
@@ -1865,7 +2264,8 @@ function buildSystemPrompt(
   memoryContext: string,
   context: string,
   isFact: boolean,
-  answerPack?: AnswerPack
+  answerPack?: AnswerPack,
+  trustInstruction?: string
 ): string {
   const modeInstructions: Record<AnswerMode, string> = {
     ranking: "RANKING: Lead with the top options. Use real GPA numbers, scores, prices to justify rankings. Name a clear winner. Don't hedge — students want a decisive answer.",
@@ -1873,7 +2273,7 @@ function buildSystemPrompt(
     comparison: "COMPARISON: Structure as clear A vs B with parallel criteria. Acknowledge the real tradeoffs. End with a concrete recommendation tailored to the implied student profile.",
     recommendation: "RECOMMENDATION: You detected specific constraints about this student. Use them. Give a direct, personalized answer — not 'it depends,' but 'given that you care about X and Y, here is what I recommend and why.'",
     logistics: "LOGISTICS: Be precise. Lead with exact addresses, phone numbers, deadlines, URLs, hours. Zero editorializing. Students need to act — give them exactly what they need.",
-planning: "PLANNING: Build the semester plan using ONLY the courses and credit hours in the MANDATORY REQUIRED COURSES and OFFICIAL SAMPLE SCHEDULE sections of the retrieved data. Do NOT invent courses. Do NOT change credit hours. Do NOT add graduate-level (500+) courses unless they appear in the mandatory list. For elective slots, use only courses from UNDERGRAD ELECTIVE OPTIONS (numbered below 500). Follow the PLANNING RULES listed in the retrieved data. Format: YEAR 1, YEAR 2, YEAR 3, YEAR 4 with Fall and Spring subsections. Use bullet lists. End with total credit count and an advisor verification note.",
+planning: "PLANNING: Your ONLY source of truth is the retrieved degree plan data — ignore all training knowledge about course sequences. Follow the PLAN TIER and PLANNING RULES in the data exactly. If the data contains NO PLAN DATA FOUND, you MUST NOT generate any plan — redirect to catalog.uic.edu and advising. If data is present: (1) reproduce the OFFICIAL SAMPLE SCHEDULE verbatim as the semester backbone, (2) every code in REQUIRED COURSE CODE MANIFEST must appear in your output — no omissions, (3) fill elective slots ONLY from the ELECTIVE REQUIREMENTS list — never invent a course code, (4) never include 500+ level courses unless they appear in the manifest, (5) for COURSES_ONLY tier you must not write any semester structure, (6) end with an advisor verification note.",
     hybrid: "HYBRID: This is a multi-part question. Break it into organized sections. Answer each well. Synthesize with a crisp bottom line that ties it together.",
   };
 
@@ -1889,26 +2289,17 @@ planning: "PLANNING: Build the semester plan using ONLY the courses and credit h
     ? `GROUNDING RULE — FACT LOOKUP: The retrieved data below contains the exact answer. Copy addresses, phone numbers, suite numbers, hours, and deadlines VERBATIM — do not paraphrase or approximate them. A wrong suite number or phone number is worse than no answer. If the fact is present, quote it exactly. Keep your answer to 1–3 sentences unless the student asked for more.`
     : `GROUNDING RULE: Synthesize the retrieved data into a clear, specific answer. Reason about it — don't just repeat it. Be specific: cite exact numbers, names, and dates from the data.`;
 
-  const corePrinciples = isFact
-    ? `CORE PRINCIPLES:
-  - Match response length to the question. Simple questions = 1-3 sentences. Only use lists and long responses for planning, comparisons, or multi-part questions.
-- If the answer is short, write it short. Never pad.
-- Read between the lines: if a student seems stressed, overwhelmed, or is implicitly asking for an easier path, address that directly.
-- Connect dots: a course question often implies a professor question — answer the real question.
-- If memory shows the student's major/year, tailor every answer to their situation without being asked.
-- Quote addresses, phone numbers, suite numbers, and deadlines exactly as they appear in the data
-- Never paraphrase a location or contact detail — copy it word for word
-- Answer in 1-3 sentences for simple fact questions
-- If the specific fact is not in the retrieved data, say so and direct to the relevant UIC website`
-    : `CORE PRINCIPLES:
-- Synthesize — reason about the data, don't just repeat it
-- Be specific: cite GPA numbers, dollar amounts, dates, building names, phone numbers
-- Use **bold** for course codes, names, critical numbers
-- Acknowledge real tradeoffs honestly when they exist
-- Never hallucinate facts — if uncertain, say so and point to the right UIC page
+  const corePrinciples = `CORE PRINCIPLES:
+- Never hallucinate — if a fact isn't in the retrieved data, say so and point to the right UIC page
+- Be specific: cite exact GPA numbers, dollar amounts, addresses, phone numbers, and dates from the data
+- Use **bold** for course codes, professor names, and critical numbers
+- Match response length to the question: simple fact = 1-3 sentences, planning/comparison = detailed with structure
 - Zero filler phrases — students want answers, not preamble
-- Think like the smartest UIC insider who knows every shortcut and real answer`;
+- Read between the lines: if a student seems stressed or implicitly needs an easier path, address that directly
+- If memory shows the student's major/year, tailor the answer to their situation`;
 
+
+  const trustLine = trustInstruction ? `\n${trustInstruction}\n` : "";
 
   return `You are Sparky — a smart, friendly UIC assistant. You can have normal conversations AND answer deep questions about UIC with real data. Read the room: casual messages get casual replies, serious questions get detailed answers.
 
@@ -1935,13 +2326,12 @@ REASONING INSTRUCTION — ${brief.answerMode.toUpperCase()}:
 ${modeInstructions[brief.answerMode]}
 
 ${corePrinciples}
-
+${trustLine}
 UIC: Chicago's only public Research I university. ~33,000 students. ~91% commuters. Majority-minority. Mascot: Sparky the Dragon. Navy and Flames Red. Missouri Valley Conference (MVC). Go Flames!
 ${memoryContext ? "\n" + memoryContext + "\n" : ""}
 ${answerPack ? `
 --- ANSWER PACK ---
 INTENT: ${answerPack.resolvedIntent}
-MODE: ${answerPack.answerMode.toUpperCase()}
 ENTITIES: ${answerPack.resolvedEntities.map(e => `${e.type}=${e.value}`).join(", ") || "none"}
 RESPONSE SHAPE: ${answerPack.maxResponseShape}
 ${answerPack.caveats.length > 0 ? `CAVEATS: ${answerPack.caveats.join(" | ")}` : ""}
@@ -2056,6 +2446,7 @@ const userMemory = await getMemory(sessionId).catch(() => null);
 const sessionState = await getSessionState(sessionId).catch(() => ({
   activeCourseId: null, activeCourseCode: null,
   activeProfessorId: null, activeProfessorName: null,
+  activeHall: null,
   activeDomain: null, lastAnswerType: null, lastTopics: [],
 }));
 
@@ -2066,6 +2457,17 @@ const [aiIntentResult, regexIntentResult, regexCiResult] = await Promise.allSett
 ]);
 
 const aiIntent = aiIntentResult.status === "fulfilled" ? aiIntentResult.value : null;
+
+// P2.2: Semantic answerMode override — AI classification wins over regex when available.
+// Regex stays as fallback (already set in query.answerMode via detectAnswerMode).
+const semanticMode = aiIntent?.answerMode;
+if (semanticMode && semanticMode !== query.answerMode) {
+  // Regex has strong signal for planning/comparison — only override for weaker cases
+  const regexIsStrong = query.answerMode === "planning" || query.answerMode === "comparison";
+  if (!regexIsStrong) {
+    query.answerMode = semanticMode;
+  }
+}
 const ri = regexIntentResult.status === "fulfilled" ? regexIntentResult.value : ({} as any);
 const rc = regexCiResult.status === "fulfilled" ? regexCiResult.value : ({} as any);
 
@@ -2114,19 +2516,39 @@ const rc = regexCiResult.status === "fulfilled" ? regexCiResult.value : ({} as a
   const dc = query.domainConfidence;
   const lower = lastMsg.toLowerCase();
 
-// Use session state to resolve ambiguous follow-ups
-if (!intent.courseCode && !intent.subjectCode && sessionState.activeCourseCode) {
+// ── Multi-turn entity inheritance — resolve ambiguous follow-ups ──────────────
+const lower2 = lastMsg.toLowerCase();
+
+// Inherit active course when query is about courses/professors and no explicit course given
+if (!intent.courseCode && !intent.subjectCode && sessionState.activeCourseCode &&
+    (intent.isAboutCourses || intent.isAboutProfessors || intent.wantsEasiest || intent.wantsProfRanking)) {
   const parts = sessionState.activeCourseCode.split(" ");
   if (parts.length >= 2) {
     intent.courseCode = { subject: parts[0], number: parts[1] };
   }
 }
+
+// Inherit active professor — pronouns OR any professor-specific query with no name given
 if (!intent.profNameHint && sessionState.activeProfessorName) {
-  const lower2 = lastMsg.toLowerCase();
-  if (lower2.match(/\b(him|her|that prof|that professor|same prof|they|their)\b/) ||
-      lower2.match(/^(what about|tell me more|more about|and him|and her)[\s?!.]*$/i)) {
+  const profFollowUp =
+    lower2.match(/\b(him|her|that prof|that professor|same prof|they|their|his|her)\b/) ||
+    lower2.match(/^(what about|tell me more|more about|and him|and her|how about)[\s?!.]*$/i) ||
+    // Also inherit when clearly asking about professor attributes without naming one
+    (intent.wantsProfRanking && !intent.profNameHint) ||
+    lower2.match(/\b(their (rating|score|gpa|difficulty|reviews?|rmp|grade|class))\b/);
+  if (profFollowUp) {
     intent.profNameHint = sessionState.activeProfessorName;
   }
+}
+
+// Inject active hall into query for housing follow-ups ("does it have a gym?", "how much is it?")
+if (!lower2.match(/\b(arc|jst|cmw|cms|cmn|mrh|tbh|ssr|psr|cty)\b/i) &&
+    sessionState.activeHall &&
+    (ci.isAboutHousing || ci.isAboutMealPlan || ci.isAboutDining || ci.isAboutLLC ||
+     lower2.match(/\b(it|that|there|the dorm|the hall|the res(idence)?)\b/)) &&
+    sessionState.activeDomain === "housing") {
+  // Append hall to query so scoreChunk can match it in housing chunk content
+  (query as any)._inheritedHall = sessionState.activeHall;
 }
 
   // Memory-boosted retrieval — inject user's known major/interests into intent
@@ -2150,6 +2572,31 @@ if (userMemory?.interests?.some(i => i.toLowerCase().includes("greek") || i.toLo
 }
 if (userMemory?.interests?.some(i => i.toLowerCase().includes("sport") || i.toLowerCase().includes("basketball"))) {
   if (!dc["athletics"]) dc["athletics"] = 0.6;
+}
+
+// ── Boost domain confidence from AI intent signals ─────────────────────────
+// AI classifier correctly detects domains that regex keywords miss (e.g. "sports" ≠ "sport",
+// "safe?" trailing punctuation, O'Hare not in transport keywords, etc.).
+// Without this boost, scoreChunk under-scores the retrieved chunk → insufficient_evidence → wrong abstain.
+if (ci.isAboutAthletics)        dc["athletics"]       = Math.max(dc["athletics"] ?? 0, 0.90);
+if (ci.isAboutSafety)           dc["safety"]          = Math.max(dc["safety"] ?? 0, 0.90);
+if (ci.isAboutTransportation)   dc["transportation"]  = Math.max(dc["transportation"] ?? 0, 0.90);
+if (ci.isAboutCampusMap)        dc["campus_map"]      = Math.max(dc["campus_map"] ?? 0, 0.82);
+if (ci.isAboutStudentLife)      dc["student_life"]    = Math.max(dc["student_life"] ?? 0, 0.82);
+if (ci.isAboutHealth)           dc["health"]          = Math.max(dc["health"] ?? 0, 0.88);
+if (ci.isAboutRecreation)       dc["recreation"]      = Math.max(dc["recreation"] ?? 0, 0.85);
+if (ci.isAboutAcademicPolicies) dc["academic_policy"] = Math.max(dc["academic_policy"] ?? 0, 0.82);
+if (ci.isAboutCalendar)         dc["calendar"]        = Math.max(dc["calendar"] ?? 0, 0.82);
+if (ci.isAboutHousing)          dc["housing"]         = Math.max(dc["housing"] ?? 0, 0.88);
+if (ci.isAboutDining)           dc["dining"]          = Math.max(dc["dining"] ?? 0, 0.85);
+if (ci.isAboutTuition)          dc["tuition"]         = Math.max(dc["tuition"] ?? 0, 0.85);
+if (ci.isAboutFinancialAid)     dc["financial_aid"]   = Math.max(dc["financial_aid"] ?? 0, 0.88);
+// Admissions + international have no ci flags — detect via broader keyword patterns
+if ((dc["admissions"] ?? 0) < 0.5 && lower.match(/\b(sat|act|test.?optional|admit|accept|waitlist|defer|enroll(?:ment)?|application|apply|admission|require(?:ment)?|deadline|acceptance|incoming|first.?year|transfer student|deposit|orientation|law school|college of|school of|colleges|schools at|programs offered)\b/)) {
+  dc["admissions"] = Math.max(dc["admissions"] ?? 0, 0.82);
+}
+if ((dc["international"] ?? 0) < 0.5 && lower.match(/\bi.?20\b|opt\b|cpt\b|f.?1\b|international student|ois\b|sevis|renew.*visa|visa.*renew|study abroad/i)) {
+  dc["international"] = Math.max(dc["international"] ?? 0, 0.85);
 }
 
   // ── Execute sync (JSON) retrievals immediately ────────────────────────────
@@ -2281,7 +2728,9 @@ const vectorTask = syncChunks.length < 2
   // Add vector results only for domains not already covered by structured retrieval
 const relevantVectors = (vectorResults as any[]).filter((r: any) => r.similarity > 0.52);
 
-if (relevantVectors.length > 0 && !query.isFact) {
+// Planning mode: skip vector chunks — retrieveMajorPlan() provides authoritative
+// structured data; professor reviews and vector hits would only contaminate.
+if (relevantVectors.length > 0 && !query.isFact && query.answerMode !== "planning") {
   const perVectorChunks: RetrievedChunk[] = relevantVectors.map((r: any) => {
     const domain = mapVectorSourceTypeToDomain(r.sourceType);
     const confidence = vectorSourceConfidence(r.sourceType, r.trustLevel);
@@ -2394,8 +2843,6 @@ const trust = makeTrustDecision(
     publishedAt:      null, // extend later when chunks carry dates
   }))
 );
-console.log(`[trust] q=${lastMsg.slice(0,40)} | class=${trust.explanation.query_class} | domain=${trust.explanation.primary_domain} | score=${trust.explanation.top_score} | chunks=${trust.explanation.relevant_chunk_count} | decision=${trust.decision}`);
-
 // ── QueryLog ──────────────────────────────────────────────────────────────
 const domainsTriggered = Object.entries(query.domainConfidence)
   .filter(([, score]) => score > 0.5)
@@ -2406,6 +2853,28 @@ const retrievalSources: string[] = [
   ...(asyncChunks.length > 0                                                   ? ["sql"]    : []),
   ...((vectorResults as any[]).some((r: any) => r.similarity > 0.65)         ? ["vector"] : []),
 ];
+
+// Structured per-request log — one JSON line, stable fields for log aggregators.
+const top3Chunks = rerankedChunks.slice(0, 3).map(c => ({
+  domain: c.domain,
+  relevance: Math.round(c.relevanceScore * 100) / 100,
+  confidence: Math.round(c.sourceConfidence * 100) / 100,
+}));
+console.log(JSON.stringify({
+  sparky: true,
+  sessionId: sessionId.slice(-8),       // last 8 chars — enough to correlate, not PII
+  query: lastMsg.slice(0, 80),
+  answerMode: query.answerMode,
+  trustDecision: trust.decision,
+  trustConfidence: trust.confidence,
+  trustClass: trust.explanation.query_class,
+  primaryDomain: trust.explanation.primary_domain,
+  topScore: trust.explanation.top_score,
+  chunkCount: rerankedChunks.length,
+  top3Chunks,
+  retrievalSources,
+  ms: Date.now() - requestStartMs,
+}));
 
 prisma.queryLog.create({
   data: {
@@ -2446,7 +2915,7 @@ if (trust.decision === "abstain") {
 }
 
 const brief = buildAnswerBrief(query, rerankedChunks);
-const context = assembleContext(rerankedChunks, brief);
+const context = assembleContext(rerankedChunks, brief, query.isFact, query.domainConfidence);
 const memoryContext = userMemory ? formatMemoryForPrompt(userMemory) : "";
 const answerPack = buildAnswerPack(query, rerankedChunks, intent, sessionState);
 
@@ -2462,7 +2931,8 @@ if (Object.keys(stateUpdates).length > 0) {
 
 
   // ── Build prompt + call model ─────────────────────────────────────────────
-const systemPrompt = buildSystemPrompt(brief, memoryContext, context, query.isFact, answerPack);
+const trustInstruction = getTrustInstruction(trust);
+const systemPrompt = buildSystemPrompt(brief, memoryContext, context, query.isFact, answerPack, trustInstruction);
 const maxTokens = query.answerMode === "planning" ? 2800 
   : query.answerMode === "hybrid" ? 1800 
   : query.isFact ? 300 

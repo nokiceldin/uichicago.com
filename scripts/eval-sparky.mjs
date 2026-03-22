@@ -213,7 +213,11 @@ function scoreResult(query, queryResult) {
   }
 
   const answered  = ANSWERED_PATTERNS.some(p => p.test(response));
-  const abstained = abstainedByServer || ABSTAIN_PATTERNS.some(p => p.test(response));
+  // A response that answers substantively (per ANSWERED_PATTERNS) is NOT an abstain
+  // even if it includes helpful verification phrases like "you can check..." or "for the most current..."
+  // Use ABSTAIN_PATTERNS only when the server confirms it abstained OR there's no substantive content.
+  const textLooksLikeAbstain = ABSTAIN_PATTERNS.some(p => p.test(response)) && !answered && response.length < 400;
+  const abstained = abstainedByServer || textLooksLikeAbstain;
 
   // Was abstention the right call for this query?
   const shouldAbstain =

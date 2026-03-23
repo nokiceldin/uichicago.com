@@ -200,6 +200,7 @@ const prof = await prisma.professor.findFirst({
     select: {
       name: true, department: true, rmpQuality: true, rmpDifficulty: true,
       rmpRatingsCount: true, rmpWouldTakeAgain: true, aiSummary: true, slug: true,
+      salary: true, salaryTitle: true,
     },
   });
   if (!prof) return null;

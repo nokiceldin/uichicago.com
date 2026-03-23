@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server"
-import { prisma } from "@/app/lib/prisma"
+import { prisma } from "@/lib/prisma"
 import { Resend } from "resend"
 import { getPostHogClient } from "@/app/lib/posthog-server"
 

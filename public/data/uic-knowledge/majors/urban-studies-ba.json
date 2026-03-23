@@ -1,0 +1,983 @@
+{
+  "name": "Urban Studies - BA",
+  "college": "Urban Planning and Policy",
+  "department": "Urban Planning and Policy",
+  "url": "https://catalog.uic.edu/ucat/colleges-depts/urban-planning-public-affairs/upp/ba/",
+  "totalHours": 32,
+  "summaryRequirements": {
+    "General and Basic Education Requirements": "32-34",
+    "Required for the Degree": "33",
+    "Concentration Required for the Degree": "12",
+    "Free Electives": "41-43",
+    "Total Hours": "120"
+  },
+  "requiredCourses": [
+    {
+      "code": "ENGL 160",
+      "subject": "ENGL",
+      "number": "160",
+      "title": "Academic Writing I: Writing in Academic and Public Contexts",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "ENGL 161",
+      "subject": "ENGL",
+      "number": "161",
+      "title": "Academic Writing II: Writing for Inquiry and Research",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "UPA 120",
+      "subject": "UPA",
+      "number": "120",
+      "title": "Urban and Public Affairs Seminar I b",
+      "hours": 1,
+      "required": true
+    },
+    {
+      "code": "UPA 121",
+      "subject": "UPA",
+      "number": "121",
+      "title": "Urban and Public Affairs Seminar II b",
+      "hours": 1,
+      "required": true
+    },
+    {
+      "code": "US 101",
+      "subject": "US",
+      "number": "101",
+      "title": "Introduction to Urban Studies a",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "US 130",
+      "subject": "US",
+      "number": "130",
+      "title": "Principles of Urban Sustainability a",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "US 202",
+      "subject": "US",
+      "number": "202",
+      "title": "Social Justice and the City a",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "US 240",
+      "subject": "US",
+      "number": "240",
+      "title": "Urban and Community Economics",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "US 250",
+      "subject": "US",
+      "number": "250",
+      "title": "Analyzing the City",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "US 301",
+      "subject": "US",
+      "number": "301",
+      "title": "Political Economy of Urban Development",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "US 306",
+      "subject": "US",
+      "number": "306",
+      "title": "Urban Policy Analysis Methods",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "US 308",
+      "subject": "US",
+      "number": "308",
+      "title": "Globalization and Environmental Planning",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "UPP 403",
+      "subject": "UPP",
+      "number": "403",
+      "title": "Just and Sustainable Planning Practices for Great Cities",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "UPP 405",
+      "subject": "UPP",
+      "number": "405",
+      "title": "Researching the City",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "US 495",
+      "subject": "US",
+      "number": "495",
+      "title": "Senior Capstone Experience in Urban Studies",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "CS 111",
+      "subject": "CS",
+      "number": "111",
+      "title": "Program Design I",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "PPOL 105",
+      "subject": "PPOL",
+      "number": "105",
+      "title": "Programming and Data Analysis for Public Policy I",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "PPOL 205",
+      "subject": "PPOL",
+      "number": "205",
+      "title": "Programming and Data Analysis for Public Policy II",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "PPOL 220",
+      "subject": "PPOL",
+      "number": "220",
+      "title": "Introduction to Civic Technology",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "PA 402",
+      "subject": "PA",
+      "number": "402",
+      "title": "Introduction to Data Management and Analysis",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "PA 431",
+      "subject": "PA",
+      "number": "431",
+      "title": "Civic Technology",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "PA 434",
+      "subject": "PA",
+      "number": "434",
+      "title": "Intermediate Data Management and Analysis",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "PA 446",
+      "subject": "PA",
+      "number": "446",
+      "title": "Coding for Civic Data Applications",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "US 261",
+      "subject": "US",
+      "number": "261",
+      "title": "Mapping, Data, and Geographic Information Systems",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "US 361",
+      "subject": "US",
+      "number": "361",
+      "title": "Introduction to Geographic Information Systems I",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ANTH 319",
+      "subject": "ANTH",
+      "number": "319",
+      "title": "Environmental Anthropology",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "BIOS 365",
+      "subject": "BIOS",
+      "number": "365",
+      "title": "Human Ecological Systems",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "CME 311",
+      "subject": "CME",
+      "number": "311",
+      "title": "Water Resources Engineering",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "CME 421",
+      "subject": "CME",
+      "number": "421",
+      "title": "Water Treatment Design",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "EAES 101",
+      "subject": "EAES",
+      "number": "101",
+      "title": "Global Environmental Change",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "EAES 385",
+      "subject": "EAES",
+      "number": "385",
+      "title": "Earth Systems",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "EAES 473",
+      "subject": "EAES",
+      "number": "473",
+      "title": "Soils and the Environment",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ECON 370",
+      "subject": "ECON",
+      "number": "370",
+      "title": "Environmental Economics",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "EOHS 411",
+      "subject": "EOHS",
+      "number": "411",
+      "title": "Water Quality Management",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "EOHS 418",
+      "subject": "EOHS",
+      "number": "418",
+      "title": "Water Quality Analysis in Public Health",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ENGL 253",
+      "subject": "ENGL",
+      "number": "253",
+      "title": "Environmental Rhetoric",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "IE 118",
+      "subject": "IE",
+      "number": "118",
+      "title": "Energy for Sustainable Society",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "PPOL 240",
+      "subject": "PPOL",
+      "number": "240",
+      "title": "Environmental Policy",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "US 390",
+      "subject": "US",
+      "number": "390",
+      "title": "Sustainability Internship",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "UPP 493",
+      "subject": "UPP",
+      "number": "493",
+      "title": "Topics in Urban Planning and Policy",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "AH 111",
+      "subject": "AH",
+      "number": "111",
+      "title": "World History of Art and the Built Environment II",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "AH 122",
+      "subject": "AH",
+      "number": "122",
+      "title": "History of Chicago Architecture",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ARCH 210",
+      "subject": "ARCH",
+      "number": "210",
+      "title": "Architecture as Archetype: Explorations of the City and Its Forms",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "CME 111",
+      "subject": "CME",
+      "number": "111",
+      "title": "The Art of Structural Form",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "CME 112",
+      "subject": "CME",
+      "number": "112",
+      "title": "Evolution of Infrastructure and Society",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "CME 440",
+      "subject": "CME",
+      "number": "440",
+      "title": "Cities and Sustainable Infrastructure",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "DES 222",
+      "subject": "DES",
+      "number": "222",
+      "title": "Human Experience in Design",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "US 140",
+      "subject": "US",
+      "number": "140",
+      "title": "Introduction to Urban Transportation",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ANTH 216",
+      "subject": "ANTH",
+      "number": "216",
+      "title": "Medicine, Culture, and Society",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "BLST 104",
+      "subject": "BLST",
+      "number": "104",
+      "title": "Race, Place, and Schooling: Black Americans and Education",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "BLST 271",
+      "subject": "BLST",
+      "number": "271",
+      "title": "Race and the Politics of Incarceration",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ECON 215",
+      "subject": "ECON",
+      "number": "215",
+      "title": "Health Economics",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "IPHS 430",
+      "subject": "IPHS",
+      "number": "430",
+      "title": "Epidemics of Injustice",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "PSCH 231",
+      "subject": "PSCH",
+      "number": "231",
+      "title": "Community Psychology",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "PUBH 100",
+      "subject": "PUBH",
+      "number": "100",
+      "title": "Health and the Public",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "PUBH 110",
+      "subject": "PUBH",
+      "number": "110",
+      "title": "Public Health and Global Societies",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "PUBH 120",
+      "subject": "PUBH",
+      "number": "120",
+      "title": "Public Health and the Study of Disease and Epidemics",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "PUBH 320",
+      "subject": "PUBH",
+      "number": "320",
+      "title": "Ecologies of Health and Modern Life",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ANTH 244",
+      "subject": "ANTH",
+      "number": "244",
+      "title": "Arab and Asian Connections in the U.S. and Globally",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ANTH 262",
+      "subject": "ANTH",
+      "number": "262",
+      "title": "Constructions of Gender, Race, Health, and Human Rights",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "BLST 249",
+      "subject": "BLST",
+      "number": "249",
+      "title": "Black Freedom Movements in the U.S.",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "DHD 101",
+      "subject": "DHD",
+      "number": "101",
+      "title": "Disability in U.S. Society",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "DHD 202",
+      "subject": "DHD",
+      "number": "202",
+      "title": "Disability, Health, and Society",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "DHD 206",
+      "subject": "DHD",
+      "number": "206",
+      "title": "Disability, Inclusive Cities, and Environmental Accessibility",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "DHD 303",
+      "subject": "DHD",
+      "number": "303",
+      "title": "Disability Activism: From the Local to the Global",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "GLAS 300",
+      "subject": "GLAS",
+      "number": "300",
+      "title": "Global Asia in Chicago",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "HIST 240",
+      "subject": "HIST",
+      "number": "240",
+      "title": "Radicalism in America: From the Revolution to Occupy Wall Street",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "LALS 103",
+      "subject": "LALS",
+      "number": "103",
+      "title": "Introduction to Latino Urban Studies",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "LALS 233",
+      "subject": "LALS",
+      "number": "233",
+      "title": "Latinos in Chicago",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ECON 311",
+      "subject": "ECON",
+      "number": "311",
+      "title": "Introduction to Urban Real Estate",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ECON 332",
+      "subject": "ECON",
+      "number": "332",
+      "title": "Urban Economics",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ECON 342",
+      "subject": "ECON",
+      "number": "342",
+      "title": "Regional Economics",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ECON 475",
+      "subject": "ECON",
+      "number": "475",
+      "title": "Urban Economics and Public Policy",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "HIST 255",
+      "subject": "HIST",
+      "number": "255",
+      "title": "History of Chicago",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "PPOL 300",
+      "subject": "PPOL",
+      "number": "300",
+      "title": "Urban Policy and Metropolitan Governance",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "RES 250",
+      "subject": "RES",
+      "number": "250",
+      "title": "Real Estate Principles",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "RES 420",
+      "subject": "RES",
+      "number": "420",
+      "title": "Real Estate Market Analysis",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ENGL 389",
+      "subject": "ENGL",
+      "number": "389",
+      "title": "Writing for Community Advocacy and Activism",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "GLAS 250",
+      "subject": "GLAS",
+      "number": "250",
+      "title": "Critical Issues in Community Engagement",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "LALS 425",
+      "subject": "LALS",
+      "number": "425",
+      "title": "Urban Field Research in Latino/a Communities",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "PA 467",
+      "subject": "PA",
+      "number": "467",
+      "title": "Civic Engagement",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "POLS 210",
+      "subject": "POLS",
+      "number": "210",
+      "title": "Introduction to Urban Politics",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "POLS 211",
+      "subject": "POLS",
+      "number": "211",
+      "title": "Chicago's Future",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "PPOL 230",
+      "subject": "PPOL",
+      "number": "230",
+      "title": "Nonprofit Organizations and Civil Society",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "PPOL 330",
+      "subject": "PPOL",
+      "number": "330",
+      "title": "Introduction to Managing Public and Nonprofit Organizations",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "PPOL 430",
+      "subject": "PPOL",
+      "number": "430",
+      "title": "Fundraising and Development for Nonprofit Organizations",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "PSCH 331",
+      "subject": "PSCH",
+      "number": "331",
+      "title": "Laboratory in Community and Prevention Research",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "PUBH 360",
+      "subject": "PUBH",
+      "number": "360",
+      "title": "Local Citizenship and Community Health Initiatives",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ED 100",
+      "subject": "ED",
+      "number": "100",
+      "title": "Introduction to Urban Education",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "US 296",
+      "subject": "US",
+      "number": "296",
+      "title": "Special Topics in Urban Studies",
+      "hours": null,
+      "required": true
+    }
+  ],
+  "sampleSchedule": [
+    {
+      "year": "Freshman Year",
+      "semester": "Fall Semester",
+      "total_hours": 14,
+      "courses": [
+        {
+          "code": "US 101",
+          "title": "Introduction to Urban Studies",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "UPA 120",
+          "title": "Urban and Public Affairs Seminar I",
+          "hours": 1,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "ENGL 160",
+          "title": "Academic Writing I: Writing in Academic and Public Contexts",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        }
+      ]
+    },
+    {
+      "year": "Freshman Year",
+      "semester": "Spring Semester",
+      "total_hours": 14,
+      "courses": [
+        {
+          "code": "US 130",
+          "title": "Principles of Urban Sustainability",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "UPA 121",
+          "title": "Urban and Public Affairs Seminar II",
+          "hours": 1,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "ENGL 161",
+          "title": "Academic Writing II: Writing for Inquiry and Research",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        }
+      ]
+    },
+    {
+      "year": "Sophomore Year",
+      "semester": "Fall Semester",
+      "total_hours": 15,
+      "courses": [
+        {
+          "code": "US 202",
+          "title": "Social Justice and the City",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "US 240",
+          "title": "Urban and Community Economics",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "Elective",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": null,
+          "title": "Elective",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        }
+      ]
+    },
+    {
+      "year": "Sophomore Year",
+      "semester": "Spring Semester",
+      "total_hours": 16,
+      "courses": [
+        {
+          "code": "US 250",
+          "title": "Analyzing the City",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "Electives",
+          "hours": 6,
+          "isElective": true,
+          "electiveType": "elective_general"
+        }
+      ]
+    },
+    {
+      "year": "Junior Year",
+      "semester": "Fall Semester",
+      "total_hours": 16,
+      "courses": [
+        {
+          "code": "US 301",
+          "title": "Political Economy of Urban Development",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "Electives",
+          "hours": 7,
+          "isElective": true,
+          "electiveType": "elective_general"
+        }
+      ]
+    },
+    {
+      "year": "Junior Year",
+      "semester": "Spring Semester",
+      "total_hours": 15,
+      "courses": [
+        {
+          "code": "US 306",
+          "title": "Urban Policy Analysis Methods",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "US 308",
+          "title": "Globalization and Environmental Planning",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "Elective",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": null,
+          "title": "Elective",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        }
+      ]
+    },
+    {
+      "year": "Senior Year",
+      "semester": "Fall Semester",
+      "total_hours": 15,
+      "courses": [
+        {
+          "code": "UPP 405",
+          "title": "Researching the City",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "UPP 403",
+          "title": "Just and Sustainable Planning Practices for Great Cities",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "Elective",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": null,
+          "title": "Elective",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        }
+      ]
+    },
+    {
+      "year": "Senior Year",
+      "semester": "Spring Semester",
+      "total_hours": 15,
+      "courses": [
+        {
+          "code": "US 495",
+          "title": "Senior Capstone Experience in Urban Studies",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "Elective",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": null,
+          "title": "Elective",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": null,
+          "title": "Elective",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": null,
+          "title": "Elective",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        }
+      ]
+    }
+  ]
+}

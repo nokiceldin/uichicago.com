@@ -7,6 +7,9 @@ const client = new Anthropic();
 const MAJOR_KEYS = majorRequirements.map((m) => m.key);
 
 export type ClassifiedIntent = {
+  // Answer mode — semantic classification takes priority over regex
+  answerMode: "planning" | "ranking" | "comparison" | "recommendation" | "logistics" | "discovery" | "hybrid" | null;
+
   // Course signals
   courseCode: { subject: string; number: string } | null;
   subjectCode: string | null;
@@ -58,6 +61,7 @@ Respond ONLY with a valid JSON object. No explanation, no markdown, no backticks
 
 JSON schema:
 {
+  "answerMode": one of "planning"|"ranking"|"comparison"|"recommendation"|"logistics"|"discovery"|"hybrid" — classify the student's intent: planning=degree/semester plan, ranking=easiest/best/top list, comparison=A vs B, recommendation=should I / suggest for me, logistics=where/when/how/contact/deadline, discovery=general info, hybrid=multiple modes,
   "courseCode": {"subject": "CS", "number": "211"} or null,
   "subjectCode": "CS" or null (department code if mentioned without course number),
   "isAboutCourses": boolean,
@@ -95,12 +99,15 @@ JSON schema:
 }
 
 Examples:
-"who's the easiest grader for intro to programming?" → isAboutProfessors:true, isAboutCourses:true, wantsEasiest:true, deptName:"Computer Science"
-"im pre-med what classes should i take" → isAboutCourses:true, isAboutMajor:true, majorKey:"biology"
-"does ARC have a gym?" → isAboutHousing:true, isAboutRecreation:true
-"how do i get free tuition" → isAboutTuition:true, isAboutFinancialAid:true
-"is reckinger a good professor" → isAboutProfessors:true, profNameHint:"reckinger", wantsProfRanking:true
-"easiest way to fulfill natural world gen ed" → isAboutGenEd:true, isAboutCourses:true, wantsEasiest:true`;
+"who's the easiest grader for intro to programming?" → answerMode:"ranking", isAboutProfessors:true, isAboutCourses:true, wantsEasiest:true, deptName:"Computer Science"
+"im pre-med what classes should i take" → answerMode:"recommendation", isAboutCourses:true, isAboutMajor:true, majorKey:"biology"
+"does ARC have a gym?" → answerMode:"logistics", isAboutHousing:true, isAboutRecreation:true
+"how do i get free tuition" → answerMode:"discovery", isAboutTuition:true, isAboutFinancialAid:true
+"is reckinger a good professor" → answerMode:"discovery", isAboutProfessors:true, profNameHint:"reckinger", wantsProfRanking:true
+"easiest way to fulfill natural world gen ed" → answerMode:"ranking", isAboutGenEd:true, isAboutCourses:true, wantsEasiest:true
+"make me a 4 year plan for CS" → answerMode:"planning", isAboutMajor:true, majorKey:"computer-science"
+"which is better ARC or JST?" → answerMode:"comparison", isAboutHousing:true
+"should I take CS 251 or CS 301 first?" → answerMode:"recommendation", isAboutCourses:true`;
 
 export async function classifyIntent(
   message: string,

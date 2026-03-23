@@ -1,38 +1,40 @@
 {
   "_meta": {
-    "generated_at": "2026-03-22T08:32:44.651Z",
+    "generated_at": "2026-03-22T08:38:59.457Z",
     "total_cases": 1,
-    "elapsed_sec": 10.5,
+    "elapsed_sec": 7.8,
     "judge_model": "claude-sonnet-4-20250514",
     "pass_threshold": 7,
     "mode": "live"
   },
   "results": [
     {
-      "id": "q63",
-      "question": "are uic athletic events free for students?",
-      "category": "athletics",
-      "difficulty": "easy",
-      "expected_behavior": "answer",
-      "actual_behavior": "answer",
+      "id": "q32",
+      "question": "what events are happening on campus this week?",
+      "category": "student_life",
+      "difficulty": "hard",
+      "expected_behavior": "abstain",
+      "actual_behavior": "abstain",
       "behavior_correct": true,
-      "score": 10,
+      "score": 9,
       "subscores": {
-        "factual_correctness": 4,
+        "factual_correctness": 1,
         "completeness": 2,
-        "trust_behavior": 2,
+        "trust_behavior": 4,
         "clarity": 1,
         "safety": 1
       },
       "passed": true,
-      "judge_reasoning": "The response correctly states that UIC students get free admission to regular season home events with valid student ID, meeting both core requirements. It accurately provides basketball student section details (Flame Force, Gate 3, sections 110-112) and the correct social media handle. The final sentence about 'separate student ticketing' is slightly confusing but doesn't contradict the free admission fact.",
-      "missed_facts": [],
+      "judge_reasoning": "Sparky correctly abstained from providing specific events and acknowledged lack of real-time access. The response includes proper redirects to events.uic.edu and connect.uic.edu as required. However, the URL format 'uic.edu/events' doesn't precisely match the reference fact 'events.uic.edu', and the additional Instagram redirect wasn't in the reference facts but isn't harmful.",
+      "missed_facts": [
+        "events.uic.edu (referenced as uic.edu/events instead)"
+      ],
       "forbidden_claims_found": [],
-      "response_text": "Yes! **UIC students get FREE admission** to all regular season home athletic events with a valid UIC student ID.\n\nFor basketball games, students use the **Flame Force student section** (Gate 3, Credit Union 1 Arena, sections 110-112) — follow **@uic_studentsection** for access details.\n\nThe only exception is that basketball has separate student ticketing through the student section system, but it's still free for students.",
-      "response_length": 426,
+      "response_text": "I don't have a real-time events calendar. For this week's campus events: uic.edu/events | connect.uic.edu (student orgs) | @thisisuic on Instagram. For recurring programs and orgs, I'm happy to help!",
+      "response_length": 199,
       "sparky_trace": {
-        "server_abstained": false,
-        "abstain_reason": null
+        "server_abstained": true,
+        "abstain_reason": "live_status_query_no_realtime_feed"
       },
       "judge_error": null
     }

@@ -3,10 +3,20 @@ export const dynamic = "force-dynamic";
 import SparkyMarkdown from "../components/SparkyMarkdown";
 import { useState, useRef, useEffect, useCallback, useMemo, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
+import { flushSync } from "react-dom";
 import posthog from "posthog-js";
 const BETA_PASSWORD = "uicsparky2026";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
+
+interface AttachedFile {
+  name: string;
+  mimeType: string;
+  data: string;       // base64 (no data-URL prefix)
+  fileType: "image" | "pdf" | "text";
+  preview?: string;   // data-URL for image thumbnail
+  sizeLabel: string;
+}
 
 interface Message {
   id: string;
@@ -14,6 +24,7 @@ interface Message {
   content: string;
   error?: boolean;
   streaming?: boolean;
+  attachment?: { name: string; fileType: AttachedFile["fileType"]; preview?: string };
 }
 
 interface TopicGroup {
@@ -723,6 +734,136 @@ const FEATURED_PROMPTS = [
   "How do free student tickets work?",
 ];
 
+const TOPIC_SHORTCUTS: Record<string, string[]> = {
+  courses: [
+    "Build me a 4 year CS plan",
+    "Best CS average grades",
+    "Hardest CS classes",
+    "Easiest 200 level CS classes",
+  ],
+  professors: [
+    "Best CS professors",
+    "Best professor for CS 211",
+    "Best calculus professors",
+    "Easiest science professors",
+  ],
+  costs: [
+    "UIC tuition cost",
+    "Aspire Grant eligibility",
+    "Cheapest way to attend UIC",
+    "UIC cost after aid",
+  ],
+  housing: [
+    "Quietest dorm at UIC",
+    "Best freshman dorm",
+    "ARC vs JST",
+    "Cheapest housing options",
+  ],
+  campus_life: [
+    "Best clubs at UIC",
+    "How to make friends fast",
+    "Welcome week events",
+    "Best orgs for CS majors",
+  ],
+  dining: [
+    "Best meal plan",
+    "Cheap food near UIC",
+    "Halal food near campus",
+    "Late night food",
+  ],
+  athletics: [
+    "Free student tickets",
+    "UIC sports schedule",
+    "Rec center hours",
+    "Does UIC have tennis?",
+  ],
+  campus: [
+    "Best study spots",
+    "Where to park at UIC",
+    "How to get around campus",
+    "Where to print",
+  ],
+  health: [
+    "CampusCare explained",
+    "Waive health insurance",
+    "Free counseling at UIC",
+    "Student health center",
+  ],
+  registration: [
+    "When registration opens",
+    "How waitlist works",
+    "How to add or drop classes",
+    "Registration holds explained",
+  ],
+  admissions: [
+    "UIC application deadline",
+    "UIC admission requirements",
+    "How to apply to UIC",
+    "What to do after acceptance",
+  ],
+  careers: [
+    "How to find internships",
+    "UIC career resources",
+    "On campus jobs",
+    "Resume help at UIC",
+  ],
+  international: [
+    "Maintain F1 status",
+    "CPT explained",
+    "OPT explained",
+    "Travel signature help",
+  ],
+  safety: [
+    "Night Ride explained",
+    "UIC Safe app",
+    "Campus police contact",
+    "Safety tips for freshmen",
+  ],
+};
+
+const CHAT_QUICK_PROMPTS = [
+  "Best CS average grades",
+  "Hardest CS classes",
+  "Easiest 200 level CS classes",
+  "Build me a 4 year CS plan",
+  "Best CS professors",
+  "Best professor for CS 211",
+  "Quietest dorm at UIC",
+  "Best freshman dorm",
+  "ARC vs JST",
+  "Best study spots",
+  "Where to print",
+  "How to get around campus",
+  "UIC tuition cost",
+  "Aspire Grant eligibility",
+  "Best GPA booster classes",
+  "How to register for classes",
+  "How waitlist works",
+  "UIC application deadline",
+  "Best clubs at UIC",
+  "Free student tickets",
+  "CampusCare explained",
+  "Waive health insurance",
+  "How to find internships",
+  "Maintain F1 status",
+  "CPT explained",
+  "OPT explained",
+  "Night Ride explained",
+  "UIC Safe app",
+  "Cheap food near UIC",
+  "Best meal plan",
+  "On campus or off campus?",
+  "Best career resources",
+  "Best calculus professors",
+  "How to lower tuition",
+  "Best housing options",
+  "How to add or drop classes",
+  "What majors is UIC best for?",
+  "Best commuter tips",
+  "Where is the rec center?",
+  "What should freshmen know first?",
+];
+
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function uid() {
@@ -740,6 +881,36 @@ function shuffleArray<T>(arr: T[]): T[] {
 
 function getRandomItems<T>(arr: T[], count: number): T[] {
   return shuffleArray(arr).slice(0, count);
+}
+
+function shortenPrompt(text: string): string {
+  const map: Record<string, string> = {
+    "What are the easiest 200-level CS courses at UIC?": "Easiest 200 level CS classes",
+    "Which CS classes have the best average grades?": "Best CS average grades",
+    "What are the hardest CS classes at UIC?": "Hardest CS classes",
+    "What math classes do CS majors need at UIC?": "CS major math requirements",
+    "Can you build me a 4-year engineering plan at UIC?": "Build me a 4 year engineering plan",
+    "Can you build me a full 4-year CS plan": "Build me a full 4 year CS plan",
+    "Make me a full 4-year CS plan": "Build me a full 4 year CS plan",
+    "What are the best GPA booster classes at UIC?": "Best GPA booster classes",
+    "Best rated CS professors at UIC?": "Best CS professors",
+    "Who is the best professor for CS 211?": "Best professor for CS 211",
+    "Should I live on campus or off campus?": "On campus or off campus?",
+    "Do I qualify for the Aspire Grant?": "Aspire Grant eligibility",
+    "What is the quietest dorm at UIC?": "Quietest dorm at UIC",
+  };
+
+  if (map[text]) return map[text];
+
+  return text
+    .replace(/ at UIC\??$/i, "")
+    .replace(/Can you /i, "")
+    .replace(/What are the /i, "")
+    .replace(/What is the /i, "")
+    .replace(/Which /i, "")
+    .replace(/How do I /i, "")
+    .replace(/\?$/, "")
+    .trim();
 }
 
 function formatContent(text: string): string {
@@ -787,9 +958,9 @@ function SparkyAvatar({ size = "sm" }: { size?: "sm" | "lg" }) {
 
 function TypingIndicator() {
   return (
-    <div className="flex gap-3 items-start">
-      <SparkyAvatar size="sm" />
-      <div className="bg-zinc-900/80 border border-zinc-800 rounded-2xl rounded-tl-sm px-4 py-3.5 flex items-center gap-1">
+    <div className="flex gap-3.5 items-start">
+      <div className="pt-0.5 shrink-0"><SparkyAvatar size="sm" /></div>
+      <div className="flex items-center gap-1 pt-2">
         {[0, 1, 2].map(i => (
           <span
             key={i}
@@ -804,16 +975,16 @@ function TypingIndicator() {
   );
 }
 
-function ActionBtn({ title, onClick, children }: { title: string; onClick: () => void; children: React.ReactNode }) {
+function ActionBtn({ title, onClick, children, className = "" }: { title: string; onClick: () => void; children: React.ReactNode; className?: string }) {
   return (
     <div className="relative group/btn">
       <button
         onClick={onClick}
-        className="p-1.5 rounded-lg text-zinc-500 hover:text-zinc-200 hover:bg-zinc-800 transition-all duration-150"
+        className={`p-1.5 rounded-lg text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-100 transition-colors duration-150 ${className}`}
       >
         {children}
       </button>
-      <div className="pointer-events-none absolute -top-8 left-1/2 -translate-x-1/2 bg-zinc-800 text-zinc-200 text-[11px] px-2 py-1 rounded-md whitespace-nowrap opacity-0 group-hover/btn:opacity-100 transition-opacity duration-150 border border-zinc-700">
+      <div className="pointer-events-none absolute -top-7 left-1/2 -translate-x-1/2 bg-zinc-900 dark:bg-zinc-700 text-zinc-100 text-[11px] px-2 py-0.5 rounded-md whitespace-nowrap opacity-0 group-hover/btn:opacity-100 transition-opacity duration-150">
         {title}
       </div>
     </div>
@@ -830,7 +1001,7 @@ function CopyBtn({ content }: { content: string }) {
           setCopied(true);
           setTimeout(() => setCopied(false), 2000);
         }}
-        className="p-1.5 rounded-lg text-zinc-500 hover:text-zinc-200 hover:bg-zinc-800 transition-all duration-150"
+        className="p-1.5 rounded-lg text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-100 transition-colors duration-150"
       >
         {copied ? (
           <svg className="w-4 h-4 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -849,61 +1020,112 @@ function CopyBtn({ content }: { content: string }) {
   );
 }
 
-function MessageBubble({ msg, onRegenerate }: { msg: Message; onRegenerate?: () => void }) {
+function MessageBubble({ msg, onRegenerate, userQuestion }: { msg: Message; onRegenerate?: () => void; userQuestion?: string }) {
+  const [feedbackGiven, setFeedbackGiven] = useState<"good" | "bad" | null>(null);
+
+  const submitFeedback = async (rating: "good" | "bad") => {
+    if (feedbackGiven) return;
+    setFeedbackGiven(rating);
+    posthog.capture("chat_response_feedback", { rating });
+    try {
+      await fetch("/api/feedback", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ question: userQuestion ?? "", answer: msg.content, rating }),
+      });
+    } catch { /* silent */ }
+  };
   if (msg.role === "user") {
     return (
-      <div className="flex justify-end gap-2.5 items-end">
-        <div className="max-w-[72%] md:max-w-[60%] bg-zinc-800 border border-zinc-700/60 text-zinc-100 rounded-2xl rounded-br-sm px-4 py-3 text-[16px] leading-[1.75] font-normal">
-          {msg.content}
+      <div className="flex flex-col items-end gap-1">
+        {msg.attachment && (
+          <div className="max-w-[78%] md:max-w-[62%]">
+            {msg.attachment.fileType === "image" && msg.attachment.preview ? (
+              <img
+                src={msg.attachment.preview}
+                alt={msg.attachment.name}
+                className="max-h-64 rounded-2xl border border-zinc-200 dark:border-zinc-700 object-cover"
+              />
+            ) : (
+              <div className="flex items-center gap-2 bg-zinc-100 dark:bg-zinc-800 rounded-2xl px-4 py-2.5 border border-zinc-200 dark:border-zinc-700">
+                <svg className="w-4 h-4 text-zinc-500 dark:text-zinc-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                <span className="text-[13px] text-zinc-700 dark:text-zinc-200 font-medium truncate max-w-[200px]">{msg.attachment.name}</span>
+              </div>
+            )}
+          </div>
+        )}
+        {msg.content && (
+          <div className="max-w-[78%] md:max-w-[62%] rounded-[24px] px-5 py-3.5 bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-50 text-[15.5px] leading-[1.55] font-[430] tracking-[-0.008em]">
+            {msg.content}
+          </div>
+        )}
+        <div className="flex items-center gap-1 pr-1">
+          <CopyBtn content={msg.content} />
         </div>
       </div>
     );
   }
-
   return (
-  <div className="flex gap-3 items-start group">
-    <SparkyAvatar size="sm" />
-    <div className={`flex-1 min-w-0 max-w-[90%] md:max-w-[85%] ${msg.error ? "opacity-60" : ""}`}>
-      <div className="text-[16px] leading-[1.75] text-zinc-300 font-normal prose-sparky">
-<div className="text-[16px] leading-[1.75] text-zinc-300 font-normal prose-sparky">
-  <SparkyMarkdown content={msg.content} />
-</div>
-      </div>
-      {!msg.streaming && !msg.error && (
-        <div className="flex items-center gap-0.5 mt-2 opacity-100 transition-opacity duration-150">
-          <CopyBtn content={msg.content} />
-{onRegenerate && (
-  <ActionBtn title="Regenerate response" onClick={onRegenerate}>
-    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
-      <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-    </svg>
-  </ActionBtn>
-)}
-<ActionBtn title="Good response" onClick={() => posthog.capture("chat_response_feedback", { rating: "good" })}>
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M14 9V5a3 3 0 00-3-3l-4 9v11h11.28a2 2 0 002-1.7l1.38-9a2 2 0 00-2-2.3H14z"/><path d="M7 22H4a2 2 0 01-2-2v-7a2 2 0 012-2h3"/>
-            </svg>
-          </ActionBtn>
-          <ActionBtn title="Bad response" onClick={() => posthog.capture("chat_response_feedback", { rating: "bad" })}>
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M10 15v4a3 3 0 003 3l4-9V2H5.72a2 2 0 00-2 1.7l-1.38 9a2 2 0 002 2.3H10z"/><path d="M17 2h2.67A2.31 2.31 0 0122 4v7a2.31 2.31 0 01-2.33 2H17"/>
-            </svg>
-          </ActionBtn>
+  <div className="flex items-start gap-3.5 group">
+    <div className="pt-0.5 shrink-0">
+      <SparkyAvatar size="sm" />
+    </div>
+
+    <div className={`min-w-0 flex-1 ${msg.error ? "opacity-60" : ""}`}>
+      <div className="max-w-[700px]">
+        <div className="text-[15.5px] leading-[1.85] text-zinc-800 dark:text-zinc-100 font-normal tracking-[-0.008em] antialiased prose-sparky">
+          <SparkyMarkdown content={msg.content} />
         </div>
-      )}
-      {msg.error && (
-        <p className="text-xs text-red-400 mt-2 flex items-center gap-1.5">
-          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <circle cx="12" cy="12" r="10"/><path d="M12 8v4m0 4h.01"/>
-          </svg>
-          Failed to get response
-        </p>
-      )}
+
+        {!msg.streaming && !msg.error && (
+          <div className="flex items-center gap-0.5 mt-2.5">
+            <CopyBtn content={msg.content} />
+
+            {onRegenerate && (
+              <ActionBtn title="Regenerate response" onClick={onRegenerate}>
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+              </ActionBtn>
+            )}
+
+            <ActionBtn
+              title="Good response"
+              onClick={() => submitFeedback("good")}
+              className={feedbackGiven === "good" ? "text-green-500" : feedbackGiven === "bad" ? "opacity-30 cursor-default" : ""}
+            >
+              <svg className="w-4 h-4" fill={feedbackGiven === "good" ? "currentColor" : "none"} viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M14 9V5a3 3 0 00-3-3l-4 9v11h11.28a2 2 0 002-1.7l1.38-9a2 2 0 00-2-2.3H14z"/><path d="M7 22H4a2 2 0 01-2-2v-7a2 2 0 012-2h3"/>
+              </svg>
+            </ActionBtn>
+
+            <ActionBtn
+              title="Bad response"
+              onClick={() => submitFeedback("bad")}
+              className={feedbackGiven === "bad" ? "text-red-500" : feedbackGiven === "good" ? "opacity-30 cursor-default" : ""}
+            >
+              <svg className="w-4 h-4" fill={feedbackGiven === "bad" ? "currentColor" : "none"} viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M10 15v4a3 3 0 003 3l4-9V2H5.72a2 2 0 00-2 1.7l-1.38 9a2 2 0 002 2.3H10z"/><path d="M17 2h2.67A2.31 2.31 0 0122 4v7a2.31 2.31 0 01-2.33 2H17"/>
+              </svg>
+            </ActionBtn>
+          </div>
+        )}
+
+        {msg.error && (
+          <p className="text-xs text-red-400 mt-3 flex items-center gap-1.5">
+            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <circle cx="12" cy="12" r="10"/><path d="M12 8v4m0 4h.01"/>
+            </svg>
+            Failed to get response
+          </p>
+        )}
+      </div>
     </div>
   </div>
 );
 }
-
 function ChatInput({
   value,
   onChange,
@@ -913,70 +1135,247 @@ function ChatInput({
   loading,
   inputRef,
   variant = "floating",
+  attachedFile,
+  onAttach,
+  onRemoveAttachment,
+  fileInputRef,
 }: {
   value: string;
   onChange: (v: string) => void;
-  onSend: () => void;
+  onSend: (text?: string) => void;
   onStop: () => void;
   onKeyDown: (e: React.KeyboardEvent<HTMLTextAreaElement>) => void;
   loading: boolean;
   inputRef: React.RefObject<HTMLTextAreaElement | null>;
   variant?: "floating" | "fixed";
+  attachedFile: AttachedFile | null;
+  onAttach: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onRemoveAttachment: () => void;
+  fileInputRef: React.RefObject<HTMLInputElement | null>;
 }) {
   const isFloating = variant === "floating";
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+  const [recording, setRecording] = useState(false);
+  const [speechError, setSpeechError] = useState<string | null>(null);
+  const recognitionRef = useRef<any>(null);
+
+  // Close menu on outside click
+  useEffect(() => {
+    if (!menuOpen) return;
+    const handler = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setMenuOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [menuOpen]);
+
+  // Stop recognition on unmount
+  useEffect(() => {
+    return () => { recognitionRef.current?.stop(); };
+  }, []);
+
+  const startRecording = () => {
+    const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SR) {
+      setSpeechError("Speech recognition not supported in this browser.");
+      setTimeout(() => setSpeechError(null), 4000);
+      return;
+    }
+    const r = new SR();
+    r.lang = "en-US";
+    r.continuous = false;
+    r.interimResults = false;
+    r.onresult = (e: any) => {
+      const transcript = Array.from(e.results as any[])
+        .map((res: any) => res[0].transcript)
+        .join(" ")
+        .trim();
+      if (transcript) onChange(value ? value + " " + transcript : transcript);
+    };
+    r.onerror = (e: any) => {
+      if (e.error !== "no-speech" && e.error !== "aborted") {
+        setSpeechError("Couldn't hear you. Try again.");
+        setTimeout(() => setSpeechError(null), 3000);
+      }
+    };
+    r.onend = () => setRecording(false);
+    recognitionRef.current = r;
+    r.start();
+    setRecording(true);
+    setSpeechError(null);
+  };
+
+  const stopRecording = () => {
+    recognitionRef.current?.stop();
+    setRecording(false);
+  };
 
   return (
-    <div
-      className={`relative bg-zinc-800/80 border transition-all duration-200 ${
-        isFloating
-  ? "border-transparent rounded-3xl shadow-xl"
-  : "border-transparent rounded-3xl"
-      }`}
-    >
-      <textarea
-        ref={inputRef}
-        value={value}
-        onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => {
-          onChange(e.target.value);
-          e.target.style.height = "auto";
-          e.target.style.height = Math.min(e.target.scrollHeight, 180) + "px";
-        }}
-        onKeyDown={onKeyDown}
-        placeholder="Ask Sparky anything about UIC..."
-        rows={1}
-        className="w-full bg-transparent text-white placeholder-zinc-500 outline-none resize-none text-[15px] leading-relaxed px-5 py-[14px] pr-14"
-        style={{ maxHeight: "180px" }}
-      />
-      <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2">
-  {loading && (
-    <span className="text-zinc-500 flex items-center gap-1.5 text-[11px]">
-      <span className="w-1.5 h-1.5 bg-zinc-500 rounded-full animate-pulse" />
-    </span>
-  )}
-        {loading ? (
-  <button
-    onClick={() => onStop()}
-    className="flex items-center justify-center w-8 h-8 rounded-lg bg-zinc-700 hover:bg-zinc-600 text-white transition-all duration-150"
-  >
-    <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">
-      <rect x="6" y="6" width="12" height="12" rx="1.5" />
-    </svg>
-  </button>
-) : (
-  <button
-    onClick={() => onSend()}
-    disabled={!value.trim()}
-    className={`flex items-center justify-center w-8 h-8 rounded-lg transition-all duration-150 ${
-      value.trim()
-        ? "bg-red-600 hover:bg-red-500 text-white shadow-lg shadow-red-900/40"
-        : "bg-zinc-800 text-zinc-600 cursor-not-allowed"
-    }`}
-  >
-    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-      <path strokeLinecap="round" strokeLinejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />
-    </svg>
-  </button>
-)}
+    // Outer wrapper is relative but NOT overflow-hidden so the popup can escape
+    <div ref={menuRef} className="relative">
+      {/* Popup menu — rendered outside overflow-hidden so it's not clipped */}
+      {menuOpen && (
+        <div
+          className="absolute bottom-[calc(100%+8px)] left-0 z-50 w-60 rounded-2xl bg-zinc-900 dark:bg-zinc-800 border border-zinc-700/60 shadow-[0_8px_32px_rgba(0,0,0,0.5)] overflow-hidden"
+          style={{ animation: "fadeSlideUp 0.15s ease forwards" }}
+        >
+          <button
+            type="button"
+            onClick={() => { setMenuOpen(false); fileInputRef.current?.click(); }}
+            className="flex items-center gap-3 w-full px-4 py-3.5 text-[14px] text-zinc-100 hover:bg-zinc-700/60 transition-colors text-left"
+          >
+            <svg className="w-5 h-5 text-zinc-300 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
+            </svg>
+            Add photos and files
+          </button>
+        </div>
+      )}
+
+      <div
+        className={`overflow-hidden border transition-all duration-200 ${
+          isFloating
+            ? "rounded-[22px] border-zinc-300 dark:border-zinc-700/70 bg-white dark:bg-zinc-900 shadow-[0_10px_30px_rgba(0,0,0,0.1)] dark:shadow-[0_10px_30px_rgba(0,0,0,0.35)]"
+            : "rounded-[22px] border-zinc-300 dark:border-zinc-700/80 bg-white dark:bg-zinc-900 shadow-[0_12px_40px_rgba(0,0,0,0.12)] dark:shadow-[0_12px_40px_rgba(0,0,0,0.45)]"
+        }`}
+      >
+      {/* Attachment preview strip */}
+      {attachedFile && (
+        <div className="flex items-center gap-2 px-4 pt-3 pb-0">
+          {attachedFile.fileType === "image" && attachedFile.preview ? (
+            <div className="relative">
+              <img src={attachedFile.preview} alt={attachedFile.name} className="h-16 w-16 object-cover rounded-xl border border-zinc-200 dark:border-zinc-700" />
+              <button onClick={onRemoveAttachment} className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-zinc-800 dark:bg-zinc-200 text-white dark:text-zinc-900 flex items-center justify-center text-[10px] leading-none hover:bg-red-600 dark:hover:bg-red-500 transition-colors">✕</button>
+            </div>
+          ) : (
+            <div className="relative flex items-center gap-2 bg-zinc-100 dark:bg-zinc-800 rounded-xl px-3 py-2 border border-zinc-200 dark:border-zinc-700">
+              <svg className="w-4 h-4 text-zinc-500 dark:text-zinc-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              <div className="min-w-0">
+                <p className="text-[12px] font-medium text-zinc-700 dark:text-zinc-200 truncate max-w-[160px]">{attachedFile.name}</p>
+                <p className="text-[11px] text-zinc-400">{attachedFile.sizeLabel}</p>
+              </div>
+              <button onClick={onRemoveAttachment} className="ml-1 w-4 h-4 rounded-full bg-zinc-300 dark:bg-zinc-600 flex items-center justify-center text-[10px] leading-none hover:bg-red-500 hover:text-white transition-colors">✕</button>
+            </div>
+          )}
+        </div>
+      )}
+
+      <div className="flex items-end min-h-[50px]">
+        {/* Hidden file input */}
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*,application/pdf,text/*,.txt,.md"
+          className="hidden"
+          onChange={onAttach}
+        />
+
+        {/* Left: attach button */}
+        <div className="flex items-end pl-3 pb-3">
+          <button
+            type="button"
+            onClick={() => setMenuOpen(o => !o)}
+            className={`flex items-center justify-center w-9 h-9 rounded-full transition-all duration-150 ${
+              menuOpen
+                ? "bg-zinc-300 dark:bg-zinc-600 text-zinc-900 dark:text-white"
+                : "bg-zinc-200 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-300 dark:hover:bg-zinc-700 hover:text-zinc-900 dark:hover:text-white"
+            }`}
+            aria-label="Attach file or image"
+          >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 5v14M5 12h14" />
+            </svg>
+          </button>
+        </div>
+
+        {/* Textarea */}
+        <textarea
+          ref={inputRef}
+          value={value}
+          onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => {
+            onChange(e.target.value);
+            e.target.style.height = "auto";
+            e.target.style.height = Math.min(e.target.scrollHeight, 180) + "px";
+          }}
+          onKeyDown={onKeyDown}
+          placeholder={attachedFile ? "Ask about this file..." : "Ask Sparky anything about UIC..."}
+          rows={1}
+          className="flex-1 bg-transparent text-zinc-900 dark:text-white placeholder:text-zinc-400 outline-none resize-none text-[16px] font-normal leading-relaxed px-3 py-[18px]"
+          style={{ maxHeight: "180px" }}
+        />
+
+        {/* Right buttons */}
+        <div className="flex items-end gap-1.5 pr-3 pb-3">
+          {/* Mic button — hidden while Sparky is responding */}
+          {!loading && (
+            <button
+              type="button"
+              onClick={recording ? stopRecording : startRecording}
+              title={recording ? "Stop recording" : "Speak your message"}
+              aria-label={recording ? "Stop recording" : "Voice input"}
+              className={`relative flex items-center justify-center w-9 h-9 rounded-full transition-all duration-200 ${
+                recording
+                  ? "bg-red-500 text-white shadow-[0_0_0_4px_rgba(239,68,68,0.2)]"
+                  : "bg-zinc-200 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-300 dark:hover:bg-zinc-700 hover:text-zinc-800 dark:hover:text-zinc-200"
+              }`}
+            >
+              {recording ? (
+                /* Pulsing stop indicator */
+                <span className="w-3 h-3 rounded-sm bg-white" style={{ animation: "micPulse 1s ease-in-out infinite" }} />
+              ) : (
+                /* Microphone icon */
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M19 10v2a7 7 0 01-14 0v-2M12 19v4M8 23h8" />
+                </svg>
+              )}
+            </button>
+          )}
+
+          {/* Send / Stop-Sparky button */}
+          {loading ? (
+            <button
+              onClick={onStop}
+              className="flex items-center justify-center w-9 h-9 rounded-full bg-zinc-300 dark:bg-zinc-700 hover:bg-zinc-400 dark:hover:bg-zinc-600 text-zinc-800 dark:text-white transition-all duration-150"
+              aria-label="Stop response"
+            >
+              <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">
+                <rect x="6" y="6" width="12" height="12" rx="1.5" />
+              </svg>
+            </button>
+          ) : (
+            <button
+              onClick={() => onSend()}
+              disabled={!value.trim() && !attachedFile}
+              className={`flex items-center justify-center w-9 h-9 rounded-full transition-all duration-200 ${
+                (value.trim() || attachedFile)
+                  ? "bg-[#CC0000] hover:bg-[#aa0000] text-white shadow-[0_2px_8px_rgba(204,0,0,0.35)] scale-100 hover:scale-105 active:scale-95"
+                  : "bg-zinc-200 dark:bg-zinc-800 text-zinc-400 dark:text-zinc-500 cursor-not-allowed"
+              }`}
+              aria-label="Send message"
+            >
+              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.4}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />
+              </svg>
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* Speech error */}
+      {speechError && (
+        <div className="px-4 pb-2 text-[12px] text-red-400 dark:text-red-400 flex items-center gap-1.5">
+          <svg className="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <circle cx="12" cy="12" r="10"/><path d="M12 8v4m0 4h.01"/>
+          </svg>
+          {speechError}
+        </div>
+      )}
       </div>
     </div>
   );
@@ -998,7 +1397,7 @@ function TopicChip({
       className={`shrink-0 px-3.5 py-1.5 rounded-full border text-[12.5px] font-medium transition-all duration-150 ${
         active
           ? topic.chipActive
-          : `bg-zinc-900/80 border-zinc-700/50 text-zinc-400 hover:text-zinc-200 hover:border-zinc-500`
+          : `bg-zinc-100/80 dark:bg-zinc-900/80 border-zinc-300/50 dark:border-zinc-700/50 text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:border-zinc-400 dark:hover:border-zinc-500`
       }`}
     >
       {topic.label}
@@ -1020,7 +1419,7 @@ function PromptCard({
     <button
       onClick={onClick}
       style={{ animationDelay: `${delay}ms` }}
-      className="prompt-card group w-full text-left px-4 py-3 rounded-3xl border bg-zinc-900/60 border-zinc-700/40 text-zinc-300 hover:bg-zinc-800/80 hover:border-zinc-600 hover:text-white transition-all duration-150 hover:scale-[1.02] active:scale-[0.99] text-[13.5px] font-medium leading-snug flex items-start gap-2.5"
+      className="prompt-card group w-full text-left px-4 py-3 rounded-3xl border bg-zinc-100/60 dark:bg-zinc-900/60 border-zinc-300/40 dark:border-zinc-700/40 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-200/80 dark:hover:bg-zinc-800/80 hover:border-zinc-400 dark:hover:border-zinc-600 hover:text-zinc-900 dark:hover:text-white transition-all duration-150 hover:scale-[1.02] active:scale-[0.99] text-[13.5px] font-medium leading-snug flex items-start gap-2.5"
     >
       <span className="flex-1">{text}</span>
       <svg
@@ -1043,16 +1442,24 @@ function EmptyState({
   onKeyDown,
   loading,
   inputRef,
+  attachedFile,
+  onAttach,
+  onRemoveAttachment,
+  fileInputRef,
 }: {
   activeTopic: number;
   setActiveTopic: (i: number) => void;
-  onSend: () => void;
+  onSend: (text?: string) => void;
   onStop: () => void;
   input: string;
   onInputChange: (v: string) => void;
   onKeyDown: (e: React.KeyboardEvent<HTMLTextAreaElement>) => void;
   loading: boolean;
   inputRef: React.RefObject<HTMLTextAreaElement | null>;
+  attachedFile: AttachedFile | null;
+  onAttach: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onRemoveAttachment: () => void;
+  fileInputRef: React.RefObject<HTMLInputElement | null>;
 }){
 const topic = TOPICS[activeTopic];
 const visiblePrompts = useMemo(() => getRandomItems(topic.items, 4), [topic.id]);
@@ -1067,7 +1474,7 @@ const visiblePrompts = useMemo(() => getRandomItems(topic.items, 4), [topic.id])
         <div className="sparky-float mb-5">
           <img src="/sparky-icon.png" alt="Sparky" className="w-24 h-24 object-contain drop-shadow-lg" />
         </div>
-        <h1 className="text-[32px] font-semibold text-white tracking-tight leading-none mb-3">
+        <h1 className="text-[32px] font-semibold text-zinc-900 dark:text-white tracking-tight leading-none mb-3">
           Hey, I&apos;m Sparky
         </h1>
         <p className="text-zinc-500 text-[14.5px] text-center max-w-sm leading-relaxed">
@@ -1078,7 +1485,7 @@ const visiblePrompts = useMemo(() => getRandomItems(topic.items, 4), [topic.id])
       {/* Input */}
       <div className="w-full max-w-3xl mb-6">
         <ChatInput
-        onStop={onStop}
+          onStop={onStop}
           value={input}
           onChange={onInputChange}
           onSend={onSend}
@@ -1086,6 +1493,10 @@ const visiblePrompts = useMemo(() => getRandomItems(topic.items, 4), [topic.id])
           loading={loading}
           inputRef={inputRef}
           variant="floating"
+          attachedFile={attachedFile}
+          onAttach={onAttach}
+          onRemoveAttachment={onRemoveAttachment}
+          fileInputRef={fileInputRef}
         />
       </div>
 
@@ -1114,7 +1525,6 @@ const visiblePrompts = useMemo(() => getRandomItems(topic.items, 4), [topic.id])
               onClick={() => {
                 posthog.capture("chat_prompt_card_clicked", { prompt_text: item, topic: topic.id });
                 onInputChange(item);
-                setTimeout(() => onSend(), 50);
               }}
               delay={i * 35}
             />
@@ -1157,75 +1567,71 @@ function ConversationView({
   const isStreaming = messages.some(m => m.streaming);
   return (
     <div className="relative">
-      <div className="max-w-4xl mx-auto w-full px-4 py-6">
-      <div className="space-y-6">
-        {messages.map(msg => (
-          <div key={msg.id} className="msg-appear" data-msg-id={msg.id}>
-            <MessageBubble msg={msg} onRegenerate={msg.role === "assistant" && !msg.streaming && !msg.error ? onRegenerate : undefined} />
-          </div>
-        ))}
+      <div className="max-w-3xl mx-auto w-full px-5 pt-8 pb-6">
+      <div className="space-y-8">
+        {messages.map((msg, i) => {
+          const userQuestion = msg.role === "assistant"
+            ? messages.slice(0, i).reverse().find(m => m.role === "user")?.content
+            : undefined;
+          // Add a subtle divider before each user message (except the first)
+          const showDivider = msg.role === "user" && i > 0;
+          return (
+            <div key={msg.id}>
+              {showDivider && (
+                <div className="border-t border-zinc-100 dark:border-zinc-800/60 mb-8" />
+              )}
+              <div className="msg-appear" data-msg-id={msg.id}>
+                <MessageBubble
+                  msg={msg}
+                  onRegenerate={msg.role === "assistant" && !msg.streaming && !msg.error ? onRegenerate : undefined}
+                  userQuestion={userQuestion}
+                />
+              </div>
+            </div>
+          );
+        })}
         {loading && !isStreaming && <TypingIndicator />}
       </div>
-      <div ref={bottomRef} className={loading ? "h-[55vh]" : "h-32"} />
-    </div>
-    {showScroll && (
-      <button
-        onClick={scrollToBottom}
-        className="fixed bottom-44 left-1/2 -translate-x-1/2 w-9 h-9 rounded-full bg-zinc-700 hover:bg-zinc-600 border border-zinc-600 flex items-center justify-center text-white shadow-lg transition-all duration-150 z-10"
-      >
-        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-        </svg>
-      </button>
-    )}
+      <div ref={bottomRef} style={{ height: loading ? "48vh" : "7rem", transition: "height 0.4s ease" }} />
+    </div>{showScroll && (
+  <button
+    onClick={scrollToBottom}
+    className="fixed left-1/2 -translate-x-1/2 bottom-[116px] z-20 flex items-center justify-center w-10 h-10 rounded-full border border-zinc-300/80 dark:border-zinc-700/80 bg-white dark:bg-zinc-900 text-zinc-500 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-all duration-150 shadow-[0_8px_24px_rgba(0,0,0,0.12)] dark:shadow-[0_8px_24px_rgba(0,0,0,0.35)]"
+    aria-label="Scroll to bottom"
+  >
+    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+    </svg>
+  </button>
+)}
   </div>
   );
 }
-
 function QuickSuggestBar({
-  activeTopic,
-  setActiveTopic,
   onSend,
   onInputChange,
+  refreshKey,
 }: {
-  activeTopic: number;
-  setActiveTopic: (i: number) => void;
-  onSend: () => void;
+  onSend: (text?: string) => void;
   onInputChange: (v: string) => void;
+  refreshKey: number;
 }) {
-const topic = TOPICS[activeTopic];
-const quickPrompts = useMemo(() => getRandomItems(topic.items, 4), [topic.id]);
-// Extract just the emoji from each label (first char)
-const topicEmojis = TOPICS.slice(0, 8).map(t => t.label.split(" ")[0]);
+  const quickPrompts = useMemo(() => {
+    return getRandomItems(CHAT_QUICK_PROMPTS, 10);
+  }, [refreshKey]);
 
   return (
-    <div className="border-t border-zinc-800/60 px-4 py-2 bg-[#080808]">
-      <div className="max-w-4xl mx-auto hide-scroll flex items-center gap-2 overflow-x-auto">
-        {/* Emoji topic icons */}
-        <div className="flex gap-0.5 shrink-0">
-          {TOPICS.slice(0, 8).map((t, i) => (
-            <button
-              key={t.id}
-              onClick={() => setActiveTopic(i)}
-              title={t.label}
-              className={`w-8 h-8 flex items-center justify-center rounded-lg text-[16px] transition-all ${
-                activeTopic === i ? "bg-zinc-700" : "hover:bg-zinc-800"
-              }`}
-            >
-              {topicEmojis[i]}
-            </button>
-          ))}
-        </div>
-        <div className="w-px h-4 bg-zinc-800 shrink-0" />
-        {quickPrompts.map(item => (
+    <div className="w-full max-w-[860px] mx-auto">
+      <div className="hide-scroll flex items-center gap-2 overflow-x-auto pb-1">
+        {quickPrompts.map((item) => (
           <button
             key={item}
             onClick={() => {
-              posthog.capture("chat_prompt_card_clicked", { prompt_text: item, topic: topic.id });
+              posthog.capture("chat_prompt_card_clicked", { prompt_text: item, topic: "chat_general" });
               onInputChange(item);
-              setTimeout(() => onSend(), 50);
             }}
-            className="shrink-0 text-[11.5px] text-zinc-500 hover:text-white bg-transparent hover:bg-zinc-800/80 border border-transparent hover:border-zinc-700 px-3 py-1 rounded-full transition-all whitespace-nowrap"
+            className="shrink-0 h-[30px] px-3.5 rounded-full border border-zinc-200 dark:border-zinc-700/60 bg-transparent text-[12.5px] text-zinc-500 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-100 hover:border-zinc-400 dark:hover:border-zinc-500 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 active:scale-[0.97] transition-all duration-150 whitespace-nowrap"
+            title={item}
           >
             {item}
           </button>
@@ -1240,6 +1646,49 @@ const topicEmojis = TOPICS.slice(0, 8).map(t => t.label.split(" ")[0]);
 function ChatContent() {
   const stopRef = useRef<(() => void) | null>(null);
 
+// ── File attachment handler ────────────────────────────────────────────────
+const handleFileSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+  const file = e.target.files?.[0];
+  if (!e.target) return;
+  (e.target as HTMLInputElement).value = "";
+  if (!file) return;
+
+  const MAX_IMAGE = 4 * 1024 * 1024;  // 4 MB
+  const MAX_DOC   = 10 * 1024 * 1024; // 10 MB
+
+  const isImage = file.type.startsWith("image/");
+  const isPDF   = file.type === "application/pdf";
+  const isText  = file.type.startsWith("text/") || file.name.endsWith(".txt") || file.name.endsWith(".md");
+
+  if (!isImage && !isPDF && !isText) {
+    alert("Supported formats: images (JPG, PNG, GIF, WEBP), PDFs, and text files.");
+    return;
+  }
+  if (isImage && file.size > MAX_IMAGE) { alert("Image must be under 4 MB."); return; }
+  if ((isPDF || isText) && file.size > MAX_DOC) { alert("Document must be under 10 MB."); return; }
+
+  const fileType: AttachedFile["fileType"] = isImage ? "image" : isPDF ? "pdf" : "text";
+  const sizeLabel = file.size < 1024 * 1024
+    ? `${(file.size / 1024).toFixed(0)} KB`
+    : `${(file.size / 1024 / 1024).toFixed(1)} MB`;
+
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    const result = ev.target?.result as string;
+    // result is a data-URL like "data:image/png;base64,..."
+    const base64 = result.split(",")[1];
+    setAttachedFile({
+      name: file.name,
+      mimeType: file.type || "application/octet-stream",
+      data: base64,
+      fileType,
+      preview: isImage ? result : undefined,
+      sizeLabel,
+    });
+  };
+  reader.readAsDataURL(file);
+}, []);
+
 const handleStop = useCallback(() => {
   stopRef.current?.();
   stopRef.current = null;
@@ -1247,10 +1696,13 @@ const handleStop = useCallback(() => {
 }, []);
 
   const searchParams = useSearchParams();
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [input, setInput] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [activeTopic, setActiveTopic] = useState(0);
+const [messages, setMessages] = useState<Message[]>([]);
+const [input, setInput] = useState("");
+const [loading, setLoading] = useState(false);
+const [activeTopic, setActiveTopic] = useState(0);
+const [chipRefreshKey, setChipRefreshKey] = useState<number>(0);
+const [attachedFile, setAttachedFile] = useState<AttachedFile | null>(null);
+const fileInputRef = useRef<HTMLInputElement>(null);
 
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -1268,35 +1720,45 @@ const handleStop = useCallback(() => {
     }
   }, []);
 
-  // Auto-scroll
-useEffect(() => {
-  if (messages.length === 0) return;
-  const lastMsg = messages[messages.length - 1];
-  const scrollArea = scrollAreaRef.current;
-  if (!scrollArea) return;
-
-  if (lastMsg.role === "user") {
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        scrollArea.scrollTo({ top: scrollArea.scrollHeight, behavior: "smooth" });
-      });
-    });
-  }
-  // Don't auto-scroll when assistant responds — let user stay where they are
-}, [messages]);
 
   const handleSend = useCallback(async (textOverride?: string) => {
     const text = (typeof textOverride === "string" ? textOverride : input).trim();
-    if (!text || loading) return;
+    if ((!text && !attachedFile) || loading) return;
 
-    const userMsg: Message = { id: uid(), role: "user", content: text };
+    // Snapshot & clear the attachment before the async send
+    const fileSnapshot = attachedFile;
+    setAttachedFile(null);
+
+    const userMsg: Message = {
+      id: uid(),
+      role: "user",
+      content: text || (fileSnapshot ? `[Attached: ${fileSnapshot.name}]` : ""),
+      attachment: fileSnapshot
+        ? { name: fileSnapshot.name, fileType: fileSnapshot.fileType, preview: fileSnapshot.preview }
+        : undefined,
+    };
     const updated = [...messages, userMsg];
-    setMessages(updated);
+
+    // flushSync forces React to commit the DOM synchronously so we can
+    // measure and scroll immediately — no setTimeout needed.
+    flushSync(() => {
+      setMessages(updated);
+    });
+
+    const scrollArea = scrollAreaRef.current;
+    const msgEl = scrollArea?.querySelector<HTMLElement>(`[data-msg-id="${userMsg.id}"]`);
+    if (scrollArea && msgEl) {
+      const offset = msgEl.getBoundingClientRect().top - scrollArea.getBoundingClientRect().top - 24;
+      scrollArea.scrollBy({ top: offset, behavior: "smooth" });
+    }
     posthog.capture("chat_message_sent", {
       message_length: text.length,
       message_count: updated.length,
+      has_attachment: !!fileSnapshot,
+      attachment_type: fileSnapshot?.fileType,
     });
     setInput("");
+    setChipRefreshKey((k) => k + 1);
     setLoading(true);
 
     // Reset textarea height
@@ -1308,7 +1770,12 @@ useEffect(() => {
       const res = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ messages: updated }),
+        body: JSON.stringify({
+          messages: updated.map(m => ({ role: m.role, content: m.content })),
+          file: fileSnapshot
+            ? { name: fileSnapshot.name, mimeType: fileSnapshot.mimeType, data: fileSnapshot.data, fileType: fileSnapshot.fileType }
+            : null,
+        }),
       });
 
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -1329,58 +1796,64 @@ let accumulated = "";
 let displayed = "";
 const charQueue: string[] = [];
 let flushScheduled = false;
+let streamDone = false;
+let onQueueEmpty: (() => void) | null = null;
+
+// Always animate — never dump. 5 chars/frame ≈ 300 chars/sec at 60fps (fast but typed).
+// When tab is hidden, use setTimeout so chars still process in background.
+function flushBatch() {
+  flushScheduled = false;
+  if (charQueue.length === 0) {
+    if (streamDone && onQueueEmpty) onQueueEmpty();
+    return;
+  }
+  // Slightly larger batch when tab hidden (background catch-up) or queue very large
+  const batchSize = document.hidden
+    ? Math.min(20, charQueue.length)
+    : Math.min(5, charQueue.length);
+  for (let i = 0; i < batchSize; i++) displayed += charQueue.shift()!;
+  setMessages((prev: Message[]) =>
+    prev.map((m) =>
+      m.id === assistantId ? { ...m, content: displayed, streaming: true } : m
+    )
+  );
+  // Continue draining
+  if (charQueue.length > 0) scheduleFlush();
+  else if (streamDone && onQueueEmpty) onQueueEmpty();
+}
 
 function scheduleFlush() {
   if (flushScheduled) return;
   flushScheduled = true;
-
-  requestAnimationFrame(() => {
-    flushScheduled = false;
-
-    const batchSize = Math.min(3, charQueue.length);
-    if (batchSize === 0) return;
-
-    for (let i = 0; i < batchSize; i++) {
-      displayed += charQueue.shift()!;
-    }
-
-    setMessages((prev: Message[]) =>
-      prev.map((m) =>
-        m.id === assistantId
-          ? { ...m, content: displayed, streaming: true }
-          : m
-      )
-    );
-
-    if (charQueue.length > 0) {
-      scheduleFlush();
-    }
-  });
+  if (document.hidden) {
+    // rAF is throttled when hidden — use setTimeout so background tab still drains
+    setTimeout(flushBatch, 16);
+  } else {
+    requestAnimationFrame(flushBatch);
+  }
 }
+
+// On tab return: resume animation of whatever is still queued
+const onVisibilityChange = () => { if (!document.hidden) scheduleFlush(); };
+document.addEventListener("visibilitychange", onVisibilityChange);
 
 while (true) {
   const { done, value } = await reader.read();
   if (done) break;
-
   const delta = decoder.decode(value, { stream: true });
   accumulated += delta;
-
-  for (const char of delta) {
-    charQueue.push(char);
-  }
-
+  for (const char of delta) charQueue.push(char);
   scheduleFlush();
 }
 
-await new Promise<void>((resolve) => {
-  function waitUntilDone() {
-    if (charQueue.length === 0) {
-      resolve();
-      return;
-    }
-    requestAnimationFrame(waitUntilDone);
-  }
-  waitUntilDone();
+document.removeEventListener("visibilitychange", onVisibilityChange);
+streamDone = true;
+
+// Wait for every char to animate through before marking the message done
+await new Promise<void>(resolve => {
+  onQueueEmpty = resolve;
+  if (charQueue.length === 0) resolve();
+  else scheduleFlush(); // ensure drain is running
 });
 
 setMessages((prev: Message[]) =>
@@ -1431,70 +1904,60 @@ setMessages((prev: Message[]) =>
     const reader = res.body.getReader();
     stopRef.current = () => { reader.cancel(); };
 
-const decoder = new TextDecoder();
-let accumulated = "";
-let displayed = "";
-const charQueue: string[] = [];
-let flushScheduled = false;
+const decoder2 = new TextDecoder();
+let accumulated2 = "";
+let displayed2 = "";
+const charQueue2: string[] = [];
+let flushScheduled2 = false;
+let streamDone2 = false;
+let onQueueEmpty2: (() => void) | null = null;
 
-function scheduleFlush() {
-  if (flushScheduled) return;
-  flushScheduled = true;
-
-  requestAnimationFrame(() => {
-    flushScheduled = false;
-
-    const batchSize = Math.min(3, charQueue.length);
-    if (batchSize === 0) return;
-
-    for (let i = 0; i < batchSize; i++) {
-      displayed += charQueue.shift()!;
-    }
-
-    setMessages(prev =>
-      prev.map(m =>
-        m.id === assistantId
-          ? { ...m, content: displayed, streaming: true }
-          : m
-      )
-    );
-
-    if (charQueue.length > 0) {
-      scheduleFlush();
-    }
-  });
+function flushBatch2() {
+  flushScheduled2 = false;
+  if (charQueue2.length === 0) {
+    if (streamDone2 && onQueueEmpty2) onQueueEmpty2();
+    return;
+  }
+  const batchSize = document.hidden ? Math.min(20, charQueue2.length) : Math.min(5, charQueue2.length);
+  for (let i = 0; i < batchSize; i++) displayed2 += charQueue2.shift()!;
+  setMessages(prev =>
+    prev.map(m => m.id === assistantId ? { ...m, content: displayed2, streaming: true } : m)
+  );
+  if (charQueue2.length > 0) scheduleFlush2();
+  else if (streamDone2 && onQueueEmpty2) onQueueEmpty2();
 }
+
+function scheduleFlush2() {
+  if (flushScheduled2) return;
+  flushScheduled2 = true;
+  if (document.hidden) setTimeout(flushBatch2, 16);
+  else requestAnimationFrame(flushBatch2);
+}
+
+const onVisibilityChange2 = () => { if (!document.hidden) scheduleFlush2(); };
+document.addEventListener("visibilitychange", onVisibilityChange2);
 
 while (true) {
   const { done, value } = await reader.read();
   if (done) break;
-
-  const delta = decoder.decode(value, { stream: true });
-  accumulated += delta;
-
-  for (const char of delta) {
-    charQueue.push(char);
-  }
-
-  scheduleFlush();
+  const delta = decoder2.decode(value, { stream: true });
+  accumulated2 += delta;
+  for (const char of delta) charQueue2.push(char);
+  scheduleFlush2();
 }
 
-await new Promise<void>((resolve) => {
-  function waitUntilDone() {
-    if (charQueue.length === 0) {
-      resolve();
-      return;
-    }
-    requestAnimationFrame(waitUntilDone);
-  }
-  waitUntilDone();
+document.removeEventListener("visibilitychange", onVisibilityChange2);
+streamDone2 = true;
+
+await new Promise<void>(resolve => {
+  onQueueEmpty2 = resolve;
+  if (charQueue2.length === 0) resolve();
+  else scheduleFlush2();
 });
 
 setMessages(prev =>
   prev.map(m =>
-    m.id === assistantId
-      ? { ...m, content: accumulated, streaming: false }
-      : m
+    m.id === assistantId ? { ...m, content: accumulated2, streaming: false } : m
   )
 );
   } catch {
@@ -1536,31 +1999,103 @@ const handleKey = useCallback((e: React.KeyboardEvent<HTMLTextAreaElement>) => {
           to   { opacity: 1; transform: translateY(0); }
         }
         .sparky-float { animation: sparkyFloat 3.5s ease-in-out infinite; }
-        .msg-appear   { animation: msgAppear 0.2s ease forwards; }
+        .msg-appear   { animation: msgAppear 0.24s cubic-bezier(0.16,1,0.3,1) forwards; }
         .prompt-card  { animation: promptIn 0.25s ease both; }
         .hide-scroll::-webkit-scrollbar { display: none; }
         .hide-scroll { -ms-overflow-style: none; scrollbar-width: none; }
-        .prose-sparky h2 { color: white; font-weight: 700; font-size: 1.0625rem; margin-top: 1.25rem; margin-bottom: 0.5rem; }
-        .prose-sparky h3 { color: white; font-weight: 600; font-size: 0.9375rem; margin-top: 1rem; margin-bottom: 0.375rem; }
-        .prose-sparky strong { color: white; font-weight: 600; }
-        .prose-sparky ul { margin: 0.5rem 0; padding: 0; list-style: none; }
-        .prose-sparky li { display: flex; gap: 0.5rem; align-items: flex-start; line-height: 1.6; }
-        .prose-sparky code { background: rgb(39 39 42); color: rgb(212 212 216); padding: 0.15rem 0.45rem; border-radius: 0.3rem; font-size: 0.8125rem; font-family: ui-monospace, monospace; }
-        .prose-sparky p { margin-top: 0.75rem; }
-        .prose-sparky p:first-child { margin-top: 0; }
+
+        .prose-sparky h2 {
+  color: rgb(18 18 20);
+  font-weight: 600;
+  font-size: 0.96rem;
+  line-height: 1.4;
+  margin-top: 1.2rem;
+  margin-bottom: 0.3rem;
+  letter-spacing: -0.012em;
+}
+.dark .prose-sparky h2 { color: rgb(250 250 252); }
+
+.prose-sparky h3 {
+  color: rgb(30 30 35);
+  font-weight: 560;
+  font-size: 0.91rem;
+  line-height: 1.4;
+  margin-top: 1rem;
+  margin-bottom: 0.22rem;
+  letter-spacing: -0.01em;
+}
+.dark .prose-sparky h3 { color: rgb(242 242 245); }
+
+.prose-sparky p {
+  margin-top: 0.82rem;
+  color: rgb(40 40 45);
+  line-height: 1.78;
+  font-weight: 400;
+}
+.dark .prose-sparky p { color: rgb(235 235 238); }
+
+.prose-sparky p:first-child {
+  margin-top: 0;
+}
+
+.prose-sparky strong {
+  color: rgb(30 30 30);
+  font-weight: 550;
+}
+.dark .prose-sparky strong { color: rgb(245 245 245); }
+
+.prose-sparky ul,
+.prose-sparky ol {
+  margin: 0.75rem 0;
+  padding: 0;
+  list-style: none;
+}
+
+.prose-sparky li {
+  display: flex;
+  gap: 0.58rem;
+  align-items: flex-start;
+  line-height: 1.78;
+  color: rgb(40 40 45);
+  font-weight: 400;
+}
+.dark .prose-sparky li { color: rgb(235 235 238); }
+
+.prose-sparky code {
+  background: rgb(228 228 231);
+  color: rgb(30 30 30);
+  padding: 0.12rem 0.42rem;
+  border-radius: 0.42rem;
+  font-size: 0.78rem;
+  font-family: ui-monospace, monospace;
+}
+.dark .prose-sparky code { background: rgb(39 39 42); color: rgb(244 244 245); }
+
+.prose-sparky em {
+  color: rgb(82 82 91);
+  font-style: normal;
+}
+.dark .prose-sparky em { color: rgb(161 161 170); }
+
+.prose-sparky hr {
+  border: 0;
+  height: 1px;
+  background: rgba(0,0,0,0.1);
+  margin: 1rem 0;
+}
+.dark .prose-sparky hr { background: rgba(255,255,255,0.06); }
       `}</style>
 
       <div
-        className="flex flex-col bg-[#080808] text-white"
+        className="flex flex-col bg-white dark:bg-[#080808] text-zinc-900 dark:text-white"
         style={{ height: "calc(100vh - 64px)", animation: "slideUp 0.25s ease forwards" }}
       >
         {/* Scrollable area */}
-        <div ref={scrollAreaRef} className="flex-1 overflow-y-auto">
+        <div ref={scrollAreaRef} className="flex-1 overflow-y-auto chat-scroll">
           {isEmpty ? (
             <EmptyState
               onStop={handleStop}
               activeTopic={activeTopic}
-              
               setActiveTopic={setActiveTopic}
               onSend={handleSend}
               input={input}
@@ -1568,6 +2103,10 @@ const handleKey = useCallback((e: React.KeyboardEvent<HTMLTextAreaElement>) => {
               onKeyDown={handleKey}
               loading={loading}
               inputRef={inputRef}
+              attachedFile={attachedFile}
+              onAttach={handleFileSelect}
+              onRemoveAttachment={() => setAttachedFile(null)}
+              fileInputRef={fileInputRef}
             />
           ) : (
             <ConversationView
@@ -1581,31 +2120,39 @@ const handleKey = useCallback((e: React.KeyboardEvent<HTMLTextAreaElement>) => {
         </div>
 
         {/* Bottom controls — only when chatting */}
-        {!isEmpty && (
-          <>
-            <QuickSuggestBar
-              activeTopic={activeTopic}
-              setActiveTopic={setActiveTopic}
-              onSend={handleSend}
-              onInputChange={setInput}
-            />
-            <div className="bg-[#080808] px-4 pb-2 pt-2">
-              <div className="max-w-3xl mx-auto">
-                <ChatInput
-                onStop={handleStop}
-                  value={input}
-                  onChange={setInput}
-                  onSend={handleSend}
-                  onKeyDown={handleKey}
-                  loading={loading}
-                  inputRef={inputRef}
-                  variant="fixed"
-                />
-              </div>
-            </div>
-            <p className="text-center text-zinc-600 text-[11px] pb-3">Sparky can make mistakes. Verify important information.</p>
-          </>
-        )}
+        {/* Bottom composer module */}
+{!isEmpty && (
+  <div className="shrink-0 bg-white/98 dark:bg-[#080808]/98 backdrop-blur-xl px-4 pb-4 pt-2">
+    <div className="max-w-[860px] mx-auto">
+      <div className="flex flex-col gap-[10px]">
+        <QuickSuggestBar
+  onSend={handleSend}
+  onInputChange={setInput}
+  refreshKey={chipRefreshKey}
+/>
+
+        <ChatInput
+          onStop={handleStop}
+          value={input}
+          onChange={setInput}
+          onSend={handleSend}
+          onKeyDown={handleKey}
+          loading={loading}
+          inputRef={inputRef}
+          variant="fixed"
+          attachedFile={attachedFile}
+          onAttach={handleFileSelect}
+          onRemoveAttachment={() => setAttachedFile(null)}
+          fileInputRef={fileInputRef}
+        />
+
+        <p className="text-center text-zinc-400 dark:text-zinc-600 text-[11.5px] leading-none tracking-wide">
+          Sparky can make mistakes. Verify important information.
+        </p>
+      </div>
+    </div>
+  </div>
+)}
       </div>
     </>
   );
@@ -1639,7 +2186,7 @@ function PasswordGate({ onUnlock }: { onUnlock: () => void }) {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-[#080808] px-4">
+    <div className="flex flex-col items-center justify-center min-h-screen bg-white dark:bg-[#080808] px-4">
       <style>{`
         @keyframes sparkyFloat { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)} }
         @keyframes gateShake  { 0%,100%{transform:translateX(0)} 20%,60%{transform:translateX(-6px)} 40%,80%{transform:translateX(6px)} }
@@ -1654,7 +2201,7 @@ function PasswordGate({ onUnlock }: { onUnlock: () => void }) {
         </div>
 
         <div className="text-center">
-          <h1 className="text-2xl font-black text-white tracking-tight mb-1.5">UIC Sparky Beta</h1>
+          <h1 className="text-2xl font-black text-zinc-900 dark:text-white tracking-tight mb-1.5">UIC Sparky Beta</h1>
           <p className="text-zinc-500 text-sm">Enter the beta password to continue.</p>
         </div>
 
@@ -1667,8 +2214,8 @@ function PasswordGate({ onUnlock }: { onUnlock: () => void }) {
             onChange={e => { setValue(e.target.value); setError(false); }}
             onKeyDown={e => e.key === "Enter" && attempt()}
             placeholder="Beta password"
-            className={`w-full bg-zinc-900 border rounded-xl px-4 py-3 text-white placeholder-zinc-600 outline-none text-[15px] transition-colors ${
-              error ? "border-red-500 focus:border-red-400" : "border-zinc-700 focus:border-zinc-500"
+            className={`w-full bg-zinc-100 dark:bg-zinc-900 border rounded-xl px-4 py-3 text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-600 outline-none text-[16px] transition-colors ${
+              error ? "border-red-500 focus:border-red-400" : "border-zinc-300 dark:border-zinc-700 focus:border-zinc-400 dark:focus:border-zinc-500"
             }`}
           />
           {error && (
@@ -1684,7 +2231,7 @@ function PasswordGate({ onUnlock }: { onUnlock: () => void }) {
         <button
           onClick={attempt}
           disabled={!value.trim()}
-          className="w-full py-3 rounded-xl font-semibold text-[15px] transition-all bg-red-600 hover:bg-red-500 disabled:bg-zinc-800 disabled:text-zinc-600 disabled:cursor-not-allowed text-white shadow-lg shadow-red-900/30"
+          className="w-full py-3 rounded-xl font-semibold text-[16px] transition-all bg-red-600 hover:bg-red-500 disabled:bg-zinc-800 disabled:text-zinc-600 disabled:cursor-not-allowed text-white shadow-lg shadow-red-900/30"
         >
           Enter Sparky
         </button>
@@ -1709,7 +2256,7 @@ export default function ChatPage() {
   // Still checking localStorage — show nothing to avoid flash
   if (unlocked === null) {
     return (
-      <div className="flex items-center justify-center h-screen bg-[#080808] text-zinc-500 text-sm gap-2.5">
+      <div className="flex items-center justify-center h-screen bg-white dark:bg-[#080808] text-zinc-500 text-sm gap-2.5">
         <div className="w-4 h-4 border-2 border-red-600 border-t-transparent rounded-full animate-spin" />
         Loading Sparky...
       </div>
@@ -1723,7 +2270,7 @@ export default function ChatPage() {
   return (
     <Suspense
       fallback={
-        <div className="flex items-center justify-center h-screen bg-[#080808] text-zinc-500 text-sm gap-2.5">
+        <div className="flex items-center justify-center h-screen bg-white dark:bg-[#080808] text-zinc-500 text-sm gap-2.5">
           <div className="w-4 h-4 border-2 border-red-600 border-t-transparent rounded-full animate-spin" />
           Loading Sparky...
         </div>

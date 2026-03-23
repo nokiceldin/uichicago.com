@@ -1,0 +1,389 @@
+{
+  "name": "Communication - BA with a Major",
+  "college": "Communication",
+  "department": "Communication",
+  "url": "https://catalog.uic.edu/ucat/colleges-depts/liberal-arts-sciences/comm/ba/",
+  "totalHours": 120,
+  "summaryRequirements": {
+    "Major Requirements": "33",
+    "General Education and Electives to reach Minimum Total Hours": "87",
+    "Total Hours": "120"
+  },
+  "requiredCourses": [
+    {
+      "code": "COMM 101",
+      "subject": "COMM",
+      "number": "101",
+      "title": "Introduction to Communication a",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "COMM 102",
+      "subject": "COMM",
+      "number": "102",
+      "title": "Introduction to Interpersonal Communication a",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "COMM 103",
+      "subject": "COMM",
+      "number": "103",
+      "title": "Media Literacy a",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "COMM 200",
+      "subject": "COMM",
+      "number": "200",
+      "title": "Communication Technologies",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "COMM 301",
+      "subject": "COMM",
+      "number": "301",
+      "title": "Communication Research b,e",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "COMM 490",
+      "subject": "COMM",
+      "number": "490",
+      "title": "Seminar in Culture and Communication d",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "COMM 491",
+      "subject": "COMM",
+      "number": "491",
+      "title": "Seminar in Media and Communication d",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ENGL 160",
+      "subject": "ENGL",
+      "number": "160",
+      "title": "Academic Writing I: Writing in Academic and Public Contexts",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "ENGL 161",
+      "subject": "ENGL",
+      "number": "161",
+      "title": "Academic Writing II: Writing for Inquiry and Research",
+      "hours": 3,
+      "required": true
+    }
+  ],
+  "sampleSchedule": [
+    {
+      "year": "First Year",
+      "semester": "Fall Semester",
+      "total_hours": null,
+      "courses": [
+        {
+          "code": "ENGL 160",
+          "title": "Academic Writing I: Writing in Academic and Public Contexts",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "General Education Requirement course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        },
+        {
+          "code": null,
+          "title": "General Education Requirement course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        }
+      ]
+    },
+    {
+      "year": "First Year",
+      "semester": "Spring Semester",
+      "total_hours": 16,
+      "courses": [
+        {
+          "code": "ENGL 161",
+          "title": "Academic Writing II: Writing for Inquiry and Research",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "Select one of the following:",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": "COMM 101",
+          "title": "Introduction to Communication a",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "COMM 102",
+          "title": "Introduction to Interpersonal Communication a",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "COMM 103",
+          "title": "Media Literacy a",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "General Education Requirement course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        },
+        {
+          "code": null,
+          "title": "General Education Requirement course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        }
+      ]
+    },
+    {
+      "year": "Second Year",
+      "semester": "Fall Semester",
+      "total_hours": 16,
+      "courses": [
+        {
+          "code": null,
+          "title": "Select one of the following:",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": "COMM 101",
+          "title": "Introduction to Communication a",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "COMM 102",
+          "title": "Introduction to Interpersonal Communication a",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "COMM 103",
+          "title": "Media Literacy a",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "General Education Requirement course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        },
+        {
+          "code": null,
+          "title": "General Education Requirement course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        },
+        {
+          "code": null,
+          "title": "Electives",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        }
+      ]
+    },
+    {
+      "year": "Second Year",
+      "semester": "Spring Semester",
+      "total_hours": null,
+      "courses": [
+        {
+          "code": null,
+          "title": "Select one of the following:",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": "COMM 101",
+          "title": "Introduction to Communication a",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "COMM 102",
+          "title": "Introduction to Interpersonal Communication a",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "COMM 103",
+          "title": "Media Literacy a",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "General Education Requirement course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        },
+        {
+          "code": null,
+          "title": "General Education Requirement course/Elective",
+          "hours": 2,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        },
+        {
+          "code": null,
+          "title": "Electives",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        }
+      ]
+    },
+    {
+      "year": "Third Year",
+      "semester": "Fall Semester",
+      "total_hours": null,
+      "courses": [
+        {
+          "code": "COMM 200",
+          "title": "Communication Technologies",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "General Education Requirement course/Elective",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        },
+        {
+          "code": null,
+          "title": "Electives",
+          "hours": 6,
+          "isElective": true,
+          "electiveType": "elective_general"
+        }
+      ]
+    },
+    {
+      "year": "Third Year",
+      "semester": "Spring Semester",
+      "total_hours": 15,
+      "courses": [
+        {
+          "code": "COMM 301",
+          "title": "Communication Research",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "General Education Requirement course/Elective",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        },
+        {
+          "code": null,
+          "title": "Electives",
+          "hours": 6,
+          "isElective": true,
+          "electiveType": "elective_general"
+        }
+      ]
+    },
+    {
+      "year": "Fourth Year",
+      "semester": "Fall Semester",
+      "total_hours": 15,
+      "courses": [
+        {
+          "code": null,
+          "title": "Electives",
+          "hours": 9,
+          "isElective": true,
+          "electiveType": "elective_general"
+        }
+      ]
+    },
+    {
+      "year": "Fourth Year",
+      "semester": "Spring Semester",
+      "total_hours": 15,
+      "courses": [
+        {
+          "code": null,
+          "title": "Select one of the following:",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": "COMM 490",
+          "title": "Seminar in Culture and Communication e",
+          "hours": null,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "COMM 491",
+          "title": "Seminar in Media and Communication e",
+          "hours": null,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "Electives",
+          "hours": 6,
+          "isElective": true,
+          "electiveType": "elective_general"
+        }
+      ]
+    }
+  ]
+}

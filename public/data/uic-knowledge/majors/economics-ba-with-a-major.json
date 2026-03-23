@@ -1,0 +1,458 @@
+{
+  "name": "Economics - BA with a Major",
+  "college": "Economics",
+  "department": "Economics",
+  "url": "https://catalog.uic.edu/ucat/colleges-depts/liberal-arts-sciences/econ/ba/",
+  "totalHours": 120,
+  "summaryRequirements": {
+    "Required Prerequisite and Collateral Course": "5",
+    "Major Requirements": "37",
+    "General Education and Electives to reach minimum Total Hours": "78",
+    "Total Hours": "120"
+  },
+  "requiredCourses": [
+    {
+      "code": "MATH 121",
+      "subject": "MATH",
+      "number": "121",
+      "title": "Precalculus Mathematics a",
+      "hours": 5,
+      "required": true
+    },
+    {
+      "code": "ECON 120",
+      "subject": "ECON",
+      "number": "120",
+      "title": "Principles of Microeconomics a,b",
+      "hours": 4,
+      "required": true
+    },
+    {
+      "code": "ECON 121",
+      "subject": "ECON",
+      "number": "121",
+      "title": "Principles of Macroeconomics a,b",
+      "hours": 4,
+      "required": true
+    },
+    {
+      "code": "ECON 220",
+      "subject": "ECON",
+      "number": "220",
+      "title": "Microeconomics: Theory and Applications",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "ECON 221",
+      "subject": "ECON",
+      "number": "221",
+      "title": "Macroeconomics in the World Economy: Theory and Applications",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "ECON 270",
+      "subject": "ECON",
+      "number": "270",
+      "title": "Statistics for Economics",
+      "hours": 4,
+      "required": true
+    },
+    {
+      "code": "ECON 300",
+      "subject": "ECON",
+      "number": "300",
+      "title": "Econometrics",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "ECON 395",
+      "subject": "ECON",
+      "number": "395",
+      "title": "Research and Writing in Economics c",
+      "hours": 1,
+      "required": true
+    },
+    {
+      "code": "ECON 311",
+      "subject": "ECON",
+      "number": "311",
+      "title": "Introduction to Urban Real Estate",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "ECON 329",
+      "subject": "ECON",
+      "number": "329",
+      "title": "Industrial Organization",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "ECON 330",
+      "subject": "ECON",
+      "number": "330",
+      "title": "Government and Business",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "ECON 333",
+      "subject": "ECON",
+      "number": "333",
+      "title": "International Economics",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "ECON 339",
+      "subject": "ECON",
+      "number": "339",
+      "title": "Monetary Theory",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "ECON 344",
+      "subject": "ECON",
+      "number": "344",
+      "title": "Behavioral Economics",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "ECON 475",
+      "subject": "ECON",
+      "number": "475",
+      "title": "Urban Economics and Public Policy",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "ECON 214",
+      "subject": "ECON",
+      "number": "214",
+      "title": "Economics of Education",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "ECON 215",
+      "subject": "ECON",
+      "number": "215",
+      "title": "Health Economics",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "ECON 331",
+      "subject": "ECON",
+      "number": "331",
+      "title": "Labor Economics",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "ECON 334",
+      "subject": "ECON",
+      "number": "334",
+      "title": "Economic Development",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "ECON 453",
+      "subject": "ECON",
+      "number": "453",
+      "title": "Economics of Family",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "ECON 332",
+      "subject": "ECON",
+      "number": "332",
+      "title": "Urban Economics",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "ECON 342",
+      "subject": "ECON",
+      "number": "342",
+      "title": "Regional Economics",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "ECON 370",
+      "subject": "ECON",
+      "number": "370",
+      "title": "Environmental Economics",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "ECON 213",
+      "subject": "ECON",
+      "number": "213",
+      "title": "Economic History of the United States",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "ECON 328",
+      "subject": "ECON",
+      "number": "328",
+      "title": "Public Finance",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "ECON 350",
+      "subject": "ECON",
+      "number": "350",
+      "title": "Economics of Sports and Entertainment",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "ENGL 160",
+      "subject": "ENGL",
+      "number": "160",
+      "title": "Academic Writing I: Writing in Academic and Public Contexts",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "ENGL 161",
+      "subject": "ENGL",
+      "number": "161",
+      "title": "Academic Writing II: Writing for Inquiry and Research",
+      "hours": 3,
+      "required": true
+    }
+  ],
+  "sampleSchedule": [
+    {
+      "year": "First Year",
+      "semester": "Fall Semester",
+      "total_hours": 16,
+      "courses": [
+        {
+          "code": "ENGL 160",
+          "title": "Academic Writing I: Writing in Academic and Public Contexts",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "ECON 120",
+          "title": "Principles of Microeconomics a",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "MATH 121",
+          "title": "Precalculus Mathematics b",
+          "hours": 5,
+          "isElective": false,
+          "electiveType": null
+        }
+      ]
+    },
+    {
+      "year": "First Year",
+      "semester": "Spring Semester",
+      "total_hours": 17,
+      "courses": [
+        {
+          "code": "ENGL 161",
+          "title": "Academic Writing II: Writing for Inquiry and Research",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "ECON 121",
+          "title": "Principles of Macroeconomics a",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "General Education Requirement course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        },
+        {
+          "code": null,
+          "title": "General Education Requirement course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        }
+      ]
+    },
+    {
+      "year": "Second Year",
+      "semester": "Fall Semester",
+      "total_hours": 16,
+      "courses": [
+        {
+          "code": "ECON 220",
+          "title": "Microeconomics: Theory and Applications",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "General Education Requirement course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        },
+        {
+          "code": null,
+          "title": "General Education Requirement course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        },
+        {
+          "code": null,
+          "title": "General Education Requirement course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        }
+      ]
+    },
+    {
+      "year": "Second Year",
+      "semester": "Spring Semester",
+      "total_hours": null,
+      "courses": [
+        {
+          "code": "ECON 270",
+          "title": "Statistics for Economics",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "ECON 221",
+          "title": "Macroeconomics in the World Economy: Theory and Applications",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "General Education Requirement course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        }
+      ]
+    },
+    {
+      "year": "Third Year",
+      "semester": "Fall Semester",
+      "total_hours": null,
+      "courses": [
+        {
+          "code": "ECON 300",
+          "title": "Econometrics or Honors Econometrics",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "General Education Requirement course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        },
+        {
+          "code": null,
+          "title": "General Education Requirement course/Elective",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        },
+        {
+          "code": null,
+          "title": "Electives",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        }
+      ]
+    },
+    {
+      "year": "Third Year",
+      "semester": "Spring Semester",
+      "total_hours": null,
+      "courses": [
+        {
+          "code": "ECON 395",
+          "title": "Research and Writing in Economics d",
+          "hours": 1,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "General Education Requirement course/Elective",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        },
+        {
+          "code": null,
+          "title": "Electives",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        }
+      ]
+    },
+    {
+      "year": "Fourth Year",
+      "semester": "Fall Semester",
+      "total_hours": 15,
+      "courses": [
+        {
+          "code": null,
+          "title": "Electives",
+          "hours": 12,
+          "isElective": true,
+          "electiveType": "elective_general"
+        }
+      ]
+    },
+    {
+      "year": "Fourth Year",
+      "semester": "Spring Semester",
+      "total_hours": 14,
+      "courses": [
+        {
+          "code": null,
+          "title": "Electives",
+          "hours": 11,
+          "isElective": true,
+          "electiveType": "elective_general"
+        }
+      ]
+    }
+  ]
+}

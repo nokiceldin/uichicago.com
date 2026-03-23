@@ -1,0 +1,462 @@
+{
+  "name": "Mathematics and Computer Science - BS with a Major",
+  "college": "Mathematics, Statistics, and Computer Science",
+  "department": "Mathematics, Statistics, and Computer Science",
+  "url": "https://catalog.uic.edu/ucat/colleges-depts/liberal-arts-sciences/mscs/bs-math-cs/",
+  "totalHours": 120,
+  "summaryRequirements": {
+    "Major Requirements": "38-39",
+    "General Education and Electives to reach Minimum Total Hours": "81-82",
+    "Total Hours": "120"
+  },
+  "requiredCourses": [
+    {
+      "code": "MATH 180",
+      "subject": "MATH",
+      "number": "180",
+      "title": "Calculus I a,b",
+      "hours": 4,
+      "required": true
+    },
+    {
+      "code": "MATH 181",
+      "subject": "MATH",
+      "number": "181",
+      "title": "Calculus II a",
+      "hours": 4,
+      "required": true
+    },
+    {
+      "code": "MATH 210",
+      "subject": "MATH",
+      "number": "210",
+      "title": "Calculus III a",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "MATH 215",
+      "subject": "MATH",
+      "number": "215",
+      "title": "Introduction to Advanced Mathematics",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "MCS 160",
+      "subject": "MCS",
+      "number": "160",
+      "title": "Introduction to Computer Science a",
+      "hours": 4,
+      "required": true
+    },
+    {
+      "code": "MCS 275",
+      "subject": "MCS",
+      "number": "275",
+      "title": "Programming Tools and File Management",
+      "hours": 4,
+      "required": true
+    },
+    {
+      "code": "MATH 300",
+      "subject": "MATH",
+      "number": "300",
+      "title": "Writing for Mathematics c",
+      "hours": 1,
+      "required": true
+    },
+    {
+      "code": "MATH 218",
+      "subject": "MATH",
+      "number": "218",
+      "title": "Applied Linear Algebra",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "MATH 320",
+      "subject": "MATH",
+      "number": "320",
+      "title": "Linear Algebra I",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "MCS 320",
+      "subject": "MCS",
+      "number": "320",
+      "title": "Introduction to Symbolic Computation d",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "MCS 360",
+      "subject": "MCS",
+      "number": "360",
+      "title": "Introduction to Data Structures e",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "MCS 401",
+      "subject": "MCS",
+      "number": "401",
+      "title": "Computer Algorithms I",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "MCS 421",
+      "subject": "MCS",
+      "number": "421",
+      "title": "Combinatorics",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "MCS 423",
+      "subject": "MCS",
+      "number": "423",
+      "title": "Graph Theory",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "MCS 425",
+      "subject": "MCS",
+      "number": "425",
+      "title": "Codes and Cryptography",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "MCS 441",
+      "subject": "MCS",
+      "number": "441",
+      "title": "Theory of Computation I",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "MCS 481",
+      "subject": "MCS",
+      "number": "481",
+      "title": "Computational Geometry",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "MCS 471",
+      "subject": "MCS",
+      "number": "471",
+      "title": "Numerical Analysis",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "MCS 472",
+      "subject": "MCS",
+      "number": "472",
+      "title": "Introduction to Industrial Math and Computation",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "MATH 419",
+      "subject": "MATH",
+      "number": "419",
+      "title": "Models in Applied Mathematics",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "MATH 480",
+      "subject": "MATH",
+      "number": "480",
+      "title": "Applied Differential Equations",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "MATH 481",
+      "subject": "MATH",
+      "number": "481",
+      "title": "Applied Partial Differential Equations",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "STAT 451",
+      "subject": "STAT",
+      "number": "451",
+      "title": "Computational Statistics",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "STAT 471",
+      "subject": "STAT",
+      "number": "471",
+      "title": "Linear and Non-Linear Programming",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ENGL 160",
+      "subject": "ENGL",
+      "number": "160",
+      "title": "Academic Writing I: Writing in Academic and Public Contexts",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "ENGL 161",
+      "subject": "ENGL",
+      "number": "161",
+      "title": "Academic Writing II: Writing for Inquiry and Research",
+      "hours": 3,
+      "required": true
+    }
+  ],
+  "sampleSchedule": [
+    {
+      "year": "First Year",
+      "semester": "Fall Semester",
+      "total_hours": null,
+      "courses": [
+        {
+          "code": "MATH 180",
+          "title": "Calculus I",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "ENGL 160",
+          "title": "Academic Writing I: Writing in Academic and Public Contexts",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "General Education Core course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        }
+      ]
+    },
+    {
+      "year": "First Year",
+      "semester": "Spring Semester",
+      "total_hours": 15,
+      "courses": [
+        {
+          "code": "MATH 181",
+          "title": "Calculus II",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "MCS 160",
+          "title": "Introduction to Computer Science",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "ENGL 161",
+          "title": "Academic Writing II: Writing for Inquiry and Research",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        }
+      ]
+    },
+    {
+      "year": "Second Year",
+      "semester": "Fall Semester",
+      "total_hours": null,
+      "courses": [
+        {
+          "code": "MATH 210",
+          "title": "Calculus III",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "MATH 215",
+          "title": "Introduction to Advanced Mathematics",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "General Education Requirement course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        },
+        {
+          "code": null,
+          "title": "Elective",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        }
+      ]
+    },
+    {
+      "year": "Second Year",
+      "semester": "Spring Semester",
+      "total_hours": null,
+      "courses": [
+        {
+          "code": "MATH 218",
+          "title": "Applied Linear Algebra or Linear Algebra I",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "MCS 275",
+          "title": "Programming Tools and File Management",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "General Education Requirement course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        }
+      ]
+    },
+    {
+      "year": "Third Year",
+      "semester": "Fall Semester",
+      "total_hours": null,
+      "courses": [
+        {
+          "code": "MCS 320",
+          "title": "Introduction to Symbolic Computation or Introduction to Data Structures",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "MATH 300",
+          "title": "Writing for Mathematics",
+          "hours": 1,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "General Education Requirement course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        },
+        {
+          "code": null,
+          "title": "General Education Requirement course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        },
+        {
+          "code": null,
+          "title": "Electives",
+          "hours": 6,
+          "isElective": true,
+          "electiveType": "elective_general"
+        }
+      ]
+    },
+    {
+      "year": "Third Year",
+      "semester": "Spring Semester",
+      "total_hours": 15,
+      "courses": [
+        {
+          "code": null,
+          "title": "Electives",
+          "hours": 6,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": "MCS 401",
+          "title": "Computer Algorithms I or Numerical Analysis",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "General Education Requirement course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        },
+        {
+          "code": null,
+          "title": "General Education Requirement course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        }
+      ]
+    },
+    {
+      "year": "Fourth Year",
+      "semester": "Fall Semester",
+      "total_hours": 15,
+      "courses": [
+        {
+          "code": null,
+          "title": "MATH, MCS, or STAT selective in concentration",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "math_elective"
+        },
+        {
+          "code": null,
+          "title": "Electives",
+          "hours": 12,
+          "isElective": true,
+          "electiveType": "elective_general"
+        }
+      ]
+    },
+    {
+      "year": "Fourth Year",
+      "semester": "Spring Semester",
+      "total_hours": 15,
+      "courses": [
+        {
+          "code": null,
+          "title": "MATH, MCS, or STAT selective in concentration",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "math_elective"
+        },
+        {
+          "code": null,
+          "title": "Electives",
+          "hours": 12,
+          "isElective": true,
+          "electiveType": "elective_general"
+        }
+      ]
+    }
+  ]
+}

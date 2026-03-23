@@ -1,0 +1,880 @@
+{
+  "name": "Music - BA",
+  "college": "Music",
+  "department": "Music",
+  "url": "https://catalog.uic.edu/ucat/colleges-depts/architecture-design-arts/thtr-mus/ba-mus/",
+  "totalHours": 120,
+  "summaryRequirements": {
+    "General Education Requirements": "24",
+    "Major Course Requirements": "52-64",
+    "Electives": "31-44",
+    "DLG 120": "1",
+    "Total Hours": "120"
+  },
+  "requiredCourses": [
+    {
+      "code": "DLG 120",
+      "subject": "DLG",
+      "number": "120",
+      "title": "UIC First-Year Dialogue Seminar (Required of new freshmen only) a",
+      "hours": 1,
+      "required": true
+    },
+    {
+      "code": "ENGL 160",
+      "subject": "ENGL",
+      "number": "160",
+      "title": "Academic Writing I: Writing in Academic and Public Contexts",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "ENGL 161",
+      "subject": "ENGL",
+      "number": "161",
+      "title": "Academic Writing II: Writing for Inquiry and Research",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "MUS 101",
+      "subject": "MUS",
+      "number": "101",
+      "title": "Music Theory I",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "MUS 102",
+      "subject": "MUS",
+      "number": "102",
+      "title": "Music Theory II",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "MUS 103",
+      "subject": "MUS",
+      "number": "103",
+      "title": "Ear Training I",
+      "hours": 1,
+      "required": true
+    },
+    {
+      "code": "MUS 104",
+      "subject": "MUS",
+      "number": "104",
+      "title": "Ear Training II",
+      "hours": 1,
+      "required": true
+    },
+    {
+      "code": "MUS 110",
+      "subject": "MUS",
+      "number": "110",
+      "title": "Convocation/Recital a",
+      "hours": 0,
+      "required": true
+    },
+    {
+      "code": "MUS 111",
+      "subject": "MUS",
+      "number": "111",
+      "title": "Master Class in Performance b",
+      "hours": 0,
+      "required": true
+    },
+    {
+      "code": "MUS 170",
+      "subject": "MUS",
+      "number": "170",
+      "title": "Keyboard Skills I",
+      "hours": 2,
+      "required": true
+    },
+    {
+      "code": "MUS 171",
+      "subject": "MUS",
+      "number": "171",
+      "title": "Keyboard Skills II",
+      "hours": 2,
+      "required": true
+    },
+    {
+      "code": "MUS 201",
+      "subject": "MUS",
+      "number": "201",
+      "title": "Theory of Music III",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "MUS 202",
+      "subject": "MUS",
+      "number": "202",
+      "title": "Theory of Music IV",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "MUS 203",
+      "subject": "MUS",
+      "number": "203",
+      "title": "Ear Training III",
+      "hours": 1,
+      "required": true
+    },
+    {
+      "code": "MUS 204",
+      "subject": "MUS",
+      "number": "204",
+      "title": "Ear Training IV",
+      "hours": 1,
+      "required": true
+    },
+    {
+      "code": "MUS 223",
+      "subject": "MUS",
+      "number": "223",
+      "title": "Music Technology",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "MUS 230",
+      "subject": "MUS",
+      "number": "230",
+      "title": "History of Western Music I: Music of the Middle Ages and Renaissance",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "MUS 231",
+      "subject": "MUS",
+      "number": "231",
+      "title": "History of Western Music II: Music of the Baroque and Classical Periods",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "MUS 232",
+      "subject": "MUS",
+      "number": "232",
+      "title": "History of Western Music III: Music from Romanticism through the Present",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "MUS 227",
+      "subject": "MUS",
+      "number": "227",
+      "title": "Music Cultures of the World c,d",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "MUS 301",
+      "subject": "MUS",
+      "number": "301",
+      "title": "Analytic Techniques",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "MUS 113",
+      "subject": "MUS",
+      "number": "113",
+      "title": "Art Song c",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "MUS 114",
+      "subject": "MUS",
+      "number": "114",
+      "title": "Jazz History c,e",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "MUS 115",
+      "subject": "MUS",
+      "number": "115",
+      "title": "Opera c",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "MUS 117",
+      "subject": "MUS",
+      "number": "117",
+      "title": "Music for Symphony Orchestra c",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "MUS 118",
+      "subject": "MUS",
+      "number": "118",
+      "title": "American Popular Music since 1850 c,e",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "MUS 119",
+      "subject": "MUS",
+      "number": "119",
+      "title": "Music for the Piano c",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "MUS 127",
+      "subject": "MUS",
+      "number": "127",
+      "title": "Latin American Music c,d",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "MUS 240",
+      "subject": "MUS",
+      "number": "240",
+      "title": "Music, Gender and Culture c,f",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "MUS 300",
+      "subject": "MUS",
+      "number": "300",
+      "title": "Counterpoint",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "MUS 302",
+      "subject": "MUS",
+      "number": "302",
+      "title": "Composing for Small Ensembles",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "MUS 303",
+      "subject": "MUS",
+      "number": "303",
+      "title": "Composing for Large Ensembles",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "MUS 304",
+      "subject": "MUS",
+      "number": "304",
+      "title": "Conducting",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "MUS 306",
+      "subject": "MUS",
+      "number": "306",
+      "title": "Orchestration and Arranging I",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "MUS 307",
+      "subject": "MUS",
+      "number": "307",
+      "title": "Orchestration and Arranging II",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "MUS 312",
+      "subject": "MUS",
+      "number": "312",
+      "title": "Jazz Arranging I",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "MUS 330",
+      "subject": "MUS",
+      "number": "330",
+      "title": "Advanced Topics in Music History and Ethnomusicology",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "MUS 150",
+      "subject": "MUS",
+      "number": "150",
+      "title": "Vocal Jazz Ensemble",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "MUS 151",
+      "subject": "MUS",
+      "number": "151",
+      "title": "Concert Band",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "MUS 152",
+      "subject": "MUS",
+      "number": "152",
+      "title": "Instrumental Ensembles",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "MUS 153",
+      "subject": "MUS",
+      "number": "153",
+      "title": "University Choir",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "MUS 154",
+      "subject": "MUS",
+      "number": "154",
+      "title": "Chamber Choir",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "MUS 155",
+      "subject": "MUS",
+      "number": "155",
+      "title": "Treble Choir",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "MUS 157",
+      "subject": "MUS",
+      "number": "157",
+      "title": "University Orchestras",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "MUS 159",
+      "subject": "MUS",
+      "number": "159",
+      "title": "Jazz Ensemble",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "MUS 160",
+      "subject": "MUS",
+      "number": "160",
+      "title": "Small Jazz Ensemble",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "MUS 181",
+      "subject": "MUS",
+      "number": "181",
+      "title": "Private Instrumental Lessons-30 Minutes",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "MUS 183",
+      "subject": "MUS",
+      "number": "183",
+      "title": "Private Vocal Lessons-30 Minutes",
+      "hours": null,
+      "required": true
+    }
+  ],
+  "electiveGroups": [
+    {
+      "label": "BA students must complete four terms of private study (30 minutes per week). Select 4 hours from the following:",
+      "credits": 4,
+      "options": [
+        {
+          "code": "MUS 181",
+          "title": "Private Instrumental Lessons-30 Minutes"
+        },
+        {
+          "code": "MUS 183",
+          "title": "Private Vocal Lessons-30 Minutes"
+        }
+      ]
+    }
+  ],
+  "sampleSchedule": [
+    {
+      "year": "Freshman Year",
+      "semester": "Fall Semester",
+      "total_hours": 15,
+      "courses": [
+        {
+          "code": "MUS 101",
+          "title": "Music Theory I",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "MUS 103",
+          "title": "Ear Training I",
+          "hours": 1,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "MUS 110",
+          "title": "Convocation/Recital",
+          "hours": 0,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "MUS 170",
+          "title": "Keyboard Skills I",
+          "hours": 2,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "ENGL 160",
+          "title": "Academic Writing I: Writing in Academic and Public Contexts",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "MUS 181",
+          "title": "Private Instrumental Lessons-30 Minutes or Private Vocal Lessons-30 Minutes",
+          "hours": 1,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "MUS 111",
+          "title": "Master Class in Performance",
+          "hours": 0,
+          "isElective": false,
+          "electiveType": null
+        }
+      ]
+    },
+    {
+      "year": "Freshman Year",
+      "semester": "Spring Semester",
+      "total_hours": 16,
+      "courses": [
+        {
+          "code": "MUS 102",
+          "title": "Music Theory II",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "MUS 104",
+          "title": "Ear Training II",
+          "hours": 1,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "MUS 110",
+          "title": "Convocation/Recital",
+          "hours": 0,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "MUS 171",
+          "title": "Keyboard Skills II",
+          "hours": 2,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "ENGL 161",
+          "title": "Academic Writing II: Writing for Inquiry and Research",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "MUS 181",
+          "title": "Private Instrumental Lessons-30 Minutes or Private Vocal Lessons-30 Minutes",
+          "hours": 1,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "MUS 111",
+          "title": "Master Class in Performance",
+          "hours": 0,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "DLG 120",
+          "title": "UIC First-Year Dialogue Seminar ( Required of new freshmen only )",
+          "hours": 1,
+          "isElective": false,
+          "electiveType": null
+        }
+      ]
+    },
+    {
+      "year": "Sophomore Year",
+      "semester": "Fall Semester",
+      "total_hours": 14,
+      "courses": [
+        {
+          "code": "MUS 110",
+          "title": "Convocation/Recital",
+          "hours": 0,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "MUS 201",
+          "title": "Theory of Music III",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "MUS 203",
+          "title": "Ear Training III",
+          "hours": 1,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "MUS 223",
+          "title": "Music Technology",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "General Education Core course",
+          "hours": 5,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        },
+        {
+          "code": "MUS 181",
+          "title": "Private Instrumental Lessons-30 Minutes or Private Vocal Lessons-30 Minutes",
+          "hours": 1,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "MUS 111",
+          "title": "Master Class in Performance",
+          "hours": 0,
+          "isElective": false,
+          "electiveType": null
+        }
+      ]
+    },
+    {
+      "year": "Sophomore Year",
+      "semester": "Spring Semester",
+      "total_hours": 15,
+      "courses": [
+        {
+          "code": "MUS 110",
+          "title": "Convocation/Recital",
+          "hours": 0,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "MUS 202",
+          "title": "Theory of Music IV",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "MUS 204",
+          "title": "Ear Training IV",
+          "hours": 1,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "MUS 230",
+          "title": "History of Western Music I: Music of the Middle Ages and Renaissance",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "Select one of the following:",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": "MUS 113",
+          "title": "Art Song",
+          "hours": null,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "MUS 114",
+          "title": "Jazz History",
+          "hours": null,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "MUS 115",
+          "title": "Opera",
+          "hours": null,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "MUS 117",
+          "title": "Music for Symphony Orchestra",
+          "hours": null,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "MUS 119",
+          "title": "Music for the Piano",
+          "hours": null,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "MUS 127",
+          "title": "Latin American Music",
+          "hours": null,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "MUS 240",
+          "title": "Music, Gender and Culture",
+          "hours": null,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "MUS 181",
+          "title": "Private Instrumental Lessons-30 Minutes or Private Vocal Lessons-30 Minutes",
+          "hours": 1,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "MUS 111",
+          "title": "Master Class in Performance",
+          "hours": 0,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "Elective",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        }
+      ]
+    },
+    {
+      "year": "Junior Year",
+      "semester": "Fall Semester",
+      "total_hours": 15,
+      "courses": [
+        {
+          "code": "MUS 231",
+          "title": "History of Western Music II: Music of the Baroque and Classical Periods",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "Advanced Elective—Select one of the following:",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": "MUS 300",
+          "title": "Counterpoint",
+          "hours": null,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "MUS 302",
+          "title": "Composing for Small Ensembles",
+          "hours": null,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "MUS 303",
+          "title": "Composing for Large Ensembles",
+          "hours": null,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "MUS 304",
+          "title": "Conducting",
+          "hours": null,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "MUS 306",
+          "title": "Orchestration and Arranging I",
+          "hours": null,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "MUS 307",
+          "title": "Orchestration and Arranging II",
+          "hours": null,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "MUS 312",
+          "title": "Jazz Arranging I",
+          "hours": null,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "MUS 330",
+          "title": "Advanced Topics in Music History and Ethnomusicology",
+          "hours": null,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "Electives",
+          "hours": 8,
+          "isElective": true,
+          "electiveType": "elective_general"
+        }
+      ]
+    },
+    {
+      "year": "Junior Year",
+      "semester": "Spring Semester",
+      "total_hours": 15,
+      "courses": [
+        {
+          "code": "MUS 232",
+          "title": "History of Western Music III: Music from Romanticism through the Present",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "MUS 301",
+          "title": "Analytic Techniques",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "Electives",
+          "hours": 8,
+          "isElective": true,
+          "electiveType": "elective_general"
+        }
+      ]
+    },
+    {
+      "year": "Senior Year",
+      "semester": "Fall Semester",
+      "total_hours": 15,
+      "courses": [
+        {
+          "code": null,
+          "title": "General Education Core course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        },
+        {
+          "code": null,
+          "title": "General Education Core course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        },
+        {
+          "code": null,
+          "title": "General Education Core course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        },
+        {
+          "code": "MUS 227",
+          "title": "Music Cultures of the World",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "Electives",
+          "hours": 2,
+          "isElective": true,
+          "electiveType": "elective_general"
+        }
+      ]
+    },
+    {
+      "year": "Senior Year",
+      "semester": "Spring Semester",
+      "total_hours": 15,
+      "courses": [
+        {
+          "code": null,
+          "title": "General Education Core course",
+          "hours": 4,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        },
+        {
+          "code": null,
+          "title": "Electives",
+          "hours": 10,
+          "isElective": true,
+          "electiveType": "elective_general"
+        }
+      ]
+    }
+  ]
+}

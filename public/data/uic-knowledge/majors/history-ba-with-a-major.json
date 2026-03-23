@@ -1,0 +1,223 @@
+{
+  "name": "History - BA with a Major",
+  "college": "History",
+  "department": "History",
+  "url": "https://catalog.uic.edu/ucat/colleges-depts/liberal-arts-sciences/hist/ba-hist/",
+  "totalHours": 120,
+  "summaryRequirements": {
+    "Major Requirements": "33",
+    "General Education and Electives to reach minimum Total Hours": "87",
+    "Total Hours": "120"
+  },
+  "requiredCourses": [
+    {
+      "code": "ENGL 160",
+      "subject": "ENGL",
+      "number": "160",
+      "title": "Academic Writing I: Writing in Academic and Public Contexts",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "ENGL 161",
+      "subject": "ENGL",
+      "number": "161",
+      "title": "Academic Writing II: Writing for Inquiry and Research",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "HIST 300",
+      "subject": "HIST",
+      "number": "300",
+      "title": "History Methods Colloquium",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "HIST 440",
+      "subject": "HIST",
+      "number": "440",
+      "title": "History Research Seminar",
+      "hours": 3,
+      "required": true
+    }
+  ],
+  "sampleSchedule": [
+    {
+      "year": "First Year",
+      "semester": "Fall Semester",
+      "total_hours": null,
+      "courses": [
+        {
+          "code": "ENGL 160",
+          "title": "Academic Writing I: Writing in Academic and Public Contexts",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "General Education Requirement course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        }
+      ]
+    },
+    {
+      "year": "First Year",
+      "semester": "Spring Semester",
+      "total_hours": null,
+      "courses": [
+        {
+          "code": "ENGL 161",
+          "title": "Academic Writing II: Writing for Inquiry and Research",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "General Education Requirement course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        },
+        {
+          "code": null,
+          "title": "General Education Requirement course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        }
+      ]
+    },
+    {
+      "year": "Second Year",
+      "semester": "Fall Semester",
+      "total_hours": null,
+      "courses": [
+        {
+          "code": null,
+          "title": "General Education Requirement course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        },
+        {
+          "code": null,
+          "title": "General Education Requirement course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        }
+      ]
+    },
+    {
+      "year": "Second Year",
+      "semester": "Spring Semester",
+      "total_hours": 16,
+      "courses": [
+        {
+          "code": null,
+          "title": "General Education Requirement course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        },
+        {
+          "code": null,
+          "title": "General Education Requirement course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        },
+        {
+          "code": null,
+          "title": "General Education Requirement course/Elective",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        }
+      ]
+    },
+    {
+      "year": "Third Year",
+      "semester": "Fall Semester",
+      "total_hours": 15,
+      "courses": [
+        {
+          "code": null,
+          "title": "General Education Requirement course/Elective",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        },
+        {
+          "code": null,
+          "title": "Electives",
+          "hours": 6,
+          "isElective": true,
+          "electiveType": "elective_general"
+        }
+      ]
+    },
+    {
+      "year": "Third Year",
+      "semester": "Spring Semester",
+      "total_hours": 15,
+      "courses": [
+        {
+          "code": "HIST 300",
+          "title": "History Methods Colloquium",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "Electives",
+          "hours": 9,
+          "isElective": true,
+          "electiveType": "elective_general"
+        }
+      ]
+    },
+    {
+      "year": "Fourth Year",
+      "semester": "Fall Semester",
+      "total_hours": 15,
+      "courses": [
+        {
+          "code": "HIST 440",
+          "title": "History Research Seminar",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "Electives",
+          "hours": 9,
+          "isElective": true,
+          "electiveType": "elective_general"
+        }
+      ]
+    },
+    {
+      "year": "Fourth Year",
+      "semester": "Spring Semester",
+      "total_hours": 14,
+      "courses": [
+        {
+          "code": null,
+          "title": "Electives",
+          "hours": 8,
+          "isElective": true,
+          "electiveType": "elective_general"
+        }
+      ]
+    }
+  ]
+}

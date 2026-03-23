@@ -1,0 +1,565 @@
+{
+  "name": "Health Information Management - BS",
+  "college": "Biomedical and Health Information Sciences",
+  "department": "Biomedical and Health Information Sciences",
+  "url": "https://catalog.uic.edu/ucat/colleges-depts/applied-health-sciences/bhis/bs/",
+  "totalHours": 123,
+  "summaryRequirements": {
+    "General Education, Core Requirements, and Electives": "59-60",
+    "Health Information Management Required Courses": "63-64",
+    "Total Hours": "123"
+  },
+  "requiredCourses": [
+    {
+      "code": "ENGL 160",
+      "subject": "ENGL",
+      "number": "160",
+      "title": "Academic Writing I: Writing in Academic and Public Contexts",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "ENGL 161",
+      "subject": "ENGL",
+      "number": "161",
+      "title": "Academic Writing II: Writing for Inquiry and Research",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "BIOS 110",
+      "subject": "BIOS",
+      "number": "110",
+      "title": "Biology of Cells and Organisms a",
+      "hours": 4,
+      "required": true
+    },
+    {
+      "code": "KN 230",
+      "subject": "KN",
+      "number": "230",
+      "title": "Anatomy and Physiology Lecture I",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "KN 231",
+      "subject": "KN",
+      "number": "231",
+      "title": "Anatomy and Physiology Lecture II",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "MATH 110",
+      "subject": "MATH",
+      "number": "110",
+      "title": "College Algebra",
+      "hours": 4,
+      "required": true
+    },
+    {
+      "code": "PSCH 100",
+      "subject": "PSCH",
+      "number": "100",
+      "title": "Introduction to Psychology c",
+      "hours": 4,
+      "required": true
+    },
+    {
+      "code": "PSCH 242",
+      "subject": "PSCH",
+      "number": "242",
+      "title": "Introduction to Research in Psychology",
+      "hours": 34,
+      "required": true
+    },
+    {
+      "code": "IDS 200",
+      "subject": "IDS",
+      "number": "200",
+      "title": "Intro to Management Information Systems",
+      "hours": 4,
+      "required": true
+    },
+    {
+      "code": "HIM 101",
+      "subject": "HIM",
+      "number": "101",
+      "title": "Health Information Management First Year Seminar (First year students only)",
+      "hours": 1,
+      "required": true
+    },
+    {
+      "code": "HIM 410",
+      "subject": "HIM",
+      "number": "410",
+      "title": "Introduction to the Health Care System",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "HIM 317",
+      "subject": "HIM",
+      "number": "317",
+      "title": "Principles of Health Information Management",
+      "hours": 4,
+      "required": true
+    },
+    {
+      "code": "HIM 319",
+      "subject": "HIM",
+      "number": "319",
+      "title": "Alternative Health Records",
+      "hours": 4,
+      "required": true
+    },
+    {
+      "code": "HIM 320",
+      "subject": "HIM",
+      "number": "320",
+      "title": "Technical Affiliation",
+      "hours": 2,
+      "required": true
+    },
+    {
+      "code": "HIM 329",
+      "subject": "HIM",
+      "number": "329",
+      "title": "Legal Aspects of Health Information Management",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "HIM 432",
+      "subject": "HIM",
+      "number": "432",
+      "title": "Coding and Classification Systems",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "HIM 433",
+      "subject": "HIM",
+      "number": "433",
+      "title": "Coding and Reimbursement Systems",
+      "hours": 4,
+      "required": true
+    },
+    {
+      "code": "HIM 337",
+      "subject": "HIM",
+      "number": "337",
+      "title": "Analysis of Health Care Data",
+      "hours": 4,
+      "required": true
+    },
+    {
+      "code": "HIM 343",
+      "subject": "HIM",
+      "number": "343",
+      "title": "Quality Evaluation and Management",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "HIM 361",
+      "subject": "HIM",
+      "number": "361",
+      "title": "Human Resources Management",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "HIM 367",
+      "subject": "HIM",
+      "number": "367",
+      "title": "Systems Analysis",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "HIM 374",
+      "subject": "HIM",
+      "number": "374",
+      "title": "Health Information Research",
+      "hours": 4,
+      "required": true
+    },
+    {
+      "code": "HIM 377",
+      "subject": "HIM",
+      "number": "377",
+      "title": "Current Issues in Health Information Management",
+      "hours": 2,
+      "required": true
+    },
+    {
+      "code": "HIM 384",
+      "subject": "HIM",
+      "number": "384",
+      "title": "Clinical Practicum",
+      "hours": 5,
+      "required": true
+    },
+    {
+      "code": "HIM 481",
+      "subject": "HIM",
+      "number": "481",
+      "title": "Healthcare Financial Management",
+      "hours": 2,
+      "required": true
+    },
+    {
+      "code": "BHIS 405",
+      "subject": "BHIS",
+      "number": "405",
+      "title": "Medical Sciences and Human Pathophysiology a",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "BHIS 406",
+      "subject": "BHIS",
+      "number": "406",
+      "title": "Medical Terminology for Health Information Management",
+      "hours": 2,
+      "required": true
+    },
+    {
+      "code": "BHIS 410",
+      "subject": "BHIS",
+      "number": "410",
+      "title": "Health Data Structures and Management",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "BHIS 460",
+      "subject": "BHIS",
+      "number": "460",
+      "title": "Introduction to Health Informatics",
+      "hours": 1,
+      "required": true
+    },
+    {
+      "code": "BHIS 461",
+      "subject": "BHIS",
+      "number": "461",
+      "title": "Information Systems for Health Information Management",
+      "hours": 2,
+      "required": true
+    },
+    {
+      "code": "BHIS 480",
+      "subject": "BHIS",
+      "number": "480",
+      "title": "Management and Business Practices",
+      "hours": 3,
+      "required": true
+    }
+  ],
+  "sampleSchedule": [
+    {
+      "year": "Freshman Year",
+      "semester": "Fall Semester",
+      "total_hours": 17,
+      "courses": [
+        {
+          "code": "ENGL 160",
+          "title": "Academic Writing I: Writing in Academic and Public Contexts",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "BIOS 110",
+          "title": "Biology of Cells and Organisms a",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "HIM 101",
+          "title": "Health Information Management First Year Seminar",
+          "hours": 1,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "General Elective",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        }
+      ]
+    },
+    {
+      "year": "Freshman Year",
+      "semester": "Spring Semester",
+      "total_hours": 16,
+      "courses": [
+        {
+          "code": "ENGL 161",
+          "title": "Academic Writing II: Writing for Inquiry and Research",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "PSCH 100",
+          "title": "Introduction to Psychology d",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "General Elective",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        }
+      ]
+    },
+    {
+      "year": "Sophomore Year",
+      "semester": "Fall Semester",
+      "total_hours": 16,
+      "courses": [
+        {
+          "code": "KN 230",
+          "title": "Anatomy and Physiology Lecture I",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "MATH 110",
+          "title": "College Algebra or Mathematical Reasoning",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "IDS 200",
+          "title": "Intro to Management Information Systems",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "BHIS 406",
+          "title": "Medical Terminology for Health Information Management",
+          "hours": 2,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "General Elective",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        }
+      ]
+    },
+    {
+      "year": "Sophomore Year",
+      "semester": "Spring Semester",
+      "total_hours": null,
+      "courses": [
+        {
+          "code": "KN 231",
+          "title": "Anatomy and Physiology Lecture II",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "PSCH 242",
+          "title": "Introduction to Research in Psychology or Introduction to Statistics",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "HIM 410",
+          "title": "Introduction to the Health Care System ( Session A Online )",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "General Elective",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        }
+      ]
+    },
+    {
+      "year": "Junior Year",
+      "semester": "Fall Semester",
+      "total_hours": 12,
+      "courses": [
+        {
+          "code": "HIM 317",
+          "title": "Principles of Health Information Management",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "HIM 319",
+          "title": "Alternative Health Records",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "BHIS 405",
+          "title": "Medical Sciences and Human Pathophysiology",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "BHIS 460",
+          "title": "Introduction to Health Informatics",
+          "hours": 1,
+          "isElective": false,
+          "electiveType": null
+        }
+      ]
+    },
+    {
+      "year": "Junior Year",
+      "semester": "Spring Semester",
+      "total_hours": 16,
+      "courses": [
+        {
+          "code": "BHIS 461",
+          "title": "Information Systems for Health Information Management",
+          "hours": 2,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "BHIS 480",
+          "title": "Management and Business Practices",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "HIM 432",
+          "title": "Coding and Classification Systems",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "HIM 320",
+          "title": "Technical Affiliation",
+          "hours": 2,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "HIM 329",
+          "title": "Legal Aspects of Health Information Management",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "HIM 361",
+          "title": "Human Resources Management",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        }
+      ]
+    },
+    {
+      "year": "Senior Year",
+      "semester": "Fall Semester",
+      "total_hours": 17,
+      "courses": [
+        {
+          "code": "HIM 337",
+          "title": "Analysis of Health Care Data",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "BHIS 410",
+          "title": "Health Data Structures and Management",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "HIM 433",
+          "title": "Coding and Reimbursement Systems",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "HIM 374",
+          "title": "Health Information Research",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "HIM 481",
+          "title": "Healthcare Financial Management",
+          "hours": 2,
+          "isElective": false,
+          "electiveType": null
+        }
+      ]
+    },
+    {
+      "year": "Senior Year",
+      "semester": "Spring Semester",
+      "total_hours": 13,
+      "courses": [
+        {
+          "code": "HIM 343",
+          "title": "Quality Evaluation and Management",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "HIM 367",
+          "title": "Systems Analysis",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "HIM 377",
+          "title": "Current Issues in Health Information Management",
+          "hours": 2,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "HIM 384",
+          "title": "Clinical Practicum",
+          "hours": 5,
+          "isElective": false,
+          "electiveType": null
+        }
+      ]
+    }
+  ]
+}

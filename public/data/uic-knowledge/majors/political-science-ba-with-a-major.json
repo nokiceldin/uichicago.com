@@ -1,0 +1,364 @@
+{
+  "name": "Political Science - BA with a Major",
+  "college": "Political Science",
+  "department": "Political Science",
+  "url": "https://catalog.uic.edu/ucat/colleges-depts/liberal-arts-sciences/pols/ba-pols/",
+  "totalHours": 120,
+  "summaryRequirements": {
+    "Major Requirements": "33",
+    "General Education and Electives to reach minimum Total Hours": "87",
+    "Total Hours": "120"
+  },
+  "requiredCourses": [
+    {
+      "code": "POLS 101",
+      "subject": "POLS",
+      "number": "101",
+      "title": "Introduction to American Government and Politics a,b",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "POLS 200",
+      "subject": "POLS",
+      "number": "200",
+      "title": "Methods of Political Science",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "POLS 120",
+      "subject": "POLS",
+      "number": "120",
+      "title": "Introduction to Political Theory",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "POLS 130",
+      "subject": "POLS",
+      "number": "130",
+      "title": "Introduction to Comparative Politics",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "POLS 184",
+      "subject": "POLS",
+      "number": "184",
+      "title": "Introduction to International Relations",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "POLS 329",
+      "subject": "POLS",
+      "number": "329",
+      "title": "Seminar on American Politics",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "POLS 349",
+      "subject": "POLS",
+      "number": "349",
+      "title": "Topics in Comparative Politics",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "POLS 389",
+      "subject": "POLS",
+      "number": "389",
+      "title": "Seminar: Topics in International Relations",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "POLS 399",
+      "subject": "POLS",
+      "number": "399",
+      "title": "Seminar in Political Theory",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ENGL 160",
+      "subject": "ENGL",
+      "number": "160",
+      "title": "Academic Writing I: Writing in Academic and Public Contexts",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "ENGL 161",
+      "subject": "ENGL",
+      "number": "161",
+      "title": "Academic Writing II: Writing for Inquiry and Research",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "POLS 201",
+      "subject": "POLS",
+      "number": "201",
+      "title": "Political Data Analysis ( or Quantitative Reasoning course ) b",
+      "hours": 3,
+      "required": true
+    }
+  ],
+  "sampleSchedule": [
+    {
+      "year": "First Year",
+      "semester": "Fall Semester",
+      "total_hours": null,
+      "courses": [
+        {
+          "code": "ENGL 160",
+          "title": "Academic Writing I: Writing in Academic and Public Contexts",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "POLS 101",
+          "title": "Introduction to American Government and Politics a",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "General Education Requirement course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        }
+      ]
+    },
+    {
+      "year": "First Year",
+      "semester": "Spring Semester",
+      "total_hours": null,
+      "courses": [
+        {
+          "code": "ENGL 161",
+          "title": "Academic Writing II: Writing for Inquiry and Research",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "POLS 120",
+          "title": "Introduction to Political Theory a or Introduction to Comparative Politics or Introduction to International Relations",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "General Education Requirement course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        },
+        {
+          "code": null,
+          "title": "General Education Requirement course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        }
+      ]
+    },
+    {
+      "year": "Second Year",
+      "semester": "Fall Semester",
+      "total_hours": 16,
+      "courses": [
+        {
+          "code": "POLS 120",
+          "title": "Introduction to Political Theory a or Introduction to Comparative Politics or Introduction to International Relations",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "General Education Requirement course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        },
+        {
+          "code": null,
+          "title": "General Education Requirement course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        },
+        {
+          "code": null,
+          "title": "General Education Requirement course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        }
+      ]
+    },
+    {
+      "year": "Second Year",
+      "semester": "Spring Semester",
+      "total_hours": null,
+      "courses": [
+        {
+          "code": "POLS 200",
+          "title": "Methods of Political Science",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "General Education Requirement course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        }
+      ]
+    },
+    {
+      "year": "Third Year",
+      "semester": "Fall Semester",
+      "total_hours": 15,
+      "courses": [
+        {
+          "code": "POLS 201",
+          "title": "Political Data Analysis ( or Quantitative Reasoning course ) b",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "Electives",
+          "hours": 6,
+          "isElective": true,
+          "electiveType": "elective_general"
+        }
+      ]
+    },
+    {
+      "year": "Third Year",
+      "semester": "Spring Semester",
+      "total_hours": 15,
+      "courses": [
+        {
+          "code": null,
+          "title": "Electives",
+          "hours": 12,
+          "isElective": true,
+          "electiveType": "elective_general"
+        }
+      ]
+    },
+    {
+      "year": "Fourth Year",
+      "semester": "Fall Semester",
+      "total_hours": null,
+      "courses": [
+        {
+          "code": null,
+          "title": "Select one of the following in either the fall or spring semesters: e",
+          "hours": 0,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": "POLS 329",
+          "title": "Seminar on American Politics",
+          "hours": null,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "POLS 349",
+          "title": "Topics in Comparative Politics",
+          "hours": null,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "POLS 389",
+          "title": "Seminar: Topics in International Relations",
+          "hours": null,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "POLS 399",
+          "title": "Seminar in Political Theory",
+          "hours": null,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "Electives",
+          "hours": 12,
+          "isElective": true,
+          "electiveType": "elective_general"
+        }
+      ]
+    },
+    {
+      "year": "Fourth Year",
+      "semester": "Spring Semester",
+      "total_hours": null,
+      "courses": [
+        {
+          "code": null,
+          "title": "Select one of the following in either the fall or spring semesters: e",
+          "hours": 0,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": "POLS 329",
+          "title": "Seminar on American Politics",
+          "hours": null,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "POLS 349",
+          "title": "Topics in Comparative Politics",
+          "hours": null,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "POLS 389",
+          "title": "Seminar: Topics in International Relations",
+          "hours": null,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "POLS 399",
+          "title": "Seminar in Political Theory",
+          "hours": null,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "Electives",
+          "hours": 14,
+          "isElective": true,
+          "electiveType": "elective_general"
+        }
+      ]
+    }
+  ]
+}

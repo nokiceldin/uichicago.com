@@ -1,0 +1,382 @@
+{
+  "name": "Criminology Law and Justice - BA with a Major",
+  "college": "Criminology, Law, and Justice",
+  "department": "Criminology, Law, and Justice",
+  "url": "https://catalog.uic.edu/ucat/colleges-depts/liberal-arts-sciences/clj/ba-clj",
+  "totalHours": 120,
+  "summaryRequirements": {
+    "Major Requirements": "33",
+    "General Education and Electives to reach minimum Total Hours": "87",
+    "Total Hours": "120"
+  },
+  "requiredCourses": [
+    {
+      "code": "CLJ 101",
+      "subject": "CLJ",
+      "number": "101",
+      "title": "Introduction to Criminology, Law, and Justice a",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "CLJ 200",
+      "subject": "CLJ",
+      "number": "200",
+      "title": "Law and Society a",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "CLJ 210",
+      "subject": "CLJ",
+      "number": "210",
+      "title": "Principles of Criminal Law",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "CLJ 220",
+      "subject": "CLJ",
+      "number": "220",
+      "title": "Criminology",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "CLJ 261",
+      "subject": "CLJ",
+      "number": "261",
+      "title": "Research Methods I",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "CLJ 262",
+      "subject": "CLJ",
+      "number": "262",
+      "title": "Research Methods II b",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "CLJ 303",
+      "subject": "CLJ",
+      "number": "303",
+      "title": "Introduction to Forensic Science",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "CLJ 321",
+      "subject": "CLJ",
+      "number": "321",
+      "title": "Youth, Crime, Law and Justice in Society",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "CLJ 345",
+      "subject": "CLJ",
+      "number": "345",
+      "title": "Police in Society",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "CLJ 350",
+      "subject": "CLJ",
+      "number": "350",
+      "title": "Courts in Society",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "CLJ 355",
+      "subject": "CLJ",
+      "number": "355",
+      "title": "Punishment, Prisons and Corrections",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "CLJ 356",
+      "subject": "CLJ",
+      "number": "356",
+      "title": "Community Corrections and Reentry",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "CLJ 361",
+      "subject": "CLJ",
+      "number": "361",
+      "title": "Criminal Investigation",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "CLJ 363",
+      "subject": "CLJ",
+      "number": "363",
+      "title": "Drugs and Addiction in Society",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ENGL 160",
+      "subject": "ENGL",
+      "number": "160",
+      "title": "Academic Writing I: Writing in Academic and Public Contexts",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "ENGL 161",
+      "subject": "ENGL",
+      "number": "161",
+      "title": "Academic Writing II: Writing for Inquiry and Research",
+      "hours": 3,
+      "required": true
+    }
+  ],
+  "sampleSchedule": [
+    {
+      "year": "First Year",
+      "semester": "Fall Semester",
+      "total_hours": null,
+      "courses": [
+        {
+          "code": "ENGL 160",
+          "title": "Academic Writing I: Writing in Academic and Public Contexts",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "General Education Requirement course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        },
+        {
+          "code": null,
+          "title": "General Education Requirement course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        }
+      ]
+    },
+    {
+      "year": "First Year",
+      "semester": "Spring Semester",
+      "total_hours": null,
+      "courses": [
+        {
+          "code": "ENGL 161",
+          "title": "Academic Writing II: Writing for Inquiry and Research",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "CLJ 101",
+          "title": "Introduction to Criminology, Law, and Justice a",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "General Education Requirement course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        },
+        {
+          "code": null,
+          "title": "General Education Requirement course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        }
+      ]
+    },
+    {
+      "year": "Second Year",
+      "semester": "Fall Semester",
+      "total_hours": 16,
+      "courses": [
+        {
+          "code": "CLJ 200",
+          "title": "Law and Society a",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "General Education Requirement course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        },
+        {
+          "code": null,
+          "title": "General Education Requirement course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        },
+        {
+          "code": null,
+          "title": "General Education Requirement course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        }
+      ]
+    },
+    {
+      "year": "Second Year",
+      "semester": "Spring Semester",
+      "total_hours": 16,
+      "courses": [
+        {
+          "code": "CLJ 210",
+          "title": "Principles of Criminal Law",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "General Education Requirement course/Elective",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        },
+        {
+          "code": null,
+          "title": "General Education Requirement course/Elective",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        },
+        {
+          "code": null,
+          "title": "Electives",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        }
+      ]
+    },
+    {
+      "year": "Third Year",
+      "semester": "Fall Semester",
+      "total_hours": 15,
+      "courses": [
+        {
+          "code": "CLJ 220",
+          "title": "Criminology",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "CLJ 261",
+          "title": "Research Methods I",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "Electives",
+          "hours": 9,
+          "isElective": true,
+          "electiveType": "elective_general"
+        }
+      ]
+    },
+    {
+      "year": "Third Year",
+      "semester": "Spring Semester",
+      "total_hours": 15,
+      "courses": [
+        {
+          "code": "CLJ 262",
+          "title": "Research Methods II b",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "One 300- or 400-level Elective in CLJ",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": null,
+          "title": "Electives",
+          "hours": 9,
+          "isElective": true,
+          "electiveType": "elective_general"
+        }
+      ]
+    },
+    {
+      "year": "Fourth Year",
+      "semester": "Fall Semester",
+      "total_hours": 15,
+      "courses": [
+        {
+          "code": "CLJ 303",
+          "title": "Introduction to Forensic Science or Youth, Crime, Law and Justice in Society or Police in Society or Courts in Society or Punishment, Prisons and Corrections or Community Corrections and Reentry or Criminal Investigation or Drugs and Addiction in Society",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "Electives",
+          "hours": 9,
+          "isElective": true,
+          "electiveType": "elective_general"
+        }
+      ]
+    },
+    {
+      "year": "Fourth Year",
+      "semester": "Spring Semester",
+      "total_hours": null,
+      "courses": [
+        {
+          "code": null,
+          "title": "One 300- or 400-level Elective in CLJ",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": null,
+          "title": "One 300- or 400-level Elective in CLJ",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": null,
+          "title": "Electives",
+          "hours": 8,
+          "isElective": true,
+          "electiveType": "elective_general"
+        }
+      ]
+    }
+  ]
+}

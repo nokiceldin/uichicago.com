@@ -1,7 +1,7 @@
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 import { notFound } from "next/navigation";
-import prisma from "@/app/lib/prisma";
+import prisma from "@/lib/prisma";
 import { findSlugForUicName } from "@/app/lib/name";
 import CourseHeader from "../../../components/course/CourseHeader";
 import GradeDistributionCard from "../../../components/course/GradeDistributionCard";

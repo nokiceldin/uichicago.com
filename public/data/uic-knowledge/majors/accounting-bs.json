@@ -1,0 +1,606 @@
+{
+  "name": "Accounting - BS",
+  "college": "Accounting",
+  "department": "Accounting",
+  "url": "https://catalog.uic.edu/ucat/colleges-depts/business-administration/actg/bs/",
+  "totalHours": 120,
+  "summaryRequirements": {
+    "General and Basic Course Requirements": "45",
+    "Business Core": "42",
+    "Major Requirements": "18",
+    "Business Electives": "15",
+    "Total Hours": "120"
+  },
+  "requiredCourses": [
+    {
+      "code": "ACTG 315",
+      "subject": "ACTG",
+      "number": "315",
+      "title": "Intermediate Financial Accounting I",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "ACTG 316",
+      "subject": "ACTG",
+      "number": "316",
+      "title": "Intermediate Financial Accounting II",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "ACTG 326",
+      "subject": "ACTG",
+      "number": "326",
+      "title": "Cost Accounting",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "ACTG 435",
+      "subject": "ACTG",
+      "number": "435",
+      "title": "Auditing",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "ACTG 445",
+      "subject": "ACTG",
+      "number": "445",
+      "title": "Federal Income Tax I",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "ACTG 474",
+      "subject": "ACTG",
+      "number": "474",
+      "title": "Accounting Information Systems",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "ACTG 355",
+      "subject": "ACTG",
+      "number": "355",
+      "title": "Business Law I: Commercial Transactions",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ACTG 417",
+      "subject": "ACTG",
+      "number": "417",
+      "title": "Advanced Financial Accounting",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ACTG 436",
+      "subject": "ACTG",
+      "number": "436",
+      "title": "Advanced Audit",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ACTG 437",
+      "subject": "ACTG",
+      "number": "437",
+      "title": "Fraud and Forensic Accounting",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ACTG 446",
+      "subject": "ACTG",
+      "number": "446",
+      "title": "Federal Income Tax II",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ACTG 447",
+      "subject": "ACTG",
+      "number": "447",
+      "title": "Tax Research",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ACTG 456",
+      "subject": "ACTG",
+      "number": "456",
+      "title": "Business Law II: Business Organizations",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ACTG 465",
+      "subject": "ACTG",
+      "number": "465",
+      "title": "Governmental and Non-Profit Accounting",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ACTG 470",
+      "subject": "ACTG",
+      "number": "470",
+      "title": "Ethical Environment of Business",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ACTG 475",
+      "subject": "ACTG",
+      "number": "475",
+      "title": "Database Accounting Systems",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ACTG 476",
+      "subject": "ACTG",
+      "number": "476",
+      "title": "Enterprise Accounting Systems",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ACTG 484",
+      "subject": "ACTG",
+      "number": "484",
+      "title": "International Accounting",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ACTG 485",
+      "subject": "ACTG",
+      "number": "485",
+      "title": "Valuation and Analysis",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ACTG 492",
+      "subject": "ACTG",
+      "number": "492",
+      "title": "Advanced Data Analytics for Accountants",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ACTG 493",
+      "subject": "ACTG",
+      "number": "493",
+      "title": "Accounting Cases, Research and Analysis",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ACTG 494",
+      "subject": "ACTG",
+      "number": "494",
+      "title": "Special Topics in Accounting",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "IDS 200",
+      "subject": "IDS",
+      "number": "200",
+      "title": "Intro to Management Information Systems",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "IDS 270",
+      "subject": "IDS",
+      "number": "270",
+      "title": "Business Statistics I",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ECON 120",
+      "subject": "ECON",
+      "number": "120",
+      "title": "Principles of Microeconomics",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ECON 121",
+      "subject": "ECON",
+      "number": "121",
+      "title": "Principles of Macroeconomics",
+      "hours": null,
+      "required": true
+    }
+  ],
+  "electiveGroups": [
+    {
+      "label": "Select 15 hours from the following:",
+      "credits": 15,
+      "options": [
+        {
+          "code": "ACTG 355",
+          "title": "Business Law I: Commercial Transactions"
+        },
+        {
+          "code": "ACTG 417",
+          "title": "Advanced Financial Accounting"
+        },
+        {
+          "code": "ACTG 436",
+          "title": "Advanced Audit"
+        },
+        {
+          "code": "ACTG 437",
+          "title": "Fraud and Forensic Accounting"
+        },
+        {
+          "code": "ACTG 446",
+          "title": "Federal Income Tax II"
+        },
+        {
+          "code": "ACTG 447",
+          "title": "Tax Research"
+        },
+        {
+          "code": "ACTG 456",
+          "title": "Business Law II: Business Organizations"
+        },
+        {
+          "code": "ACTG 465",
+          "title": "Governmental and Non-Profit Accounting"
+        },
+        {
+          "code": "ACTG 470",
+          "title": "Ethical Environment of Business"
+        },
+        {
+          "code": "ACTG 475",
+          "title": "Database Accounting Systems"
+        },
+        {
+          "code": "ACTG 476",
+          "title": "Enterprise Accounting Systems"
+        },
+        {
+          "code": "ACTG 484",
+          "title": "International Accounting"
+        },
+        {
+          "code": "ACTG 485",
+          "title": "Valuation and Analysis"
+        },
+        {
+          "code": "ACTG 492",
+          "title": "Advanced Data Analytics for Accountants"
+        },
+        {
+          "code": "ACTG 493",
+          "title": "Accounting Cases, Research and Analysis"
+        },
+        {
+          "code": "ACTG 494",
+          "title": "Special Topics in Accounting"
+        }
+      ]
+    }
+  ],
+  "sampleSchedule": [
+    {
+      "label": "Freshman Year – First Semester",
+      "total_hours": 15,
+      "courses": [
+        {
+          "code": "BA 101",
+          "title": "Business First-Year Seminar",
+          "hours": 1,
+          "isElective": false
+        },
+        {
+          "code": "ECON 120",
+          "title": "Principles of Microeconomics",
+          "hours": 3,
+          "isElective": false
+        },
+        {
+          "code": "ENGL 160",
+          "title": "Academic Writing I: Writing in Academic and Public Contexts",
+          "hours": 3,
+          "isElective": false
+        },
+        {
+          "code": "COMM 100",
+          "title": "Fundamentals of Human Communication",
+          "hours": 3,
+          "isElective": false
+        },
+        {
+          "code": null,
+          "title": "Mathematics course",
+          "hours": 5,
+          "isElective": true,
+          "electiveType": "math_elective"
+        }
+      ]
+    },
+    {
+      "label": "Freshman Year – Second Semester",
+      "total_hours": 15,
+      "courses": [
+        {
+          "code": "BA 100",
+          "title": "Introduction to Professional Development",
+          "hours": 1,
+          "isElective": false
+        },
+        {
+          "code": "BA 111",
+          "title": "Business Decision-Making",
+          "hours": 3,
+          "isElective": false
+        },
+        {
+          "code": "ACTG 210",
+          "title": "Introduction to Financial Accounting",
+          "hours": 3,
+          "isElective": false
+        },
+        {
+          "code": "ENGL 161",
+          "title": "Academic Writing II: Writing for Inquiry and Research",
+          "hours": 3,
+          "isElective": false
+        },
+        {
+          "code": null,
+          "title": "Mathematics course",
+          "hours": 5,
+          "isElective": true,
+          "electiveType": "math_elective"
+        }
+      ]
+    },
+    {
+      "label": "Sophomore Year – First Semester",
+      "total_hours": 16,
+      "courses": [
+        {
+          "code": "MGMT 340",
+          "title": "Introduction to Organizations",
+          "hours": 3,
+          "isElective": false
+        },
+        {
+          "code": "ACTG 211",
+          "title": "Introduction to Managerial Accounting",
+          "hours": 3,
+          "isElective": false
+        },
+        {
+          "code": "FIN 300",
+          "title": "Introduction to Finance",
+          "hours": 3,
+          "isElective": false
+        },
+        {
+          "code": "IDS 270",
+          "title": "Business Statistics I",
+          "hours": 4,
+          "isElective": false
+        },
+        {
+          "code": "MKTG 360",
+          "title": "Introduction to Marketing",
+          "hours": 3,
+          "isElective": false
+        }
+      ]
+    },
+    {
+      "label": "Sophomore Year – Second Semester",
+      "total_hours": 14,
+      "courses": [
+        {
+          "code": "BA 200",
+          "title": "Business Communication",
+          "hours": 3,
+          "isElective": false
+        },
+        {
+          "code": "BA 220",
+          "title": "Business Professional Development II",
+          "hours": 1,
+          "isElective": false
+        },
+        {
+          "code": "IDS 200",
+          "title": "Intro to Management Information Systems",
+          "hours": 4,
+          "isElective": false
+        },
+        {
+          "code": null,
+          "title": "Major course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": null,
+          "title": "Major course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        }
+      ]
+    },
+    {
+      "label": "Junior Year – First Semester",
+      "total_hours": 16,
+      "courses": [
+        {
+          "code": "BA 320",
+          "title": "Civic Engagement",
+          "hours": 1,
+          "isElective": false
+        },
+        {
+          "code": "ECON 121",
+          "title": "Principles of Macroeconomics",
+          "hours": 3,
+          "isElective": false
+        },
+        {
+          "code": "IDS 355",
+          "title": "Operations Management",
+          "hours": 3,
+          "isElective": false
+        },
+        {
+          "code": "MGMT 350",
+          "title": "Business and Its External Environment",
+          "hours": 3,
+          "isElective": false
+        },
+        {
+          "code": null,
+          "title": "Major course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": null,
+          "title": "Advanced Quantitative Skills course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        }
+      ]
+    },
+    {
+      "label": "Junior Year – Second Semester",
+      "total_hours": 15,
+      "courses": [
+        {
+          "code": null,
+          "title": "Major course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": null,
+          "title": "Major course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": null,
+          "title": "Major course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": null,
+          "title": "Major course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": null,
+          "title": "General Education Core course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        }
+      ]
+    },
+    {
+      "label": "Senior Year – First Semester",
+      "total_hours": 15,
+      "courses": [
+        {
+          "code": null,
+          "title": "Major course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": null,
+          "title": "Major course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": null,
+          "title": "General Elective",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": null,
+          "title": "Global Business Perspectives course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "global_biz"
+        },
+        {
+          "code": null,
+          "title": "General Education Core course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        }
+      ]
+    },
+    {
+      "label": "Senior Year – Second Semester",
+      "total_hours": 14,
+      "courses": [
+        {
+          "code": null,
+          "title": "Competitive Strategy course",
+          "hours": 4,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": null,
+          "title": "Major course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": null,
+          "title": "General Elective",
+          "hours": 4,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": null,
+          "title": "General Education Core course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        }
+      ]
+    }
+  ]
+}

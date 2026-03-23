@@ -1,0 +1,813 @@
+{
+  "name": "Biomedical Engineering - BS",
+  "college": "Biomedical Engineering",
+  "department": "Biomedical Engineering",
+  "url": "https://catalog.uic.edu/ucat/colleges-depts/engineering/bme/bs/",
+  "totalHours": 128,
+  "summaryRequirements": {
+    "Nonengineering and General Education Requirements": "64",
+    "Required Engineering Courses": "45",
+    "Selective Engineering Courses": "7-8",
+    "Biomedical Engineering Concentration Area Electives": "12",
+    "Total Hours": "128"
+  },
+  "requiredCourses": [
+    {
+      "code": "CHEM 122",
+      "subject": "CHEM",
+      "number": "122",
+      "title": "Matter and Energy b",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "CHEM 123",
+      "subject": "CHEM",
+      "number": "123",
+      "title": "Foundations of Chemical Inquiry I a,b",
+      "hours": 2,
+      "required": true
+    },
+    {
+      "code": "CHEM 124",
+      "subject": "CHEM",
+      "number": "124",
+      "title": "Chemical Dynamics b",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "CHEM 125",
+      "subject": "CHEM",
+      "number": "125",
+      "title": "Foundations of Chemical Inquiry II a,b",
+      "hours": 2,
+      "required": true
+    },
+    {
+      "code": "PHYS 141",
+      "subject": "PHYS",
+      "number": "141",
+      "title": "General Physics I (Mechanics) a",
+      "hours": 4,
+      "required": true
+    },
+    {
+      "code": "PHYS 142",
+      "subject": "PHYS",
+      "number": "142",
+      "title": "General Physics II (Electricity and Magnetism) (Electricity and Magnetism) a",
+      "hours": 4,
+      "required": true
+    },
+    {
+      "code": "MATH 180",
+      "subject": "MATH",
+      "number": "180",
+      "title": "Calculus I a",
+      "hours": 4,
+      "required": true
+    },
+    {
+      "code": "MATH 181",
+      "subject": "MATH",
+      "number": "181",
+      "title": "Calculus II a",
+      "hours": 4,
+      "required": true
+    },
+    {
+      "code": "MATH 210",
+      "subject": "MATH",
+      "number": "210",
+      "title": "Calculus III a",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "MATH 220",
+      "subject": "MATH",
+      "number": "220",
+      "title": "Introduction to Differential Equations",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "MATH 218",
+      "subject": "MATH",
+      "number": "218",
+      "title": "Applied Linear Algebra",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "ENGL 160",
+      "subject": "ENGL",
+      "number": "160",
+      "title": "Academic Writing I: Writing in Academic and Public Contexts",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "ENGL 161",
+      "subject": "ENGL",
+      "number": "161",
+      "title": "Academic Writing II: Writing for Inquiry and Research",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "BIOS 110",
+      "subject": "BIOS",
+      "number": "110",
+      "title": "Biology of Cells and Organisms a",
+      "hours": 4,
+      "required": true
+    },
+    {
+      "code": "BIOS 220",
+      "subject": "BIOS",
+      "number": "220",
+      "title": "Genetics",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "BIOS 222",
+      "subject": "BIOS",
+      "number": "222",
+      "title": "Cell Biology",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "BIOS 286",
+      "subject": "BIOS",
+      "number": "286",
+      "title": "The Biology of the Brain",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "BIOS 340",
+      "subject": "BIOS",
+      "number": "340",
+      "title": "Environmental Physiology",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "CHEM 232",
+      "subject": "CHEM",
+      "number": "232",
+      "title": "Structure and Function",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ENGR 100",
+      "subject": "ENGR",
+      "number": "100",
+      "title": "Engineering Success Seminar for Freshmen a",
+      "hours": 1,
+      "required": true
+    },
+    {
+      "code": "BME 101",
+      "subject": "BME",
+      "number": "101",
+      "title": "Introduction to Biomedical Engineering",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "BME 102",
+      "subject": "BME",
+      "number": "102",
+      "title": "Biomedical Engineering Freshman Seminar",
+      "hours": 1,
+      "required": true
+    },
+    {
+      "code": "CS 109",
+      "subject": "CS",
+      "number": "109",
+      "title": "Programming for Engineers with MatLab",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "BME 205",
+      "subject": "BME",
+      "number": "205",
+      "title": "Biomedical Engineering Thermodynamics",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "ECE 210",
+      "subject": "ECE",
+      "number": "210",
+      "title": "Electrical Circuit Analysis",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "BME 240",
+      "subject": "BME",
+      "number": "240",
+      "title": "Modeling Physiological Data and Systems",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "BME 250",
+      "subject": "BME",
+      "number": "250",
+      "title": "Clinical Problems in Biomedical Engineering",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "CME 260",
+      "subject": "CME",
+      "number": "260",
+      "title": "Properties of Materials",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "BME 325",
+      "subject": "BME",
+      "number": "325",
+      "title": "Biotransport",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "BME 310",
+      "subject": "BME",
+      "number": "310",
+      "title": "Biological Systems Analysis",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "BME 332",
+      "subject": "BME",
+      "number": "332",
+      "title": "Bioinstrumentation and Measurements I",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "BME 333",
+      "subject": "BME",
+      "number": "333",
+      "title": "Bioinstrumentation and Measurement Laboratory I",
+      "hours": 2,
+      "required": true
+    },
+    {
+      "code": "BME 339",
+      "subject": "BME",
+      "number": "339",
+      "title": "Biostatistics I",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "BME 396",
+      "subject": "BME",
+      "number": "396",
+      "title": "Senior Design I",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "BME 397",
+      "subject": "BME",
+      "number": "397",
+      "title": "Senior Design II",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "BME 399",
+      "subject": "BME",
+      "number": "399",
+      "title": "Professional Development for Biomedical Engineers",
+      "hours": 0,
+      "required": true
+    },
+    {
+      "code": "BME 460",
+      "subject": "BME",
+      "number": "460",
+      "title": "Materials in Biomedical Engineering",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "BME 402",
+      "subject": "BME",
+      "number": "402",
+      "title": "Medical Technology Assessment",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "BME 403",
+      "subject": "BME",
+      "number": "403",
+      "title": "Quality Assurance for Medical Products",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "BME 408",
+      "subject": "BME",
+      "number": "408",
+      "title": "Medical Product Development",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "BME 410",
+      "subject": "BME",
+      "number": "410",
+      "title": "FDA and ISO Requirements for the Development and Manufacturing of Medical Devices",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "BME 421",
+      "subject": "BME",
+      "number": "421",
+      "title": "Biomedical Imaging",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "BME 455",
+      "subject": "BME",
+      "number": "455",
+      "title": "Introduction to Cell and Tissue Engineering",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "BME 475",
+      "subject": "BME",
+      "number": "475",
+      "title": "Neural Engineering I: Introduction to Hybrid Neural Systems",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "BME 480",
+      "subject": "BME",
+      "number": "480",
+      "title": "Intro to Bioinformatics",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "BME 423",
+      "subject": "BME",
+      "number": "423",
+      "title": "Biomedical Imaging Laboratory",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "BME 456",
+      "subject": "BME",
+      "number": "456",
+      "title": "Cell & Tissue Laboratory",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "BME 476",
+      "subject": "BME",
+      "number": "476",
+      "title": "Neural Engineering I Laboratory",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "BME 481",
+      "subject": "BME",
+      "number": "481",
+      "title": "Bioinformatics Laboratory",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "MENG 400",
+      "subject": "MENG",
+      "number": "400",
+      "title": "Engineering Law",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "MENG 401",
+      "subject": "MENG",
+      "number": "401",
+      "title": "Engineering Management",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "MENG 402",
+      "subject": "MENG",
+      "number": "402",
+      "title": "Intellectual Property Law",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "MENG 403",
+      "subject": "MENG",
+      "number": "403",
+      "title": "Reliability Engineering",
+      "hours": null,
+      "required": true
+    }
+  ],
+  "sampleSchedule": [
+    {
+      "year": "Freshman Year",
+      "semester": "First Semester",
+      "total_hours": 16,
+      "courses": [
+        {
+          "code": "BME 101",
+          "title": "Introduction to Biomedical Engineering",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "ENGR 100",
+          "title": "Engineering Success Seminar for Freshmen a",
+          "hours": 1,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "MATH 180",
+          "title": "Calculus I",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "BIOS 110",
+          "title": "Biology of Cells and Organisms",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "CHEM 122",
+          "title": "Matter and Energy",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "CHEM 123",
+          "title": "Foundations of Chemical Inquiry I",
+          "hours": 2,
+          "isElective": false,
+          "electiveType": null
+        }
+      ]
+    },
+    {
+      "year": "Freshman Year",
+      "semester": "Second Semester",
+      "total_hours": 16,
+      "courses": [
+        {
+          "code": "BME 102",
+          "title": "Biomedical Engineering Freshman Seminar",
+          "hours": 1,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "MATH 181",
+          "title": "Calculus II",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "CS 109",
+          "title": "Programming for Engineers with MatLab",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "CHEM 124",
+          "title": "Chemical Dynamics",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "CHEM 125",
+          "title": "Foundations of Chemical Inquiry II",
+          "hours": 2,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "ENGL 160",
+          "title": "Academic Writing I: Writing in Academic and Public Contexts",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        }
+      ]
+    },
+    {
+      "year": "Sophomore Year",
+      "semester": "First Semester",
+      "total_hours": 16,
+      "courses": [
+        {
+          "code": "PHYS 141",
+          "title": "General Physics I (Mechanics)",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "MATH 210",
+          "title": "Calculus III",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "BIOS 286",
+          "title": "The Biology of the Brain",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "BME 240",
+          "title": "Modeling Physiological Data and Systems",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "ENGL 161",
+          "title": "Academic Writing II: Writing for Inquiry and Research",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        }
+      ]
+    },
+    {
+      "year": "Sophomore Year",
+      "semester": "Second Semester",
+      "total_hours": 16,
+      "courses": [
+        {
+          "code": "BME 250",
+          "title": "Clinical Problems in Biomedical Engineering",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "BME 205",
+          "title": "Biomedical Engineering Thermodynamics",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "PHYS 142",
+          "title": "General Physics II (Electricity and Magnetism)",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "MATH 218",
+          "title": "Applied Linear Algebra",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "MATH 220",
+          "title": "Introduction to Differential Equations",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        }
+      ]
+    },
+    {
+      "year": "Junior Year",
+      "semester": "First Semester",
+      "total_hours": 18,
+      "courses": [
+        {
+          "code": "BME 310",
+          "title": "Biological Systems Analysis",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "BME 325",
+          "title": "Biotransport",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "BME 339",
+          "title": "Biostatistics I",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "ECE 210",
+          "title": "Electrical Circuit Analysis",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "Concentration Area Elective course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": null,
+          "title": "General Education Core course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        }
+      ]
+    },
+    {
+      "year": "Junior Year",
+      "semester": "Second Semester",
+      "total_hours": 16,
+      "courses": [
+        {
+          "code": "BME 332",
+          "title": "Bioinstrumentation and Measurements I",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "BME 333",
+          "title": "Bioinstrumentation and Measurement Laboratory I",
+          "hours": 2,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "BME 399",
+          "title": "Professional Development for Biomedical Engineers",
+          "hours": 0,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "BME 402",
+          "title": "Medical Technology Assessment",
+          "hours": 2,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "CME 260",
+          "title": "Properties of Materials",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "Concentration Area Elective course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": null,
+          "title": "General Education Core course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        }
+      ]
+    },
+    {
+      "year": "Senior Year",
+      "semester": "First Semester",
+      "total_hours": 15,
+      "courses": [
+        {
+          "code": "BME 396",
+          "title": "Senior Design I",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "BME 460",
+          "title": "Materials in Biomedical Engineering",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "BME Concentration Area Elective",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": null,
+          "title": "BME Concentration Area Elective",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": null,
+          "title": "General Education Core course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        }
+      ]
+    },
+    {
+      "year": "Senior Year",
+      "semester": "Second Semester",
+      "total_hours": 15,
+      "courses": [
+        {
+          "code": "BME 397",
+          "title": "Senior Design II",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "BME Concentration Area Elective",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": null,
+          "title": "BME Concentration Area Elective",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": null,
+          "title": "General Education Core course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        },
+        {
+          "code": null,
+          "title": "General Education Core course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        }
+      ]
+    }
+  ]
+}

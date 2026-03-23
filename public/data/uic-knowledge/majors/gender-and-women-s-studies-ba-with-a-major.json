@@ -1,0 +1,680 @@
+{
+  "name": "Gender and Women’s Studies - BA with a Major",
+  "college": "Gender and Women's Studies",
+  "department": "Gender and Women's Studies",
+  "url": "https://catalog.uic.edu/ucat/colleges-depts/liberal-arts-sciences/gws/ba/",
+  "totalHours": 120,
+  "summaryRequirements": {
+    "Major Requirements": "33",
+    "General Education and Electives to reach minimum Total Hours": "87",
+    "Total Hours": "120"
+  },
+  "requiredCourses": [
+    {
+      "code": "GWS 101",
+      "subject": "GWS",
+      "number": "101",
+      "title": "Gender in Everyday Life a,b",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "GWS 102",
+      "subject": "GWS",
+      "number": "102",
+      "title": "Global Perspectives on Women and Gender a,c",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "GWS 292",
+      "subject": "GWS",
+      "number": "292",
+      "title": "History and Theories of Feminism d",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "GWS 390",
+      "subject": "GWS",
+      "number": "390",
+      "title": "Feminism and Social Change",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "GWS 120",
+      "subject": "GWS",
+      "number": "120",
+      "title": "Study of Gender, Class, and Political Issues in German Texts",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "GWS 192",
+      "subject": "GWS",
+      "number": "192",
+      "title": "Latin American Women Writers in Translation",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "GWS 204",
+      "subject": "GWS",
+      "number": "204",
+      "title": "Gender and Popular Culture",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "GWS 211",
+      "subject": "GWS",
+      "number": "211",
+      "title": "Sex and Gender in the Ancient World",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "GWS 244",
+      "subject": "GWS",
+      "number": "244",
+      "title": "Women in Russian Literature",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "GWS 245",
+      "subject": "GWS",
+      "number": "245",
+      "title": "Introduction to Gender, Sexuality and Literature",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "GWS 247",
+      "subject": "GWS",
+      "number": "247",
+      "title": "Women and Literature",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "GWS 255",
+      "subject": "GWS",
+      "number": "255",
+      "title": "Introduction to Middle East and Muslim Feminisms",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "GWS 261",
+      "subject": "GWS",
+      "number": "261",
+      "title": "Reading Black Women Writing",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "GWS 272",
+      "subject": "GWS",
+      "number": "272",
+      "title": "Race, Gender, and Sexuality",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "GWS 275",
+      "subject": "GWS",
+      "number": "275",
+      "title": "Gender in Latin America",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "GWS 276",
+      "subject": "GWS",
+      "number": "276",
+      "title": "Latinas in the United States",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "GWS 294",
+      "subject": "GWS",
+      "number": "294",
+      "title": "Topics in Gender and Women's Studies f",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "GWS 304",
+      "subject": "GWS",
+      "number": "304",
+      "title": "Gender and Communcation",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "GWS 311",
+      "subject": "GWS",
+      "number": "311",
+      "title": "Gender and Sexuality in Early Christianity and Judaism",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "GWS 344",
+      "subject": "GWS",
+      "number": "344",
+      "title": "Gender Theory",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "GWS 347",
+      "subject": "GWS",
+      "number": "347",
+      "title": "Gender and Sexuality in Literature",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "GWS 406",
+      "subject": "GWS",
+      "number": "406",
+      "title": "Topics in Black Feminist and Queer Studies",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "GWS 407",
+      "subject": "GWS",
+      "number": "407",
+      "title": "Advanced Seminar in Queer and Trans Studies",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "GWS 439",
+      "subject": "GWS",
+      "number": "439",
+      "title": "Gender and Cultural Production",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "GWS 449",
+      "subject": "GWS",
+      "number": "449",
+      "title": "Women and Film",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "GWS 458",
+      "subject": "GWS",
+      "number": "458",
+      "title": "Asian America and Transnational Feminism",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "GWS 462",
+      "subject": "GWS",
+      "number": "462",
+      "title": "AIDS, Politics and Culture",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "GWS 469",
+      "subject": "GWS",
+      "number": "469",
+      "title": "Women's Literary Traditions",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "GWS 205",
+      "subject": "GWS",
+      "number": "205",
+      "title": "Disability, Race, Class and Gender",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "GWS 238",
+      "subject": "GWS",
+      "number": "238",
+      "title": "Biology of Women",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "GWS 262",
+      "subject": "GWS",
+      "number": "262",
+      "title": "Constructions of Gender, Race, Health, and Human Rights",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "GWS 315",
+      "subject": "GWS",
+      "number": "315",
+      "title": "Psychology of Women and Gender",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "GWS 202",
+      "subject": "GWS",
+      "number": "202",
+      "title": "Comparative Social Movements",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "GWS 224",
+      "subject": "GWS",
+      "number": "224",
+      "title": "Gender and Society",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "GWS 232",
+      "subject": "GWS",
+      "number": "232",
+      "title": "Sex Roles: Moral and Political Issues",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "GWS 248",
+      "subject": "GWS",
+      "number": "248",
+      "title": "Afro Asian Solidarities",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "GWS 259",
+      "subject": "GWS",
+      "number": "259",
+      "title": "Women and Gender in American History",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "GWS 356",
+      "subject": "GWS",
+      "number": "356",
+      "title": "Constitutional Law: Women, Gender and Privacy",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "GWS 409",
+      "subject": "GWS",
+      "number": "409",
+      "title": "Women and Gender in the Middle East",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "GWS 424",
+      "subject": "GWS",
+      "number": "424",
+      "title": "Gender, Crime, and Justice",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "GWS 425",
+      "subject": "GWS",
+      "number": "425",
+      "title": "Sociology of Gender",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "GWS 428",
+      "subject": "GWS",
+      "number": "428",
+      "title": "Asian/Asian American Women in the Global Economy",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "GWS 455",
+      "subject": "GWS",
+      "number": "455",
+      "title": "Advanced Seminar in Feminism and Justice",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "GWS 478",
+      "subject": "GWS",
+      "number": "478",
+      "title": "Women in Chinese History",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "GWS 484",
+      "subject": "GWS",
+      "number": "484",
+      "title": "Topics in the History of Women",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "GWS 485",
+      "subject": "GWS",
+      "number": "485",
+      "title": "Gender and Politics",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "GWS 203",
+      "subject": "GWS",
+      "number": "203",
+      "title": "Introduction to Lesbian, Gay, Bisexual, Transgender, and Queer Studies",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "GWS 252",
+      "subject": "GWS",
+      "number": "252",
+      "title": "Sexuality in America: Historical Perspectives",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "GWS 263",
+      "subject": "GWS",
+      "number": "263",
+      "title": "Asian American Gender and Sexual Diversity",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "GWS 290",
+      "subject": "GWS",
+      "number": "290",
+      "title": "Topics in the Study of Sexuality",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "GWS 345",
+      "subject": "GWS",
+      "number": "345",
+      "title": "Queer Theory",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "GWS 403",
+      "subject": "GWS",
+      "number": "403",
+      "title": "Queer Histories",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "GWS 490",
+      "subject": "GWS",
+      "number": "490",
+      "title": "Advanced Topics in the Study of Sexuality",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ENGL 160",
+      "subject": "ENGL",
+      "number": "160",
+      "title": "Academic Writing I: Writing in Academic and Public Contexts",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "ENGL 161",
+      "subject": "ENGL",
+      "number": "161",
+      "title": "Academic Writing II: Writing for Inquiry and Research",
+      "hours": 3,
+      "required": true
+    }
+  ],
+  "sampleSchedule": [
+    {
+      "year": "First Year",
+      "semester": "Fall Semester",
+      "total_hours": null,
+      "courses": [
+        {
+          "code": "ENGL 160",
+          "title": "Academic Writing I: Writing in Academic and Public Contexts",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "General Education Requirement course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        }
+      ]
+    },
+    {
+      "year": "First Year",
+      "semester": "Spring Semester",
+      "total_hours": null,
+      "courses": [
+        {
+          "code": "ENGL 161",
+          "title": "Academic Writing II: Writing for Inquiry and Research",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "GWS 101",
+          "title": "Gender in Everyday Life b or Global Perspectives on Women and Gender",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "General Education Requirement course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        },
+        {
+          "code": null,
+          "title": "General Education Requirement course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        }
+      ]
+    },
+    {
+      "year": "Second Year",
+      "semester": "Fall Semester",
+      "total_hours": null,
+      "courses": [
+        {
+          "code": "GWS 101",
+          "title": "Gender in Everyday Life b or Global Perspectives on Women and Gender",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "General Education Requirement course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        },
+        {
+          "code": null,
+          "title": "General Education Requirement course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        },
+        {
+          "code": null,
+          "title": "General Education Requirement course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        }
+      ]
+    },
+    {
+      "year": "Second Year",
+      "semester": "Spring Semester",
+      "total_hours": null,
+      "courses": [
+        {
+          "code": "GWS 292",
+          "title": "History and Theories of Feminism",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "General Education Requirement course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        },
+        {
+          "code": null,
+          "title": "General Education Requirement course/Elective",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        },
+        {
+          "code": null,
+          "title": "Electives",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        }
+      ]
+    },
+    {
+      "year": "Third Year",
+      "semester": "Fall Semester",
+      "total_hours": null,
+      "courses": [
+        {
+          "code": null,
+          "title": "GWS Elective",
+          "hours": 2,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": null,
+          "title": "General Education Requirement course/Elective",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        },
+        {
+          "code": null,
+          "title": "Electives",
+          "hours": 6,
+          "isElective": true,
+          "electiveType": "elective_general"
+        }
+      ]
+    },
+    {
+      "year": "Third Year",
+      "semester": "Spring Semester",
+      "total_hours": 15,
+      "courses": [
+        {
+          "code": null,
+          "title": "GWS Elective",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": null,
+          "title": "Electives",
+          "hours": 9,
+          "isElective": true,
+          "electiveType": "elective_general"
+        }
+      ]
+    },
+    {
+      "year": "Fourth Year",
+      "semester": "Fall Semester",
+      "total_hours": 15,
+      "courses": [
+        {
+          "code": null,
+          "title": "GWS Elective",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": null,
+          "title": "Electives",
+          "hours": 9,
+          "isElective": true,
+          "electiveType": "elective_general"
+        }
+      ]
+    },
+    {
+      "year": "Fourth Year",
+      "semester": "Spring Semester",
+      "total_hours": 15,
+      "courses": [
+        {
+          "code": "GWS 390",
+          "title": "Feminism and Social Change",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "GWS Elective",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": null,
+          "title": "Electives",
+          "hours": 9,
+          "isElective": true,
+          "electiveType": "elective_general"
+        }
+      ]
+    }
+  ]
+}

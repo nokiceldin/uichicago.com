@@ -1,0 +1,237 @@
+{
+  "name": "Teaching of German - BA",
+  "college": "Germanic Studies",
+  "department": "Germanic Studies",
+  "url": "https://catalog.uic.edu/ucat/colleges-depts/liberal-arts-sciences/ger/ba-teach-ger/",
+  "totalHours": 120,
+  "summaryRequirements": {
+    "Major Requirements": "34",
+    "Additional Requirements for Teacher Licensure": "25",
+    "General Education and Electives to reach minimum Total Hours": "61",
+    "Total Hours": "120"
+  },
+  "requiredCourses": [
+    {
+      "code": "GER 211",
+      "subject": "GER",
+      "number": "211",
+      "title": "Exploring German-Speaking Cultures",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "GER 300",
+      "subject": "GER",
+      "number": "300",
+      "title": "Writing in the Study of German a",
+      "hours": 1,
+      "required": true
+    },
+    {
+      "code": "GER 401",
+      "subject": "GER",
+      "number": "401",
+      "title": "Research in German Studies",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "ED 200",
+      "subject": "ED",
+      "number": "200",
+      "title": "Education Policy Foundations",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "ED 210",
+      "subject": "ED",
+      "number": "210",
+      "title": "Principles of Learning and Instruction Across the Lifespan",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "ED 425",
+      "subject": "ED",
+      "number": "425",
+      "title": "Curriculum, Instruction, and Assessment in the Urban Secondary Classroom",
+      "hours": 4,
+      "required": true
+    },
+    {
+      "code": "SPED 410",
+      "subject": "SPED",
+      "number": "410",
+      "title": "Exceptional Learners",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "GER 494",
+      "subject": "GER",
+      "number": "494",
+      "title": "Educational Practice with Seminar I",
+      "hours": 6,
+      "required": true
+    },
+    {
+      "code": "GER 495",
+      "subject": "GER",
+      "number": "495",
+      "title": "Educational Practice with Seminar II",
+      "hours": 6,
+      "required": true
+    },
+    {
+      "code": "CI 414",
+      "subject": "CI",
+      "number": "414",
+      "title": "Middle and High School Literacy ( after admission to candidacy ) d",
+      "hours": 3,
+      "required": true
+    }
+  ],
+  "sampleSchedule": [
+    {
+      "year": "First Year",
+      "semester": "Fall Semester",
+      "total_hours": null,
+      "courses": [
+        {
+          "code": null,
+          "title": "Take General Education/Curriculum courses",
+          "hours": 16,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        }
+      ]
+    },
+    {
+      "year": "First Year",
+      "semester": "Spring Semester",
+      "total_hours": null,
+      "courses": [
+        {
+          "code": null,
+          "title": "Take General Education/Curriculum Courses",
+          "hours": 16,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        }
+      ]
+    },
+    {
+      "year": "Second Year",
+      "semester": "Fall Semester",
+      "total_hours": null,
+      "courses": [
+        {
+          "code": null,
+          "title": "Take General Education/Curriculum courses",
+          "hours": 16,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        }
+      ]
+    },
+    {
+      "year": "Second Year",
+      "semester": "Spring Semester",
+      "total_hours": null,
+      "courses": [
+        {
+          "code": "ED 200",
+          "title": "Education Policy Foundations",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "ED 210",
+          "title": "Principles of Learning and Instruction Across the Lifespan",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "Take General Education/Curriculum courses",
+          "hours": 10,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        }
+      ]
+    },
+    {
+      "year": "Third Year",
+      "semester": "Fall Semester",
+      "total_hours": null,
+      "courses": [
+        {
+          "code": "SPED 410",
+          "title": "Exceptional Learners",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "CI 414",
+          "title": "Middle and High School Literacy ( after admission to candidacy ) d",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "Take General Education/Curriculum courses",
+          "hours": 10,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        }
+      ]
+    },
+    {
+      "year": "Third Year",
+      "semester": "Spring Semester",
+      "total_hours": null,
+      "courses": [
+        {
+          "code": "ED 425",
+          "title": "Curriculum, Instruction, and Assessment in the Urban Secondary Classroom ( March 15 ) d",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "Complete General Education/Curriculum courses",
+          "hours": 16,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        }
+      ]
+    },
+    {
+      "year": "Fourth Year",
+      "semester": "Fall Semester",
+      "total_hours": 12,
+      "courses": [
+        {
+          "code": "ED 425",
+          "title": "Curriculum, Instruction, and Assessment in the Urban Secondary Classroom",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "Complete General Education/Curriculum courses",
+          "hours": 8,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        }
+      ]
+    }
+  ]
+}

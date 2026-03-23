@@ -35,6 +35,20 @@ function slugify(s) {
     .replace(/(^-|-$)/g, "");
 }
 
+// Mirrors the SQL backfill logic in the migration.
+// RMP names are "First Last" (no comma), so this just lowercases and strips non-alphanumeric.
+function computeNameNormalized(name) {
+  if (!name) return null;
+  let s = String(name).trim();
+  if (s.includes(",")) {
+    const commaIdx = s.indexOf(",");
+    const last = s.slice(0, commaIdx).trim();
+    const first = s.slice(commaIdx + 1).trim();
+    s = `${first} ${last}`;
+  }
+  return s.toLowerCase().replace(/[^a-z0-9 ]+/g, " ").replace(/\s+/g, " ").trim() || null;
+}
+
 async function main() {
   const raw = fs.readFileSync("./public/data/uic_rmp_professors_fixed.json", "utf8");
   const arr = JSON.parse(raw);
@@ -71,6 +85,7 @@ async function main() {
       where: { slug },
       data: {
         name,
+        nameNormalized: computeNameNormalized(name),
         department,
         school,
         rmpQuality: toFloat(p.quality ?? p.Quality),
@@ -89,6 +104,7 @@ async function main() {
     data: {
       slug,
       name,
+      nameNormalized: computeNameNormalized(name),
       department,
       school,
       rmpQuality: toFloat(p.quality ?? p.Quality),

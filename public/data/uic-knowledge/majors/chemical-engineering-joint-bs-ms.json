@@ -1,0 +1,716 @@
+{
+  "name": "Chemical Engineering - Joint BS/MS",
+  "college": "Chemical Engineering",
+  "department": "Chemical Engineering",
+  "url": "https://catalog.uic.edu/ucat/colleges-depts/engineering/che/bs-ms-chemical-engineering/",
+  "totalHours": 158,
+  "summaryRequirements": {},
+  "requiredCourses": [
+    {
+      "code": "ENGR 100",
+      "subject": "ENGR",
+      "number": "100",
+      "title": "Engineering Success Seminar for Freshmen a",
+      "hours": 1,
+      "required": true
+    },
+    {
+      "code": "ENGL 160",
+      "subject": "ENGL",
+      "number": "160",
+      "title": "Academic Writing I: Writing in Academic and Public Contexts",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "MATH 180",
+      "subject": "MATH",
+      "number": "180",
+      "title": "Calculus I",
+      "hours": 4,
+      "required": true
+    },
+    {
+      "code": "CHEM 116",
+      "subject": "CHEM",
+      "number": "116",
+      "title": "Honors and Majors General and Analytical Chemistry I",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "CS 109",
+      "subject": "CS",
+      "number": "109",
+      "title": "Programming for Engineers with MatLab",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "MATH 181",
+      "subject": "MATH",
+      "number": "181",
+      "title": "Calculus II",
+      "hours": 4,
+      "required": true
+    },
+    {
+      "code": "PHYS 141",
+      "subject": "PHYS",
+      "number": "141",
+      "title": "General Physics I (Mechanics)",
+      "hours": 4,
+      "required": true
+    },
+    {
+      "code": "CHEM 118",
+      "subject": "CHEM",
+      "number": "118",
+      "title": "Honors and Majors General and Analytical Chemistry II",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "CHE 201",
+      "subject": "CHE",
+      "number": "201",
+      "title": "Introduction To Thermodynamics",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "CHEM 232",
+      "subject": "CHEM",
+      "number": "232",
+      "title": "Structure and Function",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "ENGL 161",
+      "subject": "ENGL",
+      "number": "161",
+      "title": "Academic Writing II: Writing for Inquiry and Research",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "MATH 210",
+      "subject": "MATH",
+      "number": "210",
+      "title": "Calculus III",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "PHYS 142",
+      "subject": "PHYS",
+      "number": "142",
+      "title": "General Physics II (Electricity and Magnetism)",
+      "hours": 4,
+      "required": true
+    },
+    {
+      "code": "CHE 205",
+      "subject": "CHE",
+      "number": "205",
+      "title": "Computational Methods in Chemical Engineering",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "CHE 210",
+      "subject": "CHE",
+      "number": "210",
+      "title": "Material and Energy Balances",
+      "hours": 4,
+      "required": true
+    },
+    {
+      "code": "CHE 230",
+      "subject": "CHE",
+      "number": "230",
+      "title": "Molecular Systems in Chemical Engineering",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "CHEM 222",
+      "subject": "CHEM",
+      "number": "222",
+      "title": "Analytical Chemistry",
+      "hours": 4,
+      "required": true
+    },
+    {
+      "code": "MATH 220",
+      "subject": "MATH",
+      "number": "220",
+      "title": "Introduction to Differential Equations",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "CHE 301",
+      "subject": "CHE",
+      "number": "301",
+      "title": "Chemical Engineering Thermodynamics",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "CHE 311",
+      "subject": "CHE",
+      "number": "311",
+      "title": "Transport Phenomena I",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "CHEM 233",
+      "subject": "CHEM",
+      "number": "233",
+      "title": "Synthesis Techniques Laboratory",
+      "hours": 2,
+      "required": true
+    },
+    {
+      "code": "CHEM 234",
+      "subject": "CHEM",
+      "number": "234",
+      "title": "Chemical Synthesis",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "CHEM 342",
+      "subject": "CHEM",
+      "number": "342",
+      "title": "Physical Chemistry I",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "CHE 312",
+      "subject": "CHE",
+      "number": "312",
+      "title": "Transport Phenomena II",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "CHE 313",
+      "subject": "CHE",
+      "number": "313",
+      "title": "Transport Phenomena III",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "CHE 321",
+      "subject": "CHE",
+      "number": "321",
+      "title": "Chemical Reaction Engineering",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "CME 260",
+      "subject": "CME",
+      "number": "260",
+      "title": "Properties of Materials",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "ECE 210",
+      "subject": "ECE",
+      "number": "210",
+      "title": "Electrical Circuit Analysis",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "CHE 330",
+      "subject": "CHE",
+      "number": "330",
+      "title": "Polymer Science",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "CHE 381",
+      "subject": "CHE",
+      "number": "381",
+      "title": "Chemical Engineering Laboratory I",
+      "hours": 2,
+      "required": true
+    },
+    {
+      "code": "CHE 396",
+      "subject": "CHE",
+      "number": "396",
+      "title": "Senior Design I",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "CHE 499",
+      "subject": "CHE",
+      "number": "499",
+      "title": "Professional Development Seminar",
+      "hours": 0,
+      "required": true
+    },
+    {
+      "code": "CHE 595",
+      "subject": "CHE",
+      "number": "595",
+      "title": "Seminar in Chemical Engineering Research ( MS course work )",
+      "hours": 1,
+      "required": true
+    },
+    {
+      "code": "CHE 341",
+      "subject": "CHE",
+      "number": "341",
+      "title": "Chemical Process Control",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "CHE 382",
+      "subject": "CHE",
+      "number": "382",
+      "title": "Chemical Engineering Laboratory II",
+      "hours": 2,
+      "required": true
+    },
+    {
+      "code": "CHE 397",
+      "subject": "CHE",
+      "number": "397",
+      "title": "Senior Design II",
+      "hours": 4,
+      "required": true
+    },
+    {
+      "code": "CHE 520",
+      "subject": "CHE",
+      "number": "520",
+      "title": "Transport Phenomena",
+      "hours": 4,
+      "required": true
+    },
+    {
+      "code": "CHE 527",
+      "subject": "CHE",
+      "number": "527",
+      "title": "Advanced Chemical Reaction Engineering ( MS course work )",
+      "hours": 4,
+      "required": true
+    },
+    {
+      "code": "CHE 597",
+      "subject": "CHE",
+      "number": "597",
+      "title": "Project Research",
+      "hours": null,
+      "required": true
+    }
+  ],
+  "sampleSchedule": [
+    {
+      "year": "First Year Year",
+      "semester": "First Semester",
+      "total_hours": 15,
+      "courses": [
+        {
+          "code": "ENGR 100",
+          "title": "Engineering Success Seminar for Freshmen a",
+          "hours": 1,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "ENGL 160",
+          "title": "Academic Writing I: Writing in Academic and Public Contexts",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "MATH 180",
+          "title": "Calculus I",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "CHEM 122",
+          "title": "Matter and Energy and Foundations of Chemical Inquiry I",
+          "hours": null,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "CHEM 116",
+          "title": "Honors and Majors General and Analytical Chemistry I",
+          "hours": null,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "General Education course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        }
+      ]
+    },
+    {
+      "year": "First Year Year",
+      "semester": "Second Semester",
+      "total_hours": 16,
+      "courses": [
+        {
+          "code": "CS 109",
+          "title": "Programming for Engineers with MatLab",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "MATH 181",
+          "title": "Calculus II",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "PHYS 141",
+          "title": "General Physics I (Mechanics)",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "CHEM 124",
+          "title": "Chemical Dynamics and Foundations of Chemical Inquiry II",
+          "hours": null,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "CHEM 118",
+          "title": "Honors and Majors General and Analytical Chemistry II",
+          "hours": null,
+          "isElective": false,
+          "electiveType": null
+        }
+      ]
+    },
+    {
+      "year": "Second Year Year",
+      "semester": "First Semester",
+      "total_hours": 16,
+      "courses": [
+        {
+          "code": "CHE 201",
+          "title": "Introduction To Thermodynamics",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "CHEM 232",
+          "title": "Structure and Function",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "ENGL 161",
+          "title": "Academic Writing II: Writing for Inquiry and Research",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "MATH 210",
+          "title": "Calculus III",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "PHYS 142",
+          "title": "General Physics II (Electricity and Magnetism)",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        }
+      ]
+    },
+    {
+      "year": "Second Year Year",
+      "semester": "Second Semester",
+      "total_hours": 17,
+      "courses": [
+        {
+          "code": "CHE 205",
+          "title": "Computational Methods in Chemical Engineering",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "CHE 210",
+          "title": "Material and Energy Balances",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "CHE 230",
+          "title": "Molecular Systems in Chemical Engineering",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "CHEM 222",
+          "title": "Analytical Chemistry",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "MATH 220",
+          "title": "Introduction to Differential Equations",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        }
+      ]
+    },
+    {
+      "year": "Third Year Year",
+      "semester": "First Semester",
+      "total_hours": 17,
+      "courses": [
+        {
+          "code": "CHE 301",
+          "title": "Chemical Engineering Thermodynamics",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "CHE 311",
+          "title": "Transport Phenomena I",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "CHEM 233",
+          "title": "Synthesis Techniques Laboratory",
+          "hours": 2,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "CHEM 234",
+          "title": "Chemical Synthesis",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "CHEM 342",
+          "title": "Physical Chemistry I",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "General Education Core Course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        }
+      ]
+    },
+    {
+      "year": "Third Year Year",
+      "semester": "Second Semester",
+      "total_hours": 18,
+      "courses": [
+        {
+          "code": "CHE 312",
+          "title": "Transport Phenomena II",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "CHE 313",
+          "title": "Transport Phenomena III",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "CHE 321",
+          "title": "Chemical Reaction Engineering",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "CME 260",
+          "title": "Properties of Materials",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "General Education Core Course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        },
+        {
+          "code": "ECE 210",
+          "title": "Electrical Circuit Analysis",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        }
+      ]
+    },
+    {
+      "year": "Fourth Year Year",
+      "semester": "First Semester",
+      "total_hours": null,
+      "courses": [
+        {
+          "code": "CHE 330",
+          "title": "Polymer Science",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "CHE 381",
+          "title": "Chemical Engineering Laboratory I",
+          "hours": 2,
+          "isElective": false,
+          "electiveType": null
+        }
+      ]
+    },
+    {
+      "year": "Senior Year",
+      "semester": "Second Semester",
+      "total_hours": null,
+      "courses": [
+        {
+          "code": "CHE 341",
+          "title": "Chemical Process Control",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "CHE 382",
+          "title": "Chemical Engineering Laboratory II",
+          "hours": 2,
+          "isElective": false,
+          "electiveType": null
+        }
+      ]
+    },
+    {
+      "year": "Senior Year",
+      "semester": "First Semester",
+      "total_hours": 13,
+      "courses": [
+        {
+          "code": "CHE 501",
+          "title": "Advanced Thermodynamics or Fluid Phase Equilibria",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "CHE 520",
+          "title": "Transport Phenomena",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "CHE 531",
+          "title": "Numerical Methods in Chemical Engineering or Mathematical Methods in Chemical Engineering",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "CHE 595",
+          "title": "Seminar in Chemical Engineering Research ( MS course work )",
+          "hours": 1,
+          "isElective": false,
+          "electiveType": null
+        }
+      ]
+    },
+    {
+      "year": "Senior Year",
+      "semester": "Second Semester",
+      "total_hours": 13,
+      "courses": [
+        {
+          "code": "CHE 510",
+          "title": "Separation Processes ( MS course work ) or Advanced Mass Transfer or Microhydrodynamics, Diffusion and Membrane Transport",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "CHE 527",
+          "title": "Advanced Chemical Reaction Engineering ( MS course work )",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "CHE 597",
+          "title": "Project Research",
+          "hours": null,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "500-level CHE Elective or equivalent (MS course work)",
+          "hours": null,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": "CHE 595",
+          "title": "Seminar in Chemical Engineering Research",
+          "hours": 1,
+          "isElective": false,
+          "electiveType": null
+        }
+      ]
+    }
+  ]
+}

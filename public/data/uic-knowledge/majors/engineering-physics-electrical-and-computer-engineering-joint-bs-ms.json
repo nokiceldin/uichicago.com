@@ -1,0 +1,555 @@
+{
+  "name": "• Engineering Physics/ Electrical and Computer Engineering - Joint BS/MS",
+  "college": "Electrical and Computer Engineering",
+  "department": "Electrical and Computer Engineering",
+  "url": "https://catalog.uic.edu/ucat/colleges-depts/engineering/ece/joint-bs-engineering-physics-ms-ece/",
+  "totalHours": 156,
+  "summaryRequirements": {},
+  "requiredCourses": [
+    {
+      "code": "MATH 180",
+      "subject": "MATH",
+      "number": "180",
+      "title": "Calculus I",
+      "hours": 4,
+      "required": true
+    },
+    {
+      "code": "CHEM 122",
+      "subject": "CHEM",
+      "number": "122",
+      "title": "Matter and Energy",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "CHEM 123",
+      "subject": "CHEM",
+      "number": "123",
+      "title": "Foundations of Chemical Inquiry I",
+      "hours": 2,
+      "required": true
+    },
+    {
+      "code": "ECE 115",
+      "subject": "ECE",
+      "number": "115",
+      "title": "Introduction to Electrical and Computer Engineering",
+      "hours": 4,
+      "required": true
+    },
+    {
+      "code": "ENGL 160",
+      "subject": "ENGL",
+      "number": "160",
+      "title": "Academic Writing I: Writing in Academic and Public Contexts",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "ENGR 100",
+      "subject": "ENGR",
+      "number": "100",
+      "title": "Engineering Success Seminar for Freshmen a",
+      "hours": 1,
+      "required": true
+    },
+    {
+      "code": "MATH 181",
+      "subject": "MATH",
+      "number": "181",
+      "title": "Calculus II",
+      "hours": 4,
+      "required": true
+    },
+    {
+      "code": "PHYS 141",
+      "subject": "PHYS",
+      "number": "141",
+      "title": "General Physics I (Mechanics)",
+      "hours": 4,
+      "required": true
+    },
+    {
+      "code": "CS 107",
+      "subject": "CS",
+      "number": "107",
+      "title": "Introduction to Computing and Programming",
+      "hours": 4,
+      "required": true
+    },
+    {
+      "code": "ENGL 161",
+      "subject": "ENGL",
+      "number": "161",
+      "title": "Academic Writing II: Writing for Inquiry and Research",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "MATH 210",
+      "subject": "MATH",
+      "number": "210",
+      "title": "Calculus III",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "PHYS 142",
+      "subject": "PHYS",
+      "number": "142",
+      "title": "General Physics II (Electricity and Magnetism)",
+      "hours": 4,
+      "required": true
+    },
+    {
+      "code": "CME 260",
+      "subject": "CME",
+      "number": "260",
+      "title": "Properties of Materials",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "ME 211",
+      "subject": "ME",
+      "number": "211",
+      "title": "Fluid Mechanics I",
+      "hours": 4,
+      "required": true
+    },
+    {
+      "code": "MATH 220",
+      "subject": "MATH",
+      "number": "220",
+      "title": "Introduction to Differential Equations",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "PHYS 240",
+      "subject": "PHYS",
+      "number": "240",
+      "title": "Fundamentals of Modern Quantum Theory",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "PHYS 245",
+      "subject": "PHYS",
+      "number": "245",
+      "title": "Introduction to Vibrations, Waves, and Thermal Physics",
+      "hours": 4,
+      "required": true
+    },
+    {
+      "code": "PHYS 215",
+      "subject": "PHYS",
+      "number": "215",
+      "title": "Computational and Mathematical Methods for the Physical Sciences",
+      "hours": 4,
+      "required": true
+    },
+    {
+      "code": "PHYS 481",
+      "subject": "PHYS",
+      "number": "481",
+      "title": "Modern Experimental Physics I",
+      "hours": 4,
+      "required": true
+    },
+    {
+      "code": "PHYS 499",
+      "subject": "PHYS",
+      "number": "499",
+      "title": "Survey of Physics Problems",
+      "hours": 1,
+      "required": true
+    },
+    {
+      "code": "ECE 225",
+      "subject": "ECE",
+      "number": "225",
+      "title": "Circuit Analysis",
+      "hours": 4,
+      "required": true
+    },
+    {
+      "code": "ECE 346",
+      "subject": "ECE",
+      "number": "346",
+      "title": "Solid State Device Theory",
+      "hours": 4,
+      "required": true
+    },
+    {
+      "code": "PHYS 441",
+      "subject": "PHYS",
+      "number": "441",
+      "title": "Theoretical Mechanics",
+      "hours": 4,
+      "required": true
+    },
+    {
+      "code": "ECE 310",
+      "subject": "ECE",
+      "number": "310",
+      "title": "Discrete and Continuous Signals and Systems",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "ECE 322",
+      "subject": "ECE",
+      "number": "322",
+      "title": "Introduction to Electromagnetics and Applications",
+      "hours": 4,
+      "required": true
+    },
+    {
+      "code": "ECE 440",
+      "subject": "ECE",
+      "number": "440",
+      "title": "Nanoelectronics",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "PHYS 411",
+      "subject": "PHYS",
+      "number": "411",
+      "title": "Quantum Mechanics I",
+      "hours": 4,
+      "required": true
+    },
+    {
+      "code": "ECE 396",
+      "subject": "ECE",
+      "number": "396",
+      "title": "Senior Design I",
+      "hours": 2,
+      "required": true
+    },
+    {
+      "code": "ECE 421",
+      "subject": "ECE",
+      "number": "421",
+      "title": "Introduction to Antennas and Wireless Propagation",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "BME 450",
+      "subject": "BME",
+      "number": "450",
+      "title": "Molecular Biophysics of the Cell",
+      "hours": 4,
+      "required": true
+    },
+    {
+      "code": "ECE 397",
+      "subject": "ECE",
+      "number": "397",
+      "title": "Senior Design II",
+      "hours": 2,
+      "required": true
+    },
+    {
+      "code": "ECE 499",
+      "subject": "ECE",
+      "number": "499",
+      "title": "Professional Development Seminar",
+      "hours": 0,
+      "required": true
+    }
+  ],
+  "sampleSchedule": [
+    {
+      "year": "Freshman Year",
+      "semester": "First Semester",
+      "total_hours": 16,
+      "courses": [
+        {
+          "code": "MATH 180",
+          "title": "Calculus I",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "CHEM 122",
+          "title": "Matter and Energy",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "CHEM 123",
+          "title": "Foundations of Chemical Inquiry I",
+          "hours": 2,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "ECE 115",
+          "title": "Introduction to Electrical and Computer Engineering",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "ENGL 160",
+          "title": "Academic Writing I: Writing in Academic and Public Contexts",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "ENGR 100",
+          "title": "Engineering Success Seminar for Freshmen a",
+          "hours": 1,
+          "isElective": false,
+          "electiveType": null
+        }
+      ]
+    },
+    {
+      "year": "Freshman Year",
+      "semester": "Second Semester",
+      "total_hours": 18,
+      "courses": [
+        {
+          "code": "MATH 181",
+          "title": "Calculus II",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "PHYS 141",
+          "title": "General Physics I (Mechanics)",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "CS 107",
+          "title": "Introduction to Computing and Programming",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "ENGL 161",
+          "title": "Academic Writing II: Writing for Inquiry and Research",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "General Education Core course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        }
+      ]
+    },
+    {
+      "year": "Sophomore Year",
+      "semester": "First Semester",
+      "total_hours": 17,
+      "courses": [
+        {
+          "code": "MATH 210",
+          "title": "Calculus III",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "PHYS 142",
+          "title": "General Physics II (Electricity and Magnetism)",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "CME 260",
+          "title": "Properties of Materials",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "ME 211",
+          "title": "Fluid Mechanics I",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "General Education Core course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        }
+      ]
+    },
+    {
+      "year": "Sophomore Year",
+      "semester": "Second Semester",
+      "total_hours": 16,
+      "courses": [
+        {
+          "code": "MATH 220",
+          "title": "Introduction to Differential Equations",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "PHYS 240",
+          "title": "Fundamentals of Modern Quantum Theory",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "PHYS 245",
+          "title": "Introduction to Vibrations, Waves, and Thermal Physics",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "Math Elective",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "math_elective"
+        },
+        {
+          "code": null,
+          "title": "General Education Core course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        }
+      ]
+    },
+    {
+      "year": "Junior Year",
+      "semester": "First Semester",
+      "total_hours": 17,
+      "courses": [
+        {
+          "code": "PHYS 215",
+          "title": "Computational and Mathematical Methods for the Physical Sciences",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "PHYS 481",
+          "title": "Modern Experimental Physics I",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "PHYS 499",
+          "title": "Survey of Physics Problems",
+          "hours": 1,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "ECE 225",
+          "title": "Circuit Analysis",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "ECE 346",
+          "title": "Solid State Device Theory",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        }
+      ]
+    },
+    {
+      "year": "Junior Year",
+      "semester": "Second Semester",
+      "total_hours": 17,
+      "courses": [
+        {
+          "code": "PHYS 441",
+          "title": "Theoretical Mechanics",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "ECE 310",
+          "title": "Discrete and Continuous Signals and Systems",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "ECE 322",
+          "title": "Introduction to Electromagnetics and Applications",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "ECE 440",
+          "title": "Nanoelectronics",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "General Education Core course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        }
+      ]
+    },
+    {
+      "year": "Senior Year",
+      "semester": "First Semester",
+      "total_hours": null,
+      "courses": [
+        {
+          "code": "PHYS 411",
+          "title": "Quantum Mechanics I",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        }
+      ]
+    },
+    {
+      "year": "Senior Year",
+      "semester": "Second Semester",
+      "total_hours": null,
+      "courses": [
+        {
+          "code": "BME 450",
+          "title": "Molecular Biophysics of the Cell",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        }
+      ]
+    }
+  ]
+}

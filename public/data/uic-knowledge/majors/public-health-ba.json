@@ -1,0 +1,371 @@
+{
+  "name": "Public Health - BA",
+  "college": "Public Health",
+  "department": "Public Health",
+  "url": "https://catalog.uic.edu/ucat/colleges-depts/public-health/ba-pubh/",
+  "totalHours": 120,
+  "summaryRequirements": {
+    "Prerequisite Courses": "24-26",
+    "Additional General Education Requirements": "27",
+    "Major Course Requirements in Public Health": "35",
+    "Selectives and Electives": "32-34",
+    "Total Hours": "120"
+  },
+  "requiredCourses": [
+    {
+      "code": "ENGL 160",
+      "subject": "ENGL",
+      "number": "160",
+      "title": "Academic Writing I: Writing in Academic and Public Contexts",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "ENGL 161",
+      "subject": "ENGL",
+      "number": "161",
+      "title": "Academic Writing II: Writing for Inquiry and Research",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "PUBH 100",
+      "subject": "PUBH",
+      "number": "100",
+      "title": "Health and the Public b, c",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "PUBH 105",
+      "subject": "PUBH",
+      "number": "105",
+      "title": "Foundations for Public Health d",
+      "hours": 2,
+      "required": true
+    },
+    {
+      "code": "PUBH 110",
+      "subject": "PUBH",
+      "number": "110",
+      "title": "Public Health and Global Societies b, e",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "PUBH 120",
+      "subject": "PUBH",
+      "number": "120",
+      "title": "Public Health and the Study of Disease and Epidemics f",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "ANTH 105",
+      "subject": "ANTH",
+      "number": "105",
+      "title": "Human Evolution",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "BIOS 104",
+      "subject": "BIOS",
+      "number": "104",
+      "title": "Biology for Non-majors",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "BIOS 110",
+      "subject": "BIOS",
+      "number": "110",
+      "title": "Biology of Cells and Organisms",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "BIOS 120",
+      "subject": "BIOS",
+      "number": "120",
+      "title": "Biology of Populations and Communities",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "PUBH 300",
+      "subject": "PUBH",
+      "number": "300",
+      "title": "Critical Thinking in Public Health",
+      "hours": 4,
+      "required": true
+    },
+    {
+      "code": "PUBH 301",
+      "subject": "PUBH",
+      "number": "301",
+      "title": "Critical Thinking in Public Health II",
+      "hours": 2,
+      "required": true
+    },
+    {
+      "code": "PUBH 310",
+      "subject": "PUBH",
+      "number": "310",
+      "title": "Public Health and Global Citizenship",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "PUBH 320",
+      "subject": "PUBH",
+      "number": "320",
+      "title": "Ecologies of Health and Modern Life",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "PUBH 330",
+      "subject": "PUBH",
+      "number": "330",
+      "title": "Health Equity and Health Disparities",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "PUBH 340",
+      "subject": "PUBH",
+      "number": "340",
+      "title": "Health Literacy",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "PUBH 350",
+      "subject": "PUBH",
+      "number": "350",
+      "title": "Health Systems, Policy, and Advocacy",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "PUBH 360",
+      "subject": "PUBH",
+      "number": "360",
+      "title": "Local Citizenship and Community Health Initiatives",
+      "hours": 4,
+      "required": true
+    },
+    {
+      "code": "PUBH 370",
+      "subject": "PUBH",
+      "number": "370",
+      "title": "Using the Public Health Toolbox",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "PUBH 410",
+      "subject": "PUBH",
+      "number": "410",
+      "title": "Historical and Contemporary Public Health Challenges I",
+      "hours": 2,
+      "required": true
+    },
+    {
+      "code": "PUBH 411",
+      "subject": "PUBH",
+      "number": "411",
+      "title": "Historical and Contemporary Public Health Challenges II",
+      "hours": 2,
+      "required": true
+    },
+    {
+      "code": "PUBH 397",
+      "subject": "PUBH",
+      "number": "397",
+      "title": "Baccalaureate Project in Public Health",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "PUBH 395",
+      "subject": "PUBH",
+      "number": "395",
+      "title": "Public Health Seminar III",
+      "hours": 1,
+      "required": true
+    },
+    {
+      "code": "PUBH 393",
+      "subject": "PUBH",
+      "number": "393",
+      "title": "Public Health Fieldwork ( may be taken as a selective option any time from this point forward )",
+      "hours": 3,
+      "required": true
+    }
+  ],
+  "sampleSchedule": [
+    {
+      "year": "Junior Year",
+      "semester": "Fall Semester",
+      "total_hours": 14,
+      "courses": [
+        {
+          "code": "PUBH 300",
+          "title": "Critical Thinking in Public Health",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "PUBH 330",
+          "title": "Health Equity and Health Disparities",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "PUBH 350",
+          "title": "Health Systems, Policy, and Advocacy",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "PUBH 395",
+          "title": "Public Health Seminar III",
+          "hours": 1,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "Elective(s)",
+          "hours": 4,
+          "isElective": true,
+          "electiveType": "elective_general"
+        }
+      ]
+    },
+    {
+      "year": "Junior Year",
+      "semester": "Spring Semester",
+      "total_hours": 3,
+      "courses": [
+        {
+          "code": "PUBH 301",
+          "title": "Critical Thinking in Public Health II",
+          "hours": 2,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "PUBH 320",
+          "title": "Ecologies of Health and Modern Life",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "PUBH 340",
+          "title": "Health Literacy",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "PUBH 360",
+          "title": "Local Citizenship and Community Health Initiatives",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "PUBH 395",
+          "title": "Public Health Seminar III",
+          "hours": 1,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "One elective/selective course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": "PUBH 393",
+          "title": "Public Health Fieldwork ( may be taken as a selective option any time from this point forward )",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        }
+      ]
+    },
+    {
+      "year": "Senior Year",
+      "semester": "Fall Semester",
+      "total_hours": 14,
+      "courses": [
+        {
+          "code": "PUBH 310",
+          "title": "Public Health and Global Citizenship",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "PUBH 370",
+          "title": "Using the Public Health Toolbox",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "PUBH 410",
+          "title": "Historical and Contemporary Public Health Challenges I",
+          "hours": 2,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "Two elective/selective courses",
+          "hours": 6,
+          "isElective": true,
+          "electiveType": "elective_general"
+        }
+      ]
+    },
+    {
+      "year": "Senior Year",
+      "semester": "Spring Semester",
+      "total_hours": 14,
+      "courses": [
+        {
+          "code": "PUBH 397",
+          "title": "Baccalaureate Project in Public Health",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "PUBH 411",
+          "title": "Historical and Contemporary Public Health Challenges II",
+          "hours": 2,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "Three elective/selective courses",
+          "hours": 9,
+          "isElective": true,
+          "electiveType": "elective_general"
+        }
+      ]
+    }
+  ]
+}

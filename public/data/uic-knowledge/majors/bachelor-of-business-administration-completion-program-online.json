@@ -1,0 +1,276 @@
+{
+  "name": "Bachelor of Business Administration Completion Program (online)",
+  "college": "Business Administration",
+  "department": "Business Administration",
+  "url": "https://catalog.uic.edu/ucat/colleges-depts/business-administration/bba/online/",
+  "totalHours": 60,
+  "summaryRequirements": {},
+  "requiredCourses": [
+    {
+      "code": "ACTG 210",
+      "subject": "ACTG",
+      "number": "210",
+      "title": "Introduction to Financial Accounting",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "ACTG 211",
+      "subject": "ACTG",
+      "number": "211",
+      "title": "Introduction to Managerial Accounting",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "BA 200",
+      "subject": "BA",
+      "number": "200",
+      "title": "Business Communication",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "BA 300",
+      "subject": "BA",
+      "number": "300",
+      "title": "Advanced Managerial Communications",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "BA 495",
+      "subject": "BA",
+      "number": "495",
+      "title": "Business Strategy",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "FIN 300",
+      "subject": "FIN",
+      "number": "300",
+      "title": "Introduction to Finance",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "IDS 200",
+      "subject": "IDS",
+      "number": "200",
+      "title": "Intro to Management Information Systems",
+      "hours": 4,
+      "required": true
+    },
+    {
+      "code": "IDS 270",
+      "subject": "IDS",
+      "number": "270",
+      "title": "Business Statistics I",
+      "hours": 4,
+      "required": true
+    },
+    {
+      "code": "IDS 355",
+      "subject": "IDS",
+      "number": "355",
+      "title": "Operations Management",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "MGMT 340",
+      "subject": "MGMT",
+      "number": "340",
+      "title": "Introduction to Organizations",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "MGMT 350",
+      "subject": "MGMT",
+      "number": "350",
+      "title": "Business and Its External Environment",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "MKTG 360",
+      "subject": "MKTG",
+      "number": "360",
+      "title": "Introduction to Marketing",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "ECON 220",
+      "subject": "ECON",
+      "number": "220",
+      "title": "Microeconomics: Theory and Applications",
+      "hours": 3,
+      "required": true
+    }
+  ],
+  "sampleSchedule": [
+    {
+      "label": "Junior Year – First Semester",
+      "total_hours": 16,
+      "courses": [
+        {
+          "code": "BA 320",
+          "title": "Civic Engagement",
+          "hours": 1,
+          "isElective": false
+        },
+        {
+          "code": "ECON 121",
+          "title": "Principles of Macroeconomics",
+          "hours": 3,
+          "isElective": false
+        },
+        {
+          "code": "IDS 355",
+          "title": "Operations Management",
+          "hours": 3,
+          "isElective": false
+        },
+        {
+          "code": "MGMT 350",
+          "title": "Business and Its External Environment",
+          "hours": 3,
+          "isElective": false
+        },
+        {
+          "code": null,
+          "title": "Major course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": null,
+          "title": "Advanced Quantitative Skills course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        }
+      ]
+    },
+    {
+      "label": "Junior Year – Second Semester",
+      "total_hours": 15,
+      "courses": [
+        {
+          "code": null,
+          "title": "Major course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": null,
+          "title": "Major course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": null,
+          "title": "Major course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": null,
+          "title": "Major course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": null,
+          "title": "General Education Core course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        }
+      ]
+    },
+    {
+      "label": "Senior Year – First Semester",
+      "total_hours": 15,
+      "courses": [
+        {
+          "code": null,
+          "title": "Major course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": null,
+          "title": "Major course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": null,
+          "title": "General Elective",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": null,
+          "title": "Global Business Perspectives course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "global_biz"
+        },
+        {
+          "code": null,
+          "title": "General Education Core course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        }
+      ]
+    },
+    {
+      "label": "Senior Year – Second Semester",
+      "total_hours": 14,
+      "courses": [
+        {
+          "code": null,
+          "title": "Competitive Strategy course",
+          "hours": 4,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": null,
+          "title": "Major course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": null,
+          "title": "General Elective",
+          "hours": 4,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": null,
+          "title": "General Education Core course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        }
+      ]
+    }
+  ]
+}

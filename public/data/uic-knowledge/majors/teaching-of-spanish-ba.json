@@ -1,0 +1,312 @@
+{
+  "name": "Teaching of Spanish - BA",
+  "college": "Hispanic and Italian Studies",
+  "department": "Hispanic and Italian Studies",
+  "url": "https://catalog.uic.edu/ucat/colleges-depts/liberal-arts-sciences/hisp-ital/ba-teach-span/",
+  "totalHours": 120,
+  "summaryRequirements": {
+    "Major Requirements": "31",
+    "Additional Requirements for Teacher Licensure": "25",
+    "General Education and Electives to reach minimum Total Hours": "64",
+    "Total Hours": "120"
+  },
+  "requiredCourses": [
+    {
+      "code": "SPAN 202",
+      "subject": "SPAN",
+      "number": "202",
+      "title": "Spanish Grammar in Practice",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "SPAN 203",
+      "subject": "SPAN",
+      "number": "203",
+      "title": "Extensive Reading and Writing for Non-Native Speakers of Spanish",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "SPAN 206",
+      "subject": "SPAN",
+      "number": "206",
+      "title": "Introduction to Hispanic Linguistics a",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "SPAN 210",
+      "subject": "SPAN",
+      "number": "210",
+      "title": "Introduction to the Formal Analysis of Hispanic Texts a",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "SPAN 302",
+      "subject": "SPAN",
+      "number": "302",
+      "title": "Exploring Spanish Grammar",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "SPAN 380",
+      "subject": "SPAN",
+      "number": "380",
+      "title": "Professional Development",
+      "hours": 1,
+      "required": true
+    },
+    {
+      "code": "SPAN 448",
+      "subject": "SPAN",
+      "number": "448",
+      "title": "Foundations of Second Language Teaching",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "SPAN 449",
+      "subject": "SPAN",
+      "number": "449",
+      "title": "Teaching Second Language Literacy and Cultural Awareness",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "ED 200",
+      "subject": "ED",
+      "number": "200",
+      "title": "Education Policy Foundations",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "ED 210",
+      "subject": "ED",
+      "number": "210",
+      "title": "Principles of Learning and Instruction Across the Lifespan",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "ED 425",
+      "subject": "ED",
+      "number": "425",
+      "title": "Curriculum, Instruction, and Assessment in the Urban Secondary Classroom",
+      "hours": 4,
+      "required": true
+    },
+    {
+      "code": "SPED 410",
+      "subject": "SPED",
+      "number": "410",
+      "title": "Exceptional Learners",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "SPAN 451",
+      "subject": "SPAN",
+      "number": "451",
+      "title": "Educational Practice with Seminar I",
+      "hours": 6,
+      "required": true
+    },
+    {
+      "code": "SPAN 452",
+      "subject": "SPAN",
+      "number": "452",
+      "title": "Educational Practice with Seminar II",
+      "hours": 6,
+      "required": true
+    },
+    {
+      "code": "CI 414",
+      "subject": "CI",
+      "number": "414",
+      "title": "Middle and High School Literacy ( after admission to candidacy ) d",
+      "hours": 3,
+      "required": true
+    }
+  ],
+  "sampleSchedule": [
+    {
+      "year": "First Year",
+      "semester": "Fall Semester",
+      "total_hours": null,
+      "courses": [
+        {
+          "code": null,
+          "title": "Take General Education/Curriculum courses",
+          "hours": 16,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        }
+      ]
+    },
+    {
+      "year": "First Year",
+      "semester": "Spring Semester",
+      "total_hours": null,
+      "courses": [
+        {
+          "code": null,
+          "title": "Take General Education/Curriculum Courses",
+          "hours": 16,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        }
+      ]
+    },
+    {
+      "year": "Second Year",
+      "semester": "Fall Semester",
+      "total_hours": null,
+      "courses": [
+        {
+          "code": null,
+          "title": "Take General Education/Curriculum courses",
+          "hours": 16,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        }
+      ]
+    },
+    {
+      "year": "Second Year",
+      "semester": "Spring Semester",
+      "total_hours": null,
+      "courses": [
+        {
+          "code": "ED 200",
+          "title": "Education Policy Foundations",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "ED 210",
+          "title": "Principles of Learning and Instruction Across the Lifespan",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "Take General Education/Curriculum courses",
+          "hours": 10,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        }
+      ]
+    },
+    {
+      "year": "Third Year",
+      "semester": "Fall Semester",
+      "total_hours": null,
+      "courses": [
+        {
+          "code": "SPED 410",
+          "title": "Exceptional Learners",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "CI 414",
+          "title": "Middle and High School Literacy ( after admission to candidacy ) d",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "Take General Education/Curriculum courses",
+          "hours": 10,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        }
+      ]
+    },
+    {
+      "year": "Third Year",
+      "semester": "Spring Semester",
+      "total_hours": null,
+      "courses": [
+        {
+          "code": "ED 425",
+          "title": "Curriculum, Instruction, and Assessment in the Urban Secondary Classroom ( March 15 ) d",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "Complete General Education/Curriculum courses",
+          "hours": 16,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        }
+      ]
+    },
+    {
+      "year": "Fourth Year",
+      "semester": "Fall Semester",
+      "total_hours": 12,
+      "courses": [
+        {
+          "code": "ED 425",
+          "title": "Curriculum, Instruction, and Assessment in the Urban Secondary Classroom",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "Complete General Education/Curriculum courses",
+          "hours": 8,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        }
+      ]
+    },
+    {
+      "year": "Fourth Year",
+      "semester": "Spring Semester",
+      "total_hours": 12,
+      "courses": [
+        {
+          "code": "ED 200",
+          "title": "Education Policy Foundations",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "ED 210",
+          "title": "Principles of Learning and Instruction Across the Lifespan",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "SPED 410",
+          "title": "Exceptional Learners",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "ED 425",
+          "title": "Curriculum, Instruction, and Assessment in the Urban Secondary Classroom",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        }
+      ]
+    }
+  ]
+}

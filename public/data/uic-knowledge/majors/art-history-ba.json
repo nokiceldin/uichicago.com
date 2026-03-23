@@ -1,0 +1,305 @@
+{
+  "name": "Art History - BA",
+  "college": "Art History",
+  "department": "Art History",
+  "url": "https://catalog.uic.edu/ucat/colleges-depts/architecture-design-arts/art-ah/ba-ah/",
+  "totalHours": 120,
+  "summaryRequirements": {
+    "General Education and Foundation Courses": "24-40",
+    "Major Course Requirements": "37-39",
+    "Electives": "40-59",
+    "DLG 120": "1",
+    "Total Hours": "120"
+  },
+  "requiredCourses": [
+    {
+      "code": "DLG 120",
+      "subject": "DLG",
+      "number": "120",
+      "title": "UIC First-Year Dialogue Seminar (Required of new freshmen only) a",
+      "hours": 1,
+      "required": true
+    },
+    {
+      "code": "ENGL 160",
+      "subject": "ENGL",
+      "number": "160",
+      "title": "Academic Writing I: Writing in Academic and Public Contexts",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "ENGL 161",
+      "subject": "ENGL",
+      "number": "161",
+      "title": "Academic Writing II: Writing for Inquiry and Research",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "AH 100",
+      "subject": "AH",
+      "number": "100",
+      "title": "Introduction to Art and Art History a",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "AH 101",
+      "subject": "AH",
+      "number": "101",
+      "title": "The Naked and the Nude: Studies in Visual Literacy b",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "AH 110",
+      "subject": "AH",
+      "number": "110",
+      "title": "World History of Art and the Built Environment I a",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "AH 111",
+      "subject": "AH",
+      "number": "111",
+      "title": "World History of Art and the Built Environment II a",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "AH 122",
+      "subject": "AH",
+      "number": "122",
+      "title": "History of Chicago Architecture a,c",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "AH 125",
+      "subject": "AH",
+      "number": "125",
+      "title": "Introduction to the Art and Architecture of Asia a,d",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "AH 130",
+      "subject": "AH",
+      "number": "130",
+      "title": "Photography in History c",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "AH 160",
+      "subject": "AH",
+      "number": "160",
+      "title": "Trends in International Contemporary Art Since 1960 a",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "AH 180",
+      "subject": "AH",
+      "number": "180",
+      "title": "Intro to Museum & Exhibition a,b",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "AH 301",
+      "subject": "AH",
+      "number": "301",
+      "title": "Theories and Methods in Art History",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "AH 303",
+      "subject": "AH",
+      "number": "303",
+      "title": "Writing in Art History",
+      "hours": 1,
+      "required": true
+    }
+  ],
+  "sampleSchedule": [
+    {
+      "year": "Freshman Year",
+      "semester": "Fall Semester",
+      "total_hours": null,
+      "courses": [
+        {
+          "code": "ENGL 160",
+          "title": "Academic Writing I: Writing in Academic and Public Contexts",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "General Education Core course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        }
+      ]
+    },
+    {
+      "year": "Freshman Year",
+      "semester": "Spring Semester",
+      "total_hours": 14,
+      "courses": [
+        {
+          "code": "ENGL 161",
+          "title": "Academic Writing II: Writing for Inquiry and Research",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "DLG 120",
+          "title": "UIC First-Year Dialogue Seminar ( Required of new freshmen only )",
+          "hours": 1,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "General Education Core course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        }
+      ]
+    },
+    {
+      "year": "Sophomore Year",
+      "semester": "Fall Semester",
+      "total_hours": 15,
+      "courses": [
+        {
+          "code": "AH 301",
+          "title": "Theories and Methods in Art History",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "AH 303",
+          "title": "Writing in Art History",
+          "hours": 1,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "Elective that meets Distribution and Specialization requirement",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": null,
+          "title": "General Education Core course",
+          "hours": 4,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        }
+      ]
+    },
+    {
+      "year": "Sophomore Year",
+      "semester": "Spring Semester",
+      "total_hours": 16,
+      "courses": [
+        {
+          "code": null,
+          "title": "Elective that meets Distribution and Specialization requirement in the major",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": null,
+          "title": "Elective that meets Distribution and Specialization requirement in the major",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": null,
+          "title": "General Education Core courses",
+          "hours": 6,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        }
+      ]
+    },
+    {
+      "year": "Junior Year",
+      "semester": "Fall Semester",
+      "total_hours": 16,
+      "courses": [
+        {
+          "code": null,
+          "title": "Elective that meets Distribution and Specialization requirement in the major",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": null,
+          "title": "General Education Core course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        }
+      ]
+    },
+    {
+      "year": "Junior Year",
+      "semester": "Spring Semester",
+      "total_hours": 16,
+      "courses": [
+        {
+          "code": null,
+          "title": "Electives",
+          "hours": 13,
+          "isElective": true,
+          "electiveType": "elective_general"
+        }
+      ]
+    },
+    {
+      "year": "Senior Year",
+      "semester": "Fall Semester",
+      "total_hours": 15,
+      "courses": [
+        {
+          "code": null,
+          "title": "Electives",
+          "hours": 12,
+          "isElective": true,
+          "electiveType": "elective_general"
+        }
+      ]
+    },
+    {
+      "year": "Senior Year",
+      "semester": "Spring Semester",
+      "total_hours": 15,
+      "courses": [
+        {
+          "code": null,
+          "title": "Electives",
+          "hours": 15,
+          "isElective": true,
+          "electiveType": "elective_general"
+        }
+      ]
+    }
+  ]
+}

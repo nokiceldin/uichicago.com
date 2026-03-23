@@ -1,0 +1,667 @@
+{
+  "name": "Classical Studies - BA with a Major",
+  "college": "Classics and Mediterranean Studies",
+  "department": "Classics and Mediterranean Studies",
+  "url": "https://catalog.uic.edu/ucat/colleges-depts/liberal-arts-sciences/cl/ba/",
+  "totalHours": 120,
+  "summaryRequirements": {
+    "Major Requirements": "28-31",
+    "General Education and Electives to reach minimum Total Hours": "89-92",
+    "Total Hours": "120"
+  },
+  "requiredCourses": [
+    {
+      "code": "CL 102",
+      "subject": "CL",
+      "number": "102",
+      "title": "Introduction to Classical Literature b,c",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "CL 208",
+      "subject": "CL",
+      "number": "208",
+      "title": "Classical Mythology c,d",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "CL 103",
+      "subject": "CL",
+      "number": "103",
+      "title": "Introduction to Classical and Mediterranean Archaeology b,c",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "CL 204",
+      "subject": "CL",
+      "number": "204",
+      "title": "Greek Art and Archaeology b,c",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "CL 205",
+      "subject": "CL",
+      "number": "205",
+      "title": "Roman Art and Archaeology b,c",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "CL 100",
+      "subject": "CL",
+      "number": "100",
+      "title": "Greek Civilization b,c",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "CL 202",
+      "subject": "CL",
+      "number": "202",
+      "title": "Ancient Greece c,e",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "CL 101",
+      "subject": "CL",
+      "number": "101",
+      "title": "Roman Civilization c",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "CL 203",
+      "subject": "CL",
+      "number": "203",
+      "title": "Ancient Rome c,e",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "CL 398",
+      "subject": "CL",
+      "number": "398",
+      "title": "Advanced Topics in Classical Civilization f",
+      "hours": 13,
+      "required": true
+    },
+    {
+      "code": "ARAB 104",
+      "subject": "ARAB",
+      "number": "104",
+      "title": "Intermediate Arabic II",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "GKM 104",
+      "subject": "GKM",
+      "number": "104",
+      "title": "Intermediate Modern Greek II",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "LAT 104",
+      "subject": "LAT",
+      "number": "104",
+      "title": "Intermediate Latin II",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "HIST 202",
+      "subject": "HIST",
+      "number": "202",
+      "title": "Ancient Greece",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "HIST 203",
+      "subject": "HIST",
+      "number": "203",
+      "title": "Ancient Rome",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "HIST 401",
+      "subject": "HIST",
+      "number": "401",
+      "title": "Topics in Greek History",
+      "hours": 34,
+      "required": true
+    },
+    {
+      "code": "PHIL 120",
+      "subject": "PHIL",
+      "number": "120",
+      "title": "Introduction to Ancient Philosophy",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "PHIL 220",
+      "subject": "PHIL",
+      "number": "220",
+      "title": "Ancient Philosophy I: Plato and His Predecessors",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "PHIL 221",
+      "subject": "PHIL",
+      "number": "221",
+      "title": "Ancient Philosophy II: Aristotle and His Successors",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "ENGL 160",
+      "subject": "ENGL",
+      "number": "160",
+      "title": "Academic Writing I: Writing in Academic and Public Contexts",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "ENGL 161",
+      "subject": "ENGL",
+      "number": "161",
+      "title": "Academic Writing II: Writing for Inquiry and Research",
+      "hours": 3,
+      "required": true
+    }
+  ],
+  "sampleSchedule": [
+    {
+      "year": "First Year",
+      "semester": "Fall Semester",
+      "total_hours": null,
+      "courses": [
+        {
+          "code": "ENGL 160",
+          "title": "Academic Writing I: Writing in Academic and Public Contexts",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "LAT 101",
+          "title": "Elementary Latin I or Elementary Arabic I or Elementary Modern Greek I",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "CL 100",
+          "title": "Greek Civilization a or Ancient Greece",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        }
+      ]
+    },
+    {
+      "year": "First Year",
+      "semester": "Spring Semester",
+      "total_hours": null,
+      "courses": [
+        {
+          "code": "ENGL 161",
+          "title": "Academic Writing II: Writing for Inquiry and Research",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "LAT 102",
+          "title": "Elementary Latin II or Elementary Arabic II or Elementary Modern Greek II",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "CL 101",
+          "title": "Roman Civilization or Ancient Rome",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "General Education Requirement course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        },
+        {
+          "code": null,
+          "title": "General Education Requirement course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        }
+      ]
+    },
+    {
+      "year": "Second Year",
+      "semester": "Fall Semester",
+      "total_hours": 16,
+      "courses": [
+        {
+          "code": "CL 102",
+          "title": "Introduction to Classical Literature or Classical Mythology",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "CL 103",
+          "title": "Introduction to Classical and Mediterranean Archaeology or Greek Art and Archaeology or Roman Art and Archaeology",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "LAT 103",
+          "title": "Intermediate Latin I or Intermediate Arabic I or Intermediate Modern Greek I",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "General Education Requirement course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        },
+        {
+          "code": null,
+          "title": "General Education Requirement course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        }
+      ]
+    },
+    {
+      "year": "Second Year",
+      "semester": "Spring Semester",
+      "total_hours": null,
+      "courses": [
+        {
+          "code": null,
+          "title": "Major Elective b",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": "LAT 104",
+          "title": "Intermediate Latin II or Intermediate Arabic II or Intermediate Modern Greek II",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "General Education Requirement course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        },
+        {
+          "code": null,
+          "title": "General Education Requirement course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        }
+      ]
+    },
+    {
+      "year": "Third Year",
+      "semester": "Fall Semester",
+      "total_hours": null,
+      "courses": [
+        {
+          "code": null,
+          "title": "Major Elective b",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": null,
+          "title": "General Education Requirement course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        },
+        {
+          "code": null,
+          "title": "General Education Requirement course/Elective",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        },
+        {
+          "code": null,
+          "title": "Electives",
+          "hours": 6,
+          "isElective": true,
+          "electiveType": "elective_general"
+        }
+      ]
+    },
+    {
+      "year": "Third Year",
+      "semester": "Spring Semester",
+      "total_hours": null,
+      "courses": [
+        {
+          "code": null,
+          "title": "Major Elective b",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": null,
+          "title": "General Education Requirement course/Elective",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        },
+        {
+          "code": null,
+          "title": "Electives",
+          "hours": 9,
+          "isElective": true,
+          "electiveType": "elective_general"
+        }
+      ]
+    },
+    {
+      "year": "Fourth Year",
+      "semester": "Fall Semester",
+      "total_hours": 15,
+      "courses": [
+        {
+          "code": null,
+          "title": "Major Elective b",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": null,
+          "title": "Electives",
+          "hours": 12,
+          "isElective": true,
+          "electiveType": "elective_general"
+        }
+      ]
+    },
+    {
+      "year": "Fourth Year",
+      "semester": "Spring Semester",
+      "total_hours": 15,
+      "courses": [
+        {
+          "code": "CL 398",
+          "title": "Advanced Topics in Classical Civilization",
+          "hours": 1,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "Electives",
+          "hours": 12,
+          "isElective": true,
+          "electiveType": "elective_general"
+        }
+      ]
+    },
+    {
+      "year": "First Year",
+      "semester": "Fall Semester",
+      "total_hours": null,
+      "courses": [
+        {
+          "code": "ENGL 160",
+          "title": "Academic Writing I: Writing in Academic and Public Contexts",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "CL 100",
+          "title": "Greek Civilization a or Ancient Greece",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        }
+      ]
+    },
+    {
+      "year": "First Year",
+      "semester": "Spring Semester",
+      "total_hours": null,
+      "courses": [
+        {
+          "code": "ENGL 161",
+          "title": "Academic Writing II: Writing for Inquiry and Research",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "CL 101",
+          "title": "Roman Civilization or Ancient Rome",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "General Education Requirement course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        },
+        {
+          "code": null,
+          "title": "General Education Requirement course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        }
+      ]
+    },
+    {
+      "year": "Second Year",
+      "semester": "Fall Semester",
+      "total_hours": 16,
+      "courses": [
+        {
+          "code": "CL 102",
+          "title": "Introduction to Classical Literature or Classical Mythology",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "CL 103",
+          "title": "Introduction to Classical and Mediterranean Archaeology or Greek Art and Archaeology or Roman Art and Archaeology",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "General Education Requirement course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        },
+        {
+          "code": null,
+          "title": "General Education Requirement course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        }
+      ]
+    },
+    {
+      "year": "Second Year",
+      "semester": "Spring Semester",
+      "total_hours": null,
+      "courses": [
+        {
+          "code": null,
+          "title": "Major Elective b",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": null,
+          "title": "Major Elective b",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": null,
+          "title": "General Education Requirement course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        },
+        {
+          "code": null,
+          "title": "General Education Requirement course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        }
+      ]
+    },
+    {
+      "year": "Third Year",
+      "semester": "Fall Semester",
+      "total_hours": null,
+      "courses": [
+        {
+          "code": null,
+          "title": "Major Elective b",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": null,
+          "title": "General Education Requirement course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        },
+        {
+          "code": null,
+          "title": "General Education Requirement course/Elective",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        },
+        {
+          "code": null,
+          "title": "Electives",
+          "hours": 6,
+          "isElective": true,
+          "electiveType": "elective_general"
+        }
+      ]
+    },
+    {
+      "year": "Third Year",
+      "semester": "Spring Semester",
+      "total_hours": null,
+      "courses": [
+        {
+          "code": null,
+          "title": "Major Elective b",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": null,
+          "title": "General Education Requirement course/Elective",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        },
+        {
+          "code": null,
+          "title": "Electives",
+          "hours": 9,
+          "isElective": true,
+          "electiveType": "elective_general"
+        }
+      ]
+    },
+    {
+      "year": "Fourth Year",
+      "semester": "Fall Semester",
+      "total_hours": 15,
+      "courses": [
+        {
+          "code": null,
+          "title": "Major Elective b",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": null,
+          "title": "Electives",
+          "hours": 12,
+          "isElective": true,
+          "electiveType": "elective_general"
+        }
+      ]
+    },
+    {
+      "year": "Fourth Year",
+      "semester": "Spring Semester",
+      "total_hours": 12,
+      "courses": [
+        {
+          "code": "CL 398",
+          "title": "Advanced Topics in Classical Civilization",
+          "hours": 1,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "Electives",
+          "hours": 9,
+          "isElective": true,
+          "electiveType": "elective_general"
+        }
+      ]
+    }
+  ]
+}

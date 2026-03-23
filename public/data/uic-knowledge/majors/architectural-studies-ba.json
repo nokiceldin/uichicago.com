@@ -1,0 +1,305 @@
+{
+  "name": "Architectural Studies - BA",
+  "college": "Architecture",
+  "department": "Architecture",
+  "url": "https://catalog.uic.edu/ucat/colleges-depts/architecture-design-arts/arch/ba-arch/",
+  "totalHours": 120,
+  "summaryRequirements": {
+    "Pre-Architectural Studies": "60",
+    "Architectural Studies": "60",
+    "Total Hours": "120"
+  },
+  "requiredCourses": [
+    {
+      "code": "ENGL 160",
+      "subject": "ENGL",
+      "number": "160",
+      "title": "Academic Writing I: Writing in Academic and Public Contexts",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "ENGL 161",
+      "subject": "ENGL",
+      "number": "161",
+      "title": "Academic Writing II: Writing for Inquiry and Research",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "AH 110",
+      "subject": "AH",
+      "number": "110",
+      "title": "World History of Art and the Built Environment I a",
+      "hours": 4,
+      "required": true
+    },
+    {
+      "code": "AH 111",
+      "subject": "AH",
+      "number": "111",
+      "title": "World History of Art and the Built Environment II a",
+      "hours": 4,
+      "required": true
+    },
+    {
+      "code": "ARCH 200",
+      "subject": "ARCH",
+      "number": "200",
+      "title": "Architecture and Society a,c",
+      "hours": 4,
+      "required": true
+    },
+    {
+      "code": "MATH 121",
+      "subject": "MATH",
+      "number": "121",
+      "title": "Precalculus Mathematics",
+      "hours": 5,
+      "required": true
+    },
+    {
+      "code": "ARCH 105",
+      "subject": "ARCH",
+      "number": "105",
+      "title": "Architectural Studio 1",
+      "hours": 5,
+      "required": true
+    },
+    {
+      "code": "ARCH 106",
+      "subject": "ARCH",
+      "number": "106",
+      "title": "Architectural Studio 2",
+      "hours": 5,
+      "required": true
+    },
+    {
+      "code": "ARCH 151",
+      "subject": "ARCH",
+      "number": "151",
+      "title": "Architecture at Chicago",
+      "hours": 2,
+      "required": true
+    },
+    {
+      "code": "ARCH 251",
+      "subject": "ARCH",
+      "number": "251",
+      "title": "Architectural Analysis",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "ARCH 252",
+      "subject": "ARCH",
+      "number": "252",
+      "title": "Modern Architecture",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "ARCH 371",
+      "subject": "ARCH",
+      "number": "371",
+      "title": "Architectural Theory 1",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "ARCH 372",
+      "subject": "ARCH",
+      "number": "372",
+      "title": "Architectural Theory 2",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "ARCH 414",
+      "subject": "ARCH",
+      "number": "414",
+      "title": "Contemporary Practices",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "ARCH 440",
+      "subject": "ARCH",
+      "number": "440",
+      "title": "Digital Design and Fabrication",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "ARCH 499",
+      "subject": "ARCH",
+      "number": "499",
+      "title": "Special Topics",
+      "hours": 3,
+      "required": true
+    }
+  ],
+  "sampleSchedule": [
+    {
+      "year": "Junior Year",
+      "semester": "Fall Semester",
+      "total_hours": 16,
+      "courses": [
+        {
+          "code": "ARCH 105",
+          "title": "Architectural Studio 1",
+          "hours": 5,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "ARCH 151",
+          "title": "Architecture at Chicago",
+          "hours": 2,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "ARCH 251",
+          "title": "Architectural Analysis",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "Art History Elective (200-level or higher)",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": null,
+          "title": "English Elective",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        }
+      ]
+    },
+    {
+      "year": "Junior Year",
+      "semester": "Spring Semester",
+      "total_hours": 14,
+      "courses": [
+        {
+          "code": "ARCH 106",
+          "title": "Architectural Studio 2",
+          "hours": 5,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "ARCH 252",
+          "title": "Modern Architecture",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "Arts Elective (choose any art, design, music, or theatre course)",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": null,
+          "title": "University Elective (choose any course at UIC) a",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        }
+      ]
+    },
+    {
+      "year": "Senior Year",
+      "semester": "Fall Semester",
+      "total_hours": 15,
+      "courses": [
+        {
+          "code": "ARCH 371",
+          "title": "Architectural Theory 1",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "ARCH 414",
+          "title": "Contemporary Practices",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "ARCH 440",
+          "title": "Digital Design and Fabrication",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "University Elective (choose any course at UIC) a",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": null,
+          "title": "University Elective (choose any course at UIC) a",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        }
+      ]
+    },
+    {
+      "year": "Senior Year",
+      "semester": "Spring Semester",
+      "total_hours": 15,
+      "courses": [
+        {
+          "code": "ARCH 372",
+          "title": "Architectural Theory 2",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "ARCH 499",
+          "title": "Special Topics",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "Art History Elective (200-level or higher) a",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": null,
+          "title": "LAS Elective (choose any Liberal Arts and Sciences course)",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": null,
+          "title": "University Elective (choose any course at UIC) a",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        }
+      ]
+    }
+  ]
+}

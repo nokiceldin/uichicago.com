@@ -1,0 +1,633 @@
+{
+  "name": "Industrial Engineering - BS",
+  "college": "Mechanical and Industrial Engineering",
+  "department": "Mechanical and Industrial Engineering",
+  "url": "https://catalog.uic.edu/ucat/colleges-depts/engineering/mie/bs-ie/",
+  "totalHours": 128,
+  "summaryRequirements": {
+    "Nonengineering and General Education Requirements": "56",
+    "Required in the College of Engineering": "57",
+    "Technical Electives": "12",
+    "Electives outside the Major Rubric": "3",
+    "Total Hours": "128"
+  },
+  "requiredCourses": [
+    {
+      "code": "ENGL 160",
+      "subject": "ENGL",
+      "number": "160",
+      "title": "Academic Writing I: Writing in Academic and Public Contexts",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "ENGL 161",
+      "subject": "ENGL",
+      "number": "161",
+      "title": "Academic Writing II: Writing for Inquiry and Research",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "MATH 180",
+      "subject": "MATH",
+      "number": "180",
+      "title": "Calculus I b",
+      "hours": 4,
+      "required": true
+    },
+    {
+      "code": "MATH 181",
+      "subject": "MATH",
+      "number": "181",
+      "title": "Calculus II b",
+      "hours": 4,
+      "required": true
+    },
+    {
+      "code": "MATH 210",
+      "subject": "MATH",
+      "number": "210",
+      "title": "Calculus III b",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "MATH 218",
+      "subject": "MATH",
+      "number": "218",
+      "title": "Applied Linear Algebra",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "MATH 220",
+      "subject": "MATH",
+      "number": "220",
+      "title": "Introduction to Differential Equations",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "CHEM 122",
+      "subject": "CHEM",
+      "number": "122",
+      "title": "Matter and Energy b,c",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "CHEM 123",
+      "subject": "CHEM",
+      "number": "123",
+      "title": "Foundations of Chemical Inquiry I b,c",
+      "hours": 2,
+      "required": true
+    },
+    {
+      "code": "PHYS 141",
+      "subject": "PHYS",
+      "number": "141",
+      "title": "General Physics I (Mechanics) b",
+      "hours": 4,
+      "required": true
+    },
+    {
+      "code": "PHYS 142",
+      "subject": "PHYS",
+      "number": "142",
+      "title": "General Physics II (Electricity and Magnetism) b",
+      "hours": 4,
+      "required": true
+    },
+    {
+      "code": "MGMT 340",
+      "subject": "MGMT",
+      "number": "340",
+      "title": "Introduction to Organizations",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "STAT 362",
+      "subject": "STAT",
+      "number": "362",
+      "title": "Elements of Statistical Computing",
+      "hours": 2,
+      "required": true
+    },
+    {
+      "code": "ENGR 100",
+      "subject": "ENGR",
+      "number": "100",
+      "title": "Engineering Success Seminar for Freshmen a",
+      "hours": 1,
+      "required": true
+    },
+    {
+      "code": "CME 201",
+      "subject": "CME",
+      "number": "201",
+      "title": "Statics",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "CME 203",
+      "subject": "CME",
+      "number": "203",
+      "title": "Strength of Materials",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "CS 109",
+      "subject": "CS",
+      "number": "109",
+      "title": "Programming for Engineers with MatLab",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "ECE 210",
+      "subject": "ECE",
+      "number": "210",
+      "title": "Electrical Circuit Analysis",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "IE 201",
+      "subject": "IE",
+      "number": "201",
+      "title": "Financial Engineering",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "IE 342",
+      "subject": "IE",
+      "number": "342",
+      "title": "Probability and Statistics for Engineers",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "IE 345",
+      "subject": "IE",
+      "number": "345",
+      "title": "Regression Applications and Forecasting in Engineering",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "IE 348",
+      "subject": "IE",
+      "number": "348",
+      "title": "Artificial Intelligence and Data Mining for Engineering Applications",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "IE 365",
+      "subject": "IE",
+      "number": "365",
+      "title": "Work Productivity Analysis",
+      "hours": 4,
+      "required": true
+    },
+    {
+      "code": "IE 380",
+      "subject": "IE",
+      "number": "380",
+      "title": "Manufacturing Process Principles",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "IE 396",
+      "subject": "IE",
+      "number": "396",
+      "title": "Senior Design I b",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "IE 397",
+      "subject": "IE",
+      "number": "397",
+      "title": "Senior Design Il b",
+      "hours": 2,
+      "required": true
+    },
+    {
+      "code": "IE 442",
+      "subject": "IE",
+      "number": "442",
+      "title": "Design and Analysis of Experiments in Engineering",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "IE 463",
+      "subject": "IE",
+      "number": "463",
+      "title": "Manufacturing Facilities Design and Material Handling",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "IE 466",
+      "subject": "IE",
+      "number": "466",
+      "title": "Production Operation Analytics and Inventory Control",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "IE 467",
+      "subject": "IE",
+      "number": "467",
+      "title": "Discrete Event Computer Simulation Application",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "IE 471",
+      "subject": "IE",
+      "number": "471",
+      "title": "Operations Research I",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "IE 472",
+      "subject": "IE",
+      "number": "472",
+      "title": "Operations Research II",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "ME 250",
+      "subject": "ME",
+      "number": "250",
+      "title": "Introduction to Engineering Design and Graphics",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "IE 499",
+      "subject": "IE",
+      "number": "499",
+      "title": "Professional Development Seminar",
+      "hours": 0,
+      "required": true
+    },
+    {
+      "code": "IE 392",
+      "subject": "IE",
+      "number": "392",
+      "title": "Undergraduate Research",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ME 205",
+      "subject": "ME",
+      "number": "205",
+      "title": "Introduction to Thermodynamics",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ME 210",
+      "subject": "ME",
+      "number": "210",
+      "title": "Engineering Dynamics",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ME 347",
+      "subject": "ME",
+      "number": "347",
+      "title": "Engineering Design and Graphics with Computer-Aided Design and Simulation",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "IE 446",
+      "subject": "IE",
+      "number": "446",
+      "title": "Advanced Quality Control and Reliability",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "IE 461",
+      "subject": "IE",
+      "number": "461",
+      "title": "Safety Engineering",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "IE 473",
+      "subject": "IE",
+      "number": "473",
+      "title": "Stochastic Processes and Queuing Models",
+      "hours": null,
+      "required": true
+    }
+  ],
+  "sampleSchedule": [
+    {
+      "year": "Freshman Year",
+      "semester": "First Semester",
+      "total_hours": 18,
+      "courses": [
+        {
+          "code": "MATH 180",
+          "title": "Calculus I",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "CHEM 122",
+          "title": "Matter and Energy",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "CHEM 123",
+          "title": "Foundations of Chemical Inquiry I",
+          "hours": 2,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "ENGL 160",
+          "title": "Academic Writing I: Writing in Academic and Public Contexts",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "ENGR 100",
+          "title": "Engineering Success Seminar for Freshmen a",
+          "hours": 1,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "ME 250",
+          "title": "Introduction to Engineering Design and Graphics",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "General Education Core course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        }
+      ]
+    },
+    {
+      "year": "Freshman Year",
+      "semester": "Second Semester",
+      "total_hours": 17,
+      "courses": [
+        {
+          "code": "MATH 181",
+          "title": "Calculus II",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "PHYS 141",
+          "title": "General Physics I (Mechanics)",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "ENGL 161",
+          "title": "Academic Writing II: Writing for Inquiry and Research",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "CS 109",
+          "title": "Programming for Engineers with MatLab",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "General Education Core course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        }
+      ]
+    },
+    {
+      "year": "Sophomore Year",
+      "semester": "First Semester",
+      "total_hours": 16,
+      "courses": [
+        {
+          "code": "PHYS 142",
+          "title": "General Physics II (Electricity and Magnetism)",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "IE 201",
+          "title": "Financial Engineering",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "CME 201",
+          "title": "Statics",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "MATH 210",
+          "title": "Calculus III",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "ECE 210",
+          "title": "Electrical Circuit Analysis",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        }
+      ]
+    },
+    {
+      "year": "Sophomore Year",
+      "semester": "Second Semester",
+      "total_hours": 15,
+      "courses": [
+        {
+          "code": "MATH 218",
+          "title": "Applied Linear Algebra",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "MATH 220",
+          "title": "Introduction to Differential Equations",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "CME 203",
+          "title": "Strength of Materials",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "IE 342",
+          "title": "Probability and Statistics for Engineers",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "General Education Core course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        }
+      ]
+    },
+    {
+      "year": "Junior Year",
+      "semester": "First Semester",
+      "total_hours": 16,
+      "courses": [
+        {
+          "code": "IE 471",
+          "title": "Operations Research I",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "IE 345",
+          "title": "Regression Applications and Forecasting in Engineering",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "IE 348",
+          "title": "Artificial Intelligence and Data Mining for Engineering Applications",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "IE 365",
+          "title": "Work Productivity Analysis",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "General Education Core course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        }
+      ]
+    },
+    {
+      "year": "Junior Year",
+      "semester": "Second Semester",
+      "total_hours": 17,
+      "courses": [
+        {
+          "code": "IE 442",
+          "title": "Design and Analysis of Experiments in Engineering",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "IE 472",
+          "title": "Operations Research II",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "STAT 362",
+          "title": "Elements of Statistical Computing",
+          "hours": 2,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "Technical Elective",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "technical_elective"
+        },
+        {
+          "code": null,
+          "title": "Elective Outside the Major Rubric",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": "MGMT 340",
+          "title": "Introduction to Organizations",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        }
+      ]
+    },
+    {
+      "year": "Senior Year",
+      "semester": "First Semester",
+      "total_hours": null,
+      "courses": [
+        {
+          "code": "IE 380",
+          "title": "Manufacturing Process Principles",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        }
+      ]
+    }
+  ]
+}

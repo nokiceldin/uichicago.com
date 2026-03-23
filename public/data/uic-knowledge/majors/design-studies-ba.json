@@ -1,0 +1,502 @@
+{
+  "name": "Design Studies - BA",
+  "college": "Design",
+  "department": "Design",
+  "url": "https://catalog.uic.edu/ucat/colleges-depts/architecture-design-arts/des/ba/",
+  "totalHours": 120,
+  "summaryRequirements": {
+    "General Education and Core Requirements": "30-32",
+    "Foundation Course Requirements": "17",
+    "Design Studies Major Requirements": "51",
+    "Electives": "22",
+    "Total Hours": "120"
+  },
+  "requiredCourses": [
+    {
+      "code": "ENGL 160",
+      "subject": "ENGL",
+      "number": "160",
+      "title": "Academic Writing I: Writing in Academic and Public Contexts",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "ENGL 161",
+      "subject": "ENGL",
+      "number": "161",
+      "title": "Academic Writing II: Writing for Inquiry and Research",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "AH 110",
+      "subject": "AH",
+      "number": "110",
+      "title": "World History of Art and the Built Environment I a",
+      "hours": 4,
+      "required": true
+    },
+    {
+      "code": "AH 111",
+      "subject": "AH",
+      "number": "111",
+      "title": "World History of Art and the Built Environment II a",
+      "hours": 4,
+      "required": true
+    },
+    {
+      "code": "DES 110",
+      "subject": "DES",
+      "number": "110",
+      "title": "Design Colloquium",
+      "hours": 1,
+      "required": true
+    },
+    {
+      "code": "DES 140",
+      "subject": "DES",
+      "number": "140",
+      "title": "Design Drawing",
+      "hours": 4,
+      "required": true
+    },
+    {
+      "code": "DES 150",
+      "subject": "DES",
+      "number": "150",
+      "title": "Digital Media Design I",
+      "hours": 4,
+      "required": true
+    },
+    {
+      "code": "DES 160",
+      "subject": "DES",
+      "number": "160",
+      "title": "Design Photography",
+      "hours": 4,
+      "required": true
+    },
+    {
+      "code": "DES 170",
+      "subject": "DES",
+      "number": "170",
+      "title": "Color Theory",
+      "hours": 4,
+      "required": true
+    },
+    {
+      "code": "DES 208",
+      "subject": "DES",
+      "number": "208",
+      "title": "Typography I: Form",
+      "hours": 4,
+      "required": true
+    },
+    {
+      "code": "DES 209",
+      "subject": "DES",
+      "number": "209",
+      "title": "Typography II: Systems",
+      "hours": 4,
+      "required": true
+    },
+    {
+      "code": "DES 222",
+      "subject": "DES",
+      "number": "222",
+      "title": "Human Experience in Design",
+      "hours": 4,
+      "required": true
+    },
+    {
+      "code": "DES 235",
+      "subject": "DES",
+      "number": "235",
+      "title": "History of Design I: 1760-1925",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "DES 236",
+      "subject": "DES",
+      "number": "236",
+      "title": "History of Design II: 1925 to the Present",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "DES 255",
+      "subject": "DES",
+      "number": "255",
+      "title": "Integrative Design Studio I",
+      "hours": 4,
+      "required": true
+    },
+    {
+      "code": "DES 256",
+      "subject": "DES",
+      "number": "256",
+      "title": "Integrative Design Studio II",
+      "hours": 4,
+      "required": true
+    },
+    {
+      "code": "DES 322",
+      "subject": "DES",
+      "number": "322",
+      "title": "Design Research Methods",
+      "hours": 4,
+      "required": true
+    },
+    {
+      "code": "DES 355",
+      "subject": "DES",
+      "number": "355",
+      "title": "Design Seminar",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "DES 357",
+      "subject": "DES",
+      "number": "357",
+      "title": "Integrative Design Studio III",
+      "hours": 4,
+      "required": true
+    },
+    {
+      "code": "DES 458",
+      "subject": "DES",
+      "number": "458",
+      "title": "Integrative Studio Project",
+      "hours": 4,
+      "required": true
+    },
+    {
+      "code": "DES 410",
+      "subject": "DES",
+      "number": "410",
+      "title": "Senior Design Colloquium I",
+      "hours": 1,
+      "required": true
+    },
+    {
+      "code": "DES 411",
+      "subject": "DES",
+      "number": "411",
+      "title": "Senior Design Colloquium II",
+      "hours": 1,
+      "required": true
+    }
+  ],
+  "sampleSchedule": [
+    {
+      "year": "Freshman Year",
+      "semester": "Fall Semester",
+      "total_hours": 15,
+      "courses": [
+        {
+          "code": "DES 110",
+          "title": "Design Colloquium",
+          "hours": 1,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "DES 140",
+          "title": "Design Drawing ( Spring or Fall )",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "DES 150",
+          "title": "Digital Media Design I ( Spring or Fall )",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "ENGL 160",
+          "title": "Academic Writing I: Writing in Academic and Public Contexts",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "Understanding the Individual in Society General Education course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_individual_society"
+        }
+      ]
+    },
+    {
+      "year": "Freshman Year",
+      "semester": "Spring Semester",
+      "total_hours": 14,
+      "courses": [
+        {
+          "code": "DES 160",
+          "title": "Design Photography ( Spring or Fall )",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "DES 170",
+          "title": "Color Theory ( Spring or Fall )",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "ENGL 161",
+          "title": "Academic Writing II: Writing for Inquiry and Research",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "Understanding the Past General Education course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_past"
+        }
+      ]
+    },
+    {
+      "year": "Sophomore Year",
+      "semester": "Fall Semester",
+      "total_hours": 16,
+      "courses": [
+        {
+          "code": "AH 110",
+          "title": "World History of Art and the Built Environment I",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "DES 208",
+          "title": "Typography I: Form",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "DES 222",
+          "title": "Human Experience in Design",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "Analyzing the Natural World General Education course",
+          "hours": 4,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        }
+      ]
+    },
+    {
+      "year": "Sophomore Year",
+      "semester": "Spring Semester",
+      "total_hours": 15,
+      "courses": [
+        {
+          "code": "AH 111",
+          "title": "World History of Art and the Built Environment II",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "DES 209",
+          "title": "Typography II: Systems",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "DES 322",
+          "title": "Design Research Methods",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "Exploring World Cultures General Education requirement",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_world_cultures"
+        }
+      ]
+    },
+    {
+      "year": "Junior Year",
+      "semester": "Fall Semester",
+      "total_hours": 16,
+      "courses": [
+        {
+          "code": "DES 235",
+          "title": "History of Design I: 1760-1925",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "DES 255",
+          "title": "Integrative Design Studio I",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "Understanding U.S. Society General Education course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_individual_society"
+        },
+        {
+          "code": null,
+          "title": "Elective (chosen in consultation with advisor)",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": null,
+          "title": "Elective (chosen in consultation with advisor)",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        }
+      ]
+    },
+    {
+      "year": "Junior Year",
+      "semester": "Spring Semester",
+      "total_hours": 16,
+      "courses": [
+        {
+          "code": "DES 236",
+          "title": "History of Design II: 1925 to the Present",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "DES 256",
+          "title": "Integrative Design Studio II",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "Elective (chosen in consultation with advisor)",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": null,
+          "title": "Elective (chosen in consultation with advisor)",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": null,
+          "title": "Elective (chosen in consultation with advisor)",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        }
+      ]
+    },
+    {
+      "year": "Senior Year",
+      "semester": "Fall Semester",
+      "total_hours": 16,
+      "courses": [
+        {
+          "code": "DES 355",
+          "title": "Design Seminar",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "DES 357",
+          "title": "Integrative Design Studio III",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "DES 410",
+          "title": "Senior Design Colloquium I",
+          "hours": 1,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "DES 411",
+          "title": "Senior Design Colloquium II",
+          "hours": 1,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "DES 420",
+          "title": "Professional Practice Project I or Interdisciplinary Product Development I or Design and Identity I or Information Aesthetics I",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "Elective (chosen in consultation with advisor)",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        }
+      ]
+    },
+    {
+      "year": "Senior Year",
+      "semester": "Spring Semester",
+      "total_hours": 12,
+      "courses": [
+        {
+          "code": "DES 421",
+          "title": "Professional Practice Project II or Interdisciplinary Product Development II or Design and Identity II or Information Aesthetics II",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "DES 458",
+          "title": "Integrative Studio Project",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "Elective (chosen in consultation with advisor)",
+          "hours": 4,
+          "isElective": true,
+          "electiveType": "elective_general"
+        }
+      ]
+    }
+  ]
+}

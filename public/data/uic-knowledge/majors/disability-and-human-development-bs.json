@@ -1,0 +1,469 @@
+{
+  "name": "Disability and Human Development - BS",
+  "college": "Disability and Human Development",
+  "department": "Disability and Human Development",
+  "url": "https://catalog.uic.edu/ucat/colleges-depts/applied-health-sciences/dhd/bs/",
+  "totalHours": 120,
+  "summaryRequirements": {
+    "University Writing Requirement": "6",
+    "General Education Requirements": "18",
+    "Major Requirements (Core and DHD Electives)": "34-35",
+    "Electives to reach Minimum Total Hours": "61-62",
+    "Total Hours": "120"
+  },
+  "requiredCourses": [
+    {
+      "code": "ENGL 160",
+      "subject": "ENGL",
+      "number": "160",
+      "title": "Academic Writing I: Writing in Academic and Public Contexts",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "ENGL 161",
+      "subject": "ENGL",
+      "number": "161",
+      "title": "Academic Writing II: Writing for Inquiry and Research",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "DHD 100",
+      "subject": "DHD",
+      "number": "100",
+      "title": "Disability and Human Development Seminar a",
+      "hours": 1,
+      "required": true
+    },
+    {
+      "code": "DHD 101",
+      "subject": "DHD",
+      "number": "101",
+      "title": "Disability in U.S. Society b",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "DHD 102",
+      "subject": "DHD",
+      "number": "102",
+      "title": "Disability in American Film c",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "DHD 201",
+      "subject": "DHD",
+      "number": "201",
+      "title": "Disability, Rights, and Culture",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "DHD 202",
+      "subject": "DHD",
+      "number": "202",
+      "title": "Disability, Health, and Society",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "DHD 301",
+      "subject": "DHD",
+      "number": "301",
+      "title": "Disability, Research, and Interdisciplinary Methods",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "DHD 302",
+      "subject": "DHD",
+      "number": "302",
+      "title": "Disability, Policy, and Law",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "DHD 303",
+      "subject": "DHD",
+      "number": "303",
+      "title": "Disability Activism: From the Local to the Global",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "DHD 400",
+      "subject": "DHD",
+      "number": "400",
+      "title": "Disability and Human Development Capstone",
+      "hours": 1,
+      "required": true
+    },
+    {
+      "code": "DHD 401",
+      "subject": "DHD",
+      "number": "401",
+      "title": "Disability, Human Development and Community Participation",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "DHD 203",
+      "subject": "DHD",
+      "number": "203",
+      "title": "Disability in World Cultures",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "DHD 204",
+      "subject": "DHD",
+      "number": "204",
+      "title": "Disability in the Humanities",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "DHD 205",
+      "subject": "DHD",
+      "number": "205",
+      "title": "Disability, Race, Class and Gender",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "DHD 206",
+      "subject": "DHD",
+      "number": "206",
+      "title": "Disability, Inclusive Cities, and Environmental Accessibility",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "DHD 403",
+      "subject": "DHD",
+      "number": "403",
+      "title": "Disability in Latino Communities",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "DHD 404",
+      "subject": "DHD",
+      "number": "404",
+      "title": "Disability, Sexuality, and Health",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "DHD 407",
+      "subject": "DHD",
+      "number": "407",
+      "title": "Cultural Politics of Disability and Health",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "DHD 408",
+      "subject": "DHD",
+      "number": "408",
+      "title": "Disability Through the Lifecourse",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "DHD 409",
+      "subject": "DHD",
+      "number": "409",
+      "title": "Disability Legal Studies",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "DHD 420",
+      "subject": "DHD",
+      "number": "420",
+      "title": "Mental Health, Asian Americans, and Community Engagement",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "DHD 440",
+      "subject": "DHD",
+      "number": "440",
+      "title": "Introduction to Assistive Technology: Principles and Practice",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "DHD 494",
+      "subject": "DHD",
+      "number": "494",
+      "title": "Special Topics in Disability and Human Development",
+      "hours": null,
+      "required": true
+    }
+  ],
+  "sampleSchedule": [
+    {
+      "year": "First Year",
+      "semester": "Fall Semester",
+      "total_hours": 16,
+      "courses": [
+        {
+          "code": "DHD 100",
+          "title": "Disability and Human Development Seminar",
+          "hours": 1,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "DHD 101",
+          "title": "Disability in U.S. Society a",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "DHD 102",
+          "title": "Disability in American Film b",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "ENGL 160",
+          "title": "Academic Writing I: Writing in Academic and Public Contexts",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "General Education course (Analyzing the Natural World)",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        },
+        {
+          "code": null,
+          "title": "Elective",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        }
+      ]
+    },
+    {
+      "year": "First Year",
+      "semester": "Spring Semester",
+      "total_hours": 15,
+      "courses": [
+        {
+          "code": "DHD 201",
+          "title": "Disability, Rights, and Culture",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "DHD 202",
+          "title": "Disability, Health, and Society",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "ENGL 161",
+          "title": "Academic Writing II: Writing for Inquiry and Research",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "General Education course (Understanding the Past)",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_past"
+        },
+        {
+          "code": null,
+          "title": "Elective",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        }
+      ]
+    },
+    {
+      "year": "Second Year",
+      "semester": "Fall Semester",
+      "total_hours": 15,
+      "courses": [
+        {
+          "code": null,
+          "title": "DHD Elective",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": null,
+          "title": "General Education course (Exploring World Cultures)",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_world_cultures"
+        },
+        {
+          "code": null,
+          "title": "Electives",
+          "hours": 9,
+          "isElective": true,
+          "electiveType": "elective_general"
+        }
+      ]
+    },
+    {
+      "year": "Second Year",
+      "semester": "Spring Semester",
+      "total_hours": 15,
+      "courses": [
+        {
+          "code": null,
+          "title": "DHD Elective",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": "DHD 300",
+          "title": "3",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "General Education course (Understanding the Individual and Society)",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_individual_society"
+        },
+        {
+          "code": null,
+          "title": "Electives",
+          "hours": 6,
+          "isElective": true,
+          "electiveType": "elective_general"
+        }
+      ]
+    },
+    {
+      "year": "Third Year",
+      "semester": "Fall Semester",
+      "total_hours": 15,
+      "courses": [
+        {
+          "code": "DHD 300",
+          "title": "3",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "Additional General Education Course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        },
+        {
+          "code": null,
+          "title": "Electives",
+          "hours": 9,
+          "isElective": true,
+          "electiveType": "elective_general"
+        }
+      ]
+    },
+    {
+      "year": "Third Year",
+      "semester": "Spring Semester",
+      "total_hours": 15,
+      "courses": [
+        {
+          "code": "DHD 401",
+          "title": "Disability, Human Development and Community Participation",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "Additional General Education Course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        },
+        {
+          "code": null,
+          "title": "Electives",
+          "hours": 9,
+          "isElective": true,
+          "electiveType": "elective_general"
+        }
+      ]
+    },
+    {
+      "year": "Fourth Year",
+      "semester": "Fall Semester",
+      "total_hours": 15,
+      "courses": [
+        {
+          "code": null,
+          "title": "DHD Elective",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": "DHD 300",
+          "title": "3",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "Electives",
+          "hours": 9,
+          "isElective": true,
+          "electiveType": "elective_general"
+        }
+      ]
+    },
+    {
+      "year": "Fourth Year",
+      "semester": "Spring Semester",
+      "total_hours": 14,
+      "courses": [
+        {
+          "code": "DHD 400",
+          "title": "Disability and Human Development Capstone",
+          "hours": 1,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "Electives",
+          "hours": 13,
+          "isElective": true,
+          "electiveType": "elective_general"
+        }
+      ]
+    }
+  ]
+}

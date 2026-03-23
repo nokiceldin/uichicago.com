@@ -1,0 +1,646 @@
+{
+  "name": "Computer Science and Philosophy - BS",
+  "college": "Philosophy",
+  "department": "Philosophy",
+  "url": "https://catalog.uic.edu/ucat/colleges-depts/liberal-arts-sciences/phil/bs-cs-philosophy/",
+  "totalHours": 120,
+  "summaryRequirements": {
+    "Requirements for the Curriculum": "120",
+    "Total Hours": "120"
+  },
+  "requiredCourses": [
+    {
+      "code": "ENGL 160",
+      "subject": "ENGL",
+      "number": "160",
+      "title": "Academic Writing I: Writing in Academic and Public Contexts",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "ENGL 161",
+      "subject": "ENGL",
+      "number": "161",
+      "title": "Academic Writing II: Writing for Inquiry and Research",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "MATH 180",
+      "subject": "MATH",
+      "number": "180",
+      "title": "Calculus I b",
+      "hours": 4,
+      "required": true
+    },
+    {
+      "code": "MATH 181",
+      "subject": "MATH",
+      "number": "181",
+      "title": "Calculus II",
+      "hours": 4,
+      "required": true
+    },
+    {
+      "code": "STAT 381",
+      "subject": "STAT",
+      "number": "381",
+      "title": "Applied Statistical Methods I",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "CS 111",
+      "subject": "CS",
+      "number": "111",
+      "title": "Program Design I",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "CS 112",
+      "subject": "CS",
+      "number": "112",
+      "title": "Program Design I in the Context of Biological Problems",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "CS 113",
+      "subject": "CS",
+      "number": "113",
+      "title": "Program Design I in the Context of Law and Public Policy",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "MCS 160",
+      "subject": "MCS",
+      "number": "160",
+      "title": "Introduction to Computer Science",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "CS 141",
+      "subject": "CS",
+      "number": "141",
+      "title": "Program Design II",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "CS 151",
+      "subject": "CS",
+      "number": "151",
+      "title": "Mathematical Foundations of Computing",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "CS 211",
+      "subject": "CS",
+      "number": "211",
+      "title": "Programming Practicum",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "CS 251",
+      "subject": "CS",
+      "number": "251",
+      "title": "Data Structures",
+      "hours": 4,
+      "required": true
+    },
+    {
+      "code": "CS 301",
+      "subject": "CS",
+      "number": "301",
+      "title": "Languages and Automata",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "MCS 441",
+      "subject": "MCS",
+      "number": "441",
+      "title": "Theory of Computation I c",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "CS 401",
+      "subject": "CS",
+      "number": "401",
+      "title": "Computer Algorithms I",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "CS 261",
+      "subject": "CS",
+      "number": "261",
+      "title": "Machine Organization",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "CS 341",
+      "subject": "CS",
+      "number": "341",
+      "title": "Programming Language Design and Implementation",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "CS 342",
+      "subject": "CS",
+      "number": "342",
+      "title": "Software Design",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "CS 351",
+      "subject": "CS",
+      "number": "351",
+      "title": "Advanced Data Structure Practicum",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "CS 361",
+      "subject": "CS",
+      "number": "361",
+      "title": "Systems Programming",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "CS 378",
+      "subject": "CS",
+      "number": "378",
+      "title": "Framework-based Software Development for Hand-held Devices",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "CS 402",
+      "subject": "CS",
+      "number": "402",
+      "title": "Algorithms in Practice",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "CS 407",
+      "subject": "CS",
+      "number": "407",
+      "title": "Economics and Computation",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "CS 411",
+      "subject": "CS",
+      "number": "411",
+      "title": "Artificial Intelligence I",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "CS 415",
+      "subject": "CS",
+      "number": "415",
+      "title": "Computer Vision I",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "CS 418",
+      "subject": "CS",
+      "number": "418",
+      "title": "Introduction to Data Science",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "CS 421",
+      "subject": "CS",
+      "number": "421",
+      "title": "Natural Language Processing",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "CS 422",
+      "subject": "CS",
+      "number": "422",
+      "title": "User Interface Design and Programming",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "CS 424",
+      "subject": "CS",
+      "number": "424",
+      "title": "Visualization and Visual Analytics",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "CS 425",
+      "subject": "CS",
+      "number": "425",
+      "title": "Computer Graphics I",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "CS 426",
+      "subject": "CS",
+      "number": "426",
+      "title": "Video Game Design and Development",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "CS 427",
+      "subject": "CS",
+      "number": "427",
+      "title": "Creative Coding",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "CS 428",
+      "subject": "CS",
+      "number": "428",
+      "title": "Virtual, Augmented and Mixed Reality",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "CS 453",
+      "subject": "CS",
+      "number": "453",
+      "title": "Introduction to Parallel and Distributed Processing",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "CS 474",
+      "subject": "CS",
+      "number": "474",
+      "title": "Object-Oriented Languages and Environments",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "CS 475",
+      "subject": "CS",
+      "number": "475",
+      "title": "Object-Oriented Programming",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "CS 478",
+      "subject": "CS",
+      "number": "478",
+      "title": "Software Development for Mobile Platforms",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "CS 480",
+      "subject": "CS",
+      "number": "480",
+      "title": "Database Systems",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "CS 489",
+      "subject": "CS",
+      "number": "489",
+      "title": "Human Augmentics",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "PHIL 210",
+      "subject": "PHIL",
+      "number": "210",
+      "title": "Symbolic Logic",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "PHIL 215",
+      "subject": "PHIL",
+      "number": "215",
+      "title": "Philosophy of Computing and Machine Learning",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "PHIL 300",
+      "subject": "PHIL",
+      "number": "300",
+      "title": "Fundamentals of Philosophical Discourse e",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "PHIL 315",
+      "subject": "PHIL",
+      "number": "315",
+      "title": "Ethics of Computing and Artificial Intelligence",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "PHIL 230",
+      "subject": "PHIL",
+      "number": "230",
+      "title": "Topics in Ethics and Political Philosophy",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "PHIL 231",
+      "subject": "PHIL",
+      "number": "231",
+      "title": "Philosophy of Race and Racism",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "PHIL 232",
+      "subject": "PHIL",
+      "number": "232",
+      "title": "Sex Roles: Moral and Political Issues",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "PHIL 432",
+      "subject": "PHIL",
+      "number": "432",
+      "title": "Topics in Ethics",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "PHIL 433",
+      "subject": "PHIL",
+      "number": "433",
+      "title": "Topics in Social/Political Philosophy",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "LING 350",
+      "subject": "LING",
+      "number": "350",
+      "title": "Are Algorithms Biased",
+      "hours": null,
+      "required": true
+    }
+  ],
+  "sampleSchedule": [
+    {
+      "year": "First Year",
+      "semester": "Fall Semester",
+      "total_hours": null,
+      "courses": [
+        {
+          "code": "ENGL 160",
+          "title": "Academic Writing I: Writing in Academic and Public Contexts",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "MATH 180",
+          "title": "Calculus I",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "CS 111",
+          "title": "Program Design I or Program Design I in the Context of Biological Problems or Program Design I in the Context of Law and Public Policy or Introduction to Computer Science",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        }
+      ]
+    },
+    {
+      "year": "First Year",
+      "semester": "Spring Semester",
+      "total_hours": 16,
+      "courses": [
+        {
+          "code": "ENGL 161",
+          "title": "Academic Writing II: Writing for Inquiry and Research",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "MATH 181",
+          "title": "Calculus II",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "CS 141",
+          "title": "Program Design II",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "PHIL 100",
+          "title": "3",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        }
+      ]
+    },
+    {
+      "year": "Second Year",
+      "semester": "Fall Semester",
+      "total_hours": 16,
+      "courses": [
+        {
+          "code": "STAT 381",
+          "title": "Applied Statistical Methods I",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "CS 151",
+          "title": "Mathematical Foundations of Computing",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "CS 211",
+          "title": "Programming Practicum",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "PHIL 210",
+          "title": "Symbolic Logic",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        }
+      ]
+    },
+    {
+      "year": "Second Year",
+      "semester": "Spring Semester",
+      "total_hours": 17,
+      "courses": [
+        {
+          "code": "CS 251",
+          "title": "Data Structures",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "CS 301",
+          "title": "Languages and Automata",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "PHIL 215",
+          "title": "Philosophy of Computing and Machine Learning",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        }
+      ]
+    },
+    {
+      "year": "Third Year",
+      "semester": "Fall Semester",
+      "total_hours": null,
+      "courses": [
+        {
+          "code": "CS 401",
+          "title": "Computer Algorithms I ( or CS Selective ) b",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "PHIL 315",
+          "title": "Ethics of Computing and Artificial Intelligence",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        }
+      ]
+    },
+    {
+      "year": "Third Year",
+      "semester": "Spring Semester",
+      "total_hours": null,
+      "courses": [
+        {
+          "code": "CS 401",
+          "title": "Computer Algorithms I ( or CS Selective ) b",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "PHIL Elective c",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": null,
+          "title": "Electives",
+          "hours": 2,
+          "isElective": true,
+          "electiveType": "elective_general"
+        }
+      ]
+    },
+    {
+      "year": "Fourth Year",
+      "semester": "Fall Semester",
+      "total_hours": null,
+      "courses": [
+        {
+          "code": "PHIL 300",
+          "title": "Fundamentals of Philosophical Discourse",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "CS Selective b",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": null,
+          "title": "PHIL Elective c",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        }
+      ]
+    },
+    {
+      "year": "Fourth Year",
+      "semester": "Spring Semester",
+      "total_hours": 15,
+      "courses": [
+        {
+          "code": null,
+          "title": "PHIL Elective c",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": null,
+          "title": "CS Selective b",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": null,
+          "title": "Electives",
+          "hours": 6,
+          "isElective": true,
+          "electiveType": "elective_general"
+        }
+      ]
+    }
+  ]
+}

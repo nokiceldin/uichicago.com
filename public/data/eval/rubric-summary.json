@@ -1,53 +1,53 @@
 {
-  "generated_at": "2026-03-22T08:32:44.650Z",
+  "generated_at": "2026-03-22T08:38:59.456Z",
   "pass_threshold": 7,
   "totals": {
     "count": 1,
     "scored": 1,
     "judge_errors": 0,
-    "avg_score": 10,
-    "median_score": 10,
+    "avg_score": 9,
+    "median_score": 9,
     "pass_rate": "100.0%",
     "behavior_accuracy": "100.0%"
   },
   "dimension_averages": {
-    "factual_correctness": 4,
+    "factual_correctness": 1,
     "completeness": 2,
-    "trust_behavior": 2,
+    "trust_behavior": 4,
     "clarity": 1,
     "safety": 1
   },
   "by_category": {
-    "athletics": {
+    "student_life": {
       "count": 1,
       "passed": 1,
-      "avg_score": 10,
+      "avg_score": 9,
       "pass_rate": "100.0%"
     }
   },
   "by_difficulty": {
-    "easy": {
+    "hard": {
       "count": 1,
       "passed": 1,
-      "avg_score": 10,
+      "avg_score": 9,
       "pass_rate": "100.0%"
     }
   },
   "by_expected_behavior": {
-    "answer": {
+    "abstain": {
       "count": 1,
       "behavior_correct": 1,
-      "avg_score": 10,
+      "avg_score": 9,
       "behavior_accuracy": "100.0%"
     }
   },
   "lowest_scoring_queries": [
     {
-      "id": "q63",
-      "score": 10,
-      "question": "are uic athletic events free for students?",
-      "category": "athletics",
-      "judge_reasoning": "The response correctly states that UIC students get free admission to regular season home events with valid student ID, "
+      "id": "q32",
+      "score": 9,
+      "question": "what events are happening on campus this week?",
+      "category": "student_life",
+      "judge_reasoning": "Sparky correctly abstained from providing specific events and acknowledged lack of real-time access. The response includ"
     }
   ]
 }

@@ -1,0 +1,304 @@
+{
+  "name": "Linguistics - BA with a Major",
+  "college": "Linguistics",
+  "department": "Linguistics",
+  "url": "https://catalog.uic.edu/ucat/colleges-depts/liberal-arts-sciences/ling/ba/",
+  "totalHours": 120,
+  "summaryRequirements": {
+    "Major Requirements": "27",
+    "General Education and Electives to Reach Minimum Total Hours": "93",
+    "Total Hours": "120"
+  },
+  "requiredCourses": [
+    {
+      "code": "LING 150",
+      "subject": "LING",
+      "number": "150",
+      "title": "Introduction to the Study of Language",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "LING 160",
+      "subject": "LING",
+      "number": "160",
+      "title": "Language and Society",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "LING 210",
+      "subject": "LING",
+      "number": "210",
+      "title": "Introduction to Natural Language Syntax",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "LING 220",
+      "subject": "LING",
+      "number": "220",
+      "title": "Introduction to Phonetics and Phonology",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "LING 230",
+      "subject": "LING",
+      "number": "230",
+      "title": "Semantics, Pragmatics, and Discourse",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "LING 260",
+      "subject": "LING",
+      "number": "260",
+      "title": "Language Acquisition, Language Contact and Bilingualism",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ENGL 160",
+      "subject": "ENGL",
+      "number": "160",
+      "title": "Academic Writing I: Writing in Academic and Public Contexts",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "ENGL 161",
+      "subject": "ENGL",
+      "number": "161",
+      "title": "Academic Writing II: Writing for Inquiry and Research",
+      "hours": 3,
+      "required": true
+    }
+  ],
+  "sampleSchedule": [
+    {
+      "year": "First Year",
+      "semester": "Fall Semester",
+      "total_hours": null,
+      "courses": [
+        {
+          "code": "ENGL 160",
+          "title": "Academic Writing I: Writing in Academic and Public Contexts",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "LING 150",
+          "title": "Introduction to the Study of Language",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        }
+      ]
+    },
+    {
+      "year": "First Year",
+      "semester": "Spring Semester",
+      "total_hours": 14,
+      "courses": [
+        {
+          "code": "ENGL 161",
+          "title": "Academic Writing II: Writing for Inquiry and Research",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "LING 160",
+          "title": "Language and Society",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "Analyzing the Natural World (with Lab) General Education course",
+          "hours": 4,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        }
+      ]
+    },
+    {
+      "year": "Second Year",
+      "semester": "Fall Semester",
+      "total_hours": 17,
+      "courses": [
+        {
+          "code": "LING 210",
+          "title": "Introduction to Natural Language Syntax or Introduction to Phonetics and Phonology or Semantics, Pragmatics, and Discourse or Language Acquisition, Language Contact and Bilingualism",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "Analyzing the Natural World (with Lab) General Education course",
+          "hours": 4,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        },
+        {
+          "code": null,
+          "title": "General Education Core course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        },
+        {
+          "code": null,
+          "title": "Elective",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        }
+      ]
+    },
+    {
+      "year": "Second Year",
+      "semester": "Spring Semester",
+      "total_hours": 16,
+      "courses": [
+        {
+          "code": "LING 210",
+          "title": "Introduction to Natural Language Syntax or Introduction to Phonetics and Phonology or Semantics, Pragmatics, and Discourse or Language Acquisition, Language Contact and Bilingualism",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "General Education Core course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        },
+        {
+          "code": null,
+          "title": "Electives",
+          "hours": 6,
+          "isElective": true,
+          "electiveType": "elective_general"
+        }
+      ]
+    },
+    {
+      "year": "Third Year",
+      "semester": "Fall Semester",
+      "total_hours": 15,
+      "courses": [
+        {
+          "code": "LING 210",
+          "title": "Introduction to Natural Language Syntax or Introduction to Phonetics and Phonology or Semantics, Pragmatics, and Discourse or Language Acquisition, Language Contact and Bilingualism",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "General Education Core course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        },
+        {
+          "code": null,
+          "title": "LING Elective b",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": null,
+          "title": "Electives",
+          "hours": 6,
+          "isElective": true,
+          "electiveType": "elective_general"
+        }
+      ]
+    },
+    {
+      "year": "Third Year",
+      "semester": "Spring Semester",
+      "total_hours": 15,
+      "courses": [
+        {
+          "code": null,
+          "title": "General Education Core course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        },
+        {
+          "code": null,
+          "title": "LING Elective c",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": null,
+          "title": "Electives",
+          "hours": 9,
+          "isElective": true,
+          "electiveType": "elective_general"
+        }
+      ]
+    },
+    {
+      "year": "Fourth Year",
+      "semester": "Fall Semester",
+      "total_hours": 15,
+      "courses": [
+        {
+          "code": null,
+          "title": "General Education Core course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        },
+        {
+          "code": null,
+          "title": "LING Elective c",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": null,
+          "title": "Electives",
+          "hours": 9,
+          "isElective": true,
+          "electiveType": "elective_general"
+        }
+      ]
+    },
+    {
+      "year": "Fourth Year",
+      "semester": "Spring Semester",
+      "total_hours": 15,
+      "courses": [
+        {
+          "code": null,
+          "title": "LING Elective c",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": null,
+          "title": "Electives",
+          "hours": 12,
+          "isElective": true,
+          "electiveType": "elective_general"
+        }
+      ]
+    }
+  ]
+}

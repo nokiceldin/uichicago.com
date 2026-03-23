@@ -1,0 +1,820 @@
+{
+  "name": "Public Policy - BA",
+  "college": "Public Policy, Management, and Analytics",
+  "department": "Public Policy, Management, and Analytics",
+  "url": "https://catalog.uic.edu/ucat/colleges-depts/urban-planning-public-affairs/pa/ba/",
+  "totalHours": 29,
+  "summaryRequirements": {
+    "General and Basic Education Requirements": "29-33",
+    "Core Program Requirements": "36",
+    "Electives": "51-55",
+    "Total Hours": "120"
+  },
+  "requiredCourses": [
+    {
+      "code": "UPA 120",
+      "subject": "UPA",
+      "number": "120",
+      "title": "Urban and Public Affairs Seminar I b",
+      "hours": 1,
+      "required": true
+    },
+    {
+      "code": "UPA 121",
+      "subject": "UPA",
+      "number": "121",
+      "title": "Urban and Public Affairs Seminar II b",
+      "hours": 1,
+      "required": true
+    },
+    {
+      "code": "MATH 110",
+      "subject": "MATH",
+      "number": "110",
+      "title": "College Algebra",
+      "hours": 4,
+      "required": true
+    },
+    {
+      "code": "ECON 120",
+      "subject": "ECON",
+      "number": "120",
+      "title": "Principles of Microeconomics c",
+      "hours": 4,
+      "required": true
+    },
+    {
+      "code": "PPOL 100",
+      "subject": "PPOL",
+      "number": "100",
+      "title": "Individual Action and Democratic Citizenship a",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "PPOL 105",
+      "subject": "PPOL",
+      "number": "105",
+      "title": "Programming and Data Analysis for Public Policy I",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "ECON 220",
+      "subject": "ECON",
+      "number": "220",
+      "title": "Microeconomics: Theory and Applications b",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "PPOL 205",
+      "subject": "PPOL",
+      "number": "205",
+      "title": "Programming and Data Analysis for Public Policy II",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "PPOL 210",
+      "subject": "PPOL",
+      "number": "210",
+      "title": "Introduction to Public Policy c",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "PPOL 303",
+      "subject": "PPOL",
+      "number": "303",
+      "title": "Policy Implementation and Management",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "PPOL 305",
+      "subject": "PPOL",
+      "number": "305",
+      "title": "Policy Analysis",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "PPOL 405",
+      "subject": "PPOL",
+      "number": "405",
+      "title": "Evaluating Public Policies and Programs",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "PPOL 491",
+      "subject": "PPOL",
+      "number": "491",
+      "title": "Internship Experience in Public Policy and Urban Studies",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "ECON 334",
+      "subject": "ECON",
+      "number": "334",
+      "title": "Economic Development",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ECON 342",
+      "subject": "ECON",
+      "number": "342",
+      "title": "Regional Economics",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "PPOL 212",
+      "subject": "PPOL",
+      "number": "212",
+      "title": "Evidence-Based Public Policy",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "PPOL 232",
+      "subject": "PPOL",
+      "number": "232",
+      "title": "International Development Policy",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "US 202",
+      "subject": "US",
+      "number": "202",
+      "title": "Social Justice and the City",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "US 240",
+      "subject": "US",
+      "number": "240",
+      "title": "Urban and Community Economics a",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "US 301",
+      "subject": "US",
+      "number": "301",
+      "title": "Political Economy of Urban Development",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ECON 214",
+      "subject": "ECON",
+      "number": "214",
+      "title": "Economics of Education",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ED 200",
+      "subject": "ED",
+      "number": "200",
+      "title": "Education Policy Foundations",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ED 252",
+      "subject": "ED",
+      "number": "252",
+      "title": "Contemporary Controversies in U.S. Schools",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ED 402",
+      "subject": "ED",
+      "number": "402",
+      "title": "Philosophy of Education and Urban School Policy",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ED 403",
+      "subject": "ED",
+      "number": "403",
+      "title": "Policy Issues in the History of American Education",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "EDPS 412",
+      "subject": "EDPS",
+      "number": "412",
+      "title": "Politics of Urban Education",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "EAES 116",
+      "subject": "EAES",
+      "number": "116",
+      "title": "Energy for Future Decision-Makers",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "LAS 493",
+      "subject": "LAS",
+      "number": "493",
+      "title": "Topics in Energy",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "PA 494",
+      "subject": "PA",
+      "number": "494",
+      "title": "Special Topics in Public Administration",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "PPOL 240",
+      "subject": "PPOL",
+      "number": "240",
+      "title": "Environmental Policy",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "US 230",
+      "subject": "US",
+      "number": "230",
+      "title": "Practices for Sustainable Cities",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "UPP 403",
+      "subject": "UPP",
+      "number": "403",
+      "title": "Just and Sustainable Planning Practices for Great Cities",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ECON 121",
+      "subject": "ECON",
+      "number": "121",
+      "title": "Principles of Macroeconomics",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ECON 221",
+      "subject": "ECON",
+      "number": "221",
+      "title": "Macroeconomics in the World Economy: Theory and Applications",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ECON 328",
+      "subject": "ECON",
+      "number": "328",
+      "title": "Public Finance",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "FIN 250",
+      "subject": "FIN",
+      "number": "250",
+      "title": "Personal Finance",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "FIN 300",
+      "subject": "FIN",
+      "number": "300",
+      "title": "Introduction to Finance",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "PA 553",
+      "subject": "PA",
+      "number": "553",
+      "title": "State and Local Public Finance",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "POLS 211",
+      "subject": "POLS",
+      "number": "211",
+      "title": "Chicago's Future",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "POLS 212",
+      "subject": "POLS",
+      "number": "212",
+      "title": "State Government",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "POLS 228",
+      "subject": "POLS",
+      "number": "228",
+      "title": "U.S. Congress",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "POLS 246",
+      "subject": "POLS",
+      "number": "246",
+      "title": "History of American Capitalism",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "PPOL 296",
+      "subject": "PPOL",
+      "number": "296",
+      "title": "Special Topics in Public Policy (section needs to be chosen in consultation with the student's advisor)",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "PPOL 309",
+      "subject": "PPOL",
+      "number": "309",
+      "title": "Public Budgeting and Financial Management",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ECON 215",
+      "subject": "ECON",
+      "number": "215",
+      "title": "Health Economics",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "PUBH 310",
+      "subject": "PUBH",
+      "number": "310",
+      "title": "Public Health and Global Citizenship",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "PUBH 330",
+      "subject": "PUBH",
+      "number": "330",
+      "title": "Health Equity and Health Disparities",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "PUBH 350",
+      "subject": "PUBH",
+      "number": "350",
+      "title": "Health Systems, Policy, and Advocacy",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "SOC 251",
+      "subject": "SOC",
+      "number": "251",
+      "title": "Health and Medicine",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "MILS 217",
+      "subject": "MILS",
+      "number": "217",
+      "title": "Introduction to United States Military History",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "POLS 281",
+      "subject": "POLS",
+      "number": "281",
+      "title": "United States Foreign Policy",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "POLS 284",
+      "subject": "POLS",
+      "number": "284",
+      "title": "International Security",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "POLS 287",
+      "subject": "POLS",
+      "number": "287",
+      "title": "International Law",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "POLS 384",
+      "subject": "POLS",
+      "number": "384",
+      "title": "International Relations Theory",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "PPOL 231",
+      "subject": "PPOL",
+      "number": "231",
+      "title": "Social Policy and Inequality in the U.S.",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "SJ 201",
+      "subject": "SJ",
+      "number": "201",
+      "title": "Theories and Practices of Social Justice",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "SOC 225",
+      "subject": "SOC",
+      "number": "225",
+      "title": "Racial and Ethnic Groups b",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "SOC 241",
+      "subject": "SOC",
+      "number": "241",
+      "title": "Social Inequalities b",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "SOC 265",
+      "subject": "SOC",
+      "number": "265",
+      "title": "Sociology of Politics b",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ENGL 160",
+      "subject": "ENGL",
+      "number": "160",
+      "title": "Academic Writing I: Writing in Academic and Public Contexts",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "ENGL 161",
+      "subject": "ENGL",
+      "number": "161",
+      "title": "Academic Writing II: Writing for Inquiry and Research",
+      "hours": 3,
+      "required": true
+    }
+  ],
+  "sampleSchedule": [
+    {
+      "year": "Freshman Year",
+      "semester": "First Semester",
+      "total_hours": 14,
+      "courses": [
+        {
+          "code": "UPA 120",
+          "title": "Urban and Public Affairs Seminar I",
+          "hours": 1,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "MATH 110",
+          "title": "College Algebra",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "ENGL 160",
+          "title": "Academic Writing I: Writing in Academic and Public Contexts",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "PPOL 100",
+          "title": "Individual Action and Democratic Citizenship",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "General Education course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        }
+      ]
+    },
+    {
+      "year": "Freshman Year",
+      "semester": "Second Semester",
+      "total_hours": 14,
+      "courses": [
+        {
+          "code": "UPA 121",
+          "title": "Urban and Public Affairs Seminar II",
+          "hours": 1,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "PPOL 105",
+          "title": "Programming and Data Analysis for Public Policy I",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "ENGL 161",
+          "title": "Academic Writing II: Writing for Inquiry and Research",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "ECON 120",
+          "title": "Principles of Microeconomics",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "General Education course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        }
+      ]
+    },
+    {
+      "year": "Sophomore Year",
+      "semester": "First Semester",
+      "total_hours": 15,
+      "courses": [
+        {
+          "code": "PPOL 210",
+          "title": "Introduction to Public Policy",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "US 240",
+          "title": "Urban and Community Economics",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "General Education course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        },
+        {
+          "code": null,
+          "title": "General Education course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        },
+        {
+          "code": null,
+          "title": "Elective",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        }
+      ]
+    },
+    {
+      "year": "Sophomore Year",
+      "semester": "Second Semester",
+      "total_hours": 15,
+      "courses": [
+        {
+          "code": "PPOL 305",
+          "title": "Policy Analysis",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "PPOL 205",
+          "title": "Programming and Data Analysis for Public Policy II",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "General Education course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        },
+        {
+          "code": null,
+          "title": "Elective",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": null,
+          "title": "Elective",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        }
+      ]
+    },
+    {
+      "year": "Junior Year",
+      "semester": "First Semester",
+      "total_hours": 15,
+      "courses": [
+        {
+          "code": "PPOL 303",
+          "title": "Policy Implementation and Management",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "Elective",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": null,
+          "title": "Elective",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": null,
+          "title": "Elective",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": null,
+          "title": "Elective",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        }
+      ]
+    },
+    {
+      "year": "Junior Year",
+      "semester": "Second Semester",
+      "total_hours": 15,
+      "courses": [
+        {
+          "code": null,
+          "title": "Elective",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": null,
+          "title": "Elective",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": null,
+          "title": "Elective",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": null,
+          "title": "Elective",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        }
+      ]
+    },
+    {
+      "year": "Senior Year",
+      "semester": "First Semester",
+      "total_hours": 15,
+      "courses": [
+        {
+          "code": "PPOL 405",
+          "title": "Evaluating Public Policies and Programs",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "Elective",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": null,
+          "title": "Elective",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        }
+      ]
+    },
+    {
+      "year": "Senior Year",
+      "semester": "Second Semester",
+      "total_hours": 17,
+      "courses": [
+        {
+          "code": "PPOL 491",
+          "title": "Internship Experience in Public Policy and Urban Studies",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "Policy Specialization Elective",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": null,
+          "title": "Elective",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": null,
+          "title": "Elective",
+          "hours": 4,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": null,
+          "title": "Elective",
+          "hours": 4,
+          "isElective": true,
+          "electiveType": "elective_general"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,686 @@
+{
+  "name": "Global Asian Studies - BA with a Major",
+  "college": "Global Asian Studies",
+  "department": "Global Asian Studies",
+  "url": "https://catalog.uic.edu/ucat/colleges-depts/liberal-arts-sciences/glas/ba-glas/",
+  "totalHours": 120,
+  "summaryRequirements": {
+    "General Education Requirements and Electives to reach total minimum hours": "87",
+    "Major Requirements": "33",
+    "Total Hours": "120"
+  },
+  "requiredCourses": [
+    {
+      "code": "GLAS 100",
+      "subject": "GLAS",
+      "number": "100",
+      "title": "Introduction to Global Asian Studies",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "GLAS 210",
+      "subject": "GLAS",
+      "number": "210",
+      "title": "Asian American Histories a",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "GLAS 300",
+      "subject": "GLAS",
+      "number": "300",
+      "title": "Global Asia in Chicago",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "GLAS 120",
+      "subject": "GLAS",
+      "number": "120",
+      "title": "Introduction to Asian American Studies",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "GLAS 217",
+      "subject": "GLAS",
+      "number": "217",
+      "title": "Introduction to Filipino American Studies",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "GLAS 223",
+      "subject": "GLAS",
+      "number": "223",
+      "title": "Global Hip-hop and Asian Diasporas",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "GLAS 224",
+      "subject": "GLAS",
+      "number": "224",
+      "title": "Archaeology of Mainland Southeast Asia",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "GLAS 228",
+      "subject": "GLAS",
+      "number": "228",
+      "title": "Sociology of Asia and Asian Americans",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "GLAS 230",
+      "subject": "GLAS",
+      "number": "230",
+      "title": "Cultural Politics of Asian American Food",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "GLAS 242",
+      "subject": "GLAS",
+      "number": "242",
+      "title": "Introduction to Arab American Studies",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "GLAS 244",
+      "subject": "GLAS",
+      "number": "244",
+      "title": "Arab and Asian Connections in the U.S. and Globally",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "GLAS 248",
+      "subject": "GLAS",
+      "number": "248",
+      "title": "Afro Asian Solidarities",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "GLAS 255",
+      "subject": "GLAS",
+      "number": "255",
+      "title": "Introduction to Middle East and Muslim Feminisms",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "GLAS 264",
+      "subject": "GLAS",
+      "number": "264",
+      "title": "The Pacific Rim in Modern History",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "GLAS 270",
+      "subject": "GLAS",
+      "number": "270",
+      "title": "Topics in Asian Cultures and Societies",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "GLAS 290",
+      "subject": "GLAS",
+      "number": "290",
+      "title": "Special Topics in Asian American Studies",
+      "hours": 13,
+      "required": true
+    },
+    {
+      "code": "GLAS 390",
+      "subject": "GLAS",
+      "number": "390",
+      "title": "Special Topics in Asian American Studies",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "GLAS 394",
+      "subject": "GLAS",
+      "number": "394",
+      "title": "Special Topics in Asian Studies",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "GLAS 428",
+      "subject": "GLAS",
+      "number": "428",
+      "title": "Asian/Asian American Women in the Global Economy",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "GLAS 437",
+      "subject": "GLAS",
+      "number": "437",
+      "title": "The Indian Ocean World: Contact, Commerce, Culture",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "GLAS 458",
+      "subject": "GLAS",
+      "number": "458",
+      "title": "Asian America and Transnational Feminism",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "GLAS 465",
+      "subject": "GLAS",
+      "number": "465",
+      "title": "Asian Diasporas in Latin America",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "GLAS 479",
+      "subject": "GLAS",
+      "number": "479",
+      "title": "Culture and Colonialism in South Asia",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "GLAS 490",
+      "subject": "GLAS",
+      "number": "490",
+      "title": "Advanced Topics in Asian American Studies",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "GLAS 494",
+      "subject": "GLAS",
+      "number": "494",
+      "title": "Advanced Topics in Asian Studies",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "GLAS 105",
+      "subject": "GLAS",
+      "number": "105",
+      "title": "Asian and/or Asian American Studies Seminar",
+      "hours": 1,
+      "required": true
+    },
+    {
+      "code": "GLAS 123",
+      "subject": "GLAS",
+      "number": "123",
+      "title": "Introduction to Asian American Literature",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "GLAS 125",
+      "subject": "GLAS",
+      "number": "125",
+      "title": "Introduction to the Art and Architecture of Asia",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "GLAS 209",
+      "subject": "GLAS",
+      "number": "209",
+      "title": "Advanced Chinese Language and Culture",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "GLAS 219",
+      "subject": "GLAS",
+      "number": "219",
+      "title": "Art and Architecture of East Asia",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "GLAS 220",
+      "subject": "GLAS",
+      "number": "220",
+      "title": "Buddhist Art and Architecture",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "GLAS 229",
+      "subject": "GLAS",
+      "number": "229",
+      "title": "Introduction to Asian Film",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "GLAS 263",
+      "subject": "GLAS",
+      "number": "263",
+      "title": "Asian American Gender and Sexual Diversity",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "GLAS 278",
+      "subject": "GLAS",
+      "number": "278",
+      "title": "Topics in the Art, Architecture and Visual Culture of Asia",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "GLAS 328",
+      "subject": "GLAS",
+      "number": "328",
+      "title": "Asian American Literature",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "GLAS 441",
+      "subject": "GLAS",
+      "number": "441",
+      "title": "Topics in Asian American Literature and Culture",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "GLAS 463",
+      "subject": "GLAS",
+      "number": "463",
+      "title": "Politics of Gender and Sexuality in Asian America",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "GLAS 471",
+      "subject": "GLAS",
+      "number": "471",
+      "title": "Topics in Asian Art and Architecture",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "GLAS 109",
+      "subject": "GLAS",
+      "number": "109",
+      "title": "East Asian Civilization: Ancient China",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "GLAS 200",
+      "subject": "GLAS",
+      "number": "200",
+      "title": "Gandhi: The History and Practice of Nonviolence",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "GLAS 201",
+      "subject": "GLAS",
+      "number": "201",
+      "title": "Asian Markets, Corporations, and Social Justice",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "GLAS 207",
+      "subject": "GLAS",
+      "number": "207",
+      "title": "Asian Cities: Urban Cultures of the Global South",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "GLAS 231",
+      "subject": "GLAS",
+      "number": "231",
+      "title": "Politics and Society of China",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "GLAS 232",
+      "subject": "GLAS",
+      "number": "232",
+      "title": "Politics and Government of Korea",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "GLAS 250",
+      "subject": "GLAS",
+      "number": "250",
+      "title": "Critical Issues in Community Engagement",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "GLAS 271",
+      "subject": "GLAS",
+      "number": "271",
+      "title": "Late Imperial China",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "GLAS 272",
+      "subject": "GLAS",
+      "number": "272",
+      "title": "China Since 1911",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "GLAS 275",
+      "subject": "GLAS",
+      "number": "275",
+      "title": "History of South Asia to 1857",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "GLAS 276",
+      "subject": "GLAS",
+      "number": "276",
+      "title": "Modern South Asia",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "GLAS 279",
+      "subject": "GLAS",
+      "number": "279",
+      "title": "South Asian Cultures and Societies",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "GLAS 438",
+      "subject": "GLAS",
+      "number": "438",
+      "title": "Women in South Asian History",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "GLAS 473",
+      "subject": "GLAS",
+      "number": "473",
+      "title": "Topics in East Asian History",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "ENGL 160",
+      "subject": "ENGL",
+      "number": "160",
+      "title": "Academic Writing I: Writing in Academic and Public Contexts",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "ENGL 161",
+      "subject": "ENGL",
+      "number": "161",
+      "title": "Academic Writing II: Writing for Inquiry and Research",
+      "hours": 3,
+      "required": true
+    }
+  ],
+  "sampleSchedule": [
+    {
+      "year": "First Year",
+      "semester": "Fall Semester",
+      "total_hours": 15,
+      "courses": [
+        {
+          "code": "ENGL 160",
+          "title": "Academic Writing I: Writing in Academic and Public Contexts",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "GLAS 100",
+          "title": "Introduction to Global Asian Studies",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        }
+      ]
+    },
+    {
+      "year": "First Year",
+      "semester": "Spring Semester",
+      "total_hours": 16,
+      "courses": [
+        {
+          "code": "ENGL 161",
+          "title": "Academic Writing II: Writing for Inquiry and Research",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "GLAS Major Elective a",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": null,
+          "title": "General Education Requirement course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        },
+        {
+          "code": null,
+          "title": "General Education Requirement course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        }
+      ]
+    },
+    {
+      "year": "Second Year",
+      "semester": "Fall Semester",
+      "total_hours": null,
+      "courses": [
+        {
+          "code": "GLAS 210",
+          "title": "Asian American Histories b",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "General Education Requirement course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        },
+        {
+          "code": null,
+          "title": "General Education Requirement course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        },
+        {
+          "code": null,
+          "title": "General Education Requirement course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        }
+      ]
+    },
+    {
+      "year": "Second Year",
+      "semester": "Spring Semester",
+      "total_hours": null,
+      "courses": [
+        {
+          "code": null,
+          "title": "GLAS Major Elective a",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": null,
+          "title": "GLAS Major Elective a",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": null,
+          "title": "General Education Requirement course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        }
+      ]
+    },
+    {
+      "year": "Third Year",
+      "semester": "Fall Semester",
+      "total_hours": 15,
+      "courses": [
+        {
+          "code": null,
+          "title": "GLAS Major Elective (200 level or above) a",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": null,
+          "title": "GLAS Major Elective (200 level or above) a",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": null,
+          "title": "General Education Requirement course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        },
+        {
+          "code": null,
+          "title": "General Education Requirement course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        },
+        {
+          "code": null,
+          "title": "Electives",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        }
+      ]
+    },
+    {
+      "year": "Third Year",
+      "semester": "Spring Semester",
+      "total_hours": 15,
+      "courses": [
+        {
+          "code": "GLAS 300",
+          "title": "Global Asia in Chicago",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "General Education Requirement course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        },
+        {
+          "code": null,
+          "title": "Electives",
+          "hours": 9,
+          "isElective": true,
+          "electiveType": "elective_general"
+        }
+      ]
+    },
+    {
+      "year": "Fourth Year",
+      "semester": "Fall Semester",
+      "total_hours": 15,
+      "courses": [
+        {
+          "code": null,
+          "title": "GLAS Major Elective (200 level or above) a",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": null,
+          "title": "GLAS Major Elective (400 level)",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": null,
+          "title": "Electives",
+          "hours": 9,
+          "isElective": true,
+          "electiveType": "elective_general"
+        }
+      ]
+    },
+    {
+      "year": "Fourth Year",
+      "semester": "Spring Semester",
+      "total_hours": 15,
+      "courses": [
+        {
+          "code": null,
+          "title": "GLAS Major Elective (200 level or above) a",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": null,
+          "title": "Electives",
+          "hours": 12,
+          "isElective": true,
+          "electiveType": "elective_general"
+        }
+      ]
+    }
+  ]
+}

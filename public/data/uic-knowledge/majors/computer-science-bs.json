@@ -1,0 +1,929 @@
+{
+  "name": "Computer Science - BS",
+  "college": "Computer Science",
+  "department": "Computer Science",
+  "url": "https://catalog.uic.edu/ucat/colleges-depts/engineering/cs/bs-cs/",
+  "totalHours": 128,
+  "summaryRequirements": {
+    "Nonengineering and General Education Requirements": "46",
+    "Required in the College of Engineering": "46",
+    "Technical Electives": "18",
+    "Required Mathematics Courses": "9",
+    "Free Electives": "9",
+    "Total Hours": "128"
+  },
+  "nonEngineeringRequirements": {
+    "totalHours": 46,
+    "description": "Nonengineering and General Education Requirements — includes fixed courses, gen ed categories, science electives, and humanities/social science electives",
+    "fixedCourses": [
+      {
+        "code": "ENGL 160",
+        "subject": "ENGL",
+        "number": "160",
+        "title": "Academic Writing I: Writing in Academic and Public Contexts",
+        "hours": 3
+      },
+      {
+        "code": "ENGL 161",
+        "subject": "ENGL",
+        "number": "161",
+        "title": "Academic Writing II: Writing for Inquiry and Research",
+        "hours": 3
+      },
+      {
+        "code": "MATH 180",
+        "subject": "MATH",
+        "number": "180",
+        "title": "Calculus I",
+        "hours": 4
+      },
+      {
+        "code": "MATH 181",
+        "subject": "MATH",
+        "number": "181",
+        "title": "Calculus II",
+        "hours": 4
+      },
+      {
+        "code": "MATH 210",
+        "subject": "MATH",
+        "number": "210",
+        "title": "Calculus III",
+        "hours": 3
+      }
+    ],
+    "generalEducationCore": {
+      "description": "UIC General Education Core courses (Analyzing the Natural World, Understanding the Individual and Society, Understanding the Past, Understanding the Creative Arts, etc.)",
+      "hours": 15,
+      "note": "Students must fulfill UIC general education category requirements — specific courses vary"
+    },
+    "humanitiesSocialScienceArt": {
+      "description": "Humanities, Social Sciences, or Art electives",
+      "hours": 6,
+      "note": "Any approved humanities, social science, or art courses (two 3-credit courses)"
+    },
+    "scienceElectives": {
+      "description": "Science Electives — 2 lab science courses (4 credit hours each = 8h total); see scienceElectives section for options",
+      "hours": 8
+    }
+  },
+  "requiredEngineering": {
+    "totalHours": 46,
+    "description": "Required in the College of Engineering — these courses are mandatory for all CS BS students",
+    "courses": [
+      {
+        "code": "ENGR 100",
+        "subject": "ENGR",
+        "number": "100",
+        "title": "Engineering Success Seminar for Freshmen",
+        "hours": 1,
+        "note": "Required for all engineering freshmen"
+      },
+      {
+        "code": "CS 111",
+        "subject": "CS",
+        "number": "111",
+        "title": "Program Design I",
+        "hours": 3,
+        "note": "Or CS 112 (biological context) or CS 113 (law/public policy context) — one required"
+      },
+      {
+        "code": "CS 141",
+        "subject": "CS",
+        "number": "141",
+        "title": "Program Design II",
+        "hours": 3
+      },
+      {
+        "code": "CS 151",
+        "subject": "CS",
+        "number": "151",
+        "title": "Mathematical Foundations of Computing",
+        "hours": 3
+      },
+      {
+        "code": "CS 211",
+        "subject": "CS",
+        "number": "211",
+        "title": "Programming Practicum",
+        "hours": 3
+      },
+      {
+        "code": "CS 251",
+        "subject": "CS",
+        "number": "251",
+        "title": "Data Structures",
+        "hours": 4
+      },
+      {
+        "code": "CS 261",
+        "subject": "CS",
+        "number": "261",
+        "title": "Machine Organization",
+        "hours": 4
+      },
+      {
+        "code": "CS 277",
+        "subject": "CS",
+        "number": "277",
+        "title": "Technical and Professional Communication in Computer Science",
+        "hours": 3
+      },
+      {
+        "code": "CS 301",
+        "subject": "CS",
+        "number": "301",
+        "title": "Languages and Automata",
+        "hours": 3
+      },
+      {
+        "code": "CS 341",
+        "subject": "CS",
+        "number": "341",
+        "title": "Programming Language Design and Implementation",
+        "hours": 3
+      },
+      {
+        "code": "CS 342",
+        "subject": "CS",
+        "number": "342",
+        "title": "Software Design",
+        "hours": 3
+      },
+      {
+        "code": "CS 361",
+        "subject": "CS",
+        "number": "361",
+        "title": "Systems Programming",
+        "hours": 4
+      },
+      {
+        "code": "CS 362",
+        "subject": "CS",
+        "number": "362",
+        "title": "Computer Design",
+        "hours": 4
+      },
+      {
+        "code": "CS 377",
+        "subject": "CS",
+        "number": "377",
+        "title": "Ethical Issues in Computing",
+        "hours": 3
+      },
+      {
+        "code": "CS 401",
+        "subject": "CS",
+        "number": "401",
+        "title": "Computer Algorithms I",
+        "hours": 3
+      },
+      {
+        "code": "CS 499",
+        "subject": "CS",
+        "number": "499",
+        "title": "Professional Development Seminar",
+        "hours": 0,
+        "note": "0 credit hours, required in senior year"
+      }
+    ]
+  },
+  "technicalElectives": {
+    "totalHours": 18,
+    "description": "Technical Electives — select 6 courses (3 credit hours each), only one of which may be outside the CS rubric",
+    "selectCount": 6,
+    "hoursEach": 3,
+    "note": "Only one elective may come from outside the CS department (e.g., ECE, IT, MCS, STAT)",
+    "options": [
+      {
+        "code": "CS 351",
+        "title": "Advanced Data Structure Practicum",
+        "hours": 3
+      },
+      {
+        "code": "CS 378",
+        "title": "Framework-based Software Development for Hand-held Devices",
+        "hours": 3
+      },
+      {
+        "code": "CS 398",
+        "title": "Undergraduate Design/Research",
+        "hours": 3
+      },
+      {
+        "code": "CS 402",
+        "title": "Algorithms in Practice",
+        "hours": 3
+      },
+      {
+        "code": "CS 407",
+        "title": "Economics and Computation",
+        "hours": 3
+      },
+      {
+        "code": "CS 411",
+        "title": "Artificial Intelligence I",
+        "hours": 3
+      },
+      {
+        "code": "CS 412",
+        "title": "Introduction to Machine Learning",
+        "hours": 3
+      },
+      {
+        "code": "CS 415",
+        "title": "Computer Vision I",
+        "hours": 3
+      },
+      {
+        "code": "CS 418",
+        "title": "Introduction to Data Science",
+        "hours": 3
+      },
+      {
+        "code": "CS 421",
+        "title": "Natural Language Processing",
+        "hours": 3
+      },
+      {
+        "code": "CS 422",
+        "title": "User Interface Design and Programming",
+        "hours": 3
+      },
+      {
+        "code": "CS 424",
+        "title": "Visualization and Visual Analytics",
+        "hours": 3
+      },
+      {
+        "code": "CS 425",
+        "title": "Computer Graphics I",
+        "hours": 3
+      },
+      {
+        "code": "CS 426",
+        "title": "Video Game Design and Development",
+        "hours": 3
+      },
+      {
+        "code": "CS 427",
+        "title": "Creative Coding",
+        "hours": 3
+      },
+      {
+        "code": "CS 428",
+        "title": "Virtual, Augmented and Mixed Reality",
+        "hours": 3
+      },
+      {
+        "code": "CS 440",
+        "title": "Software Engineering I",
+        "hours": 3
+      },
+      {
+        "code": "CS 441",
+        "title": "Engineering Distributed Objects For Cloud Computing",
+        "hours": 3
+      },
+      {
+        "code": "CS 442",
+        "title": "Software Engineering II",
+        "hours": 3
+      },
+      {
+        "code": "CS 450",
+        "title": "Introduction to Networking",
+        "hours": 3
+      },
+      {
+        "code": "CS 453",
+        "title": "Introduction to Parallel and Distributed Processing",
+        "hours": 3
+      },
+      {
+        "code": "CS 454",
+        "title": "Principles of Concurrent Programming",
+        "hours": 3
+      },
+      {
+        "code": "CS 455",
+        "title": "Introduction to High Performance Computing",
+        "hours": 3
+      },
+      {
+        "code": "CS 461",
+        "title": "Operating Systems Design and Implementation",
+        "hours": 3
+      },
+      {
+        "code": "CS 463",
+        "title": "Systems Performance and Concurrent Computing",
+        "hours": 3
+      },
+      {
+        "code": "CS 466",
+        "title": "Computer Architecture",
+        "hours": 3
+      },
+      {
+        "code": "CS 468",
+        "title": "Network Security",
+        "hours": 3
+      },
+      {
+        "code": "CS 473",
+        "title": "Compiler Design",
+        "hours": 3
+      },
+      {
+        "code": "CS 474",
+        "title": "Object-Oriented Languages and Environments",
+        "hours": 3
+      },
+      {
+        "code": "CS 476",
+        "title": "Programming Language Design",
+        "hours": 3
+      },
+      {
+        "code": "CS 477",
+        "title": "Public Policy, Legal, and Ethical Issues in Computing, Privacy, and Security",
+        "hours": 3
+      },
+      {
+        "code": "CS 478",
+        "title": "Software Development for Mobile Platforms",
+        "hours": 3
+      },
+      {
+        "code": "CS 479",
+        "title": "Wearables and Nearables Technology Laboratory",
+        "hours": 3
+      },
+      {
+        "code": "CS 480",
+        "title": "Database Systems",
+        "hours": 3
+      },
+      {
+        "code": "CS 483",
+        "title": "Big Data Mining",
+        "hours": 3
+      },
+      {
+        "code": "CS 484",
+        "title": "Secure Web Application Development",
+        "hours": 3
+      },
+      {
+        "code": "CS 485",
+        "title": "Networked Operating Systems Programming",
+        "hours": 3
+      },
+      {
+        "code": "CS 487",
+        "title": "Building Secure Computer Systems",
+        "hours": 3
+      },
+      {
+        "code": "CS 488",
+        "title": "Introduction to Cryptography",
+        "hours": 3
+      },
+      {
+        "code": "CS 489",
+        "title": "Human Augmentics",
+        "hours": 3
+      },
+      {
+        "code": "ECE 469",
+        "title": "Hardware Description Language Based Digital and Computer System Design",
+        "hours": 3
+      },
+      {
+        "code": "IT 301",
+        "title": "Networks and Distributed Computing Technology",
+        "hours": 3
+      },
+      {
+        "code": "IT 302",
+        "title": "Database Administration and Installation",
+        "hours": 3
+      },
+      {
+        "code": "MCS 320",
+        "title": "Introduction to Symbolic Computation",
+        "hours": 3
+      },
+      {
+        "code": "MCS 425",
+        "title": "Codes and Cryptography",
+        "hours": 3
+      },
+      {
+        "code": "MCS 471",
+        "title": "Numerical Analysis",
+        "hours": 3
+      },
+      {
+        "code": "MCS 481",
+        "title": "Computational Geometry",
+        "hours": 3
+      },
+      {
+        "code": "STAT 471",
+        "title": "Linear and Non-Linear Programming",
+        "hours": 3
+      }
+    ]
+  },
+  "requiredMath": {
+    "totalHours": 9,
+    "description": "Required Mathematics Courses — select 9 credit hours from the list below; at least one course must be IE 342 or STAT 381",
+    "requiredOneOf": [
+      "IE 342",
+      "STAT 381"
+    ],
+    "note": "At least one course must be taken from IE 342 (Probability and Statistics for Engineers) or STAT 381 (Applied Statistical Methods I)",
+    "options": [
+      {
+        "code": "IE 342",
+        "title": "Probability and Statistics for Engineers",
+        "hours": 3,
+        "note": "Required — at least one from IE 342 or STAT 381"
+      },
+      {
+        "code": "STAT 381",
+        "title": "Applied Statistical Methods I",
+        "hours": 3,
+        "note": "Required — at least one from IE 342 or STAT 381"
+      },
+      {
+        "code": "MATH 215",
+        "title": "Introduction to Advanced Mathematics",
+        "hours": 3
+      },
+      {
+        "code": "MATH 218",
+        "title": "Applied Linear Algebra",
+        "hours": 3
+      },
+      {
+        "code": "MATH 220",
+        "title": "Introduction to Differential Equations",
+        "hours": 3
+      },
+      {
+        "code": "MATH 320",
+        "title": "Linear Algebra I",
+        "hours": 3
+      },
+      {
+        "code": "MATH 430",
+        "title": "Formal Logic I",
+        "hours": 3
+      },
+      {
+        "code": "MATH 435",
+        "title": "Foundations of Number Theory",
+        "hours": 3
+      },
+      {
+        "code": "MATH 436",
+        "title": "Number Theory for Applications",
+        "hours": 3
+      },
+      {
+        "code": "MCS 421",
+        "title": "Combinatorics",
+        "hours": 3
+      },
+      {
+        "code": "MCS 423",
+        "title": "Graph Theory",
+        "hours": 3
+      },
+      {
+        "code": "MCS 471",
+        "title": "Numerical Analysis",
+        "hours": 3
+      },
+      {
+        "code": "STAT 401",
+        "title": "Introduction to Probability",
+        "hours": 3
+      },
+      {
+        "code": "STAT 473",
+        "title": "Game Theory",
+        "hours": 3
+      }
+    ]
+  },
+  "scienceElectives": {
+    "totalHours": 8,
+    "description": "Science Electives — choose 2 lab science sequences (4 credit hours each = 8 total); counted within the 46h Nonengineering and General Education requirement",
+    "selectCount": 2,
+    "hoursEach": 4,
+    "note": "Courses must include a lab component. CHEM and BIOS courses are paired lab+lecture courses.",
+    "options": [
+      {
+        "code": "BIOS 110",
+        "title": "Biology of Cells and Organisms",
+        "hours": 4
+      },
+      {
+        "code": "BIOS 120",
+        "title": "Biology of Populations and Communities",
+        "hours": 4
+      },
+      {
+        "code": "CHEM 122 + CHEM 123",
+        "title": "Organic Chemistry I + Lab",
+        "hours": 4
+      },
+      {
+        "code": "CHEM 124 + CHEM 125",
+        "title": "Organic Chemistry II + Lab",
+        "hours": 4
+      },
+      {
+        "code": "PHYS 141",
+        "title": "General Physics I (Mechanics)",
+        "hours": 4
+      },
+      {
+        "code": "PHYS 142",
+        "title": "General Physics II (Electricity and Magnetism)",
+        "hours": 4
+      },
+      {
+        "code": "EAES 101",
+        "title": "Global Environmental Change",
+        "hours": 4
+      },
+      {
+        "code": "EAES 111",
+        "title": "Earth, Energy, and the Environment",
+        "hours": 4
+      }
+    ]
+  },
+  "freeElectives": {
+    "totalHours": 9,
+    "description": "Free Electives — any coursework at UIC, 9 credit hours total",
+    "note": "Can be used to explore minors, double major courses, or any interest area"
+  },
+  "sampleSchedule": [
+    {
+      "year": "Freshman Year",
+      "semester": "First Semester",
+      "total_hours": 14,
+      "courses": [
+        {
+          "code": "MATH 180",
+          "title": "Calculus I",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "CS 111",
+          "title": "Program Design I or Program Design I in the Context of Biological Problems or Program Design I in the Context of Law and Public Policy",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "ENGL 160",
+          "title": "Academic Writing I: Writing in Academic and Public Contexts",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "Science Elective",
+          "hours": 4,
+          "isElective": true,
+          "electiveType": "science_elective"
+        },
+        {
+          "code": "ENGR 100",
+          "title": "Engineering Success Seminar for Freshmen",
+          "hours": 1,
+          "isElective": false,
+          "electiveType": null
+        }
+      ]
+    },
+    {
+      "year": "Freshman Year",
+      "semester": "Second Semester",
+      "total_hours": 16,
+      "courses": [
+        {
+          "code": "MATH 181",
+          "title": "Calculus II",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "ENGL 161",
+          "title": "Academic Writing II: Writing for Inquiry and Research",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "General Education Core course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        },
+        {
+          "code": "CS 141",
+          "title": "Program Design II",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "CS 151",
+          "title": "Mathematical Foundations of Computing",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        }
+      ]
+    },
+    {
+      "year": "Sophomore Year",
+      "semester": "First Semester",
+      "total_hours": 17,
+      "courses": [
+        {
+          "code": "MATH 210",
+          "title": "Calculus III",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "Science Elective",
+          "hours": 4,
+          "isElective": true,
+          "electiveType": "science_elective"
+        },
+        {
+          "code": "CS 211",
+          "title": "Programming Practicum",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "CS 251",
+          "title": "Data Structures",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "General Education Core course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        }
+      ]
+    },
+    {
+      "year": "Sophomore Year",
+      "semester": "Second Semester",
+      "total_hours": 16,
+      "courses": [
+        {
+          "code": "CS 261",
+          "title": "Machine Organization",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "CS 301",
+          "title": "Languages and Automata",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "Required Mathematics course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "required_math"
+        },
+        {
+          "code": null,
+          "title": "Humanities/Social Science/Art Elective",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "humanities_elective"
+        },
+        {
+          "code": null,
+          "title": "General Education Core course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        }
+      ]
+    },
+    {
+      "year": "Junior Year",
+      "semester": "First Semester",
+      "total_hours": 17,
+      "courses": [
+        {
+          "code": "CS 361",
+          "title": "Systems Programming",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "CS 362",
+          "title": "Computer Design",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "CS 342",
+          "title": "Software Design",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "Required Mathematics course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "required_math"
+        },
+        {
+          "code": null,
+          "title": "General Education Core course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        }
+      ]
+    },
+    {
+      "year": "Junior Year",
+      "semester": "Second Semester",
+      "total_hours": 16,
+      "courses": [
+        {
+          "code": "CS 277",
+          "title": "Technical and Professional Communication in Computer Science",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "CS 341",
+          "title": "Programming Language Design and Implementation",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "Required Mathematics course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "required_math"
+        },
+        {
+          "code": null,
+          "title": "Humanities/Social Sciences/Art Elective",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "humanities_elective"
+        },
+        {
+          "code": null,
+          "title": "Free Elective",
+          "hours": 4,
+          "isElective": true,
+          "electiveType": "free_elective"
+        }
+      ]
+    },
+    {
+      "year": "Senior Year",
+      "semester": "First Semester",
+      "total_hours": 17,
+      "courses": [
+        {
+          "code": "CS 377",
+          "title": "Ethical Issues in Computing",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "CS 401",
+          "title": "Computer Algorithms I",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "Technical Elective",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "technical_elective"
+        },
+        {
+          "code": null,
+          "title": "Technical Elective",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "technical_elective"
+        },
+        {
+          "code": null,
+          "title": "General Education Core course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        },
+        {
+          "code": null,
+          "title": "Free Elective",
+          "hours": 2,
+          "isElective": true,
+          "electiveType": "free_elective"
+        }
+      ]
+    },
+    {
+      "year": "Senior Year",
+      "semester": "Second Semester",
+      "total_hours": 15,
+      "courses": [
+        {
+          "code": null,
+          "title": "Technical Elective",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "technical_elective"
+        },
+        {
+          "code": null,
+          "title": "Technical Elective",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "technical_elective"
+        },
+        {
+          "code": null,
+          "title": "Technical Elective",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "technical_elective"
+        },
+        {
+          "code": null,
+          "title": "Technical Elective",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "technical_elective"
+        },
+        {
+          "code": null,
+          "title": "Free Elective",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "free_elective"
+        },
+        {
+          "code": "CS 499",
+          "title": "Professional Development Seminar",
+          "hours": 0,
+          "isElective": false,
+          "electiveType": null
+        }
+      ]
+    }
+  ]
+}

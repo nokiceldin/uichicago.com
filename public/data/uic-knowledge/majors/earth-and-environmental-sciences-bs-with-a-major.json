@@ -1,0 +1,580 @@
+{
+  "name": "Earth and Environmental Sciences - BS with a Major",
+  "college": "Earth and Environmental Sciences",
+  "department": "Earth and Environmental Sciences",
+  "url": "https://catalog.uic.edu/ucat/colleges-depts/liberal-arts-sciences/eaes/bs/",
+  "totalHours": 120,
+  "summaryRequirements": {
+    "Required Prerequisite and Collateral Courses": "24-26",
+    "Core Courses": "23",
+    "Selective Courses": "15",
+    "General Education and Electives to reach minimum Total Hours": "56-58",
+    "Total Hours": "120"
+  },
+  "requiredCourses": [
+    {
+      "code": "PHYS 131",
+      "subject": "PHYS",
+      "number": "131",
+      "title": "Introductory Physics for Life Sciences I a",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "PHYS 141",
+      "subject": "PHYS",
+      "number": "141",
+      "title": "General Physics I (Mechanics) a",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "CHEM 122",
+      "subject": "CHEM",
+      "number": "122",
+      "title": "Matter and Energy b",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "CHEM 123",
+      "subject": "CHEM",
+      "number": "123",
+      "title": "Foundations of Chemical Inquiry I a,b",
+      "hours": 2,
+      "required": true
+    },
+    {
+      "code": "MATH 180",
+      "subject": "MATH",
+      "number": "180",
+      "title": "Calculus I a,c",
+      "hours": 4,
+      "required": true
+    },
+    {
+      "code": "MATH 181",
+      "subject": "MATH",
+      "number": "181",
+      "title": "Calculus II a",
+      "hours": 4,
+      "required": true
+    },
+    {
+      "code": "BIOS 110",
+      "subject": "BIOS",
+      "number": "110",
+      "title": "Biology of Cells and Organisms a",
+      "hours": 4,
+      "required": true
+    },
+    {
+      "code": "PHYS 132",
+      "subject": "PHYS",
+      "number": "132",
+      "title": "Introductory Physics for Life Sciences II a",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "PHYS 142",
+      "subject": "PHYS",
+      "number": "142",
+      "title": "General Physics II (Electricity and Magnetism) a",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "MATH 210",
+      "subject": "MATH",
+      "number": "210",
+      "title": "Calculus III a",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "EAES 101",
+      "subject": "EAES",
+      "number": "101",
+      "title": "Global Environmental Change a",
+      "hours": 4,
+      "required": true
+    },
+    {
+      "code": "EAES 111",
+      "subject": "EAES",
+      "number": "111",
+      "title": "Earth, Energy, and the Environment a",
+      "hours": 4,
+      "required": true
+    },
+    {
+      "code": "EAES 290",
+      "subject": "EAES",
+      "number": "290",
+      "title": "Communication in Earth and Environmental Sciences b",
+      "hours": 2,
+      "required": true
+    },
+    {
+      "code": "EAES 300",
+      "subject": "EAES",
+      "number": "300",
+      "title": "Fieldwork in Missouri",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "EAES 302",
+      "subject": "EAES",
+      "number": "302",
+      "title": "Methods in Environmental Sciences",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "EAES 330",
+      "subject": "EAES",
+      "number": "330",
+      "title": "Earth Materials",
+      "hours": 4,
+      "required": true
+    },
+    {
+      "code": "EAES 380",
+      "subject": "EAES",
+      "number": "380",
+      "title": "Earth and Environmental Data Science",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "EAES 385",
+      "subject": "EAES",
+      "number": "385",
+      "title": "Earth Systems",
+      "hours": 4,
+      "required": true
+    },
+    {
+      "code": "EAES 350",
+      "subject": "EAES",
+      "number": "350",
+      "title": "Sedimentary Environments",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "EAES 430",
+      "subject": "EAES",
+      "number": "430",
+      "title": "Petrology",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "EAES 440",
+      "subject": "EAES",
+      "number": "440",
+      "title": "Structural Geology and Tectonics",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "EAES 444",
+      "subject": "EAES",
+      "number": "444",
+      "title": "Geophysics",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "EAES 470",
+      "subject": "EAES",
+      "number": "470",
+      "title": "Environmental Geomorphology",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "EAES 472",
+      "subject": "EAES",
+      "number": "472",
+      "title": "Remote Sensing and GIS for Earth and Environmental Sciences",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "EAES 475",
+      "subject": "EAES",
+      "number": "475",
+      "title": "Hydrology/Hydrogeology",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "EAES 484",
+      "subject": "EAES",
+      "number": "484",
+      "title": "Planetary Science",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "EAES 360",
+      "subject": "EAES",
+      "number": "360",
+      "title": "Introduction to Paleontology",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "EAES 415",
+      "subject": "EAES",
+      "number": "415",
+      "title": "Environmental Geochemistry",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "EAES 416",
+      "subject": "EAES",
+      "number": "416",
+      "title": "Organic Geochemistry",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "EAES 418",
+      "subject": "EAES",
+      "number": "418",
+      "title": "Introduction to Biogeochemistry",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "EAES 460",
+      "subject": "EAES",
+      "number": "460",
+      "title": "Earth System History",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "EAES 473",
+      "subject": "EAES",
+      "number": "473",
+      "title": "Soils and the Environment",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "EAES 480",
+      "subject": "EAES",
+      "number": "480",
+      "title": "Modern Statistics in Earth and Environmental Sciences",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "EAES 487",
+      "subject": "EAES",
+      "number": "487",
+      "title": "Introduction to Geobiology and Astrobiology",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "EAES 490",
+      "subject": "EAES",
+      "number": "490",
+      "title": "Climate Change and Extreme Weather",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ENGL 160",
+      "subject": "ENGL",
+      "number": "160",
+      "title": "Academic Writing I: Writing in Academic and Public Contexts",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "ENGL 161",
+      "subject": "ENGL",
+      "number": "161",
+      "title": "Academic Writing II: Writing for Inquiry and Research",
+      "hours": 3,
+      "required": true
+    }
+  ],
+  "sampleSchedule": [
+    {
+      "year": "First Year",
+      "semester": "Fall Semester",
+      "total_hours": 16,
+      "courses": [
+        {
+          "code": "ENGL 160",
+          "title": "Academic Writing I: Writing in Academic and Public Contexts",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "CHEM 122",
+          "title": "Matter and Energy",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "CHEM 123",
+          "title": "Foundations of Chemical Inquiry I",
+          "hours": 2,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "EAES 101",
+          "title": "Global Environmental Change",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        }
+      ]
+    },
+    {
+      "year": "First Year",
+      "semester": "Spring Semester",
+      "total_hours": 15,
+      "courses": [
+        {
+          "code": "ENGL 161",
+          "title": "Academic Writing II: Writing for Inquiry and Research",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "MATH 180",
+          "title": "Calculus I",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "EAES 111",
+          "title": "Earth, Energy, and the Environment",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        }
+      ]
+    },
+    {
+      "year": "Second Year",
+      "semester": "Fall Semester",
+      "total_hours": 16,
+      "courses": [
+        {
+          "code": "EAES 330",
+          "title": "Earth Materials",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "MATH 181",
+          "title": "Calculus II",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "BIOS 110",
+          "title": "Biology of Cells and Organisms",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        }
+      ]
+    },
+    {
+      "year": "Second Year",
+      "semester": "Spring Semester",
+      "total_hours": 16,
+      "courses": [
+        {
+          "code": "PHYS 131",
+          "title": "Introductory Physics for Life Sciences I or General Physics I (Mechanics)",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "EAES 290",
+          "title": "Communication in Earth and Environmental Sciences",
+          "hours": 2,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "EAES 300",
+          "title": "Fieldwork in Missouri a or Methods in Environmental Sciences",
+          "hours": 2,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "EAES 385",
+          "title": "Earth Systems",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        }
+      ]
+    },
+    {
+      "year": "Third Year",
+      "semester": "Fall Semester",
+      "total_hours": null,
+      "courses": [
+        {
+          "code": "EAES 380",
+          "title": "Earth and Environmental Data Science",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "Select one of the following chemistry, mathematics, or physics courses:",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": "CHEM 124",
+          "title": "Chemical Dynamics and Foundations of Chemical Inquiry II",
+          "hours": null,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "MATH 210",
+          "title": "Calculus III",
+          "hours": null,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "PHYS 132",
+          "title": "Introductory Physics for Life Sciences II",
+          "hours": null,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "PHYS 142",
+          "title": "General Physics II (Electricity and Magnetism)",
+          "hours": null,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "EAES selective course from Group A or B",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": null,
+          "title": "General Education Requirement courses",
+          "hours": 6,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        }
+      ]
+    },
+    {
+      "year": "Third Year",
+      "semester": "Spring Semester",
+      "total_hours": null,
+      "courses": [
+        {
+          "code": null,
+          "title": "EAES selective course from Group A or B",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": null,
+          "title": "Electives",
+          "hours": 6,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": null,
+          "title": "General Education Requirement courses",
+          "hours": 6,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        }
+      ]
+    },
+    {
+      "year": "Fourth Year",
+      "semester": "Fall Semester",
+      "total_hours": null,
+      "courses": [
+        {
+          "code": null,
+          "title": "EAES selective courses from Group A or B",
+          "hours": 6,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": null,
+          "title": "Elective",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": null,
+          "title": "General Education Requirement course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        }
+      ]
+    },
+    {
+      "year": "Fourth Year",
+      "semester": "Spring Semester",
+      "total_hours": null,
+      "courses": [
+        {
+          "code": null,
+          "title": "EAES selective course from Group A or B",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": null,
+          "title": "Electives",
+          "hours": 9,
+          "isElective": true,
+          "electiveType": "elective_general"
+        }
+      ]
+    }
+  ]
+}

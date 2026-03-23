@@ -1,0 +1,168 @@
+{
+  "runAt": "2026-03-22T21:26:58.287Z",
+  "passed": 20,
+  "failed": 0,
+  "pct": 100,
+  "results": [
+    {
+      "major": "Computer Science - BS",
+      "query": "Make me a full 4-year plan for Computer Science - BS",
+      "pass": true,
+      "fixedCount": 21,
+      "missingCodes": [],
+      "answerSnippet": "Here's the official sample schedule for **Computer Science** (128 total credits):\n\n### Freshman Year — First Semester (14h)\n- **MATH 180** — Calculus I (4 cr)\n- **CS 111** — Program Design I or Program Design I in the Context of Biological Problems or Program Design I in the Context of Law and Public Policy (3 cr)\n- **ENGL 160** — Academic Writing I: Writing in Academic and Public Contexts (3 cr)\n"
+    },
+    {
+      "major": "Finance - BS",
+      "query": "Make me a full 4-year plan for Finance - BS",
+      "pass": true,
+      "fixedCount": 20,
+      "missingCodes": [],
+      "answerSnippet": "Here's the official sample schedule for **Finance** (120 total credits):\n\n### Freshman Year – First Semester (15h)\n- **BA 101** — Business First-Year Seminar (1 cr)\n- **ECON 120** — Principles of Microeconomics (3 cr)\n- **ENGL 160** — Academic Writing I: Writing in Academic and Public Contexts (3 cr)\n- **COMM 100** — Fundamentals of Human Communication (3 cr)\n- **FIN 340** — International Financia"
+    },
+    {
+      "major": "Accounting - BS",
+      "query": "Make me a full 4-year plan for Accounting - BS",
+      "pass": true,
+      "fixedCount": 20,
+      "missingCodes": [],
+      "answerSnippet": "Here's the official sample schedule for **Accounting** (120 total credits):\n\n### Freshman Year – First Semester (15h)\n- **BA 101** — Business First-Year Seminar (1 cr)\n- **ECON 120** — Principles of Microeconomics (3 cr)\n- **ENGL 160** — Academic Writing I: Writing in Academic and Public Contexts (3 cr)\n- **COMM 100** — Fundamentals of Human Communication (3 cr)\n- **ECON 121** — Principles of Macr"
+    },
+    {
+      "major": "Nursing - BS",
+      "query": "Make me a full 4-year plan for Nursing - BS",
+      "pass": true,
+      "fixedCount": 14,
+      "missingCodes": [],
+      "answerSnippet": "Here's the official sample schedule for **Nursing** (120 total credits):\n\n### Junior Year — Fall Semester (16h)\n- **NURS 409** — Health Assessment and Communications (5 cr)\n- **NURS 411** — Foundations of Nursing Practice (7 cr)\n- **NURS 419** — Pathophysiology and Pharmacology 1 (4 cr)\n\n### Junior Year — Spring Semester (16h)\n- **NURS 420** — Patho-Pharm 2 (3 cr)\n- **NURS 423** — Adult Health Nur"
+    },
+    {
+      "major": "Mechanical Engineering - BS",
+      "query": "Make me a full 4-year plan for Mechanical Engineering - BS",
+      "pass": true,
+      "fixedCount": 33,
+      "missingCodes": [],
+      "answerSnippet": "Here's the official sample schedule for **Mechanical Engineering** (128 total credits):\n\n### Freshman Year — First Semester (18h)\n- **ENGR 100** — Engineering Success Seminar for Freshmen a (1 cr)\n- **ENGL 160** — Academic Writing I: Writing in Academic and Public Contexts (3 cr)\n- **MATH 180** — Calculus I (4 cr)\n- **CHEM 122** — Matter and Energy (3 cr)\n- **CHEM 123** — Foundations of Chemical I"
+    },
+    {
+      "major": "Psychology - BS with a Major",
+      "query": "Make me a full 4-year plan for Psychology - BS with a Major",
+      "pass": true,
+      "fixedCount": 6,
+      "missingCodes": [],
+      "answerSnippet": "Here's the official sample schedule for **Psychology - BS with a Major** (120 total credits):\n\n### First Year — Fall Semester (?h)\n- **ENGL 160** — Academic Writing I: Writing in Academic and Public Contexts (3 cr)\n- **MATH 105** — Mathematical Reasoning or Intermediate Algebraic Concepts (4 cr)\n- **MUS 127** — Latin American Music (3 cr) *(Gen Ed)*\n\n### First Year — Spring Semester (?h)\n- **ENGL "
+    },
+    {
+      "major": "Marketing - BS",
+      "query": "Make me a full 4-year plan for Marketing - BS",
+      "pass": true,
+      "fixedCount": 20,
+      "missingCodes": [],
+      "answerSnippet": "Here's the official sample schedule for **Marketing** (128 total credits):\n\n### Freshman Year – First Semester (15h)\n- **BA 101** — Business First-Year Seminar (1 cr)\n- **ECON 120** — Principles of Microeconomics (3 cr)\n- **ENGL 160** — Academic Writing I: Writing in Academic and Public Contexts (3 cr)\n- **COMM 100** — Fundamentals of Human Communication (3 cr)\n- *Math Elective* (5 cr)\n\n### Freshm"
+    },
+    {
+      "major": "Biochemistry - BS",
+      "query": "Make me a full 4-year plan for Biochemistry - BS",
+      "pass": true,
+      "fixedCount": 29,
+      "missingCodes": [],
+      "answerSnippet": "Here's the official sample schedule for **Biochemistry** (120 total credits):\n\n### First Year — Fall Semester (15h)\n- **ENGL 160** — Academic Writing I: Writing in Academic and Public Contexts (3 cr)\n- **BIOS 110** — Biology of Cells and Organisms or Biology of Populations and Communities (4 cr)\n- **CHEM 122** — Matter and Energy (5 cr) *(Major Elective)*\n- **CHEM 116** — Honors and Majors General"
+    },
+    {
+      "major": "Electrical Engineering - BS",
+      "query": "Make me a full 4-year plan for Electrical Engineering - BS",
+      "pass": true,
+      "fixedCount": 30,
+      "missingCodes": [],
+      "answerSnippet": "Here's the official sample schedule for **Electrical Engineering** (128 total credits):\n\n### Freshman Year — First Semester (16h)\n- **MATH 180** — Calculus I (4 cr)\n- **CHEM 122** — Matter and Energy (3 cr)\n- **CHEM 123** — Foundations of Chemical Inquiry I (2 cr)\n- **ENGL 160** — Academic Writing I: Writing in Academic and Public Contexts (3 cr)\n- **ECE 115** — Introduction to Electrical and Comp"
+    },
+    {
+      "major": "Criminology Law and Justice - BA with a Major",
+      "query": "Make me a full 4-year plan for Criminology Law and Justice - BA with a Major",
+      "pass": true,
+      "fixedCount": 9,
+      "missingCodes": [],
+      "answerSnippet": "Here's the official sample schedule for **Criminology Law and Justice - BA with a Major** (120 total credits):\n\n### First Year — Fall Semester (?h)\n- **ENGL 160** — Academic Writing I: Writing in Academic and Public Contexts (3 cr)\n- **MUS 127** — Latin American Music (3 cr) *(Gen Ed)*\n- **HN 202** — Culture and Food (3 cr) *(Gen Ed)*\n\n### First Year — Spring Semester (?h)\n- **ENGL 161** — Academi"
+    },
+    {
+      "major": "Management - BS",
+      "query": "Make me a full 4-year plan for Management - BS",
+      "pass": true,
+      "fixedCount": 20,
+      "missingCodes": [],
+      "answerSnippet": "Here's the official sample schedule for **Management** (120 total credits):\n\n### Freshman Year – First Semester (15h)\n- **BA 101** — Business First-Year Seminar (1 cr)\n- **ECON 120** — Principles of Microeconomics (3 cr)\n- **ENGL 160** — Academic Writing I: Writing in Academic and Public Contexts (3 cr)\n- **COMM 100** — Fundamentals of Human Communication (3 cr)\n- **MGMT 463** — Negotiation &Confl"
+    },
+    {
+      "major": "Pharmaceutical Sciences - BS",
+      "query": "Make me a full 4-year plan for Pharmaceutical Sciences - BS",
+      "pass": true,
+      "fixedCount": 36,
+      "missingCodes": [],
+      "answerSnippet": "Here's the official sample schedule for **Pharmaceutical Sciences** (120 total credits):\n\n### First Year — Fall Semester (14h)\n- **ENGL 160** — Academic Writing I: Writing in Academic and Public Contexts a (3 cr)\n- **CHEM 122** — Matter and Energy and Foundations of Chemical Inquiry I a (? cr)\n- **CHEM 116** — Honors and Majors General and Analytical Chemistry I (? cr)\n- **COMM 100** — Fundamental"
+    },
+    {
+      "major": "Architecture - BS",
+      "query": "Make me a full 4-year plan for Architecture - BS",
+      "pass": true,
+      "fixedCount": 23,
+      "missingCodes": [],
+      "answerSnippet": "Here's the official sample schedule for **Architecture** (122 total credits):\n\n### Freshman Year — Fall Semester (16h)\n- **ARCH 105** — Architectural Studio 1 (5 cr)\n- **ARCH 151** — Architecture at Chicago (2 cr)\n- **ENGL 160** — Academic Writing I: Writing in Academic and Public Contexts (3 cr)\n- *Major Elective* (3 cr)\n\n### Freshman Year — Spring Semester (?h)\n- **ARCH 106** — Architectural Stu"
+    },
+    {
+      "major": "Neuroscience - BS",
+      "query": "Make me a full 4-year plan for Neuroscience - BS",
+      "pass": true,
+      "fixedCount": 20,
+      "missingCodes": [],
+      "answerSnippet": "Here's the official sample schedule for **Neuroscience** (120 total credits):\n\n### First Year — Fall Semester (15h)\n- **ENGL 160** — Academic Writing I: Writing in Academic and Public Contexts (3 cr)\n- **MATH 170** — Calculus for the Life Sciences a or Calculus I (4 cr)\n- **CHEM 122** — Matter and Energy (5 cr) *(Major Elective)*\n- **CHEM 116** — Honors and Majors General and Analytical Chemistry "
+    },
+    {
+      "major": "Economics - BA with a Major",
+      "query": "Make me a full 4-year plan for Economics - BA with a Major",
+      "pass": true,
+      "fixedCount": 10,
+      "missingCodes": [],
+      "answerSnippet": "Here's the official sample schedule for **Economics - BA with a Major** (120 total credits):\n\n### First Year — Fall Semester (16h)\n- **ENGL 160** — Academic Writing I: Writing in Academic and Public Contexts (3 cr)\n- **ECON 120** — Principles of Microeconomics a (4 cr)\n- **MATH 121** — Precalculus Mathematics b (5 cr)\n\n### First Year — Spring Semester (17h)\n- **ENGL 161** — Academic Writing II: Wr"
+    },
+    {
+      "major": "Information and Decision Sciences - BS",
+      "query": "Make me a full 4-year plan for Information and Decision Sciences - BS",
+      "pass": true,
+      "fixedCount": 20,
+      "missingCodes": [],
+      "answerSnippet": "Here's the official sample schedule for **Information and Decision Sciences** (128 total credits):\n\n### Freshman Year – First Semester (15h)\n- **BA 101** — Business First-Year Seminar (1 cr)\n- **ECON 120** — Principles of Microeconomics (3 cr)\n- **ENGL 160** — Academic Writing I: Writing in Academic and Public Contexts (3 cr)\n- **COMM 100** — Fundamentals of Human Communication (3 cr)\n- *Math Elec"
+    },
+    {
+      "major": "Public Health - BS",
+      "query": "Make me a full 4-year plan for Public Health - BS",
+      "pass": true,
+      "fixedCount": 13,
+      "missingCodes": [],
+      "answerSnippet": "Here's the official sample schedule for **Public Health** (120 total credits):\n\n### Junior Year — Fall Semester (14h)\n- **PUBH 300** — Critical Thinking in Public Health (4 cr)\n- **PUBH 330** — Health Equity and Health Disparities (3 cr)\n- **PUBH 350** — Health Systems, Policy, and Advocacy (3 cr)\n- **PUBH 395** — Public Health Seminar III (1 cr)\n- **BIOS 110** — Biol of Cells & Organisms (4 cr) *"
+    },
+    {
+      "major": "Mathematics - BS with a Major",
+      "query": "Make me a full 4-year plan for Mathematics - BS with a Major",
+      "pass": true,
+      "fixedCount": 10,
+      "missingCodes": [],
+      "answerSnippet": "Here's the official sample schedule for **Mathematics - BS with a Major** (120 total credits):\n\n### First Year — Fall Semester (14h)\n- **ENGL 160** — Academic Writing I: Writing in Academic and Public Contexts (3 cr)\n- **MATH 180** — Calculus I a (4 cr)\n- **MUS 127** — Latin American Music (3 cr) *(Gen Ed)*\n\n### First Year — Spring Semester (14h)\n- **ENGL 161** — Academic Writing II: Writing for I"
+    },
+    {
+      "major": "Political Science - BA with a Major",
+      "query": "Make me a full 4-year plan for Political Science - BA with a Major",
+      "pass": true,
+      "fixedCount": 10,
+      "missingCodes": [],
+      "answerSnippet": "Here's the official sample schedule for **Political Science - BA with a Major** (120 total credits):\n\n### First Year — Fall Semester (?h)\n- **ENGL 160** — Academic Writing I: Writing in Academic and Public Contexts (3 cr)\n- **POLS 101** — Introduction to American Government and Politics a (3 cr)\n- **MUS 127** — Latin American Music (3 cr) *(Gen Ed)*\n\n### First Year — Spring Semester (?h)\n- **ENGL "
+    },
+    {
+      "major": "Entrepreneurship - BS",
+      "query": "Make me a full 4-year plan for Entrepreneurship - BS",
+      "pass": true,
+      "fixedCount": 20,
+      "missingCodes": [],
+      "answerSnippet": "Here's the official sample schedule for **Entrepreneurship** (120 total credits):\n\n### Freshman Year – First Semester (15h)\n- **BA 101** — Business First-Year Seminar (1 cr)\n- **ECON 120** — Principles of Microeconomics (3 cr)\n- **ENGL 160** — Academic Writing I: Writing in Academic and Public Contexts (3 cr)\n- **COMM 100** — Fundamentals of Human Communication (3 cr)\n- **MKTG 462** — Marketing Re"
+    }
+  ]
+}

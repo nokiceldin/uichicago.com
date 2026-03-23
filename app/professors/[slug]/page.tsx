@@ -1,4 +1,4 @@
-import { prisma } from "@/app/lib/prisma";
+import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
 import fs from "fs";
 import path from "path";
@@ -62,6 +62,7 @@ export default async function ProfessorPage({ params }: { params: Promise<{ slug
       SELECT "id","slug","name","department","school",
         COALESCE("rmpQuality",0) as "quality", COALESCE("rmpRatingsCount",0) as "ratingsCount",
         COALESCE("rmpUrl",'') as "rmpUrl", COALESCE("aiSummary",'') as "aiSummary",
+        "salary", "salaryTitle",
         CASE WHEN COALESCE("rmpRatingsCount",0)=0 THEN 0
           ELSE (COALESCE("rmpRatingsCount",0)::float/(COALESCE("rmpRatingsCount",0)+${C}))*COALESCE("rmpQuality",0)
                +(${C}::float/(COALESCE("rmpRatingsCount",0)+${C}))*${M} END as "score"
@@ -149,13 +150,26 @@ console.log("peers found:", peers?.length);  // add this after the findMany too
               </div>
             )}
 
-            <div className="mt-6 grid grid-cols-2 gap-3">
+            <div className={`mt-6 grid gap-3 ${professor.salary ? "grid-cols-2 sm:grid-cols-3" : "grid-cols-2"}`}>
               {[{ label: "Department", value: professor.department }, { label: "School", value: professor.school }].map((s) => (
                 <div key={s.label} className="rounded-xl bg-zinc-50 dark:bg-white/[0.03] px-4 py-3 ring-1 ring-zinc-200 dark:ring-white/8">
                   <div className="text-[10px] font-bold uppercase tracking-widest text-zinc-400 dark:text-zinc-600">{s.label}</div>
                   <div className="mt-1 text-sm font-semibold text-zinc-900 dark:text-zinc-200">{s.value}</div>
                 </div>
               ))}
+              {professor.salary && (
+                <div className="col-span-2 sm:col-span-1 rounded-xl bg-emerald-50 dark:bg-emerald-500/[0.07] px-4 py-3 ring-1 ring-emerald-200 dark:ring-emerald-500/20">
+                  <div className="text-[10px] font-bold uppercase tracking-widest text-emerald-600 dark:text-emerald-500">Annual Salary</div>
+                  <div className="mt-1 text-sm font-bold text-emerald-700 dark:text-emerald-400">
+                    ${Number(professor.salary).toLocaleString("en-US", { maximumFractionDigits: 0 })}
+                  </div>
+                  {professor.salaryTitle && (
+                    <div className="mt-0.5 text-[11px] text-emerald-600/70 dark:text-emerald-500/60 truncate capitalize">
+                      {professor.salaryTitle.toLowerCase().replace(/\b\w/g, (c: string) => c.toUpperCase())}
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
 
             {professor.rmpUrl && (

@@ -25,6 +25,85 @@ import { PrismaPg } from "@prisma/adapter-pg";
 const pool = new Pool({ connectionString: process.env.DATABASE_URL, max: 3 });
 const prisma = new PrismaClient({ adapter: new PrismaPg(pool) });
 
+// ── Nickname map ──────────────────────────────────────────────────────────────
+// Maps canonical first names to common nicknames (and vice versa via reverse map).
+// Keeps false-positive risk low — only well-known academic name pairs.
+const NICKNAMES = {
+  robert:      ["bob", "bobby", "rob", "robbie"],
+  william:     ["bill", "billy", "will", "willie", "liam"],
+  james:       ["jim", "jimmy", "jamie"],
+  michael:     ["mike", "mick", "mickey"],
+  thomas:      ["tom", "tommy"],
+  david:       ["dave", "davy"],
+  richard:     ["rick", "rich", "dick"],
+  joseph:      ["joe", "joey"],
+  charles:     ["charlie", "chuck"],
+  daniel:      ["dan", "danny"],
+  stephen:     ["steve", "stevie"],
+  steven:      ["steve", "stevie"],
+  christopher: ["chris"],
+  matthew:     ["matt"],
+  anthony:     ["tony"],
+  andrew:      ["andy", "drew"],
+  benjamin:    ["ben", "benny"],
+  nicholas:    ["nick", "nicky"],
+  alexander:   ["alex"],
+  jonathan:    ["jon", "johnny"],
+  samuel:      ["sam"],
+  edward:      ["ed", "ted", "ned"],
+  henry:       ["hank", "harry"],
+  john:        ["jack", "johnny"],
+  patrick:     ["pat"],
+  timothy:     ["tim", "timmy"],
+  jeffrey:     ["jeff"],
+  gregory:     ["greg"],
+  donald:      ["don"],
+  kenneth:     ["ken", "kenny"],
+  mark:        ["marc"],
+  marc:        ["mark"],
+  katherine:   ["kate", "katie", "kathy", "kat"],
+  kathryn:     ["kate", "katie", "kathy"],
+  elizabeth:   ["liz", "beth", "betty", "lisa"],
+  jennifer:    ["jen", "jenny"],
+  margaret:    ["peg", "peggy", "maggie"],
+  patricia:    ["pat", "patty", "trish"],
+  susan:       ["sue", "suzie"],
+  barbara:     ["barb"],
+  victoria:    ["vicky", "vicki"],
+  cynthia:     ["cindy"],
+  deborah:     ["deb", "debbie"],
+  jacqueline:  ["jackie"],
+};
+
+// Build reverse lookup: nickname → Set of canonical names it expands to
+const _nickRev = new Map();
+for (const [canonical, nicks] of Object.entries(NICKNAMES)) {
+  for (const nick of nicks) {
+    if (!_nickRev.has(nick)) _nickRev.set(nick, new Set());
+    _nickRev.get(nick).add(canonical);
+  }
+}
+
+// Returns all first-name variants for a given normalized first token.
+// E.g. "bob" → ["bob","robert","bobby","rob","robbie"]
+function firstNameVariants(first) {
+  const out = new Set([first]);
+  // If it's a canonical name, add its nicknames
+  if (NICKNAMES[first]) {
+    for (const n of NICKNAMES[first]) out.add(n);
+  }
+  // If it's a nickname, add the canonical(s) and their nicknames
+  if (_nickRev.has(first)) {
+    for (const canonical of _nickRev.get(first)) {
+      out.add(canonical);
+      if (NICKNAMES[canonical]) {
+        for (const n of NICKNAMES[canonical]) out.add(n);
+      }
+    }
+  }
+  return out;
+}
+
 // Names that are never professors — skip immediately, resolve to null.
 const NON_PROFESSOR_NAMES = new Set([
   "grad asst", "staff", "tba", "to be announced", "to be determined",
@@ -110,11 +189,12 @@ export async function resolveInstructorNames(rawNames) {
     exactMap.get(key).push(prof);
   }
 
-  let exactMatches   = 0;
-  let middleMatches  = 0;
-  let ambiguousCount = 0;
-  let unmatchedCount = 0;
-  let skippedCount   = 0;
+  let exactMatches    = 0;
+  let middleMatches   = 0;
+  let nicknameMatches = 0;
+  let ambiguousCount  = 0;
+  let unmatchedCount  = 0;
+  let skippedCount    = 0;
 
   for (const raw of unique) {
     // ── Skip non-professor entries ──────────────────────────────────────────
@@ -176,6 +256,33 @@ export async function resolveInstructorNames(rawNames) {
       }
     }
 
+    // ── Strategy 3: nickname first-name match ──────────────────────────────
+    // Try every variant of the first name (e.g. "robert" → also try "bob").
+    // Only use the last token as last-name to avoid middle-name noise.
+    const normTokens = norm.split(" ");
+    const normFirst = normTokens[0];
+    const normLast  = normTokens[normTokens.length - 1];
+    if (normFirst !== normLast) {
+      const variants = firstNameVariants(normFirst);
+      variants.delete(normFirst); // already tried above
+      const nickHits = [];
+      for (const v of variants) {
+        for (const hit of (exactMap.get(`${v} ${normLast}`) ?? [])) {
+          nickHits.push(hit);
+        }
+      }
+      // Deduplicate by id
+      const seenIds = new Set();
+      const uniqueNickHits = nickHits.filter(h => seenIds.has(h.id) ? false : (seenIds.add(h.id), true));
+
+      if (uniqueNickHits.length >= 1) {
+        const best = uniqueNickHits.sort((a, b) => (b.rmpRatingsCount ?? 0) - (a.rmpRatingsCount ?? 0))[0];
+        resolutionMap.set(raw, best.id);
+        nicknameMatches++;
+        continue;
+      }
+    }
+
     // ── No match ────────────────────────────────────────────────────────────
     resolutionMap.set(raw, null);
     unmatchedCount++;
@@ -186,6 +293,7 @@ export async function resolveInstructorNames(rawNames) {
   const total = unique.length - skippedCount;
   console.log(`  ✅ Exact match:         ${exactMatches}/${total}`);
   console.log(`  ✅ Middle-strip match:  ${middleMatches}/${total}`);
+  console.log(`  ✅ Nickname match:      ${nicknameMatches}/${total}`);
   console.log(`  ⚠️  Ambiguous (null):   ${ambiguousCount}/${total}`);
   console.log(`  ℹ️  No RMP entry (null): ${unmatchedCount}/${total}`);
   console.log(`  ⏭️  Skipped (non-prof):  ${skippedCount}`);

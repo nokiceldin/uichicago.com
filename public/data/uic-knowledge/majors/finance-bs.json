@@ -1,0 +1,518 @@
+{
+  "name": "Finance - BS",
+  "college": "Finance",
+  "department": "Finance",
+  "url": "https://catalog.uic.edu/ucat/colleges-depts/business-administration/fin/bs/",
+  "totalHours": 120,
+  "summaryRequirements": {
+    "General and Basic Course Requirements": "48",
+    "Business Core": "42",
+    "Major Requirements": "21",
+    "Business Electives": "9",
+    "Total Hours": "120"
+  },
+  "requiredCourses": [
+    {
+      "code": "FIN 310",
+      "subject": "FIN",
+      "number": "310",
+      "title": "Investments",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "FIN 320",
+      "subject": "FIN",
+      "number": "320",
+      "title": "Managerial Finance",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "FIN 421",
+      "subject": "FIN",
+      "number": "421",
+      "title": "Advanced Corporate Finance",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "FIN 422",
+      "subject": "FIN",
+      "number": "422",
+      "title": "Alternative Investments: Venture Capital, Private Equity, and Hedge Funds",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "FIN 423",
+      "subject": "FIN",
+      "number": "423",
+      "title": "Financial Modeling, Analysis, and Decision Making",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "FIN 442",
+      "subject": "FIN",
+      "number": "442",
+      "title": "International Corporate Financial Management",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "FIN 415",
+      "subject": "FIN",
+      "number": "415",
+      "title": "Fixed Income Securities",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "FIN 416",
+      "subject": "FIN",
+      "number": "416",
+      "title": "Options and Futures Markets",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "FIN 424",
+      "subject": "FIN",
+      "number": "424",
+      "title": "Financial Communication",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "FIN 425",
+      "subject": "FIN",
+      "number": "425",
+      "title": "Energy Finance",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "FIN 430",
+      "subject": "FIN",
+      "number": "430",
+      "title": "Introduction to Money and Banking",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "FIN 250",
+      "subject": "FIN",
+      "number": "250",
+      "title": "Personal Finance",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "FIN 411",
+      "subject": "FIN",
+      "number": "411",
+      "title": "Retirement and Estate Planning",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "FIN 414",
+      "subject": "FIN",
+      "number": "414",
+      "title": "Financial Plan Development",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "FIN 473",
+      "subject": "FIN",
+      "number": "473",
+      "title": "Risk Management and Insurance",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "ACTG 444",
+      "subject": "ACTG",
+      "number": "444",
+      "title": "Federal Income Tax for Financial Planning a",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "FIN 412",
+      "subject": "FIN",
+      "number": "412",
+      "title": "Portfolio Management",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "FIN 419",
+      "subject": "FIN",
+      "number": "419",
+      "title": "Behavioral Finance",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "FIN 449",
+      "subject": "FIN",
+      "number": "449",
+      "title": "Applied Equity Investment Management",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "FIN 340",
+      "subject": "FIN",
+      "number": "340",
+      "title": "International Financial Markets",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "FIN 431",
+      "subject": "FIN",
+      "number": "431",
+      "title": "Management in the Financial Services Industry",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "FIN 456",
+      "subject": "FIN",
+      "number": "456",
+      "title": "Advanced Investment Management",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "FIN 472",
+      "subject": "FIN",
+      "number": "472",
+      "title": "Real Estate Finance",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "FIN 480",
+      "subject": "FIN",
+      "number": "480",
+      "title": "Securities Markets and High-Frequency Trading",
+      "hours": null,
+      "required": true
+    }
+  ],
+  "sampleSchedule": [
+    {
+      "label": "Freshman Year – First Semester",
+      "total_hours": 15,
+      "courses": [
+        {
+          "code": "BA 101",
+          "title": "Business First-Year Seminar",
+          "hours": 1,
+          "isElective": false
+        },
+        {
+          "code": "ECON 120",
+          "title": "Principles of Microeconomics",
+          "hours": 3,
+          "isElective": false
+        },
+        {
+          "code": "ENGL 160",
+          "title": "Academic Writing I: Writing in Academic and Public Contexts",
+          "hours": 3,
+          "isElective": false
+        },
+        {
+          "code": "COMM 100",
+          "title": "Fundamentals of Human Communication",
+          "hours": 3,
+          "isElective": false
+        },
+        {
+          "code": null,
+          "title": "Mathematics course",
+          "hours": 5,
+          "isElective": true,
+          "electiveType": "math_elective"
+        }
+      ]
+    },
+    {
+      "label": "Freshman Year – Second Semester",
+      "total_hours": 15,
+      "courses": [
+        {
+          "code": "BA 100",
+          "title": "Introduction to Professional Development",
+          "hours": 1,
+          "isElective": false
+        },
+        {
+          "code": "BA 111",
+          "title": "Business Decision-Making",
+          "hours": 3,
+          "isElective": false
+        },
+        {
+          "code": "ACTG 210",
+          "title": "Introduction to Financial Accounting",
+          "hours": 3,
+          "isElective": false
+        },
+        {
+          "code": "ENGL 161",
+          "title": "Academic Writing II: Writing for Inquiry and Research",
+          "hours": 3,
+          "isElective": false
+        },
+        {
+          "code": null,
+          "title": "Mathematics course",
+          "hours": 5,
+          "isElective": true,
+          "electiveType": "math_elective"
+        }
+      ]
+    },
+    {
+      "label": "Sophomore Year – First Semester",
+      "total_hours": 16,
+      "courses": [
+        {
+          "code": "MGMT 340",
+          "title": "Introduction to Organizations",
+          "hours": 3,
+          "isElective": false
+        },
+        {
+          "code": "ACTG 211",
+          "title": "Introduction to Managerial Accounting",
+          "hours": 3,
+          "isElective": false
+        },
+        {
+          "code": "FIN 300",
+          "title": "Introduction to Finance",
+          "hours": 3,
+          "isElective": false
+        },
+        {
+          "code": "IDS 270",
+          "title": "Business Statistics I",
+          "hours": 4,
+          "isElective": false
+        },
+        {
+          "code": "MKTG 360",
+          "title": "Introduction to Marketing",
+          "hours": 3,
+          "isElective": false
+        }
+      ]
+    },
+    {
+      "label": "Sophomore Year – Second Semester",
+      "total_hours": 14,
+      "courses": [
+        {
+          "code": "BA 200",
+          "title": "Business Communication",
+          "hours": 3,
+          "isElective": false
+        },
+        {
+          "code": "BA 220",
+          "title": "Business Professional Development II",
+          "hours": 1,
+          "isElective": false
+        },
+        {
+          "code": "IDS 200",
+          "title": "Intro to Management Information Systems",
+          "hours": 4,
+          "isElective": false
+        },
+        {
+          "code": null,
+          "title": "Major course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": null,
+          "title": "Major course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        }
+      ]
+    },
+    {
+      "label": "Junior Year – First Semester",
+      "total_hours": 16,
+      "courses": [
+        {
+          "code": "BA 320",
+          "title": "Civic Engagement",
+          "hours": 1,
+          "isElective": false
+        },
+        {
+          "code": "ECON 121",
+          "title": "Principles of Macroeconomics",
+          "hours": 3,
+          "isElective": false
+        },
+        {
+          "code": "IDS 355",
+          "title": "Operations Management",
+          "hours": 3,
+          "isElective": false
+        },
+        {
+          "code": "MGMT 350",
+          "title": "Business and Its External Environment",
+          "hours": 3,
+          "isElective": false
+        },
+        {
+          "code": null,
+          "title": "Major course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": null,
+          "title": "Advanced Quantitative Skills course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        }
+      ]
+    },
+    {
+      "label": "Junior Year – Second Semester",
+      "total_hours": 15,
+      "courses": [
+        {
+          "code": null,
+          "title": "Major course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": null,
+          "title": "Major course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": null,
+          "title": "Major course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": null,
+          "title": "Major course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": null,
+          "title": "General Education Core course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        }
+      ]
+    },
+    {
+      "label": "Senior Year – First Semester",
+      "total_hours": 15,
+      "courses": [
+        {
+          "code": null,
+          "title": "Major course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": null,
+          "title": "Major course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": null,
+          "title": "General Elective",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": null,
+          "title": "Global Business Perspectives course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "global_biz"
+        },
+        {
+          "code": null,
+          "title": "General Education Core course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        }
+      ]
+    },
+    {
+      "label": "Senior Year – Second Semester",
+      "total_hours": 14,
+      "courses": [
+        {
+          "code": null,
+          "title": "Competitive Strategy course",
+          "hours": 4,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": null,
+          "title": "Major course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": null,
+          "title": "General Elective",
+          "hours": 4,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": null,
+          "title": "General Education Core course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        }
+      ]
+    }
+  ]
+}

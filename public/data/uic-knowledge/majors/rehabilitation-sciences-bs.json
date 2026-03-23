@@ -1,0 +1,662 @@
+{
+  "name": "Rehabilitation Sciences - BS",
+  "college": "Rehabilitation Sciences",
+  "department": "Rehabilitation Sciences",
+  "url": "https://catalog.uic.edu/ucat/colleges-depts/applied-health-sciences/rs/bs/",
+  "totalHours": 120,
+  "summaryRequirements": {
+    "University Writing Requirement": "6",
+    "General Education Core Requirements": "20",
+    "Common Core": "52",
+    "Selectives": "12",
+    "Electives": "30",
+    "Total Hours": "120"
+  },
+  "requiredCourses": [
+    {
+      "code": "ENGL 160",
+      "subject": "ENGL",
+      "number": "160",
+      "title": "Academic Writing I: Writing in Academic and Public Contexts",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "ENGL 161",
+      "subject": "ENGL",
+      "number": "161",
+      "title": "Academic Writing II: Writing for Inquiry and Research",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "BIOS 110",
+      "subject": "BIOS",
+      "number": "110",
+      "title": "Biology of Cells and Organisms b",
+      "hours": 4,
+      "required": true
+    },
+    {
+      "code": "PSCH 100",
+      "subject": "PSCH",
+      "number": "100",
+      "title": "Introduction to Psychology c",
+      "hours": 4,
+      "required": true
+    },
+    {
+      "code": "AHS 101",
+      "subject": "AHS",
+      "number": "101",
+      "title": "Rehabilitation Sciences Student Success Seminar",
+      "hours": 1,
+      "required": true
+    },
+    {
+      "code": "AHS 102",
+      "subject": "AHS",
+      "number": "102",
+      "title": "Introduction to Clinical Research in Rehabilitation Sciences",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "AHS 210",
+      "subject": "AHS",
+      "number": "210",
+      "title": "Introduction to Rehabilitation Sciences",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "AHS 325",
+      "subject": "AHS",
+      "number": "325",
+      "title": "Approaches to Rehabilitation Case Management",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "AHS 330",
+      "subject": "AHS",
+      "number": "330",
+      "title": "Physical and Mental Health Issues in Rehabilitation",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "AHS 365",
+      "subject": "AHS",
+      "number": "365",
+      "title": "Measurement and Assessment in Rehabilitation",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "AHS 375",
+      "subject": "AHS",
+      "number": "375",
+      "title": "Ethics, Law and Professionalism in Health Sciences",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "AHS 393",
+      "subject": "AHS",
+      "number": "393",
+      "title": "Synthesis in Health and Rehabilitation Sciences",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "AHS 402",
+      "subject": "AHS",
+      "number": "402",
+      "title": "Health Inter-professional Seminar",
+      "hours": 2,
+      "required": true
+    },
+    {
+      "code": "BHIS 406",
+      "subject": "BHIS",
+      "number": "406",
+      "title": "Medical Terminology for Health Information Management",
+      "hours": 2,
+      "required": true
+    },
+    {
+      "code": "BHIS 460",
+      "subject": "BHIS",
+      "number": "460",
+      "title": "Introduction to Health Informatics",
+      "hours": 1,
+      "required": true
+    },
+    {
+      "code": "DHD 101",
+      "subject": "DHD",
+      "number": "101",
+      "title": "Disability in U.S. Society a",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "DHD 440",
+      "subject": "DHD",
+      "number": "440",
+      "title": "Introduction to Assistive Technology: Principles and Practice",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "HIM 410",
+      "subject": "HIM",
+      "number": "410",
+      "title": "Introduction to the Health Care System",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "KN 230",
+      "subject": "KN",
+      "number": "230",
+      "title": "Anatomy and Physiology Lecture I b",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "KN 231",
+      "subject": "KN",
+      "number": "231",
+      "title": "Anatomy and Physiology Lecture II b",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "PSCH 242",
+      "subject": "PSCH",
+      "number": "242",
+      "title": "Introduction to Research in Psychology",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "PSCH 270",
+      "subject": "PSCH",
+      "number": "270",
+      "title": "Introduction to Psychological and Behavioral Disorders",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "STAT 101",
+      "subject": "STAT",
+      "number": "101",
+      "title": "Introduction to Statistics",
+      "hours": 4,
+      "required": true
+    },
+    {
+      "code": "AHS 304",
+      "subject": "AHS",
+      "number": "304",
+      "title": "Human Sexuality and Health Science",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "AHS 405",
+      "subject": "AHS",
+      "number": "405",
+      "title": "Experiential Learning in Health and Rehabilitation Sciences",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "AHS 425",
+      "subject": "AHS",
+      "number": "425",
+      "title": "Rehabilitation Services and Resources for Children with Developmental Disabilities and Families",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "DHD 102",
+      "subject": "DHD",
+      "number": "102",
+      "title": "Disability in American Film",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "DHD 201",
+      "subject": "DHD",
+      "number": "201",
+      "title": "Disability, Rights, and Culture",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "DHD 202",
+      "subject": "DHD",
+      "number": "202",
+      "title": "Disability, Health, and Society",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "DHD 203",
+      "subject": "DHD",
+      "number": "203",
+      "title": "Disability in World Cultures",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "DHD 204",
+      "subject": "DHD",
+      "number": "204",
+      "title": "Disability in the Humanities",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "DHD 205",
+      "subject": "DHD",
+      "number": "205",
+      "title": "Disability, Race, Class and Gender",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "DHD 206",
+      "subject": "DHD",
+      "number": "206",
+      "title": "Disability, Inclusive Cities, and Environmental Accessibility",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "DHD 303",
+      "subject": "DHD",
+      "number": "303",
+      "title": "Disability Activism: From the Local to the Global",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "DHD 403",
+      "subject": "DHD",
+      "number": "403",
+      "title": "Disability in Latino Communities",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "DHD 411",
+      "subject": "DHD",
+      "number": "411",
+      "title": "Disability Policy, Technology, and Practice",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "DHD 412",
+      "subject": "DHD",
+      "number": "412",
+      "title": "Disability Representation, Culture, and Practice",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "DHD 441",
+      "subject": "DHD",
+      "number": "441",
+      "title": "Adaptive Equipment Design and Fabrication",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "PSCH 366",
+      "subject": "PSCH",
+      "number": "366",
+      "title": "Cognitive Neuroscience",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "PT 350",
+      "subject": "PT",
+      "number": "350",
+      "title": "Introduction to Physical Therapy",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "OT 350",
+      "subject": "OT",
+      "number": "350",
+      "title": "Introduction to Occupational Therapy: Occupation and Participation across the Lifespan",
+      "hours": null,
+      "required": true
+    }
+  ],
+  "sampleSchedule": [
+    {
+      "year": "First Year",
+      "semester": "Fall Semester",
+      "total_hours": 13,
+      "courses": [
+        {
+          "code": "ENGL 160",
+          "title": "Academic Writing I: Writing in Academic and Public Contexts",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "DHD 101",
+          "title": "Disability in U.S. Society",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "AHS 101",
+          "title": "Rehabilitation Sciences Student Success Seminar",
+          "hours": 1,
+          "isElective": false,
+          "electiveType": null
+        }
+      ]
+    },
+    {
+      "year": "First Year",
+      "semester": "Spring Semester",
+      "total_hours": 17,
+      "courses": [
+        {
+          "code": "ENGL 161",
+          "title": "Academic Writing II: Writing for Inquiry and Research",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "AHS 102",
+          "title": "Introduction to Clinical Research in Rehabilitation Sciences",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "AHS 210",
+          "title": "Introduction to Rehabilitation Sciences",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "BIOS 110",
+          "title": "Biology of Cells and Organisms",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "PSCH 100",
+          "title": "Introduction to Psychology",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        }
+      ]
+    },
+    {
+      "year": "Second Year",
+      "semester": "Fall Semester",
+      "total_hours": 15,
+      "courses": [
+        {
+          "code": "KN 230",
+          "title": "Anatomy and Physiology Lecture I",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "Selective",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": null,
+          "title": "Elective",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": null,
+          "title": "Elective",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        }
+      ]
+    },
+    {
+      "year": "Second Year",
+      "semester": "Spring Semester",
+      "total_hours": 13,
+      "courses": [
+        {
+          "code": "KN 231",
+          "title": "Anatomy and Physiology Lecture II",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "STAT 101",
+          "title": "Introduction to Statistics",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "Selective",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": null,
+          "title": "Elective",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        }
+      ]
+    },
+    {
+      "year": "Third Year",
+      "semester": "Fall Semester",
+      "total_hours": 15,
+      "courses": [
+        {
+          "code": "AHS 330",
+          "title": "Physical and Mental Health Issues in Rehabilitation",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "AHS 325",
+          "title": "Approaches to Rehabilitation Case Management",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "AHS 393",
+          "title": "Synthesis in Health and Rehabilitation Sciences",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "DHD 440",
+          "title": "Introduction to Assistive Technology: Principles and Practice",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "PSCH 242",
+          "title": "Introduction to Research in Psychology",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        }
+      ]
+    },
+    {
+      "year": "Third Year",
+      "semester": "Spring Semester",
+      "total_hours": 17,
+      "courses": [
+        {
+          "code": "BHIS 406",
+          "title": "Medical Terminology for Health Information Management",
+          "hours": 2,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "PSCH 270",
+          "title": "Introduction to Psychological and Behavioral Disorders or Social Psychology or Psychology of Women and Gender or Developmental Psychology or Cultural Psychology",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "Selective",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": null,
+          "title": "Selective",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": null,
+          "title": "Elective",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": null,
+          "title": "Elective",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        }
+      ]
+    },
+    {
+      "year": "Fourth Year",
+      "semester": "Fall Semester",
+      "total_hours": 14,
+      "courses": [
+        {
+          "code": "AHS 375",
+          "title": "Ethics, Law and Professionalism in Health Sciences",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "HIM 410",
+          "title": "Introduction to the Health Care System",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "AHS 402",
+          "title": "Health Inter-professional Seminar",
+          "hours": 2,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "Elective",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        }
+      ]
+    },
+    {
+      "year": "Fourth Year",
+      "semester": "Spring Semester",
+      "total_hours": 16,
+      "courses": [
+        {
+          "code": "AHS 365",
+          "title": "Measurement and Assessment in Rehabilitation",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "BHIS 460",
+          "title": "Introduction to Health Informatics",
+          "hours": 1,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "Elective",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": null,
+          "title": "Elective",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": null,
+          "title": "Elective",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": null,
+          "title": "Elective",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        }
+      ]
+    }
+  ]
+}

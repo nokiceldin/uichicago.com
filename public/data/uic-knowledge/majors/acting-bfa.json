@@ -1,0 +1,649 @@
+{
+  "name": "Acting - BFA",
+  "college": "Theatre",
+  "department": "Theatre",
+  "url": "https://catalog.uic.edu/ucat/colleges-depts/architecture-design-arts/thtr-mus/bfa-act/",
+  "totalHours": 120,
+  "summaryRequirements": {
+    "General Education Requirements": "24",
+    "BFA Course Requirements": "83",
+    "Electives": "12-13",
+    "DLG 120": "1",
+    "Total Hours": "120"
+  },
+  "requiredCourses": [
+    {
+      "code": "DLG 120",
+      "subject": "DLG",
+      "number": "120",
+      "title": "UIC First-Year Dialogue Seminar (Required of new freshman only) a",
+      "hours": 1,
+      "required": true
+    },
+    {
+      "code": "ENGL 160",
+      "subject": "ENGL",
+      "number": "160",
+      "title": "Academic Writing I: Writing in Academic and Public Contexts",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "ENGL 161",
+      "subject": "ENGL",
+      "number": "161",
+      "title": "Academic Writing II: Writing for Inquiry and Research",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "THTR 101",
+      "subject": "THTR",
+      "number": "101",
+      "title": "Theatre History I: Premodern Drama a",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "THTR 111",
+      "subject": "THTR",
+      "number": "111",
+      "title": "Movement I: Body/Self",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "THTR 121",
+      "subject": "THTR",
+      "number": "121",
+      "title": "Introduction to Acting I",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "THTR 122",
+      "subject": "THTR",
+      "number": "122",
+      "title": "Acting II: Adaptations",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "THTR 162",
+      "subject": "THTR",
+      "number": "162",
+      "title": "Voice I: Voice",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "THTR 182",
+      "subject": "THTR",
+      "number": "182",
+      "title": "Practicum in Theater: Run Crew",
+      "hours": 1,
+      "required": true
+    },
+    {
+      "code": "THTR 183",
+      "subject": "THTR",
+      "number": "183",
+      "title": "Practicum in Theater: Build Crew",
+      "hours": 1,
+      "required": true
+    },
+    {
+      "code": "THTR 201",
+      "subject": "THTR",
+      "number": "201",
+      "title": "Theatre History II: Modern Theatre b",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "THTR 211",
+      "subject": "THTR",
+      "number": "211",
+      "title": "Movement II: Body/Space",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "THTR 212",
+      "subject": "THTR",
+      "number": "212",
+      "title": "Movement III: Somatics",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "THTR 221",
+      "subject": "THTR",
+      "number": "221",
+      "title": "Advanced Acting: American Drama",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "THTR 222",
+      "subject": "THTR",
+      "number": "222",
+      "title": "Advanced Acting: Chekhov",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "THTR 230",
+      "subject": "THTR",
+      "number": "230",
+      "title": "Script Analysis for Theatrical Production",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "THTR 261",
+      "subject": "THTR",
+      "number": "261",
+      "title": "Voice II: Speech",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "THTR 264",
+      "subject": "THTR",
+      "number": "264",
+      "title": "Voice III: Advanced Voice and Speech",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "THTR 280",
+      "subject": "THTR",
+      "number": "280",
+      "title": "Practicum in Performance",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "THTR 311",
+      "subject": "THTR",
+      "number": "311",
+      "title": "Movement IV: Style",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "THTR 312",
+      "subject": "THTR",
+      "number": "312",
+      "title": "Movement V: Character",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "THTR 321",
+      "subject": "THTR",
+      "number": "321",
+      "title": "Advanced Acting: Shakespeare",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "THTR 322",
+      "subject": "THTR",
+      "number": "322",
+      "title": "Advanced Acting: Brecht, Beckett, Pinter",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "THTR 361",
+      "subject": "THTR",
+      "number": "361",
+      "title": "Voice IV: Text Styles",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "THTR 362",
+      "subject": "THTR",
+      "number": "362",
+      "title": "Voice V: Dialects",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "THTR 413",
+      "subject": "THTR",
+      "number": "413",
+      "title": "Movement VI: Movement Lab",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "THTR 421",
+      "subject": "THTR",
+      "number": "421",
+      "title": "Advanced Acting: Ensemble",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "THTR 422",
+      "subject": "THTR",
+      "number": "422",
+      "title": "Advanced Acting: Audition",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "THTR 150",
+      "subject": "THTR",
+      "number": "150",
+      "title": "Fundamental of Theatre Technology",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "THTR 151",
+      "subject": "THTR",
+      "number": "151",
+      "title": "Costume Technology I: Introduction to Costume Technology",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "THTR 155",
+      "subject": "THTR",
+      "number": "155",
+      "title": "Fundamentals of Theatre Design",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "THTR 156",
+      "subject": "THTR",
+      "number": "156",
+      "title": "Lighting Design I: An Introduction to Lighting Design",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "THTR 331",
+      "subject": "THTR",
+      "number": "331",
+      "title": "Page to Stage: Adaptation of Text for Theatrical Performance c",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "THTR 333",
+      "subject": "THTR",
+      "number": "333",
+      "title": "Stage Direction d",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "THTR 431",
+      "subject": "THTR",
+      "number": "431",
+      "title": "Playwriting",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "THTR 435",
+      "subject": "THTR",
+      "number": "435",
+      "title": "Contemporary Performance Techniques c",
+      "hours": null,
+      "required": true
+    }
+  ],
+  "sampleSchedule": [
+    {
+      "year": "Freshman Year",
+      "semester": "Fall Semester",
+      "total_hours": 16,
+      "courses": [
+        {
+          "code": "THTR 101",
+          "title": "Theatre History I: Premodern Drama",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "THTR 111",
+          "title": "Movement I: Body/Self",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "THTR 121",
+          "title": "Introduction to Acting I",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "THTR 182",
+          "title": "Practicum in Theater: Run Crew",
+          "hours": 1,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "ENGL 160",
+          "title": "Academic Writing I: Writing in Academic and Public Contexts",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "General Education Core course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        }
+      ]
+    },
+    {
+      "year": "Freshman Year",
+      "semester": "Spring Semester",
+      "total_hours": null,
+      "courses": [
+        {
+          "code": "THTR 150",
+          "title": "Fundamental of Theatre Technology or Fundamentals of Theatre Design",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "THTR 122",
+          "title": "Acting II: Adaptations",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "THTR 162",
+          "title": "Voice I: Voice",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "THTR 230",
+          "title": "Script Analysis for Theatrical Production",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "ENGL 161",
+          "title": "Academic Writing II: Writing for Inquiry and Research",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "DLG 120",
+          "title": "UIC First-Year Dialogue Seminar ( Required of new freshmen only )",
+          "hours": 1,
+          "isElective": false,
+          "electiveType": null
+        }
+      ]
+    },
+    {
+      "year": "Sophomore Year",
+      "semester": "Fall Semester",
+      "total_hours": null,
+      "courses": [
+        {
+          "code": "THTR 183",
+          "title": "Practicum in Theater: Build Crew",
+          "hours": 1,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "THTR 221",
+          "title": "Advanced Acting: American Drama",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "THTR 261",
+          "title": "Voice II: Speech",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "THTR 211",
+          "title": "Movement II: Body/Space",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "General Education Core course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        },
+        {
+          "code": null,
+          "title": "Elective",
+          "hours": 2,
+          "isElective": true,
+          "electiveType": "elective_general"
+        }
+      ]
+    },
+    {
+      "year": "Sophomore Year",
+      "semester": "Spring Semester",
+      "total_hours": 15,
+      "courses": [
+        {
+          "code": "THTR 212",
+          "title": "Movement III: Somatics",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "THTR 222",
+          "title": "Advanced Acting: Chekhov",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "THTR 264",
+          "title": "Voice III: Advanced Voice and Speech",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "Elective",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": null,
+          "title": "Second course in students’ selected design, production, and technology sequence",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        }
+      ]
+    },
+    {
+      "year": "Junior Year",
+      "semester": "Fall Semester",
+      "total_hours": 15,
+      "courses": [
+        {
+          "code": "THTR 201",
+          "title": "Theatre History II: Modern Theatre",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "THTR 311",
+          "title": "Movement IV: Style",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "THTR 321",
+          "title": "Advanced Acting: Shakespeare",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "THTR 361",
+          "title": "Voice IV: Text Styles",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "General Education Core course OR Theatre Selective b",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        }
+      ]
+    },
+    {
+      "year": "Junior Year",
+      "semester": "Spring Semester",
+      "total_hours": 15,
+      "courses": [
+        {
+          "code": "THTR 322",
+          "title": "Advanced Acting: Brecht, Beckett, Pinter",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "THTR 362",
+          "title": "Voice V: Dialects",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "THTR 312",
+          "title": "Movement V: Character",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "General Education Core course OR Theatre Selective c",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        },
+        {
+          "code": null,
+          "title": "General Education Core course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        }
+      ]
+    },
+    {
+      "year": "Senior Year",
+      "semester": "Fall Semester",
+      "total_hours": 12,
+      "courses": [
+        {
+          "code": "THTR 280",
+          "title": "Practicum in Performance a",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "THTR 413",
+          "title": "Movement VI: Movement Lab",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "THTR 421",
+          "title": "Advanced Acting: Ensemble",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "General Education Core course OR Theatre Selective b",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        }
+      ]
+    },
+    {
+      "year": "Senior Year",
+      "semester": "Spring Semester",
+      "total_hours": 16,
+      "courses": [
+        {
+          "code": "THTR 422",
+          "title": "Advanced Acting: Audition",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "General Education Core course OR Theatre Selective c",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        },
+        {
+          "code": null,
+          "title": "General Education Core course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        },
+        {
+          "code": null,
+          "title": "Electives",
+          "hours": 7,
+          "isElective": true,
+          "electiveType": "elective_general"
+        }
+      ]
+    }
+  ]
+}

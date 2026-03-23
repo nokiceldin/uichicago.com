@@ -1,0 +1,536 @@
+{
+  "name": "Kinesiology - BS",
+  "college": "Kinesiology and Nutrition",
+  "department": "Kinesiology and Nutrition",
+  "url": "https://catalog.uic.edu/ucat/colleges-depts/applied-health-sciences/kn/bs-kn/",
+  "totalHours": 120,
+  "summaryRequirements": {
+    "University Writing Requirement": "6",
+    "General Education and Basic Sciences": "35-36",
+    "Required Major Courses/Kinesiology Core": "53",
+    "Experiential Learning": "3",
+    "Electives": "22-23",
+    "Total Hours": "120"
+  },
+  "requiredCourses": [
+    {
+      "code": "ENGL 160",
+      "subject": "ENGL",
+      "number": "160",
+      "title": "Academic Writing I: Writing in Academic and Public Contexts",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "ENGL 161",
+      "subject": "ENGL",
+      "number": "161",
+      "title": "Academic Writing II: Writing for Inquiry and Research",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "BIOS 110",
+      "subject": "BIOS",
+      "number": "110",
+      "title": "Biology of Cells and Organisms a",
+      "hours": 4,
+      "required": true
+    },
+    {
+      "code": "KN 152",
+      "subject": "KN",
+      "number": "152",
+      "title": "Introduction to Exercise Physiology and Health a",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "PSCH 100",
+      "subject": "PSCH",
+      "number": "100",
+      "title": "Introduction to Psychology b",
+      "hours": 34,
+      "required": true
+    },
+    {
+      "code": "MATH 121",
+      "subject": "MATH",
+      "number": "121",
+      "title": "Precalculus Mathematics",
+      "hours": 5,
+      "required": true
+    },
+    {
+      "code": "CHEM 101",
+      "subject": "CHEM",
+      "number": "101",
+      "title": "Preparatory Chemistry",
+      "hours": 4,
+      "required": true
+    },
+    {
+      "code": "PHYS 131",
+      "subject": "PHYS",
+      "number": "131",
+      "title": "Introductory Physics for Life Sciences I a",
+      "hours": 4,
+      "required": true
+    },
+    {
+      "code": "HN 196",
+      "subject": "HN",
+      "number": "196",
+      "title": "Nutrition",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "KN 100",
+      "subject": "KN",
+      "number": "100",
+      "title": "Kinesiology: First Year Seminar a",
+      "hours": 2,
+      "required": true
+    },
+    {
+      "code": "KN 136",
+      "subject": "KN",
+      "number": "136",
+      "title": "Techniques and Principles of Exercise",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "KN 200",
+      "subject": "KN",
+      "number": "200",
+      "title": "Statistical Methods b",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "KN 237",
+      "subject": "KN",
+      "number": "237",
+      "title": "Sport and Exercise Psychology",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "KN 243",
+      "subject": "KN",
+      "number": "243",
+      "title": "Exercise Assessment",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "KN 245",
+      "subject": "KN",
+      "number": "245",
+      "title": "Exercise Programming and Instruction",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "KN 230",
+      "subject": "KN",
+      "number": "230",
+      "title": "Anatomy and Physiology Lecture I",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "KN 231",
+      "subject": "KN",
+      "number": "231",
+      "title": "Anatomy and Physiology Lecture II",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "KN 232",
+      "subject": "KN",
+      "number": "232",
+      "title": "Anatomy and Physiology Laboratory I",
+      "hours": 2,
+      "required": true
+    },
+    {
+      "code": "KN 233",
+      "subject": "KN",
+      "number": "233",
+      "title": "Anatomy and Physiology Laboratory II",
+      "hours": 2,
+      "required": true
+    },
+    {
+      "code": "KN 261",
+      "subject": "KN",
+      "number": "261",
+      "title": "Applied Musculoskeletal Anatomy",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "KN 336",
+      "subject": "KN",
+      "number": "336",
+      "title": "Health Coaching",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "KN 352",
+      "subject": "KN",
+      "number": "352",
+      "title": "Physiology of Exercise",
+      "hours": 4,
+      "required": true
+    },
+    {
+      "code": "KN 361",
+      "subject": "KN",
+      "number": "361",
+      "title": "Movement Biomechanics",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "KN 362",
+      "subject": "KN",
+      "number": "362",
+      "title": "Tissue Biomechanics",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "KN 372",
+      "subject": "KN",
+      "number": "372",
+      "title": "Motor Control and Learning",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "KN 491",
+      "subject": "KN",
+      "number": "491",
+      "title": "Professional Preparation",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "KN 495",
+      "subject": "KN",
+      "number": "495",
+      "title": "Senior Seminar",
+      "hours": 1,
+      "required": true
+    }
+  ],
+  "electiveGroups": [
+    {
+      "label": "Select 22-23 hours of free electives.",
+      "credits": 23,
+      "options": []
+    }
+  ],
+  "sampleSchedule": [
+    {
+      "year": "Freshman Year",
+      "semester": "Fall Semester",
+      "total_hours": 14,
+      "courses": [
+        {
+          "code": "ENGL 160",
+          "title": "Academic Writing I: Writing in Academic and Public Contexts",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "KN 100",
+          "title": "Kinesiology: First Year Seminar",
+          "hours": 2,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "CHEM 101",
+          "title": "Preparatory Chemistry",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "MATH 121",
+          "title": "Precalculus Mathematics",
+          "hours": 5,
+          "isElective": false,
+          "electiveType": null
+        }
+      ]
+    },
+    {
+      "year": "Freshman Year",
+      "semester": "Spring Semester",
+      "total_hours": 16,
+      "courses": [
+        {
+          "code": "ENGL 161",
+          "title": "Academic Writing II: Writing for Inquiry and Research",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "KN 136",
+          "title": "Techniques and Principles of Exercise",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "KN 152",
+          "title": "Introduction to Exercise Physiology and Health",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "BIOS 110",
+          "title": "Biology of Cells and Organisms",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "KN 200",
+          "title": "Statistical Methods",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        }
+      ]
+    },
+    {
+      "year": "Sophomore Year",
+      "semester": "Fall Semester",
+      "total_hours": 14,
+      "courses": [
+        {
+          "code": "HN 196",
+          "title": "Nutrition",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "KN 230",
+          "title": "Anatomy and Physiology Lecture I",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "KN 232",
+          "title": "Anatomy and Physiology Laboratory I",
+          "hours": 2,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "KN 237",
+          "title": "Sport and Exercise Psychology",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "General Education course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        }
+      ]
+    },
+    {
+      "year": "Sophomore Year",
+      "semester": "Spring Semester",
+      "total_hours": null,
+      "courses": [
+        {
+          "code": "KN 231",
+          "title": "Anatomy and Physiology Lecture II",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "KN 233",
+          "title": "Anatomy and Physiology Laboratory II",
+          "hours": 2,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "KN 243",
+          "title": "Exercise Assessment",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "KN 261",
+          "title": "Applied Musculoskeletal Anatomy",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "PSCH 100",
+          "title": "Introduction to Psychology or The Healthy Human",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        }
+      ]
+    },
+    {
+      "year": "Junior Year",
+      "semester": "Fall Semester",
+      "total_hours": 16,
+      "courses": [
+        {
+          "code": "PHYS 131",
+          "title": "Introductory Physics for Life Sciences I",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "KN 245",
+          "title": "Exercise Programming and Instruction",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "KN 372",
+          "title": "Motor Control and Learning",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "General Education course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        },
+        {
+          "code": null,
+          "title": "Free Elective",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "free_elective"
+        }
+      ]
+    },
+    {
+      "year": "Junior Year",
+      "semester": "Spring Semester",
+      "total_hours": 15,
+      "courses": [
+        {
+          "code": "KN 352",
+          "title": "Physiology of Exercise",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "KN 361",
+          "title": "Movement Biomechanics",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "KN 491",
+          "title": "Professional Preparation",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "Free Electives",
+          "hours": 5,
+          "isElective": true,
+          "electiveType": "free_elective"
+        }
+      ]
+    },
+    {
+      "year": "Senior Year",
+      "semester": "Fall Semester",
+      "total_hours": 15,
+      "courses": [
+        {
+          "code": "KN 362",
+          "title": "Tissue Biomechanics",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "Kinesiology 300-level Elective",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": null,
+          "title": "Free Elective",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "free_elective"
+        },
+        {
+          "code": null,
+          "title": "General Education course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        },
+        {
+          "code": null,
+          "title": "General Education course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        }
+      ]
+    },
+    {
+      "year": "Senior Year",
+      "semester": "Spring Semester",
+      "total_hours": null,
+      "courses": [
+        {
+          "code": "KN 336",
+          "title": "Health Coaching",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        }
+      ]
+    }
+  ]
+}

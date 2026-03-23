@@ -1,0 +1,370 @@
+{
+  "name": "Nursing - BS",
+  "college": "Nursing",
+  "department": "Nursing",
+  "url": "https://catalog.uic.edu/ucat/colleges-depts/nursing/bs-nursing/",
+  "totalHours": 120,
+  "summaryRequirements": {
+    "Pre-Nursing Studies": "57",
+    "Course Requirements in the College of Nursing": "63",
+    "Total Hours": "120"
+  },
+  "requiredCourses": [
+    {
+      "code": "ENGL 160",
+      "subject": "ENGL",
+      "number": "160",
+      "title": "Academic Writing I: Writing in Academic and Public Contexts",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "ENGL 161",
+      "subject": "ENGL",
+      "number": "161",
+      "title": "Academic Writing II: Writing for Inquiry and Research",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "BIOS 250",
+      "subject": "BIOS",
+      "number": "250",
+      "title": "Microbiology and Application to Health a",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "CHEM 115",
+      "subject": "CHEM",
+      "number": "115",
+      "title": "Comprehensive General and Organic Chemistry b,c",
+      "hours": 5,
+      "required": true
+    },
+    {
+      "code": "KN 230",
+      "subject": "KN",
+      "number": "230",
+      "title": "Anatomy and Physiology Lecture I",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "KN 231",
+      "subject": "KN",
+      "number": "231",
+      "title": "Anatomy and Physiology Lecture II",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "KN 232",
+      "subject": "KN",
+      "number": "232",
+      "title": "Anatomy and Physiology Laboratory I",
+      "hours": 2,
+      "required": true
+    },
+    {
+      "code": "KN 233",
+      "subject": "KN",
+      "number": "233",
+      "title": "Anatomy and Physiology Laboratory II",
+      "hours": 2,
+      "required": true
+    },
+    {
+      "code": "NUEL 250",
+      "subject": "NUEL",
+      "number": "250",
+      "title": "Human Development Across the Life Span",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "HN 196",
+      "subject": "HN",
+      "number": "196",
+      "title": "Nutrition",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "STAT 101",
+      "subject": "STAT",
+      "number": "101",
+      "title": "Introduction to Statistics",
+      "hours": 4,
+      "required": true
+    },
+    {
+      "code": "NURS 228",
+      "subject": "NURS",
+      "number": "228",
+      "title": "Readiness for Professional Nursing Practice",
+      "hours": 2,
+      "required": true
+    },
+    {
+      "code": "NURS 409",
+      "subject": "NURS",
+      "number": "409",
+      "title": "Health Assessment and Communications",
+      "hours": 5,
+      "required": true
+    },
+    {
+      "code": "NURS 411",
+      "subject": "NURS",
+      "number": "411",
+      "title": "Foundations of Nursing Practice",
+      "hours": 7,
+      "required": true
+    },
+    {
+      "code": "NURS 419",
+      "subject": "NURS",
+      "number": "419",
+      "title": "Pathophysiology and Pharmacology 1",
+      "hours": 4,
+      "required": true
+    },
+    {
+      "code": "NURS 420",
+      "subject": "NURS",
+      "number": "420",
+      "title": "Patho-Pharm 2",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "NURS 423",
+      "subject": "NURS",
+      "number": "423",
+      "title": "Adult Health Nursing 1",
+      "hours": 7,
+      "required": true
+    },
+    {
+      "code": "NURS 433",
+      "subject": "NURS",
+      "number": "433",
+      "title": "Adult Health Nursing 2",
+      "hours": 6,
+      "required": true
+    },
+    {
+      "code": "NURS 438",
+      "subject": "NURS",
+      "number": "438",
+      "title": "Introduction to Evidence-Based Practice",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "NURS 443",
+      "subject": "NURS",
+      "number": "443",
+      "title": "Nursing Care of Women and Childbearing Families",
+      "hours": 4,
+      "required": true
+    },
+    {
+      "code": "NURS 448",
+      "subject": "NURS",
+      "number": "448",
+      "title": "Leadership in Professional Nursing Practice",
+      "hours": 6,
+      "required": true
+    },
+    {
+      "code": "NURS 453",
+      "subject": "NURS",
+      "number": "453",
+      "title": "Pediatric Health Nursing",
+      "hours": 4,
+      "required": true
+    },
+    {
+      "code": "NURS 458",
+      "subject": "NURS",
+      "number": "458",
+      "title": "Transition to Professional Nursing Practice",
+      "hours": 4,
+      "required": true
+    },
+    {
+      "code": "NURS 463",
+      "subject": "NURS",
+      "number": "463",
+      "title": "Psychiatric-Mental Health Nursing",
+      "hours": 4,
+      "required": true
+    },
+    {
+      "code": "NURS 473",
+      "subject": "NURS",
+      "number": "473",
+      "title": "Population Health Nursing",
+      "hours": 4,
+      "required": true
+    }
+  ],
+  "sampleSchedule": [
+    {
+      "year": "Junior Year",
+      "semester": "Fall Semester",
+      "total_hours": 16,
+      "courses": [
+        {
+          "code": "NURS 409",
+          "title": "Health Assessment and Communications",
+          "hours": 5,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "NURS 411",
+          "title": "Foundations of Nursing Practice",
+          "hours": 7,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "NURS 419",
+          "title": "Pathophysiology and Pharmacology 1",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        }
+      ]
+    },
+    {
+      "year": "Junior Year",
+      "semester": "Spring Semester",
+      "total_hours": 16,
+      "courses": [
+        {
+          "code": "NURS 420",
+          "title": "Patho-Pharm 2",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "NURS 423",
+          "title": "Adult Health Nursing 1",
+          "hours": 7,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "NURS 443",
+          "title": "Nursing Care of Women and Childbearing Families",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "NURS 463",
+          "title": "Psychiatric-Mental Health Nursing",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "NURS 228",
+          "title": "Readiness for Professional Nursing Practice",
+          "hours": 2,
+          "isElective": false,
+          "electiveType": null
+        }
+      ]
+    },
+    {
+      "year": "Senior Year",
+      "semester": "Fall Semester",
+      "total_hours": 17,
+      "courses": [
+        {
+          "code": "NURS 433",
+          "title": "Adult Health Nursing 2",
+          "hours": 6,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "NURS 453",
+          "title": "Pediatric Health Nursing",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "NURS 473",
+          "title": "Population Health Nursing",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "NURS 443",
+          "title": "Nursing Care of Women and Childbearing Families",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "NURS 463",
+          "title": "Psychiatric-Mental Health Nursing",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "NURS 438",
+          "title": "Introduction to Evidence-Based Practice",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        }
+      ]
+    },
+    {
+      "year": "Senior Year",
+      "semester": "Spring Semester",
+      "total_hours": 14,
+      "courses": [
+        {
+          "code": "NURS 458",
+          "title": "Transition to Professional Nursing Practice",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "NURS 448",
+          "title": "Leadership in Professional Nursing Practice",
+          "hours": 6,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "NURS 453",
+          "title": "Pediatric Health Nursing",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "NURS 473",
+          "title": "Population Health Nursing",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        }
+      ]
+    }
+  ]
+}

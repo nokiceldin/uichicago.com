@@ -1,0 +1,1072 @@
+{
+  "name": "Computer Engineering - BS",
+  "college": "Electrical and Computer Engineering",
+  "department": "Electrical and Computer Engineering",
+  "url": "https://catalog.uic.edu/ucat/colleges-depts/engineering/ece/bs-ce/",
+  "totalHours": 128,
+  "summaryRequirements": {
+    "Nonengineering and General Education Requirements": "53",
+    "Required in the College of Engineering": "58",
+    "Technical Electives": "17",
+    "Total Hours": "128"
+  },
+  "requiredCourses": [
+    {
+      "code": "ENGL 160",
+      "subject": "ENGL",
+      "number": "160",
+      "title": "Academic Writing I: Writing in Academic and Public Contexts",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "ENGL 161",
+      "subject": "ENGL",
+      "number": "161",
+      "title": "Academic Writing II: Writing for Inquiry and Research",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "MATH 180",
+      "subject": "MATH",
+      "number": "180",
+      "title": "Calculus I b",
+      "hours": 4,
+      "required": true
+    },
+    {
+      "code": "MATH 181",
+      "subject": "MATH",
+      "number": "181",
+      "title": "Calculus II b",
+      "hours": 4,
+      "required": true
+    },
+    {
+      "code": "MATH 210",
+      "subject": "MATH",
+      "number": "210",
+      "title": "Calculus III b",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "MATH 218",
+      "subject": "MATH",
+      "number": "218",
+      "title": "Applied Linear Algebra",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "MATH 220",
+      "subject": "MATH",
+      "number": "220",
+      "title": "Introduction to Differential Equations",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "PHYS 141",
+      "subject": "PHYS",
+      "number": "141",
+      "title": "General Physics I (Mechanics) b",
+      "hours": 4,
+      "required": true
+    },
+    {
+      "code": "PHYS 142",
+      "subject": "PHYS",
+      "number": "142",
+      "title": "General Physics II (Electricity and Magnetism) b",
+      "hours": 4,
+      "required": true
+    },
+    {
+      "code": "PHYS 260",
+      "subject": "PHYS",
+      "number": "260",
+      "title": "Introduction to Thermal Physics",
+      "hours": 2,
+      "required": true
+    },
+    {
+      "code": "CHEM 122",
+      "subject": "CHEM",
+      "number": "122",
+      "title": "Matter and Energy c",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "CHEM 123",
+      "subject": "CHEM",
+      "number": "123",
+      "title": "Foundations of Chemical Inquiry I b,c",
+      "hours": 2,
+      "required": true
+    },
+    {
+      "code": "ENGR 100",
+      "subject": "ENGR",
+      "number": "100",
+      "title": "Engineering Success Seminar for Freshmen a",
+      "hours": 1,
+      "required": true
+    },
+    {
+      "code": "CS 107",
+      "subject": "CS",
+      "number": "107",
+      "title": "Introduction to Computing and Programming",
+      "hours": 4,
+      "required": true
+    },
+    {
+      "code": "CS 151",
+      "subject": "CS",
+      "number": "151",
+      "title": "Mathematical Foundations of Computing",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "CS 251",
+      "subject": "CS",
+      "number": "251",
+      "title": "Data Structures",
+      "hours": 4,
+      "required": true
+    },
+    {
+      "code": "ECE 115",
+      "subject": "ECE",
+      "number": "115",
+      "title": "Introduction to Electrical and Computer Engineering",
+      "hours": 4,
+      "required": true
+    },
+    {
+      "code": "ECE 225",
+      "subject": "ECE",
+      "number": "225",
+      "title": "Circuit Analysis",
+      "hours": 4,
+      "required": true
+    },
+    {
+      "code": "ECE 265",
+      "subject": "ECE",
+      "number": "265",
+      "title": "Introduction to Logic Design",
+      "hours": 4,
+      "required": true
+    },
+    {
+      "code": "ECE 266",
+      "subject": "ECE",
+      "number": "266",
+      "title": "Introduction to Embedded Systems",
+      "hours": 4,
+      "required": true
+    },
+    {
+      "code": "ECE 310",
+      "subject": "ECE",
+      "number": "310",
+      "title": "Discrete and Continuous Signals and Systems",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "ECE 333",
+      "subject": "ECE",
+      "number": "333",
+      "title": "Computer Communication Networks I",
+      "hours": 4,
+      "required": true
+    },
+    {
+      "code": "ECE 340",
+      "subject": "ECE",
+      "number": "340",
+      "title": "Electronics I",
+      "hours": 4,
+      "required": true
+    },
+    {
+      "code": "ECE 341",
+      "subject": "ECE",
+      "number": "341",
+      "title": "Probability and Random Processes for Engineers",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "ECE 366",
+      "subject": "ECE",
+      "number": "366",
+      "title": "Computer Organization",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "ECE 396",
+      "subject": "ECE",
+      "number": "396",
+      "title": "Senior Design I",
+      "hours": 2,
+      "required": true
+    },
+    {
+      "code": "ECE 397",
+      "subject": "ECE",
+      "number": "397",
+      "title": "Senior Design II",
+      "hours": 2,
+      "required": true
+    },
+    {
+      "code": "ECE 465",
+      "subject": "ECE",
+      "number": "465",
+      "title": "Digital Systems Design",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "ECE 466",
+      "subject": "ECE",
+      "number": "466",
+      "title": "Computer Architecture",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "ECE 467",
+      "subject": "ECE",
+      "number": "467",
+      "title": "Introduction to VLSI Design",
+      "hours": 4,
+      "required": true
+    },
+    {
+      "code": "ECE 499",
+      "subject": "ECE",
+      "number": "499",
+      "title": "Professional Development Seminar",
+      "hours": 0,
+      "required": true
+    },
+    {
+      "code": "CS 361",
+      "subject": "CS",
+      "number": "361",
+      "title": "Systems Programming",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "CS 401",
+      "subject": "CS",
+      "number": "401",
+      "title": "Computer Algorithms I",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ECE 311",
+      "subject": "ECE",
+      "number": "311",
+      "title": "Communication Engineering",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ECE 317",
+      "subject": "ECE",
+      "number": "317",
+      "title": "Digital Signal Processing I",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ECE 322",
+      "subject": "ECE",
+      "number": "322",
+      "title": "Introduction to Electromagnetics and Applications",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ECE 342",
+      "subject": "ECE",
+      "number": "342",
+      "title": "Electronics II",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ECE 346",
+      "subject": "ECE",
+      "number": "346",
+      "title": "Solid State Device Theory",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ECE 347",
+      "subject": "ECE",
+      "number": "347",
+      "title": "Integrated Circuit Engineering",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ECE 350",
+      "subject": "ECE",
+      "number": "350",
+      "title": "Principles of Automatic Control",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ECE 407",
+      "subject": "ECE",
+      "number": "407",
+      "title": "Pattern Recognition I",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ECE 410",
+      "subject": "ECE",
+      "number": "410",
+      "title": "Advanced Circuit Analysis",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ECE 412",
+      "subject": "ECE",
+      "number": "412",
+      "title": "Introduction to Filter Synthesis",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ECE 415",
+      "subject": "ECE",
+      "number": "415",
+      "title": "Image Analysis and Computer Vision I",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ECE 417",
+      "subject": "ECE",
+      "number": "417",
+      "title": "Digital Signal Processing II",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ECE 418",
+      "subject": "ECE",
+      "number": "418",
+      "title": "Statistical Digital Signal Processing",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ECE 421",
+      "subject": "ECE",
+      "number": "421",
+      "title": "Introduction to Antennas and Wireless Propagation",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ECE 423",
+      "subject": "ECE",
+      "number": "423",
+      "title": "Electromagnetic Compatibility",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ECE 424",
+      "subject": "ECE",
+      "number": "424",
+      "title": "RF and Microwave Engineering",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ECE 432",
+      "subject": "ECE",
+      "number": "432",
+      "title": "Digital Communications",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ECE 434",
+      "subject": "ECE",
+      "number": "434",
+      "title": "Multimedia Systems",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ECE 436",
+      "subject": "ECE",
+      "number": "436",
+      "title": "Computer Communication Networks II",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ECE 437",
+      "subject": "ECE",
+      "number": "437",
+      "title": "Wireless Communications",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ECE 440",
+      "subject": "ECE",
+      "number": "440",
+      "title": "Nanoelectronics",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ECE 442",
+      "subject": "ECE",
+      "number": "442",
+      "title": "Power Semiconductor Devices and Integrated Circuits",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ECE 445",
+      "subject": "ECE",
+      "number": "445",
+      "title": "Analysis and Design of Power Electronic Circuits",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ECE 448",
+      "subject": "ECE",
+      "number": "448",
+      "title": "Transistors",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ECE 449",
+      "subject": "ECE",
+      "number": "449",
+      "title": "Microdevices and Micromachining Technology",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ECE 451",
+      "subject": "ECE",
+      "number": "451",
+      "title": "Control Engineering",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ECE 452",
+      "subject": "ECE",
+      "number": "452",
+      "title": "Robotics: Algorithms and Control",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ECE 454",
+      "subject": "ECE",
+      "number": "454",
+      "title": "Mechatronic Embedded Systems Design",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ECE 458",
+      "subject": "ECE",
+      "number": "458",
+      "title": "Electromechanical Energy Conversion",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ECE 464",
+      "subject": "ECE",
+      "number": "464",
+      "title": "Testing and Reliability of Digital Systems",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ECE 468",
+      "subject": "ECE",
+      "number": "468",
+      "title": "Analog and Mixed - Signal Integrated Circuits",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ECE 469",
+      "subject": "ECE",
+      "number": "469",
+      "title": "Hardware Description Language Based Digital and Computer System Design",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "MCS 425",
+      "subject": "MCS",
+      "number": "425",
+      "title": "Codes and Cryptography",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "MCS 471",
+      "subject": "MCS",
+      "number": "471",
+      "title": "Numerical Analysis",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "PHYS 240",
+      "subject": "PHYS",
+      "number": "240",
+      "title": "Fundamentals of Modern Quantum Theory",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "STAT 471",
+      "subject": "STAT",
+      "number": "471",
+      "title": "Linear and Non-Linear Programming",
+      "hours": null,
+      "required": true
+    }
+  ],
+  "electiveGroups": [
+    {
+      "label": "Select 17 hours from the following:",
+      "credits": 17,
+      "options": [
+        {
+          "code": "CS 361",
+          "title": "Systems Programming"
+        },
+        {
+          "code": "CS 401",
+          "title": "Computer Algorithms I"
+        },
+        {
+          "code": "ECE 311",
+          "title": "Communication Engineering"
+        },
+        {
+          "code": "ECE 317",
+          "title": "Digital Signal Processing I"
+        },
+        {
+          "code": "ECE 322",
+          "title": "Introduction to Electromagnetics and Applications"
+        },
+        {
+          "code": "ECE 342",
+          "title": "Electronics II"
+        },
+        {
+          "code": "ECE 346",
+          "title": "Solid State Device Theory"
+        },
+        {
+          "code": "ECE 347",
+          "title": "Integrated Circuit Engineering"
+        },
+        {
+          "code": "ECE 350",
+          "title": "Principles of Automatic Control"
+        },
+        {
+          "code": "ECE 407",
+          "title": "Pattern Recognition I"
+        },
+        {
+          "code": "ECE 410",
+          "title": "Advanced Circuit Analysis"
+        },
+        {
+          "code": "ECE 412",
+          "title": "Introduction to Filter Synthesis"
+        },
+        {
+          "code": "ECE 415",
+          "title": "Image Analysis and Computer Vision I"
+        },
+        {
+          "code": "ECE 417",
+          "title": "Digital Signal Processing II"
+        },
+        {
+          "code": "ECE 418",
+          "title": "Statistical Digital Signal Processing"
+        },
+        {
+          "code": "ECE 421",
+          "title": "Introduction to Antennas and Wireless Propagation"
+        },
+        {
+          "code": "ECE 423",
+          "title": "Electromagnetic Compatibility"
+        },
+        {
+          "code": "ECE 424",
+          "title": "RF and Microwave Engineering"
+        },
+        {
+          "code": "ECE 432",
+          "title": "Digital Communications"
+        },
+        {
+          "code": "ECE 434",
+          "title": "Multimedia Systems"
+        },
+        {
+          "code": "ECE 436",
+          "title": "Computer Communication Networks II"
+        },
+        {
+          "code": "ECE 437",
+          "title": "Wireless Communications"
+        },
+        {
+          "code": "ECE 440",
+          "title": "Nanoelectronics"
+        },
+        {
+          "code": "ECE 442",
+          "title": "Power Semiconductor Devices and Integrated Circuits"
+        },
+        {
+          "code": "ECE 445",
+          "title": "Analysis and Design of Power Electronic Circuits"
+        },
+        {
+          "code": "ECE 448",
+          "title": "Transistors"
+        },
+        {
+          "code": "ECE 449",
+          "title": "Microdevices and Micromachining Technology"
+        },
+        {
+          "code": "ECE 451",
+          "title": "Control Engineering"
+        },
+        {
+          "code": "ECE 452",
+          "title": "Robotics: Algorithms and Control"
+        },
+        {
+          "code": "ECE 454",
+          "title": "Mechatronic Embedded Systems Design"
+        },
+        {
+          "code": "ECE 458",
+          "title": "Electromechanical Energy Conversion"
+        },
+        {
+          "code": "ECE 464",
+          "title": "Testing and Reliability of Digital Systems"
+        },
+        {
+          "code": "ECE 468",
+          "title": "Analog and Mixed - Signal Integrated Circuits"
+        },
+        {
+          "code": "ECE 469",
+          "title": "Hardware Description Language Based Digital and Computer System Design"
+        },
+        {
+          "code": "MCS 425",
+          "title": "Codes and Cryptography"
+        },
+        {
+          "code": "MCS 471",
+          "title": "Numerical Analysis"
+        },
+        {
+          "code": "PHYS 240",
+          "title": "Fundamentals of Modern Quantum Theory"
+        },
+        {
+          "code": "STAT 471",
+          "title": "Linear and Non-Linear Programming"
+        }
+      ]
+    }
+  ],
+  "sampleSchedule": [
+    {
+      "year": "Freshman Year",
+      "semester": "First Semester",
+      "total_hours": 16,
+      "courses": [
+        {
+          "code": "MATH 180",
+          "title": "Calculus I",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "CHEM 122",
+          "title": "Matter and Energy",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "CHEM 123",
+          "title": "Foundations of Chemical Inquiry I",
+          "hours": 2,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "ENGL 160",
+          "title": "Academic Writing I: Writing in Academic and Public Contexts",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "ECE 115",
+          "title": "Introduction to Electrical and Computer Engineering",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "ENGR 100",
+          "title": "Engineering Success Seminar for Freshmen a",
+          "hours": 1,
+          "isElective": false,
+          "electiveType": null
+        }
+      ]
+    },
+    {
+      "year": "Freshman Year",
+      "semester": "Second Semester",
+      "total_hours": 15,
+      "courses": [
+        {
+          "code": "MATH 181",
+          "title": "Calculus II",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "PHYS 141",
+          "title": "General Physics I (Mechanics)",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "ENGL 161",
+          "title": "Academic Writing II: Writing for Inquiry and Research",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "CS 107",
+          "title": "Introduction to Computing and Programming",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        }
+      ]
+    },
+    {
+      "year": "Sophomore Year",
+      "semester": "First Semester",
+      "total_hours": 17,
+      "courses": [
+        {
+          "code": "MATH 210",
+          "title": "Calculus III",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "PHYS 142",
+          "title": "General Physics II (Electricity and Magnetism)",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "CS 151",
+          "title": "Mathematical Foundations of Computing",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "ECE 265",
+          "title": "Introduction to Logic Design",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "General Education Core course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        }
+      ]
+    },
+    {
+      "year": "Sophomore Year",
+      "semester": "Second Semester",
+      "total_hours": 17,
+      "courses": [
+        {
+          "code": "MATH 220",
+          "title": "Introduction to Differential Equations",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "PHYS 260",
+          "title": "Introduction to Thermal Physics",
+          "hours": 2,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "ECE 225",
+          "title": "Circuit Analysis",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "ECE 266",
+          "title": "Introduction to Embedded Systems",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "CS 251",
+          "title": "Data Structures",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        }
+      ]
+    },
+    {
+      "year": "Junior Year",
+      "semester": "First Semester",
+      "total_hours": 16,
+      "courses": [
+        {
+          "code": "MATH 218",
+          "title": "Applied Linear Algebra",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "ECE 310",
+          "title": "Discrete and Continuous Signals and Systems",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "ECE 340",
+          "title": "Electronics I",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "ECE 341",
+          "title": "Probability and Random Processes for Engineers",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "ECE 366",
+          "title": "Computer Organization",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        }
+      ]
+    },
+    {
+      "year": "Junior Year",
+      "semester": "Second Semester",
+      "total_hours": 17,
+      "courses": [
+        {
+          "code": "ECE 333",
+          "title": "Computer Communication Networks I",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "ECE 465",
+          "title": "Digital Systems Design",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "ECE 466",
+          "title": "Computer Architecture",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "ECE 467",
+          "title": "Introduction to VLSI Design",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "General Education Core course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        }
+      ]
+    },
+    {
+      "year": "Senior Year",
+      "semester": "First Semester",
+      "total_hours": 14,
+      "courses": [
+        {
+          "code": "ECE 396",
+          "title": "Senior Design I",
+          "hours": 2,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "Technical Elective",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "technical_elective"
+        },
+        {
+          "code": null,
+          "title": "Technical Elective",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "technical_elective"
+        },
+        {
+          "code": null,
+          "title": "Technical Elective",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "technical_elective"
+        },
+        {
+          "code": null,
+          "title": "General Education Core course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        }
+      ]
+    },
+    {
+      "year": "Senior Year",
+      "semester": "Second Semester",
+      "total_hours": 16,
+      "courses": [
+        {
+          "code": "ECE 397",
+          "title": "Senior Design II",
+          "hours": 2,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "ECE 499",
+          "title": "Professional Development Seminar",
+          "hours": 0,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "Technical Elective",
+          "hours": 4,
+          "isElective": true,
+          "electiveType": "technical_elective"
+        },
+        {
+          "code": null,
+          "title": "Technical Elective",
+          "hours": 4,
+          "isElective": true,
+          "electiveType": "technical_elective"
+        },
+        {
+          "code": null,
+          "title": "General Education Core course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        },
+        {
+          "code": null,
+          "title": "General Education Core course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        }
+      ]
+    }
+  ]
+}

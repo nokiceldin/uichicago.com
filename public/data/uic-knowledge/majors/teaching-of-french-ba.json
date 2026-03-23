@@ -1,0 +1,325 @@
+{
+  "name": "Teaching of French - BA",
+  "college": "French and Francophone Studies",
+  "department": "French and Francophone Studies",
+  "url": "https://catalog.uic.edu/ucat/colleges-depts/liberal-arts-sciences/fr/ba-teach-fr/",
+  "totalHours": 120,
+  "summaryRequirements": {
+    "Major Requirements": "34",
+    "Additional Requirements for Teacher Licensure": "25",
+    "General Education and Electives to reach minimum Total Hours": "61",
+    "Total Hours": "120"
+  },
+  "requiredCourses": [
+    {
+      "code": "FR 200",
+      "subject": "FR",
+      "number": "200",
+      "title": "French Creative Writing and Translation",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "FR 201",
+      "subject": "FR",
+      "number": "201",
+      "title": "French Theater Workshop",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "FR 210",
+      "subject": "FR",
+      "number": "210",
+      "title": "French Conversation",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "FR 211",
+      "subject": "FR",
+      "number": "211",
+      "title": "French in the Professions",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "FR 212",
+      "subject": "FR",
+      "number": "212",
+      "title": "Stories, Sights, and Sounds from the French-Speaking World",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "FR 213",
+      "subject": "FR",
+      "number": "213",
+      "title": "France Past and Present",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "FR 214",
+      "subject": "FR",
+      "number": "214",
+      "title": "Conversational French through Popular Culture and Media",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "FR 215",
+      "subject": "FR",
+      "number": "215",
+      "title": "Paris in Film",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "FR 300",
+      "subject": "FR",
+      "number": "300",
+      "title": "Topics in Film and Media of the French-Speaking World a",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "FR 301",
+      "subject": "FR",
+      "number": "301",
+      "title": "Topics in French and Francophone Literature a",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "FR 302",
+      "subject": "FR",
+      "number": "302",
+      "title": "Topics in French and Francophone Culture a",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "FR 303",
+      "subject": "FR",
+      "number": "303",
+      "title": "Writing in the Discipline b,c",
+      "hours": 1,
+      "required": true
+    },
+    {
+      "code": "FR 448",
+      "subject": "FR",
+      "number": "448",
+      "title": "Foundations of Second Language Teaching",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "FR 449",
+      "subject": "FR",
+      "number": "449",
+      "title": "Teaching Second Language Literacy and Cultural Awareness",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "ED 200",
+      "subject": "ED",
+      "number": "200",
+      "title": "Education Policy Foundations",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "ED 210",
+      "subject": "ED",
+      "number": "210",
+      "title": "Principles of Learning and Instruction Across the Lifespan",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "ED 425",
+      "subject": "ED",
+      "number": "425",
+      "title": "Curriculum, Instruction, and Assessment in the Urban Secondary Classroom",
+      "hours": 4,
+      "required": true
+    },
+    {
+      "code": "SPED 410",
+      "subject": "SPED",
+      "number": "410",
+      "title": "Exceptional Learners",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "FR 470",
+      "subject": "FR",
+      "number": "470",
+      "title": "Educational Practice with Seminar I",
+      "hours": 6,
+      "required": true
+    },
+    {
+      "code": "FR 471",
+      "subject": "FR",
+      "number": "471",
+      "title": "Educational Practice with Seminar II",
+      "hours": 6,
+      "required": true
+    },
+    {
+      "code": "CI 414",
+      "subject": "CI",
+      "number": "414",
+      "title": "Middle and High School Literacy ( after admission to candidacy ) d",
+      "hours": 3,
+      "required": true
+    }
+  ],
+  "sampleSchedule": [
+    {
+      "year": "First Year",
+      "semester": "Fall Semester",
+      "total_hours": null,
+      "courses": [
+        {
+          "code": null,
+          "title": "Take General Education/Curriculum courses",
+          "hours": 16,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        }
+      ]
+    },
+    {
+      "year": "First Year",
+      "semester": "Spring Semester",
+      "total_hours": null,
+      "courses": [
+        {
+          "code": null,
+          "title": "Take General Education/Curriculum Courses",
+          "hours": 16,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        }
+      ]
+    },
+    {
+      "year": "Second Year",
+      "semester": "Fall Semester",
+      "total_hours": null,
+      "courses": [
+        {
+          "code": null,
+          "title": "Take General Education/Curriculum courses",
+          "hours": 16,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        }
+      ]
+    },
+    {
+      "year": "Second Year",
+      "semester": "Spring Semester",
+      "total_hours": null,
+      "courses": [
+        {
+          "code": "ED 200",
+          "title": "Education Policy Foundations",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "ED 210",
+          "title": "Principles of Learning and Instruction Across the Lifespan",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "Take General Education/Curriculum courses",
+          "hours": 10,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        }
+      ]
+    },
+    {
+      "year": "Third Year",
+      "semester": "Fall Semester",
+      "total_hours": null,
+      "courses": [
+        {
+          "code": "SPED 410",
+          "title": "Exceptional Learners",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "CI 414",
+          "title": "Middle and High School Literacy ( after admission to candidacy ) d",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "Take General Education/Curriculum courses",
+          "hours": 10,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        }
+      ]
+    },
+    {
+      "year": "Third Year",
+      "semester": "Spring Semester",
+      "total_hours": null,
+      "courses": [
+        {
+          "code": "ED 425",
+          "title": "Curriculum, Instruction, and Assessment in the Urban Secondary Classroom ( March 15 ) d",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "Complete General Education/Curriculum courses",
+          "hours": 16,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        }
+      ]
+    },
+    {
+      "year": "Fourth Year",
+      "semester": "Fall Semester",
+      "total_hours": 12,
+      "courses": [
+        {
+          "code": "ED 425",
+          "title": "Curriculum, Instruction, and Assessment in the Urban Secondary Classroom",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "Complete General Education/Curriculum courses",
+          "hours": 8,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        }
+      ]
+    }
+  ]
+}

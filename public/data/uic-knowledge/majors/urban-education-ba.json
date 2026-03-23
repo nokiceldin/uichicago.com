@@ -1,0 +1,596 @@
+{
+  "name": "Urban Education - BA",
+  "college": "Curriculum and Instruction",
+  "department": "Curriculum and Instruction",
+  "url": "https://catalog.uic.edu/ucat/colleges-depts/education/ci/ba-urban-edu/",
+  "totalHours": 120,
+  "summaryRequirements": {
+    "Core Curriculum Requirements": "60",
+    "Elementary Education Course Requirements": "60",
+    "Total Hours": "120"
+  },
+  "requiredCourses": [
+    {
+      "code": "ENGL 160",
+      "subject": "ENGL",
+      "number": "160",
+      "title": "Academic Writing I: Writing in Academic and Public Contexts",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "ENGL 161",
+      "subject": "ENGL",
+      "number": "161",
+      "title": "Academic Writing II: Writing for Inquiry and Research",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "GEOG 161",
+      "subject": "GEOG",
+      "number": "161",
+      "title": "Introduction to Economic Geography b,c",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "POLS 101",
+      "subject": "POLS",
+      "number": "101",
+      "title": "Introduction to American Government and Politics b,d",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "HIST 103",
+      "subject": "HIST",
+      "number": "103",
+      "title": "Early America: From Colonization to Civil War and Reconstruction d,e",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "HIST 104",
+      "subject": "HIST",
+      "number": "104",
+      "title": "Modern America: From Industrialization to Globalization d,e",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "NATS 105",
+      "subject": "NATS",
+      "number": "105",
+      "title": "Physical Systems in Earth and Space Science (required) f,g",
+      "hours": 4,
+      "required": true
+    },
+    {
+      "code": "NATS 106",
+      "subject": "NATS",
+      "number": "106",
+      "title": "Chemical and Biological Systems (required) f,g",
+      "hours": 4,
+      "required": true
+    },
+    {
+      "code": "MATH 140",
+      "subject": "MATH",
+      "number": "140",
+      "title": "Arithmetic and Algebraic Structures h",
+      "hours": 4,
+      "required": true
+    },
+    {
+      "code": "MATH 141",
+      "subject": "MATH",
+      "number": "141",
+      "title": "Algebraic and Geometric Structures h",
+      "hours": 4,
+      "required": true
+    },
+    {
+      "code": "ED 100",
+      "subject": "ED",
+      "number": "100",
+      "title": "Introduction to Urban Education b,e",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "ED 151",
+      "subject": "ED",
+      "number": "151",
+      "title": "College Connection I i",
+      "hours": 1,
+      "required": true
+    },
+    {
+      "code": "ED 152",
+      "subject": "ED",
+      "number": "152",
+      "title": "College Connection II i",
+      "hours": 1,
+      "required": true
+    },
+    {
+      "code": "ED 307",
+      "subject": "ED",
+      "number": "307",
+      "title": "Nature and Practices of Natural Sciences",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "ED 205",
+      "subject": "ED",
+      "number": "205",
+      "title": "Introduction to Race, Ethnicity, and Education b,d",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "EPSY 255",
+      "subject": "EPSY",
+      "number": "255",
+      "title": "Child Development in Contemporary Society",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "EPSY 326",
+      "subject": "EPSY",
+      "number": "326",
+      "title": "Child Health, Safety, and Nutrition",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "EPSY 382",
+      "subject": "EPSY",
+      "number": "382",
+      "title": "Child, Family, and Community",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "CI 401",
+      "subject": "CI",
+      "number": "401",
+      "title": "Methods of Reading: Early Literacy in Urban Classrooms (an Classrooms)",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "CI 402",
+      "subject": "CI",
+      "number": "402",
+      "title": "Reading and Writing in the Content Areas: Intermediate Literacy in Urban Classrooms",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "CI 403",
+      "subject": "CI",
+      "number": "403",
+      "title": "Literacy in the Disciplines: Adolescent Literacy in Urban Classrooms",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "CI 404",
+      "subject": "CI",
+      "number": "404",
+      "title": "Teaching and Learning Mathematics in the Urban Classroom",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "CI 405",
+      "subject": "CI",
+      "number": "405",
+      "title": "Teaching and Learning Science in the Urban Classroom",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "CI 406",
+      "subject": "CI",
+      "number": "406",
+      "title": "Teaching and Learning Social Sciences in the Urban Classroom",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "ED 316",
+      "subject": "ED",
+      "number": "316",
+      "title": "Teacher Development I: Curating Teacher Agency in Urban Education Contexts",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "ED 317",
+      "subject": "ED",
+      "number": "317",
+      "title": "Teacher Development II: Curating Teacher Identity in Urban Classrooms",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "ED 350",
+      "subject": "ED",
+      "number": "350",
+      "title": "Foundations of Professional Practice in Comparative Contexts: Fieldwork I",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "ED 351",
+      "subject": "ED",
+      "number": "351",
+      "title": "Foundations of Professional Practice in Urban Classrooms: Fieldwork II",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "ED 416",
+      "subject": "ED",
+      "number": "416",
+      "title": "Practical Inquiry I: Teacher Competencies and Performance-Based Assessment",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "ED 417",
+      "subject": "ED",
+      "number": "417",
+      "title": "Practical Inquiry II: Teacher Competencies and Performance-Based Assessment",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "ED 450",
+      "subject": "ED",
+      "number": "450",
+      "title": "Pre-Student Teaching in the Urban Elementary Classroom, Fieldwork III: Arts, Health, and Physical Ed",
+      "hours": 6,
+      "required": true
+    },
+    {
+      "code": "ED 451",
+      "subject": "ED",
+      "number": "451",
+      "title": "Student Teaching in the Urban Elementary Classroom: Fieldwork IV",
+      "hours": 12,
+      "required": true
+    },
+    {
+      "code": "SPED 416",
+      "subject": "SPED",
+      "number": "416",
+      "title": "Methods of Instruction for Exceptional Learners",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "CI 470",
+      "subject": "CI",
+      "number": "470",
+      "title": "Language, Culture, and Learning in Urban Classrooms",
+      "hours": 3,
+      "required": true
+    }
+  ],
+  "sampleSchedule": [
+    {
+      "year": "Freshman Year",
+      "semester": "First Semester",
+      "total_hours": 14,
+      "courses": [
+        {
+          "code": "ENGL 160",
+          "title": "Academic Writing I: Writing in Academic and Public Contexts",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "ED 100",
+          "title": "Introduction to Urban Education",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "MATH 140",
+          "title": "Arithmetic and Algebraic Structures",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "NATS 105",
+          "title": "Physical Systems in Earth and Space Science",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "ED 151",
+          "title": "College Connection I a",
+          "hours": 1,
+          "isElective": false,
+          "electiveType": null
+        }
+      ]
+    },
+    {
+      "year": "Freshman Year",
+      "semester": "Second Semester",
+      "total_hours": 14,
+      "courses": [
+        {
+          "code": "ENGL 161",
+          "title": "Academic Writing II: Writing for Inquiry and Research",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "EPSY 255",
+          "title": "Child Development in Contemporary Society",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "MATH 141",
+          "title": "Algebraic and Geometric Structures",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "NATS 106",
+          "title": "Chemical and Biological Systems ( required for Analyzing the Natural World General Education category )",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "ED 152",
+          "title": "College Connection II a",
+          "hours": 1,
+          "isElective": false,
+          "electiveType": null
+        }
+      ]
+    },
+    {
+      "year": "Sophomore Year",
+      "semester": "First Semester",
+      "total_hours": 16,
+      "courses": [
+        {
+          "code": "ED 205",
+          "title": "Introduction to Race, Ethnicity, and Education",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "POLS 101",
+          "title": "Introduction to American Government and Politics ( required for Understanding U.S. Society General Education category )",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "HIST 103",
+          "title": "Early America: From Colonization to Civil War and Reconstruction or Modern America: From Industrialization to Globalization",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "EPSY 326",
+          "title": "Child Health, Safety, and Nutrition",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "Elective",
+          "hours": 4,
+          "isElective": true,
+          "electiveType": "elective_general"
+        }
+      ]
+    },
+    {
+      "year": "Sophomore Year",
+      "semester": "Second Semester",
+      "total_hours": 16,
+      "courses": [
+        {
+          "code": "ED 307",
+          "title": "Nature and Practices of Natural Sciences",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "GEOG 161",
+          "title": "Introduction to Economic Geography",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "EPSY 382",
+          "title": "Child, Family, and Community",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "Understanding the Creative Arts General Education course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_creative_arts"
+        },
+        {
+          "code": null,
+          "title": "Elective",
+          "hours": 4,
+          "isElective": true,
+          "electiveType": "elective_general"
+        }
+      ]
+    },
+    {
+      "year": "Junior Year",
+      "semester": "First Semester",
+      "total_hours": 15,
+      "courses": [
+        {
+          "code": "CI 401",
+          "title": "Methods of Reading: Early Literacy in Urban Classrooms",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "CI 404",
+          "title": "Teaching and Learning Mathematics in the Urban Classroom",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "CI 470",
+          "title": "Language, Culture, and Learning in Urban Classrooms",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "ED 316",
+          "title": "Teacher Development I: Curating Teacher Agency in Urban Education Contexts",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "ED 350",
+          "title": "Foundations of Professional Practice in Comparative Contexts: Fieldwork I",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        }
+      ]
+    },
+    {
+      "year": "Junior Year",
+      "semester": "Second Semester",
+      "total_hours": 15,
+      "courses": [
+        {
+          "code": "CI 402",
+          "title": "Reading and Writing in the Content Areas: Intermediate Literacy in Urban Classrooms",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "CI 405",
+          "title": "Teaching and Learning Science in the Urban Classroom",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "CI 406",
+          "title": "Teaching and Learning Social Sciences in the Urban Classroom",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "ED 317",
+          "title": "Teacher Development II: Curating Teacher Identity in Urban Classrooms",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "ED 351",
+          "title": "Foundations of Professional Practice in Urban Classrooms: Fieldwork II",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        }
+      ]
+    },
+    {
+      "year": "Senior Year",
+      "semester": "First Semester",
+      "total_hours": 15,
+      "courses": [
+        {
+          "code": "CI 403",
+          "title": "Literacy in the Disciplines: Adolescent Literacy in Urban Classrooms",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "ED 416",
+          "title": "Practical Inquiry I: Teacher Competencies and Performance-Based Assessment",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "ED 450",
+          "title": "Pre-Student Teaching in the Urban Elementary Classroom, Fieldwork III: Arts, Health, and Physical Ed",
+          "hours": 6,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "SPED 416",
+          "title": "Methods of Instruction for Exceptional Learners",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        }
+      ]
+    },
+    {
+      "year": "Senior Year",
+      "semester": "Second Semester",
+      "total_hours": 15,
+      "courses": [
+        {
+          "code": "ED 417",
+          "title": "Practical Inquiry II: Teacher Competencies and Performance-Based Assessment",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "ED 451",
+          "title": "Student Teaching in the Urban Elementary Classroom: Fieldwork IV",
+          "hours": 12,
+          "isElective": false,
+          "electiveType": null
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,600 @@
+{
+  "name": "Neuroscience - BS",
+  "college": "Neuroscience",
+  "department": "Neuroscience",
+  "url": "https://catalog.uic.edu/ucat/colleges-depts/liberal-arts-sciences/neus/bs/",
+  "totalHours": 120,
+  "summaryRequirements": {
+    "Requirements for the Curriculum": "120",
+    "Total Hours": "120"
+  },
+  "requiredCourses": [
+    {
+      "code": "ENGL 160",
+      "subject": "ENGL",
+      "number": "160",
+      "title": "Academic Writing I: Writing in Academic and Public Contexts",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "ENGL 161",
+      "subject": "ENGL",
+      "number": "161",
+      "title": "Academic Writing II: Writing for Inquiry and Research",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "PSCH 100",
+      "subject": "PSCH",
+      "number": "100",
+      "title": "Introduction to Psychology b",
+      "hours": 4,
+      "required": true
+    },
+    {
+      "code": "MATH 170",
+      "subject": "MATH",
+      "number": "170",
+      "title": "Calculus for the Life Sciences c,d",
+      "hours": 4,
+      "required": true
+    },
+    {
+      "code": "BIOS 110",
+      "subject": "BIOS",
+      "number": "110",
+      "title": "Biology of Cells and Organisms c",
+      "hours": 4,
+      "required": true
+    },
+    {
+      "code": "BIOS 120",
+      "subject": "BIOS",
+      "number": "120",
+      "title": "Biology of Populations and Communities c",
+      "hours": 4,
+      "required": true
+    },
+    {
+      "code": "BIOS 220",
+      "subject": "BIOS",
+      "number": "220",
+      "title": "Genetics",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "BIOS 222",
+      "subject": "BIOS",
+      "number": "222",
+      "title": "Cell Biology",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "CHEM 116",
+      "subject": "CHEM",
+      "number": "116",
+      "title": "Honors and Majors General and Analytical Chemistry I c",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "CHEM 118",
+      "subject": "CHEM",
+      "number": "118",
+      "title": "Honors and Majors General and Analytical Chemistry II c",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "CHEM 122",
+      "subject": "CHEM",
+      "number": "122",
+      "title": "Matter and Energy e",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "CHEM 123",
+      "subject": "CHEM",
+      "number": "123",
+      "title": "Foundations of Chemical Inquiry I c,e",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "CHEM 124",
+      "subject": "CHEM",
+      "number": "124",
+      "title": "Chemical Dynamics e",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "CHEM 125",
+      "subject": "CHEM",
+      "number": "125",
+      "title": "Foundations of Chemical Inquiry II c,e",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "CHEM 230",
+      "subject": "CHEM",
+      "number": "230",
+      "title": "Organic Chemistry of Biological Systems",
+      "hours": 34,
+      "required": true
+    },
+    {
+      "code": "CHEM 233",
+      "subject": "CHEM",
+      "number": "233",
+      "title": "Synthesis Techniques Laboratory",
+      "hours": 2,
+      "required": true
+    },
+    {
+      "code": "PHIL 202",
+      "subject": "PHIL",
+      "number": "202",
+      "title": "Philosophy of Psychology f",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "PSCH 242",
+      "subject": "PSCH",
+      "number": "242",
+      "title": "Introduction to Research in Psychology",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "PSCH 343",
+      "subject": "PSCH",
+      "number": "343",
+      "title": "Statistical Methods in Behavioral Science",
+      "hours": 4,
+      "required": true
+    },
+    {
+      "code": "BIOS 286",
+      "subject": "BIOS",
+      "number": "286",
+      "title": "The Biology of the Brain",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "PHIL 201",
+      "subject": "PHIL",
+      "number": "201",
+      "title": "Theory of Knowledge",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "PHIL 203",
+      "subject": "PHIL",
+      "number": "203",
+      "title": "Metaphysics",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "PHIL 204",
+      "subject": "PHIL",
+      "number": "204",
+      "title": "Introduction to the Philosophy of Science",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "PHIL 403",
+      "subject": "PHIL",
+      "number": "403",
+      "title": "Metaphysics",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "PHIL 401",
+      "subject": "PHIL",
+      "number": "401",
+      "title": "Theory of Knowledge",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "PHIL 402",
+      "subject": "PHIL",
+      "number": "402",
+      "title": "Topics in Philosophy of Mind",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "PHIL 404",
+      "subject": "PHIL",
+      "number": "404",
+      "title": "Philosophy of Science",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "BIOS 483",
+      "subject": "BIOS",
+      "number": "483",
+      "title": "Neuroanatomy",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "BIOS 486",
+      "subject": "BIOS",
+      "number": "486",
+      "title": "Animal Behavior and Neuroethology",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "BIOS 489",
+      "subject": "BIOS",
+      "number": "489",
+      "title": "Cellular Neurobiology Laboratory",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "PSCH 351",
+      "subject": "PSCH",
+      "number": "351",
+      "title": "Laboratory in Perception",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "PSCH 361",
+      "subject": "PSCH",
+      "number": "361",
+      "title": "Laboratory in Learning and Conditioning",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "PSCH 363",
+      "subject": "PSCH",
+      "number": "363",
+      "title": "Laboratory in Behavioral Neuroscience",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "PSCH 367",
+      "subject": "PSCH",
+      "number": "367",
+      "title": "Laboratory in Cognitive Neuroscience",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "BME 476",
+      "subject": "BME",
+      "number": "476",
+      "title": "Neural Engineering I Laboratory",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "BIOS 482",
+      "subject": "BIOS",
+      "number": "482",
+      "title": "Molecular and Developmental Neurobiology Laboratory",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "PSCH 350",
+      "subject": "PSCH",
+      "number": "350",
+      "title": "Sensation and Perception",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "PSCH 360",
+      "subject": "PSCH",
+      "number": "360",
+      "title": "Learning and Conditioning",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "PSCH 366",
+      "subject": "PSCH",
+      "number": "366",
+      "title": "Cognitive Neuroscience",
+      "hours": null,
+      "required": true
+    }
+  ],
+  "sampleSchedule": [
+    {
+      "year": "First Year",
+      "semester": "Fall Semester",
+      "total_hours": 15,
+      "courses": [
+        {
+          "code": "ENGL 160",
+          "title": "Academic Writing I: Writing in Academic and Public Contexts",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "MATH 170",
+          "title": "Calculus for the Life Sciences a or Calculus I",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "Select one of the following:",
+          "hours": 5,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": "CHEM 116",
+          "title": "Honors and Majors General and Analytical Chemistry I",
+          "hours": null,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "CHEM 122",
+          "title": "Matter and Energy and Foundations of Chemical Inquiry I",
+          "hours": null,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "General Education Requirement",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        }
+      ]
+    },
+    {
+      "year": "First Year",
+      "semester": "Spring Semester",
+      "total_hours": 16,
+      "courses": [
+        {
+          "code": "ENGL 161",
+          "title": "Academic Writing II: Writing for Inquiry and Research",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "Select one of the following:",
+          "hours": 5,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": "CHEM 118",
+          "title": "Honors and Majors General and Analytical Chemistry II",
+          "hours": null,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "CHEM 124",
+          "title": "Chemical Dynamics and Foundations of Chemical Inquiry II",
+          "hours": null,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "BIOS 110",
+          "title": "Biology of Cells and Organisms b or Biology of Populations and Communities",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "PSCH 100",
+          "title": "Introduction to Psychology",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        }
+      ]
+    },
+    {
+      "year": "Second Year",
+      "semester": "Fall Semester",
+      "total_hours": null,
+      "courses": [
+        {
+          "code": "PSCH 242",
+          "title": "Introduction to Research in Psychology",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "CHEM 230",
+          "title": "Organic Chemistry of Biological Systems or Structure and Function",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "BIOS 110",
+          "title": "Biology of Cells and Organisms or Biology of Populations and Communities",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        }
+      ]
+    },
+    {
+      "year": "Second Year",
+      "semester": "Spring Semester",
+      "total_hours": 15,
+      "courses": [
+        {
+          "code": "CHEM 233",
+          "title": "Synthesis Techniques Laboratory",
+          "hours": 2,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "BIOS 222",
+          "title": "Cell Biology",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "PSCH 262",
+          "title": "Behavioral Neuroscience or The Biology of the Brain",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "General Education Requirement",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        }
+      ]
+    },
+    {
+      "year": "Third Year",
+      "semester": "Fall Semester",
+      "total_hours": 16,
+      "courses": [
+        {
+          "code": "PHIL 202",
+          "title": "Philosophy of Psychology or Learning and Conditioning",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "BIOS 220",
+          "title": "Genetics",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "Advanced-level Elective in BIOS, CHEM, PHIL, or PSCH, or any PHYS",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": null,
+          "title": "General Education Requirement",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        }
+      ]
+    },
+    {
+      "year": "Third Year",
+      "semester": "Spring Semester",
+      "total_hours": 14,
+      "courses": [
+        {
+          "code": "PSCH 343",
+          "title": "Statistical Methods in Behavioral Science",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "PHIL 202",
+          "title": "Philosophy of Psychology or Cognitive Neuroscience",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        }
+      ]
+    },
+    {
+      "year": "Fourth Year",
+      "semester": "Fall Semester",
+      "total_hours": null,
+      "courses": [
+        {
+          "code": "BIOS 484",
+          "title": "Neuroscience I or Neuroscience I or Neuroscience I",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "PHIL 201",
+          "title": "Theory of Knowledge or Metaphysics or Introduction to the Philosophy of Science or Theory of Knowledge or Topics in Philosophy of Mind or Metaphysics or Philosophy of Science",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "General Education Requirement",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        },
+        {
+          "code": null,
+          "title": "Elective",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        }
+      ]
+    },
+    {
+      "year": "Fourth Year",
+      "semester": "Spring Semester",
+      "total_hours": null,
+      "courses": [
+        {
+          "code": "BIOS 485",
+          "title": "Neuroscience II or Neuroscience II or Neuroscience II",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "Elective",
+          "hours": 5,
+          "isElective": true,
+          "electiveType": "elective_general"
+        }
+      ]
+    }
+  ]
+}

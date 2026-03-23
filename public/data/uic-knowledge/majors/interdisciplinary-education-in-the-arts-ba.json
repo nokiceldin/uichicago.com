@@ -1,0 +1,752 @@
+{
+  "name": "Interdisciplinary Education in the Arts - BA",
+  "college": "Art",
+  "department": "Art",
+  "url": "https://catalog.uic.edu/ucat/colleges-depts/architecture-design-arts/art-ah/ba-ida/",
+  "totalHours": 120,
+  "summaryRequirements": {
+    "General Education and Foundation courses": "26",
+    "General Electives": "33-34",
+    "Major Core courses": "24-28",
+    "Major Selectives": "12-15",
+    "Major Electives": "17-24",
+    "DLG 120": "1",
+    "Total Hours": "120"
+  },
+  "requiredCourses": [
+    {
+      "code": "DLG 120",
+      "subject": "DLG",
+      "number": "120",
+      "title": "UIC First-Year Dialogue Seminar a",
+      "hours": 1,
+      "required": true
+    },
+    {
+      "code": "ENGL 160",
+      "subject": "ENGL",
+      "number": "160",
+      "title": "Academic Writing I: Writing in Academic and Public Contexts",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "ENGL 161",
+      "subject": "ENGL",
+      "number": "161",
+      "title": "Academic Writing II: Writing for Inquiry and Research",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "IDEA 110",
+      "subject": "IDEA",
+      "number": "110",
+      "title": "Creativity and Innovation in Design and Arts a",
+      "hours": 4,
+      "required": true
+    },
+    {
+      "code": "IDEA 120",
+      "subject": "IDEA",
+      "number": "120",
+      "title": "Digital Practices in Design and Arts",
+      "hours": 4,
+      "required": true
+    },
+    {
+      "code": "DES 222",
+      "subject": "DES",
+      "number": "222",
+      "title": "Human Experience in Design",
+      "hours": 4,
+      "required": true
+    },
+    {
+      "code": "IDEA 322",
+      "subject": "IDEA",
+      "number": "322",
+      "title": "Introduction to Arts-Based Research Methods",
+      "hours": 4,
+      "required": true
+    },
+    {
+      "code": "ARCH 200",
+      "subject": "ARCH",
+      "number": "200",
+      "title": "Architecture and Society",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ART 101",
+      "subject": "ART",
+      "number": "101",
+      "title": "Signifying Practices: Art and Visual Culture",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "IDEA 130",
+      "subject": "IDEA",
+      "number": "130",
+      "title": "Introduction to Game Studies: Play and Praxis",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "MUS 100",
+      "subject": "MUS",
+      "number": "100",
+      "title": "Introduction to Music I",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "THTR 101",
+      "subject": "THTR",
+      "number": "101",
+      "title": "Theatre History I: Premodern Drama",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ARCH 105",
+      "subject": "ARCH",
+      "number": "105",
+      "title": "Architectural Studio 1",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ARCH 106",
+      "subject": "ARCH",
+      "number": "106",
+      "title": "Architectural Studio 2",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ARCH 251",
+      "subject": "ARCH",
+      "number": "251",
+      "title": "Architectural Analysis",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ARCH 252",
+      "subject": "ARCH",
+      "number": "252",
+      "title": "Modern Architecture",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "IDEA 210",
+      "subject": "IDEA",
+      "number": "210",
+      "title": "Topics in IDEAS: Intermedia and Interdisciplinary Artforms",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "IDEA 310",
+      "subject": "IDEA",
+      "number": "310",
+      "title": "Independent Study Course for IDEA Majors",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ART 112",
+      "subject": "ART",
+      "number": "112",
+      "title": "Introduction to Drawing",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ART 130",
+      "subject": "ART",
+      "number": "130",
+      "title": "Introduction to Painting + Color",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ART 140",
+      "subject": "ART",
+      "number": "140",
+      "title": "Introduction to Sculpture",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ART 150",
+      "subject": "ART",
+      "number": "150",
+      "title": "Introduction to New Media Arts",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ART 160",
+      "subject": "ART",
+      "number": "160",
+      "title": "Introduction to Digital Photography",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ART 170",
+      "subject": "ART",
+      "number": "170",
+      "title": "Introduction to Filmmaking",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "DES 120",
+      "subject": "DES",
+      "number": "120",
+      "title": "2D Form Studio",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "DES 130",
+      "subject": "DES",
+      "number": "130",
+      "title": "3D Form Studio",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "DES 140",
+      "subject": "DES",
+      "number": "140",
+      "title": "Design Drawing",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "DES 150",
+      "subject": "DES",
+      "number": "150",
+      "title": "Digital Media Design I",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "DES 160",
+      "subject": "DES",
+      "number": "160",
+      "title": "Design Photography",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "DES 170",
+      "subject": "DES",
+      "number": "170",
+      "title": "Color Theory",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "MUS 113",
+      "subject": "MUS",
+      "number": "113",
+      "title": "Art Song",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "MUS 114",
+      "subject": "MUS",
+      "number": "114",
+      "title": "Jazz History",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "MUS 115",
+      "subject": "MUS",
+      "number": "115",
+      "title": "Opera",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "MUS 117",
+      "subject": "MUS",
+      "number": "117",
+      "title": "Music for Symphony Orchestra",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "MUS 118",
+      "subject": "MUS",
+      "number": "118",
+      "title": "American Popular Music since 1850",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "MUS 119",
+      "subject": "MUS",
+      "number": "119",
+      "title": "Music for the Piano",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "MUS 127",
+      "subject": "MUS",
+      "number": "127",
+      "title": "Latin American Music",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "MUS 240",
+      "subject": "MUS",
+      "number": "240",
+      "title": "Music, Gender and Culture",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "THTR 150",
+      "subject": "THTR",
+      "number": "150",
+      "title": "Fundamental of Theatre Technology",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "THTR 151",
+      "subject": "THTR",
+      "number": "151",
+      "title": "Costume Technology I: Introduction to Costume Technology",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ISA 100",
+      "subject": "ISA",
+      "number": "100",
+      "title": "Freshman Seminar: Introduction to Interdisciplinary Practice in the Arts",
+      "hours": 1,
+      "required": true
+    },
+    {
+      "code": "DES 322",
+      "subject": "DES",
+      "number": "322",
+      "title": "Design Research Methods",
+      "hours": 4,
+      "required": true
+    },
+    {
+      "code": "ART 401",
+      "subject": "ART",
+      "number": "401",
+      "title": "Senior Projects: Critique",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "DES 420",
+      "subject": "DES",
+      "number": "420",
+      "title": "Professional Practice Project I",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "DES 430",
+      "subject": "DES",
+      "number": "430",
+      "title": "Interdisciplinary Product Development I",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "DES 440",
+      "subject": "DES",
+      "number": "440",
+      "title": "Design and Identity I",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "DES 452",
+      "subject": "DES",
+      "number": "452",
+      "title": "Information Aesthetics I",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "IDEA 410",
+      "subject": "IDEA",
+      "number": "410",
+      "title": "Interdisciplinary Capstone for IDEA Majors",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ART 402",
+      "subject": "ART",
+      "number": "402",
+      "title": "Senior Projects: Thesis",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "DES 421",
+      "subject": "DES",
+      "number": "421",
+      "title": "Professional Practice Project II",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "DES 431",
+      "subject": "DES",
+      "number": "431",
+      "title": "Interdisciplinary Product Development II",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "DES 441",
+      "subject": "DES",
+      "number": "441",
+      "title": "Design and Identity II",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "DES 453",
+      "subject": "DES",
+      "number": "453",
+      "title": "Information Aesthetics II",
+      "hours": null,
+      "required": true
+    }
+  ],
+  "electiveGroups": [
+    {
+      "label": "Select 17-24 hours from the following:",
+      "credits": 24,
+      "options": []
+    }
+  ],
+  "sampleSchedule": [
+    {
+      "year": "Freshman Year",
+      "semester": "Fall Semester",
+      "total_hours": 15,
+      "courses": [
+        {
+          "code": "ENGL 160",
+          "title": "Academic Writing I: Writing in Academic and Public Contexts",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "General Elective",
+          "hours": 6,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": "DLG 120",
+          "title": "UIC First-Year Dialogue Seminar",
+          "hours": 1,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "ISA 100",
+          "title": "Freshman Seminar: Introduction to Interdisciplinary Practice in the Arts",
+          "hours": 1,
+          "isElective": false,
+          "electiveType": null
+        }
+      ]
+    },
+    {
+      "year": "Freshman Year",
+      "semester": "Spring Semester",
+      "total_hours": 15,
+      "courses": [
+        {
+          "code": "ENGL 161",
+          "title": "Academic Writing II: Writing for Inquiry and Research",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "General Electives",
+          "hours": 6,
+          "isElective": true,
+          "electiveType": "elective_general"
+        }
+      ]
+    },
+    {
+      "year": "Sophomore Year",
+      "semester": "Fall Semester",
+      "total_hours": 15,
+      "courses": [
+        {
+          "code": null,
+          "title": "General Education course",
+          "hours": 4,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        },
+        {
+          "code": null,
+          "title": "General Electives",
+          "hours": 8,
+          "isElective": true,
+          "electiveType": "elective_general"
+        }
+      ]
+    },
+    {
+      "year": "Sophomore Year",
+      "semester": "Spring Semester",
+      "total_hours": 15,
+      "courses": [
+        {
+          "code": null,
+          "title": "General Electives",
+          "hours": 12,
+          "isElective": true,
+          "electiveType": "elective_general"
+        }
+      ]
+    },
+    {
+      "year": "Junior Year",
+      "semester": "Fall Semester",
+      "total_hours": 15,
+      "courses": [
+        {
+          "code": "IDEA 110",
+          "title": "Creativity and Innovation in Design and Arts",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "IDEA 322",
+          "title": "Introduction to Arts-Based Research Methods",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "Major Selective",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": null,
+          "title": "Major Electives",
+          "hours": 4,
+          "isElective": true,
+          "electiveType": "elective_general"
+        }
+      ]
+    },
+    {
+      "year": "Junior Year",
+      "semester": "Spring Semester",
+      "total_hours": 15,
+      "courses": [
+        {
+          "code": "IDEA 120",
+          "title": "Digital Practices in Design and Arts",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "DES 322",
+          "title": "Design Research Methods",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "Major Selective",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": null,
+          "title": "Major Electives",
+          "hours": 4,
+          "isElective": true,
+          "electiveType": "elective_general"
+        }
+      ]
+    },
+    {
+      "year": "Senior Year",
+      "semester": "Fall Semester",
+      "total_hours": 15,
+      "courses": [
+        {
+          "code": null,
+          "title": "First capstone sequence course selected from the following:",
+          "hours": 4,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": "ART 401",
+          "title": "Senior Projects: Critique",
+          "hours": null,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "DES 420",
+          "title": "Professional Practice Project I",
+          "hours": null,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "DES 430",
+          "title": "Interdisciplinary Product Development I",
+          "hours": null,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "DES 440",
+          "title": "Design and Identity I",
+          "hours": null,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "DES 452",
+          "title": "Information Aesthetics I",
+          "hours": null,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "IDEA 410",
+          "title": "Interdisciplinary Capstone for IDEA Majors",
+          "hours": null,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "Major Selective",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": null,
+          "title": "Major Electives",
+          "hours": 8,
+          "isElective": true,
+          "electiveType": "elective_general"
+        }
+      ]
+    },
+    {
+      "year": "Senior Year",
+      "semester": "Spring Semester",
+      "total_hours": 15,
+      "courses": [
+        {
+          "code": null,
+          "title": "Second capstone sequence course selected from the following:",
+          "hours": 4,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": "ART 402",
+          "title": "Senior Projects: Thesis",
+          "hours": null,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "DES 421",
+          "title": "Professional Practice Project II",
+          "hours": null,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "DES 431",
+          "title": "Interdisciplinary Product Development II",
+          "hours": null,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "DES 441",
+          "title": "Design and Identity II",
+          "hours": null,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "DES 453",
+          "title": "Information Aesthetics II",
+          "hours": null,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "IDEA 410",
+          "title": "Interdisciplinary Capstone for IDEA Majors",
+          "hours": null,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "Major Selective",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": null,
+          "title": "Major Electives",
+          "hours": 8,
+          "isElective": true,
+          "electiveType": "elective_general"
+        }
+      ]
+    }
+  ]
+}

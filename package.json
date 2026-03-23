@@ -28,6 +28,8 @@
 
     "@prisma/client": "^7.4.2",
 
+    "@types/pdf-parse": "^1.1.5",
+
     "@vercel/analytics": "^1.6.1",
 
     "cheerio": "^1.2.0",
@@ -39,6 +41,8 @@
     "next": "16.1.6",
 
     "node-fetch": "^3.3.2",
+
+    "pdf-parse": "^2.4.5",
 
     "pg": "^8.20.0",
 

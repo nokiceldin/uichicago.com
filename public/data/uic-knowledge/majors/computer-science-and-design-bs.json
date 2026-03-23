@@ -1,0 +1,678 @@
+{
+  "name": "Computer Science and Design - BS",
+  "college": "Computer Science",
+  "department": "Computer Science",
+  "url": "https://catalog.uic.edu/ucat/colleges-depts/engineering/cs/bs-cs-design/",
+  "totalHours": 120,
+  "summaryRequirements": {
+    "General Education and Non-Core Requirements": "46",
+    "Computer Science Core Requirements": "34-36",
+    "Design Core Requirements": "40",
+    "Total Hours": "120-122"
+  },
+  "requiredCourses": [
+    {
+      "code": "ENGR 100",
+      "subject": "ENGR",
+      "number": "100",
+      "title": "Engineering Success Seminar for Freshmen",
+      "hours": 1,
+      "required": true
+    },
+    {
+      "code": "MATH 180",
+      "subject": "MATH",
+      "number": "180",
+      "title": "Calculus I",
+      "hours": 4,
+      "required": true
+    },
+    {
+      "code": "MATH 181",
+      "subject": "MATH",
+      "number": "181",
+      "title": "Calculus II",
+      "hours": 4,
+      "required": true
+    },
+    {
+      "code": "CS 111",
+      "subject": "CS",
+      "number": "111",
+      "title": "Program Design I",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "CS 141",
+      "subject": "CS",
+      "number": "141",
+      "title": "Program Design II",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "CS 151",
+      "subject": "CS",
+      "number": "151",
+      "title": "Mathematical Foundations of Computing",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "DES 150",
+      "subject": "DES",
+      "number": "150",
+      "title": "Digital Media Design I",
+      "hours": 4,
+      "required": true
+    },
+    {
+      "code": "DES 160",
+      "subject": "DES",
+      "number": "160",
+      "title": "Design Photography",
+      "hours": 4,
+      "required": true
+    },
+    {
+      "code": "ENGL 160",
+      "subject": "ENGL",
+      "number": "160",
+      "title": "Academic Writing I: Writing in Academic and Public Contexts",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "ENGL 161",
+      "subject": "ENGL",
+      "number": "161",
+      "title": "Academic Writing II: Writing for Inquiry and Research",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "AH 110",
+      "subject": "AH",
+      "number": "110",
+      "title": "World History of Art and the Built Environment I b",
+      "hours": 4,
+      "required": true
+    },
+    {
+      "code": "DES 236",
+      "subject": "DES",
+      "number": "236",
+      "title": "History of Design II: 1925 to the Present c",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "DES 355",
+      "subject": "DES",
+      "number": "355",
+      "title": "Design Seminar c",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "IE 342",
+      "subject": "IE",
+      "number": "342",
+      "title": "Probability and Statistics for Engineers",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "CS 112",
+      "subject": "CS",
+      "number": "112",
+      "title": "Program Design I in the Context of Biological Problems",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "CS 113",
+      "subject": "CS",
+      "number": "113",
+      "title": "Program Design I in the Context of Law and Public Policy",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "CS 211",
+      "subject": "CS",
+      "number": "211",
+      "title": "Programming Practicum",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "CS 251",
+      "subject": "CS",
+      "number": "251",
+      "title": "Data Structures",
+      "hours": 4,
+      "required": true
+    },
+    {
+      "code": "CS 401",
+      "subject": "CS",
+      "number": "401",
+      "title": "Computer Algorithms I",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "CS 261",
+      "subject": "CS",
+      "number": "261",
+      "title": "Machine Organization",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "CS 301",
+      "subject": "CS",
+      "number": "301",
+      "title": "Languages and Automata",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "CS 341",
+      "subject": "CS",
+      "number": "341",
+      "title": "Programming Language Design and Implementation",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "CS 342",
+      "subject": "CS",
+      "number": "342",
+      "title": "Software Design",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "CS 361",
+      "subject": "CS",
+      "number": "361",
+      "title": "Systems Programming",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "CS 362",
+      "subject": "CS",
+      "number": "362",
+      "title": "Computer Design",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "CS 411",
+      "subject": "CS",
+      "number": "411",
+      "title": "Artificial Intelligence I",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "CS 412",
+      "subject": "CS",
+      "number": "412",
+      "title": "Introduction to Machine Learning",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "CS 418",
+      "subject": "CS",
+      "number": "418",
+      "title": "Introduction to Data Science",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "CS 421",
+      "subject": "CS",
+      "number": "421",
+      "title": "Natural Language Processing",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "CS 422",
+      "subject": "CS",
+      "number": "422",
+      "title": "User Interface Design and Programming",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "CS 424",
+      "subject": "CS",
+      "number": "424",
+      "title": "Visualization and Visual Analytics",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "CS 425",
+      "subject": "CS",
+      "number": "425",
+      "title": "Computer Graphics I",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "CS 426",
+      "subject": "CS",
+      "number": "426",
+      "title": "Video Game Design and Development",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "CS 428",
+      "subject": "CS",
+      "number": "428",
+      "title": "Virtual, Augmented and Mixed Reality",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "CS 474",
+      "subject": "CS",
+      "number": "474",
+      "title": "Object-Oriented Languages and Environments",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "CS 478",
+      "subject": "CS",
+      "number": "478",
+      "title": "Software Development for Mobile Platforms",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "CS 480",
+      "subject": "CS",
+      "number": "480",
+      "title": "Database Systems",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "CS 489",
+      "subject": "CS",
+      "number": "489",
+      "title": "Human Augmentics",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "DES 208",
+      "subject": "DES",
+      "number": "208",
+      "title": "Typography I: Form",
+      "hours": 4,
+      "required": true
+    },
+    {
+      "code": "DES 209",
+      "subject": "DES",
+      "number": "209",
+      "title": "Typography II: Systems",
+      "hours": 4,
+      "required": true
+    },
+    {
+      "code": "DES 255",
+      "subject": "DES",
+      "number": "255",
+      "title": "Integrative Design Studio I",
+      "hours": 4,
+      "required": true
+    },
+    {
+      "code": "DES 256",
+      "subject": "DES",
+      "number": "256",
+      "title": "Integrative Design Studio II",
+      "hours": 4,
+      "required": true
+    },
+    {
+      "code": "DES 357",
+      "subject": "DES",
+      "number": "357",
+      "title": "Integrative Design Studio III",
+      "hours": 4,
+      "required": true
+    },
+    {
+      "code": "DES 458",
+      "subject": "DES",
+      "number": "458",
+      "title": "Integrative Studio Project",
+      "hours": 4,
+      "required": true
+    },
+    {
+      "code": "CS 427",
+      "subject": "CS",
+      "number": "427",
+      "title": "Creative Coding",
+      "hours": 3,
+      "required": true
+    }
+  ],
+  "sampleSchedule": [
+    {
+      "year": "First Year Year",
+      "semester": "Spring Semester",
+      "total_hours": 31,
+      "courses": [
+        {
+          "code": "DES 150",
+          "title": "Digital Media Design I",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "DES 160",
+          "title": "Design Photography or Color Theory",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "CS 111",
+          "title": "Program Design I or Program Design I in the Context of Biological Problems or Program Design I in the Context of Law and Public Policy",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "CS 141",
+          "title": "Program Design II",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "CS 151",
+          "title": "Mathematical Foundations of Computing",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "ENGR 100",
+          "title": "Engineering Success Seminar for Freshmen a",
+          "hours": 1,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "ENGL 160",
+          "title": "Academic Writing I: Writing in Academic and Public Contexts",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "ENGL 161",
+          "title": "Academic Writing II: Writing for Inquiry and Research",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "MATH 180",
+          "title": "Calculus I",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "MATH 181",
+          "title": "Calculus II",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        }
+      ]
+    },
+    {
+      "year": "Second Year Year",
+      "semester": "Fall Semester",
+      "total_hours": 15,
+      "courses": [
+        {
+          "code": "CS 211",
+          "title": "Programming Practicum",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "DES 208",
+          "title": "Typography I: Form",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "DES 255",
+          "title": "Integrative Design Studio I",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "Science Elective",
+          "hours": 4,
+          "isElective": true,
+          "electiveType": "science_elective"
+        }
+      ]
+    },
+    {
+      "year": "Second Year Year",
+      "semester": "Spring Semester",
+      "total_hours": 15,
+      "courses": [
+        {
+          "code": "CS 251",
+          "title": "Data Structures",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "DES 209",
+          "title": "Typography II: Systems",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "DES 256",
+          "title": "Integrative Design Studio II",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "Understanding the Individual and Society General Education course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_individual_society"
+        }
+      ]
+    },
+    {
+      "year": "Third Year Year",
+      "semester": "Fall Semester",
+      "total_hours": 17,
+      "courses": [
+        {
+          "code": "IE 342",
+          "title": "Probability and Statistics for Engineers",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "DES 357",
+          "title": "Integrative Design Studio III",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "AH 110",
+          "title": "World History of Art and the Built Environment I",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "DES 355",
+          "title": "Design Seminar",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "Understanding U.S. Society General Education course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_individual_society"
+        }
+      ]
+    },
+    {
+      "year": "Third Year Year",
+      "semester": "Spring Semester",
+      "total_hours": null,
+      "courses": [
+        {
+          "code": null,
+          "title": "CS Selective course ( CS 261 , CS 301 , CS 341 , CS 342 , CS 361 , or CS 362 )",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": "CS 427",
+          "title": "Creative Coding",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "DES 236",
+          "title": "History of Design II: 1925 to the Present",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "DES 458",
+          "title": "Integrative Studio Project",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "Math/Science Elective",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "science_elective"
+        }
+      ]
+    },
+    {
+      "year": "Fourth Year Year",
+      "semester": "Fall Semester",
+      "total_hours": 13,
+      "courses": [
+        {
+          "code": "CS 401",
+          "title": "Computer Algorithms I",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "CS Technical Elective",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "technical_elective"
+        },
+        {
+          "code": "DES 420",
+          "title": "Professional Practice Project I or Interdisciplinary Product Development I or Information Aesthetics I",
+          "hours": null,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "Exploring World Cultures General Education course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_world_cultures"
+        }
+      ]
+    },
+    {
+      "year": "Fourth Year Year",
+      "semester": "Spring Semester",
+      "total_hours": null,
+      "courses": [
+        {
+          "code": null,
+          "title": "CS Selective course ( CS 261 , CS 301 , CS 341 , CS 342 , CS 361 , or CS 362 )",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": null,
+          "title": "CS Technical Elective",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "technical_elective"
+        },
+        {
+          "code": "DES 421",
+          "title": "Professional Practice Project II or Interdisciplinary Product Development II or Information Aesthetics II",
+          "hours": null,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "Understanding the Past General Education course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_past"
+        }
+      ]
+    }
+  ]
+}

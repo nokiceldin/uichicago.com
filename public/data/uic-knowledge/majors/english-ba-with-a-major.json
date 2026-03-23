@@ -1,0 +1,1273 @@
+{
+  "name": "English - BA with a Major",
+  "college": "English",
+  "department": "English",
+  "url": "https://catalog.uic.edu/ucat/colleges-depts/liberal-arts-sciences/engl/ba-engl/",
+  "totalHours": 120,
+  "summaryRequirements": {
+    "• Core Requirements": "9",
+    "• Selective Upper-Level Writing Requirement": "3-6",
+    "• Selective Concentration Requirements a": "9-33",
+    "• English Electives b": "0-6",
+    "General Education and Electives to Reach Minimum Total Hours": "72-93",
+    "Total Hours": "120"
+  },
+  "requiredCourses": [
+    {
+      "code": "ENGL 207",
+      "subject": "ENGL",
+      "number": "207",
+      "title": "Interpretation and Critical Analysis a",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "ENGL 208",
+      "subject": "ENGL",
+      "number": "208",
+      "title": "English Studies I: Beginnings to the 17th Century",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "ENGL 209",
+      "subject": "ENGL",
+      "number": "209",
+      "title": "English Studies II: 17th Century to Today",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "ENGL 451",
+      "subject": "ENGL",
+      "number": "451",
+      "title": "English as Public Practice",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ENGL 482",
+      "subject": "ENGL",
+      "number": "482",
+      "title": "Campus Writing Consultants",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ENGL 486",
+      "subject": "ENGL",
+      "number": "486",
+      "title": "The Teaching of Writing in Middle and Secondary Schools b",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ENGL 492",
+      "subject": "ENGL",
+      "number": "492",
+      "title": "Advanced Writing of Nonfiction Prose c",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ENGL 493",
+      "subject": "ENGL",
+      "number": "493",
+      "title": "Internship in Nonfiction Writing d",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ENGL 496",
+      "subject": "ENGL",
+      "number": "496",
+      "title": "Portfolio Practicum d",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ENGL 497",
+      "subject": "ENGL",
+      "number": "497",
+      "title": "Senior Thesis e",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ENGL 101",
+      "subject": "ENGL",
+      "number": "101",
+      "title": "Understanding Literature and Culture",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ENGL 103",
+      "subject": "ENGL",
+      "number": "103",
+      "title": "Poetry and the World",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ENGL 104",
+      "subject": "ENGL",
+      "number": "104",
+      "title": "Understanding Drama",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ENGL 105",
+      "subject": "ENGL",
+      "number": "105",
+      "title": "Understanding Fiction",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ENGL 118",
+      "subject": "ENGL",
+      "number": "118",
+      "title": "Introduction to African American Literature, 1760-1910",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ENGL 119",
+      "subject": "ENGL",
+      "number": "119",
+      "title": "Introduction to African American Literature Since 1910",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ENGL 123",
+      "subject": "ENGL",
+      "number": "123",
+      "title": "Introduction to Asian American Literature",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ENGL 175",
+      "subject": "ENGL",
+      "number": "175",
+      "title": "Understanding the Bible as Literature",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ENGL 213",
+      "subject": "ENGL",
+      "number": "213",
+      "title": "Introduction to Shakespeare",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ENGL 223",
+      "subject": "ENGL",
+      "number": "223",
+      "title": "Introduction to Colonial and Postcolonial Literature",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ENGL 236",
+      "subject": "ENGL",
+      "number": "236",
+      "title": "Young Adult Fiction",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ENGL 237",
+      "subject": "ENGL",
+      "number": "237",
+      "title": "Graphic Novels",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ENGL 238",
+      "subject": "ENGL",
+      "number": "238",
+      "title": "Speculative Fiction, Sci-Fi and Fantasy",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ENGL 245",
+      "subject": "ENGL",
+      "number": "245",
+      "title": "Introduction to Gender, Sexuality and Literature",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ENGL 247",
+      "subject": "ENGL",
+      "number": "247",
+      "title": "Women and Literature",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ENGL 251",
+      "subject": "ENGL",
+      "number": "251",
+      "title": "Literature and Environment",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ENGL 260",
+      "subject": "ENGL",
+      "number": "260",
+      "title": "Comparative Black Literatures",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ENGL 261",
+      "subject": "ENGL",
+      "number": "261",
+      "title": "Reading Black Women Writing",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ENGL 262",
+      "subject": "ENGL",
+      "number": "262",
+      "title": "Black Cultural Studies",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ENGL 264",
+      "subject": "ENGL",
+      "number": "264",
+      "title": "Introduction to Native American Literatures",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ENGL 265",
+      "subject": "ENGL",
+      "number": "265",
+      "title": "The Harlem Renaissance",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ENGL 266",
+      "subject": "ENGL",
+      "number": "266",
+      "title": "Topics in African Literature",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ENGL 267",
+      "subject": "ENGL",
+      "number": "267",
+      "title": "Introduction to U.S. Latinx Literature",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ENGL 269",
+      "subject": "ENGL",
+      "number": "269",
+      "title": "Introduction to Multiethnic Literatures in the United States",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ENGL 295",
+      "subject": "ENGL",
+      "number": "295",
+      "title": "Latino Literary Studies",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ENGL 303",
+      "subject": "ENGL",
+      "number": "303",
+      "title": "Studies in Poetry",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ENGL 304",
+      "subject": "ENGL",
+      "number": "304",
+      "title": "Studies in Drama",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ENGL 305",
+      "subject": "ENGL",
+      "number": "305",
+      "title": "Studies in Fiction",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ENGL 311",
+      "subject": "ENGL",
+      "number": "311",
+      "title": "Medieval English Literature",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ENGL 312",
+      "subject": "ENGL",
+      "number": "312",
+      "title": "Sixteenth and Seventeenth Century Literature",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ENGL 313",
+      "subject": "ENGL",
+      "number": "313",
+      "title": "Major Plays of Shakespeare",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ENGL 314",
+      "subject": "ENGL",
+      "number": "314",
+      "title": "Milton",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ENGL 315",
+      "subject": "ENGL",
+      "number": "315",
+      "title": "Eighteenth Century Literature",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ENGL 316",
+      "subject": "ENGL",
+      "number": "316",
+      "title": "British Romantic Literature",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ENGL 317",
+      "subject": "ENGL",
+      "number": "317",
+      "title": "Victorian Literature",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ENGL 319",
+      "subject": "ENGL",
+      "number": "319",
+      "title": "20th and 21st Century British Literature",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ENGL 322",
+      "subject": "ENGL",
+      "number": "322",
+      "title": "Colonial and Postcolonial Literature",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ENGL 324",
+      "subject": "ENGL",
+      "number": "324",
+      "title": "American Literature to the 20th Century",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ENGL 325",
+      "subject": "ENGL",
+      "number": "325",
+      "title": "20th and 21st Century American Literature",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ENGL 328",
+      "subject": "ENGL",
+      "number": "328",
+      "title": "Asian American Literature",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ENGL 329",
+      "subject": "ENGL",
+      "number": "329",
+      "title": "Literatures in English Other than English and American",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ENGL 335",
+      "subject": "ENGL",
+      "number": "335",
+      "title": "Studies in Literature and Popular Culture",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ENGL 340",
+      "subject": "ENGL",
+      "number": "340",
+      "title": "Literary Theory",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ENGL 346",
+      "subject": "ENGL",
+      "number": "346",
+      "title": "History of Literary Criticism",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ENGL 347",
+      "subject": "ENGL",
+      "number": "347",
+      "title": "Gender and Sexuality in Literature",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ENGL 351",
+      "subject": "ENGL",
+      "number": "351",
+      "title": "Topics in Black Art and Literature",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ENGL 367",
+      "subject": "ENGL",
+      "number": "367",
+      "title": "Latinx Literature",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ENGL 369",
+      "subject": "ENGL",
+      "number": "369",
+      "title": "Multiethnic American Literature",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ENGL 376",
+      "subject": "ENGL",
+      "number": "376",
+      "title": "Literature and Religion",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ENGL 378",
+      "subject": "ENGL",
+      "number": "378",
+      "title": "Special Topics in English Studies",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ENGL 406",
+      "subject": "ENGL",
+      "number": "406",
+      "title": "Topics in Poetry and Poetic Theory",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ENGL 407",
+      "subject": "ENGL",
+      "number": "407",
+      "title": "Topics in Fiction and Theories of Fiction",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ENGL 409",
+      "subject": "ENGL",
+      "number": "409",
+      "title": "Topics in Literature and Culture",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ENGL 410",
+      "subject": "ENGL",
+      "number": "410",
+      "title": "Topics in Old English Literature",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ENGL 411",
+      "subject": "ENGL",
+      "number": "411",
+      "title": "Topics in Medieval Literature",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ENGL 412",
+      "subject": "ENGL",
+      "number": "412",
+      "title": "Topics in Renaissance Literature and Culture",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ENGL 413",
+      "subject": "ENGL",
+      "number": "413",
+      "title": "Topics in Shakespeare",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ENGL 414",
+      "subject": "ENGL",
+      "number": "414",
+      "title": "Topics in Restoration and Eighteenth-century Literature and Culture",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ENGL 415",
+      "subject": "ENGL",
+      "number": "415",
+      "title": "Topics in Romantic Literature and Culture",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ENGL 418",
+      "subject": "ENGL",
+      "number": "418",
+      "title": "Topics in Victorian Literature",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ENGL 422",
+      "subject": "ENGL",
+      "number": "422",
+      "title": "Topics in Postcolonial and World Literature in English",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ENGL 423",
+      "subject": "ENGL",
+      "number": "423",
+      "title": "Topics in American Literary Nonfiction Prose",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ENGL 424",
+      "subject": "ENGL",
+      "number": "424",
+      "title": "Topics in American Literature and Culture to the 20th Century",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ENGL 425",
+      "subject": "ENGL",
+      "number": "425",
+      "title": "Topics in 20th and 21st Century American Literature and Culture",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ENGL 435",
+      "subject": "ENGL",
+      "number": "435",
+      "title": "Topics in Popular Culture and Literature",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ENGL 441",
+      "subject": "ENGL",
+      "number": "441",
+      "title": "Topics in Asian American Literature and Culture",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ENGL 443",
+      "subject": "ENGL",
+      "number": "443",
+      "title": "Topics in Gender, Sexuality and Literature",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ENGL 446",
+      "subject": "ENGL",
+      "number": "446",
+      "title": "Topics in Criticism and Theory",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ENGL 458",
+      "subject": "ENGL",
+      "number": "458",
+      "title": "History of the English Language",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ENGL 466",
+      "subject": "ENGL",
+      "number": "466",
+      "title": "Topics in Multiethnic Literatures in the United States",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ENGL 467",
+      "subject": "ENGL",
+      "number": "467",
+      "title": "Topics in Latinx Literature",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ENGL 469",
+      "subject": "ENGL",
+      "number": "469",
+      "title": "Women's Literary Traditions",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ENGL 473",
+      "subject": "ENGL",
+      "number": "473",
+      "title": "Topics in Black Literature",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ENGL 475",
+      "subject": "ENGL",
+      "number": "475",
+      "title": "The Bible as Literature: Hebrew Bible",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ENGL 476",
+      "subject": "ENGL",
+      "number": "476",
+      "title": "The Bible as Literature: New Testament",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ENGL 290",
+      "subject": "ENGL",
+      "number": "290",
+      "title": "Introduction to the Writing of Poetry",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ENGL 490",
+      "subject": "ENGL",
+      "number": "490",
+      "title": "Advanced Writing of Poetry",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ENGL 291",
+      "subject": "ENGL",
+      "number": "291",
+      "title": "Introduction to the Writing of Fiction",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ENGL 491",
+      "subject": "ENGL",
+      "number": "491",
+      "title": "Advanced Writing of Fiction",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ENGL 292",
+      "subject": "ENGL",
+      "number": "292",
+      "title": "Introduction to the Writing of Nonfiction Prose",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ENGL 131",
+      "subject": "ENGL",
+      "number": "131",
+      "title": "Understanding Moving Image Arts",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ENGL 132",
+      "subject": "ENGL",
+      "number": "132",
+      "title": "Understanding Film",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ENGL 135",
+      "subject": "ENGL",
+      "number": "135",
+      "title": "Understanding Popular Genres and Culture",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ENGL 229",
+      "subject": "ENGL",
+      "number": "229",
+      "title": "Introduction to Asian Film",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ENGL 230",
+      "subject": "ENGL",
+      "number": "230",
+      "title": "Introduction to Film and Culture",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ENGL 232",
+      "subject": "ENGL",
+      "number": "232",
+      "title": "History of Film I: 1890 to World War II",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ENGL 233",
+      "subject": "ENGL",
+      "number": "233",
+      "title": "History of Film II: World War II to the Present",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ENGL 234",
+      "subject": "ENGL",
+      "number": "234",
+      "title": "History of Television",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ENGL 280",
+      "subject": "ENGL",
+      "number": "280",
+      "title": "Media and Professional Writing",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ENGL 330",
+      "subject": "ENGL",
+      "number": "330",
+      "title": "Cultural and Media Studies",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ENGL 331",
+      "subject": "ENGL",
+      "number": "331",
+      "title": "Studies in the Moving Image",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ENGL 344",
+      "subject": "ENGL",
+      "number": "344",
+      "title": "Gender Theory",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ENGL 345",
+      "subject": "ENGL",
+      "number": "345",
+      "title": "Queer Theory",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ENGL 350",
+      "subject": "ENGL",
+      "number": "350",
+      "title": "Disability Studies",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ENGL 383",
+      "subject": "ENGL",
+      "number": "383",
+      "title": "Writing Digital and New Media",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ENGL 404",
+      "subject": "ENGL",
+      "number": "404",
+      "title": "Topics in Performance Studies",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ENGL 430",
+      "subject": "ENGL",
+      "number": "430",
+      "title": "Topics in Cultural and Media Studies",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ENGL 444",
+      "subject": "ENGL",
+      "number": "444",
+      "title": "Topics in Theories of Gender and Sexuality",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ENGL 449",
+      "subject": "ENGL",
+      "number": "449",
+      "title": "Women and Film",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ENGL 450",
+      "subject": "ENGL",
+      "number": "450",
+      "title": "Topics in Disability Studies",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ENGL 495",
+      "subject": "ENGL",
+      "number": "495",
+      "title": "Playwriting",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ENGL 380",
+      "subject": "ENGL",
+      "number": "380",
+      "title": "Advanced Professional Writing",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ENGL 382",
+      "subject": "ENGL",
+      "number": "382",
+      "title": "Editing and Publishing",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ENGL 384",
+      "subject": "ENGL",
+      "number": "384",
+      "title": "Technical Writing",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ENGL 388",
+      "subject": "ENGL",
+      "number": "388",
+      "title": "Writing for the Health Professions",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ENGL 389",
+      "subject": "ENGL",
+      "number": "389",
+      "title": "Writing for Community Advocacy and Activism",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ENGL 258",
+      "subject": "ENGL",
+      "number": "258",
+      "title": "The Grammar and Style of Non-Standard Englishes in the U.S.",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ENGL 153",
+      "subject": "ENGL",
+      "number": "153",
+      "title": "Understanding Grammar and Style",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ENGL 154",
+      "subject": "ENGL",
+      "number": "154",
+      "title": "Understanding Rhetoric",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ENGL 253",
+      "subject": "ENGL",
+      "number": "253",
+      "title": "Environmental Rhetoric",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ENGL 282",
+      "subject": "ENGL",
+      "number": "282",
+      "title": "Peer Tutoring in the Writing Center: Introduction to Theory and Practice",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ENGL 297",
+      "subject": "ENGL",
+      "number": "297",
+      "title": "Studies in the Classical Tradition",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ENGL 354",
+      "subject": "ENGL",
+      "number": "354",
+      "title": "Rhetorical Studies",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ENGL 355",
+      "subject": "ENGL",
+      "number": "355",
+      "title": "Rhetoric and Public Life",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ENGL 356",
+      "subject": "ENGL",
+      "number": "356",
+      "title": "Argument and Persuasion",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ENGL 452",
+      "subject": "ENGL",
+      "number": "452",
+      "title": "The UIC Freshwater Lab Course",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ENGL 453",
+      "subject": "ENGL",
+      "number": "453",
+      "title": "Freshwater Lab in Practice: Environmental Research, Projects, and Internships",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ENGL 454",
+      "subject": "ENGL",
+      "number": "454",
+      "title": "Rhetoric",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ENGL 455",
+      "subject": "ENGL",
+      "number": "455",
+      "title": "Topics in Rhetorical Studies",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ENGL 456",
+      "subject": "ENGL",
+      "number": "456",
+      "title": "Topics in Language and Rhetoric",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ENGL 457",
+      "subject": "ENGL",
+      "number": "457",
+      "title": "Topics in the English Language & Linguistics",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ENGL 463",
+      "subject": "ENGL",
+      "number": "463",
+      "title": "Discourse and Rhetoric",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ENGL 160",
+      "subject": "ENGL",
+      "number": "160",
+      "title": "Academic Writing I: Writing in Academic and Public Contexts",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "ENGL 161",
+      "subject": "ENGL",
+      "number": "161",
+      "title": "Academic Writing II: Writing for Inquiry and Research",
+      "hours": 3,
+      "required": true
+    }
+  ],
+  "sampleSchedule": [
+    {
+      "year": "First Year",
+      "semester": "Fall Semester",
+      "total_hours": null,
+      "courses": [
+        {
+          "code": "ENGL 160",
+          "title": "Academic Writing I: Writing in Academic and Public Contexts",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "General Education Requirement course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        }
+      ]
+    },
+    {
+      "year": "First Year",
+      "semester": "Spring Semester",
+      "total_hours": null,
+      "courses": [
+        {
+          "code": "ENGL 161",
+          "title": "Academic Writing II: Writing for Inquiry and Research",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "ENGL 207",
+          "title": "Interpretation and Critical Analysis",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "General Education Requirement course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        }
+      ]
+    },
+    {
+      "year": "Second Year",
+      "semester": "Fall Semester",
+      "total_hours": null,
+      "courses": [
+        {
+          "code": "ENGL 208",
+          "title": "English Studies I: Beginnings to the 17th Century",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "General Education Requirement course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        },
+        {
+          "code": null,
+          "title": "General Education Requirement course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        }
+      ]
+    },
+    {
+      "year": "Second Year",
+      "semester": "Spring Semester",
+      "total_hours": 16,
+      "courses": [
+        {
+          "code": "ENGL 209",
+          "title": "English Studies II: 17th Century to Today",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "General Education Requirement course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        },
+        {
+          "code": null,
+          "title": "General Education Requirement course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        }
+      ]
+    },
+    {
+      "year": "Third Year",
+      "semester": "Fall Semester",
+      "total_hours": 15,
+      "courses": [
+        {
+          "code": null,
+          "title": "General Education Requirement course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        },
+        {
+          "code": null,
+          "title": "General Education Requirement course/Elective",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        },
+        {
+          "code": null,
+          "title": "Electives",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        }
+      ]
+    },
+    {
+      "year": "Third Year",
+      "semester": "Spring Semester",
+      "total_hours": 15,
+      "courses": [
+        {
+          "code": null,
+          "title": "General Education Requirement course/Elective",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        },
+        {
+          "code": null,
+          "title": "Electives",
+          "hours": 6,
+          "isElective": true,
+          "electiveType": "elective_general"
+        }
+      ]
+    },
+    {
+      "year": "Fourth Year",
+      "semester": "Fall Semester",
+      "total_hours": 15,
+      "courses": [
+        {
+          "code": null,
+          "title": "Electives",
+          "hours": 12,
+          "isElective": true,
+          "electiveType": "elective_general"
+        }
+      ]
+    },
+    {
+      "year": "Fourth Year",
+      "semester": "Spring Semester",
+      "total_hours": null,
+      "courses": [
+        {
+          "code": null,
+          "title": "Electives",
+          "hours": 11,
+          "isElective": true,
+          "electiveType": "elective_general"
+        }
+      ]
+    }
+  ]
+}

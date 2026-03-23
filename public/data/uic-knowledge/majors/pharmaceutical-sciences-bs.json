@@ -1,0 +1,841 @@
+{
+  "name": "Pharmaceutical Sciences - BS",
+  "college": "Pharmacy",
+  "department": "Pharmacy",
+  "url": "https://catalog.uic.edu/ucat/colleges-depts/pharmacy/bs-pharmaceutical-sciences/",
+  "totalHours": 120,
+  "summaryRequirements": {
+    "Pre-Pharmaceutical Sciences Requirements": "58-60",
+    "Major Requirements (Core and Selective)": "48-52",
+    "Electives to Reach Minimum Hours": "8-14",
+    "Total Hours": "120"
+  },
+  "requiredCourses": [
+    {
+      "code": "ENGL 160",
+      "subject": "ENGL",
+      "number": "160",
+      "title": "Academic Writing I: Writing in Academic and Public Contexts",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "ENGL 161",
+      "subject": "ENGL",
+      "number": "161",
+      "title": "Academic Writing II: Writing for Inquiry and Research",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "COMM 100",
+      "subject": "COMM",
+      "number": "100",
+      "title": "Fundamentals of Human Communication a",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "COMM 102",
+      "subject": "COMM",
+      "number": "102",
+      "title": "Introduction to Interpersonal Communication a",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "BIOS 110",
+      "subject": "BIOS",
+      "number": "110",
+      "title": "Biology of Cells and Organisms c",
+      "hours": 4,
+      "required": true
+    },
+    {
+      "code": "BIOS 120",
+      "subject": "BIOS",
+      "number": "120",
+      "title": "Biology of Populations and Communities c",
+      "hours": 4,
+      "required": true
+    },
+    {
+      "code": "CHEM 232",
+      "subject": "CHEM",
+      "number": "232",
+      "title": "Structure and Function",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "CHEM 233",
+      "subject": "CHEM",
+      "number": "233",
+      "title": "Synthesis Techniques Laboratory",
+      "hours": 2,
+      "required": true
+    },
+    {
+      "code": "CHEM 234",
+      "subject": "CHEM",
+      "number": "234",
+      "title": "Chemical Synthesis",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "PHYS 118",
+      "subject": "PHYS",
+      "number": "118",
+      "title": "Physics in Modern Medicine c",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "PHYS 131",
+      "subject": "PHYS",
+      "number": "131",
+      "title": "Introductory Physics for Life Sciences I c",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "PHYS 141",
+      "subject": "PHYS",
+      "number": "141",
+      "title": "General Physics I (Mechanics) c",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "MATH 165",
+      "subject": "MATH",
+      "number": "165",
+      "title": "Calculus for Business c",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "MATH 170",
+      "subject": "MATH",
+      "number": "170",
+      "title": "Calculus for the Life Sciences c",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "MATH 180",
+      "subject": "MATH",
+      "number": "180",
+      "title": "Calculus I c",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "STAT 101",
+      "subject": "STAT",
+      "number": "101",
+      "title": "Introduction to Statistics",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "STAT 130",
+      "subject": "STAT",
+      "number": "130",
+      "title": "Introduction to Statistics for the Life Sciences",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "BIOS 350",
+      "subject": "BIOS",
+      "number": "350",
+      "title": "General Microbiology",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "BIOS 351",
+      "subject": "BIOS",
+      "number": "351",
+      "title": "Microbiology Laboratory",
+      "hours": 2,
+      "required": true
+    },
+    {
+      "code": "PSCI 300",
+      "subject": "PSCI",
+      "number": "300",
+      "title": "Undergraduate Research Experience in Pharmaceutical Sciences",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "PSOP 300",
+      "subject": "PSOP",
+      "number": "300",
+      "title": "Undergraduate Research Experience in Pharmacy Systems, Outcomes and Policy",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "PMPR 300",
+      "subject": "PMPR",
+      "number": "300",
+      "title": "Undergraduate Research Experience in Pharmacy Practice",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "PHAR 200",
+      "subject": "PHAR",
+      "number": "200",
+      "title": "Introduction to Pharmaceutical Sciences b",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "PHAR 201",
+      "subject": "PHAR",
+      "number": "201",
+      "title": "Pharmaceutical Care in the US b",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "PHAR 410",
+      "subject": "PHAR",
+      "number": "410",
+      "title": "Integrated Physiology",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "PHAR 422",
+      "subject": "PHAR",
+      "number": "422",
+      "title": "Fundamentals of Drug Action",
+      "hours": 4,
+      "required": true
+    },
+    {
+      "code": "PHAR 423",
+      "subject": "PHAR",
+      "number": "423",
+      "title": "Fundamentals of Drug Action II",
+      "hours": 4,
+      "required": true
+    },
+    {
+      "code": "PHAR 431",
+      "subject": "PHAR",
+      "number": "431",
+      "title": "Pharmaceutics I - Pharmaceutics Principles, Drug Delivery Systems, and Calculations",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "PHAR 432",
+      "subject": "PHAR",
+      "number": "432",
+      "title": "Pharmaceutics II – Pharmaceutical Dosage Forms and Calculations",
+      "hours": 2,
+      "required": true
+    },
+    {
+      "code": "PHAR 435",
+      "subject": "PHAR",
+      "number": "435",
+      "title": "Pharmacokinetics",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "PHAR 438",
+      "subject": "PHAR",
+      "number": "438",
+      "title": "Introduction to Drug Information",
+      "hours": 1,
+      "required": true
+    },
+    {
+      "code": "PHAR 461",
+      "subject": "PHAR",
+      "number": "461",
+      "title": "Pharmacy and the U.S. Healthcare System",
+      "hours": 2,
+      "required": true
+    },
+    {
+      "code": "BIOS 220",
+      "subject": "BIOS",
+      "number": "220",
+      "title": "Genetics",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "BIOS 416",
+      "subject": "BIOS",
+      "number": "416",
+      "title": "Natural Products",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "BIOS 450",
+      "subject": "BIOS",
+      "number": "450",
+      "title": "Advanced Microbiology",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "BIOS 458",
+      "subject": "BIOS",
+      "number": "458",
+      "title": "Biotechnology and Drug Discovery",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "CHEM 116",
+      "subject": "CHEM",
+      "number": "116",
+      "title": "Honors and Majors General and Analytical Chemistry I",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "CHEM 118",
+      "subject": "CHEM",
+      "number": "118",
+      "title": "Honors and Majors General and Analytical Chemistry II",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "BIOS 352",
+      "subject": "BIOS",
+      "number": "352",
+      "title": "Introductory Biochemistry",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "KN 230",
+      "subject": "KN",
+      "number": "230",
+      "title": "Anatomy and Physiology Lecture I",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "KN 231",
+      "subject": "KN",
+      "number": "231",
+      "title": "Anatomy and Physiology Lecture II",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "PHAR 411",
+      "subject": "PHAR",
+      "number": "411",
+      "title": "Introduction Pharmacy Practice",
+      "hours": 4,
+      "required": true
+    },
+    {
+      "code": "PHAR 465",
+      "subject": "PHAR",
+      "number": "465",
+      "title": "Pharmacy Learning, Advising, Mentoring, and Engagement for Students (PhLAMES) 1",
+      "hours": 0,
+      "required": true
+    },
+    {
+      "code": "PHAR 412",
+      "subject": "PHAR",
+      "number": "412",
+      "title": "Introductory Pharmacy Practice (IPPE): Community",
+      "hours": 2,
+      "required": true
+    },
+    {
+      "code": "PHAR 466",
+      "subject": "PHAR",
+      "number": "466",
+      "title": "Pharmacy Learning, Advising, Mentoring, and Engagement for Students (PhLAMES) 2",
+      "hours": 0,
+      "required": true
+    },
+    {
+      "code": "PHAR 501",
+      "subject": "PHAR",
+      "number": "501",
+      "title": "Pathophysiology, Drug Action, and Therapeutics (PDAT) 1: Self Care",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "PHAR 502",
+      "subject": "PHAR",
+      "number": "502",
+      "title": "Pathophysiology, Drug Action, and Therapeutics (PDAT) 2: GI/Endocrine",
+      "hours": 3,
+      "required": true
+    }
+  ],
+  "sampleSchedule": [
+    {
+      "year": "First Year",
+      "semester": "Fall Semester",
+      "total_hours": 14,
+      "courses": [
+        {
+          "code": "ENGL 160",
+          "title": "Academic Writing I: Writing in Academic and Public Contexts a",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "CHEM 122",
+          "title": "Matter and Energy and Foundations of Chemical Inquiry I a",
+          "hours": null,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "CHEM 116",
+          "title": "Honors and Majors General and Analytical Chemistry I",
+          "hours": null,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "COMM 100",
+          "title": "Fundamentals of Human Communication a",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "Exploring World Cultures General Education course a",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_world_cultures"
+        }
+      ]
+    },
+    {
+      "year": "First Year",
+      "semester": "Spring Semester",
+      "total_hours": 15,
+      "courses": [
+        {
+          "code": "ENGL 161",
+          "title": "Academic Writing II: Writing for Inquiry and Research a",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "CHEM 124",
+          "title": "Chemical Dynamics and Foundations of Chemical Inquiry II a",
+          "hours": null,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "CHEM 118",
+          "title": "Honors and Majors General and Analytical Chemistry II",
+          "hours": null,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "BIOS 110",
+          "title": "Biology of Cells and Organisms a",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "Understanding the Creative Arts General Education course a",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_creative_arts"
+        }
+      ]
+    },
+    {
+      "year": "Second Year",
+      "semester": "Fall Semester",
+      "total_hours": 14,
+      "courses": [
+        {
+          "code": "PHAR 200",
+          "title": "Introduction to Pharmaceutical Sciences b",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "CHEM 232",
+          "title": "Structure and Function",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "BIOS 120",
+          "title": "Biology of Populations and Communities a",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "MATH 170",
+          "title": "Calculus for the Life Sciences a",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        }
+      ]
+    },
+    {
+      "year": "Second Year",
+      "semester": "Spring Semester",
+      "total_hours": 16,
+      "courses": [
+        {
+          "code": "CHEM 233",
+          "title": "Synthesis Techniques Laboratory and Chemical Synthesis",
+          "hours": 5,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "STAT 130",
+          "title": "Introduction to Statistics for the Life Sciences",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "PHAR 201",
+          "title": "Pharmaceutical Care in the US b",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "PHYS 131",
+          "title": "Introductory Physics for Life Sciences I a",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        }
+      ]
+    },
+    {
+      "year": "Third Year",
+      "semester": "Fall Semester",
+      "total_hours": 15,
+      "courses": [
+        {
+          "code": "BIOS 350",
+          "title": "General Microbiology and Microbiology Laboratory",
+          "hours": 5,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "BIOS 352",
+          "title": "Introductory Biochemistry",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "KN 230",
+          "title": "Anatomy and Physiology Lecture I",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "PSCI 300",
+          "title": "Undergraduate Research Experience in Pharmaceutical Sciences or Undergraduate Research Experience in Pharmacy Systems, Outcomes and Policy or Undergraduate Research Experience in Pharmacy Practice",
+          "hours": 1,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "Understanding the Past General Education course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_past"
+        }
+      ]
+    },
+    {
+      "year": "Third Year",
+      "semester": "Spring Semester",
+      "total_hours": 15,
+      "courses": [
+        {
+          "code": "KN 231",
+          "title": "Anatomy and Physiology Lecture II",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "BIOS 220",
+          "title": "Genetics or Natural Products or Advanced Microbiology or Biotechnology and Drug Discovery",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "PSCI 300",
+          "title": "Undergraduate Research Experience in Pharmaceutical Sciences or Undergraduate Research Experience in Pharmacy Systems, Outcomes and Policy or Undergraduate Research Experience in Pharmacy Practice",
+          "hours": 2,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "Understanding U.S. Society General Education course a",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_individual_society"
+        },
+        {
+          "code": null,
+          "title": "Elective",
+          "hours": 4,
+          "isElective": true,
+          "electiveType": "elective_general"
+        }
+      ]
+    },
+    {
+      "year": "Fourth Year",
+      "semester": "Fall Semester",
+      "total_hours": 16,
+      "courses": [
+        {
+          "code": "PHAR 410",
+          "title": "Integrated Physiology",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "PHAR 422",
+          "title": "Fundamentals of Drug Action",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "PHAR 431",
+          "title": "Pharmaceutics I - Pharmaceutics Principles, Drug Delivery Systems, and Calculations",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "PHAR 435",
+          "title": "Pharmacokinetics",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "Elective",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        }
+      ]
+    },
+    {
+      "year": "Fourth Year",
+      "semester": "Spring Semester",
+      "total_hours": 15,
+      "courses": [
+        {
+          "code": "PHAR 423",
+          "title": "Fundamentals of Drug Action II",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "PHAR 432",
+          "title": "Pharmaceutics II – Pharmaceutical Dosage Forms and Calculations",
+          "hours": 2,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "PHAR 438",
+          "title": "Introduction to Drug Information",
+          "hours": 1,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "PHAR 461",
+          "title": "Pharmacy and the U.S. Healthcare System",
+          "hours": 2,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "Elective",
+          "hours": 6,
+          "isElective": true,
+          "electiveType": "elective_general"
+        }
+      ]
+    },
+    {
+      "year": "Fourth Year",
+      "semester": "Fall Semester",
+      "total_hours": null,
+      "courses": [
+        {
+          "code": "PHAR 410",
+          "title": "Integrated Physiology",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "PHAR 411",
+          "title": "Introduction Pharmacy Practice",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "PHAR 422",
+          "title": "Fundamentals of Drug Action",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "PHAR 431",
+          "title": "Pharmaceutics I - Pharmaceutics Principles, Drug Delivery Systems, and Calculations",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "PHAR 435",
+          "title": "Pharmacokinetics",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "PHAR 465",
+          "title": "Pharmacy Learning, Advising, Mentoring, and Engagement for Students (PhLAMES) 1",
+          "hours": 0,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "Electives",
+          "hours": 0,
+          "isElective": true,
+          "electiveType": "elective_general"
+        }
+      ]
+    },
+    {
+      "year": "Fourth Year",
+      "semester": "Spring Semester",
+      "total_hours": null,
+      "courses": [
+        {
+          "code": "PHAR 412",
+          "title": "Introductory Pharmacy Practice (IPPE): Community",
+          "hours": 2,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "PHAR 423",
+          "title": "Fundamentals of Drug Action II",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "PHAR 432",
+          "title": "Pharmaceutics II – Pharmaceutical Dosage Forms and Calculations",
+          "hours": 2,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "PHAR 438",
+          "title": "Introduction to Drug Information",
+          "hours": 1,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "PHAR 461",
+          "title": "Pharmacy and the U.S. Healthcare System",
+          "hours": 2,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "PHAR 466",
+          "title": "Pharmacy Learning, Advising, Mentoring, and Engagement for Students (PhLAMES) 2",
+          "hours": 0,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "PHAR 501",
+          "title": "Pathophysiology, Drug Action, and Therapeutics (PDAT) 1: Self Care",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "PHAR 502",
+          "title": "Pathophysiology, Drug Action, and Therapeutics (PDAT) 2: GI/Endocrine",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "Electives",
+          "hours": 0,
+          "isElective": true,
+          "electiveType": "elective_general"
+        }
+      ]
+    }
+  ]
+}

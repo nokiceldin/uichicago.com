@@ -1,0 +1,597 @@
+{
+  "name": "Computer Science and Linguistics - BS",
+  "college": "Linguistics",
+  "department": "Linguistics",
+  "url": "https://catalog.uic.edu/ucat/colleges-depts/liberal-arts-sciences/ling/cs-linguistics/",
+  "totalHours": 120,
+  "summaryRequirements": {
+    "Requirements for the Curriculum": "120",
+    "Total Hours": "120"
+  },
+  "requiredCourses": [
+    {
+      "code": "ENGL 160",
+      "subject": "ENGL",
+      "number": "160",
+      "title": "Academic Writing I: Writing in Academic and Public Contexts",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "ENGL 161",
+      "subject": "ENGL",
+      "number": "161",
+      "title": "Academic Writing II: Writing for Inquiry and Research",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "MATH 180",
+      "subject": "MATH",
+      "number": "180",
+      "title": "Calculus I b,c",
+      "hours": 4,
+      "required": true
+    },
+    {
+      "code": "MATH 181",
+      "subject": "MATH",
+      "number": "181",
+      "title": "Calculus II c",
+      "hours": 4,
+      "required": true
+    },
+    {
+      "code": "STAT 381",
+      "subject": "STAT",
+      "number": "381",
+      "title": "Applied Statistical Methods I",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "CS 111",
+      "subject": "CS",
+      "number": "111",
+      "title": "Program Design I",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "CS 112",
+      "subject": "CS",
+      "number": "112",
+      "title": "Program Design I in the Context of Biological Problems",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "CS 113",
+      "subject": "CS",
+      "number": "113",
+      "title": "Program Design I in the Context of Law and Public Policy",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "CS 141",
+      "subject": "CS",
+      "number": "141",
+      "title": "Program Design II",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "CS 151",
+      "subject": "CS",
+      "number": "151",
+      "title": "Mathematical Foundations of Computing",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "CS 211",
+      "subject": "CS",
+      "number": "211",
+      "title": "Programming Practicum",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "CS 251",
+      "subject": "CS",
+      "number": "251",
+      "title": "Data Structures",
+      "hours": 4,
+      "required": true
+    },
+    {
+      "code": "CS 421",
+      "subject": "CS",
+      "number": "421",
+      "title": "Natural Language Processing",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "LING 150",
+      "subject": "LING",
+      "number": "150",
+      "title": "Introduction to the Study of Language d",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "LING 160",
+      "subject": "LING",
+      "number": "160",
+      "title": "Language and Society e",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "LING 210",
+      "subject": "LING",
+      "number": "210",
+      "title": "Introduction to Natural Language Syntax",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "LING 220",
+      "subject": "LING",
+      "number": "220",
+      "title": "Introduction to Phonetics and Phonology",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "LING 230",
+      "subject": "LING",
+      "number": "230",
+      "title": "Semantics, Pragmatics, and Discourse f",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "CS 301",
+      "subject": "CS",
+      "number": "301",
+      "title": "Languages and Automata",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "MCS 441",
+      "subject": "MCS",
+      "number": "441",
+      "title": "Theory of Computation I g",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "CS 342",
+      "subject": "CS",
+      "number": "342",
+      "title": "Software Design",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "CS 411",
+      "subject": "CS",
+      "number": "411",
+      "title": "Artificial Intelligence I",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "CS 412",
+      "subject": "CS",
+      "number": "412",
+      "title": "Introduction to Machine Learning",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "CS 418",
+      "subject": "CS",
+      "number": "418",
+      "title": "Introduction to Data Science",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "CS 422",
+      "subject": "CS",
+      "number": "422",
+      "title": "User Interface Design and Programming",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "LING 260",
+      "subject": "LING",
+      "number": "260",
+      "title": "Language Acquisition, Language Contact and Bilingualism",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "LING 300",
+      "subject": "LING",
+      "number": "300",
+      "title": "Seminar in Linguistic Analysis i",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "LING 310",
+      "subject": "LING",
+      "number": "310",
+      "title": "Language and Discrimination",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "LING 320",
+      "subject": "LING",
+      "number": "320",
+      "title": "Linguistics and Speech-Language Pathology",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "LING 340",
+      "subject": "LING",
+      "number": "340",
+      "title": "Vocabulary in Action: How do we learn, process, and use words as multilinguals?",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "LING 350",
+      "subject": "LING",
+      "number": "350",
+      "title": "Are Algorithms Biased",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "LING 360",
+      "subject": "LING",
+      "number": "360",
+      "title": "Basic Statistics for Language Research",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "LING 370",
+      "subject": "LING",
+      "number": "370",
+      "title": "Introduction to Computational Linguistics",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "LING 410",
+      "subject": "LING",
+      "number": "410",
+      "title": "AI for Language Research",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "LING 440",
+      "subject": "LING",
+      "number": "440",
+      "title": "Language and Gender",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "LING 459",
+      "subject": "LING",
+      "number": "459",
+      "title": "Topics in Linguistics i",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "LING 483",
+      "subject": "LING",
+      "number": "483",
+      "title": "Methodology of Second Language Teaching",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "LING 487",
+      "subject": "LING",
+      "number": "487",
+      "title": "Computer Assisted Language Learning",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "PHIL 206",
+      "subject": "PHIL",
+      "number": "206",
+      "title": "Introduction to the Philosophy of Language",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "SPAN 361",
+      "subject": "SPAN",
+      "number": "361",
+      "title": "The Structure of Spanish j",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "SPAN 362",
+      "subject": "SPAN",
+      "number": "362",
+      "title": "Sounds of Spanish j",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "SPAN 363",
+      "subject": "SPAN",
+      "number": "363",
+      "title": "Spanish in Society j",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "SPAN 365",
+      "subject": "SPAN",
+      "number": "365",
+      "title": "Meaning in Language j",
+      "hours": null,
+      "required": true
+    }
+  ],
+  "sampleSchedule": [
+    {
+      "year": "First Year",
+      "semester": "Fall Semester",
+      "total_hours": 16,
+      "courses": [
+        {
+          "code": "ENGL 160",
+          "title": "Academic Writing I: Writing in Academic and Public Contexts",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "MATH 180",
+          "title": "Calculus I",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "CS 111",
+          "title": "Program Design I or Program Design I in the Context of Biological Problems or Program Design I in the Context of Law and Public Policy",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "LING 150",
+          "title": "Introduction to the Study of Language",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        }
+      ]
+    },
+    {
+      "year": "First Year",
+      "semester": "Spring Semester",
+      "total_hours": 13,
+      "courses": [
+        {
+          "code": "ENGL 161",
+          "title": "Academic Writing II: Writing for Inquiry and Research",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "MATH 181",
+          "title": "Calculus II",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "CS 141",
+          "title": "Program Design II",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "LING 160",
+          "title": "Language and Society",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        }
+      ]
+    },
+    {
+      "year": "Second Year",
+      "semester": "Fall Semester",
+      "total_hours": 16,
+      "courses": [
+        {
+          "code": "STAT 381",
+          "title": "Applied Statistical Methods I",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "CS 151",
+          "title": "Mathematical Foundations of Computing",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "CS 211",
+          "title": "Programming Practicum",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        }
+      ]
+    },
+    {
+      "year": "Second Year",
+      "semester": "Spring Semester",
+      "total_hours": 14,
+      "courses": [
+        {
+          "code": "CS 251",
+          "title": "Data Structures",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "CS 301",
+          "title": "Languages and Automata",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "LING 210",
+          "title": "Introduction to Natural Language Syntax",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        }
+      ]
+    },
+    {
+      "year": "Third Year",
+      "semester": "Fall Semester",
+      "total_hours": null,
+      "courses": [
+        {
+          "code": null,
+          "title": "CS Selective or CS 421 a",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": null,
+          "title": "LING Selective or LING 230 b",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        }
+      ]
+    },
+    {
+      "year": "Third Year",
+      "semester": "Spring Semester",
+      "total_hours": 15,
+      "courses": [
+        {
+          "code": "LING 210",
+          "title": "Introduction to Natural Language Syntax or Introduction to Phonetics and Phonology",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "CS Selective or CS 421 a",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": null,
+          "title": "Electives",
+          "hours": 5,
+          "isElective": true,
+          "electiveType": "elective_general"
+        }
+      ]
+    },
+    {
+      "year": "Fourth Year",
+      "semester": "Fall Semester",
+      "total_hours": null,
+      "courses": [
+        {
+          "code": null,
+          "title": "LING Selective or LING 230 b",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": null,
+          "title": "CS Selective a",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": null,
+          "title": "LING Selective b",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": null,
+          "title": "Elective",
+          "hours": 2,
+          "isElective": true,
+          "electiveType": "elective_general"
+        }
+      ]
+    },
+    {
+      "year": "Fourth Year",
+      "semester": "Spring Semester",
+      "total_hours": 15,
+      "courses": [
+        {
+          "code": null,
+          "title": "LING Selective b",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": null,
+          "title": "CS Elective",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": null,
+          "title": "Electives",
+          "hours": 6,
+          "isElective": true,
+          "electiveType": "elective_general"
+        }
+      ]
+    }
+  ]
+}

@@ -77,7 +77,7 @@ export interface QuerySignal {
 // ─── THRESHOLDS ───────────────────────────────────────────────────────────────
 
 // sourceConfidence >= this = data from SQL/JSON, not vector/generated
-const HIGH_TRUST_CONF  = 0.88;
+const HIGH_TRUST_CONF  = 0.80;
 
 // Minimum relevance for a chunk to count as "useful"
 const MIN_RELEVANCE    = 0.25; // lowered from 0.45 — bias toward answering
@@ -113,6 +113,10 @@ const LIVE_STATUS_PATTERNS: RegExp[] = [
   /\bopen right now\b/i,
   /\bis (it|the .{1,30}) (open|closed|available|running|still open) (right now|at this moment)\b/i,
   /\breal.?time\b/i,
+  // Live event schedule queries — we have no real-time events calendar
+  /\b(what|any|which|are there).{0,30}(events?|things?|activities|going on|happening).{0,25}(this week|today|tonight|right now)\b/i,
+  /\banything.{0,20}(going on|happening|today|this week)\b/i,
+  /\bis (there|anything).{0,20}(going on|happening).{0,15}(today|this week)\b/i,
 ];
 
 /**
@@ -377,11 +381,13 @@ export function makeTrustDecision(
     if (hasHighTrust(chunks) && score >= 0.65 && domainMatched && freshness !== "stale") {
       return { decision: "answer", confidence: 72, reason: "time_sensitive_strong_recent_evidence", explanation };
     }
-    // Any usable evidence = hedge
-    if (score >= ANSWER_THRESHOLD) {
+    // Hedge only if there is high-trust structured data (JSON retrievers).
+    // If evidence is only from vector search (news/instagram), it represents PAST events
+    // and should NOT be presented as current — abstain instead to prevent hallucination.
+    if (score >= ANSWER_THRESHOLD && hasHighTrust(chunks)) {
       return { decision: "hedge", confidence: 50, reason: "time_sensitive_hedge_with_verification", explanation };
     }
-    // No usable evidence = abstain
+    // No high-trust evidence (only vector/news) = abstain
     return { decision: "abstain", confidence: 78, reason: "time_sensitive_no_useful_evidence", explanation };
   }
 

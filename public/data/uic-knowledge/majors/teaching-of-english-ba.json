@@ -1,0 +1,257 @@
+{
+  "name": "Teaching of English - BA",
+  "college": "English",
+  "department": "English",
+  "url": "https://catalog.uic.edu/ucat/colleges-depts/liberal-arts-sciences/engl/ba-teachengl/",
+  "totalHours": 120,
+  "summaryRequirements": {
+    "Core Requirements": "9",
+    "English Electives": "9",
+    "Required Methods Courses": "12",
+    "Collateral Courses": "12",
+    "Additional Requirements for Teacher Licensure": "13",
+    "General Education and Electives to reach the minimum Total Hours": "65",
+    "Total Hours": "120"
+  },
+  "requiredCourses": [
+    {
+      "code": "ENGL 207",
+      "subject": "ENGL",
+      "number": "207",
+      "title": "Interpretation and Critical Analysis a",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "ENGL 208",
+      "subject": "ENGL",
+      "number": "208",
+      "title": "English Studies I: Beginnings to the 17th Century",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "ENGL 209",
+      "subject": "ENGL",
+      "number": "209",
+      "title": "English Studies II: 17th Century to Today",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "ENGL 480",
+      "subject": "ENGL",
+      "number": "480",
+      "title": "Introduction to the Teaching of English in Middle and Secondary Schools",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "ENGL 486",
+      "subject": "ENGL",
+      "number": "486",
+      "title": "The Teaching of Writing in Middle and Secondary Schools a",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "ENGL 487",
+      "subject": "ENGL",
+      "number": "487",
+      "title": "The Teaching of Reading and Literature in Middle and Secondary Schools",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "ENGL 488",
+      "subject": "ENGL",
+      "number": "488",
+      "title": "Methods of Teaching English in Middle and Secondary Schools",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "ENGL 498",
+      "subject": "ENGL",
+      "number": "498",
+      "title": "Educational Practice with Seminar I",
+      "hours": 6,
+      "required": true
+    },
+    {
+      "code": "ENGL 499",
+      "subject": "ENGL",
+      "number": "499",
+      "title": "Educational Practice with Seminar II",
+      "hours": 6,
+      "required": true
+    },
+    {
+      "code": "ED 200",
+      "subject": "ED",
+      "number": "200",
+      "title": "Education Policy Foundations",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "ED 210",
+      "subject": "ED",
+      "number": "210",
+      "title": "Principles of Learning and Instruction Across the Lifespan",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "ED 425",
+      "subject": "ED",
+      "number": "425",
+      "title": "Curriculum, Instruction, and Assessment in the Urban Secondary Classroom",
+      "hours": 4,
+      "required": true
+    },
+    {
+      "code": "SPED 410",
+      "subject": "SPED",
+      "number": "410",
+      "title": "Exceptional Learners",
+      "hours": 3,
+      "required": true
+    }
+  ],
+  "sampleSchedule": [
+    {
+      "year": "First Year",
+      "semester": "Fall Semester",
+      "total_hours": null,
+      "courses": [
+        {
+          "code": null,
+          "title": "Take General Education/Curriculum courses",
+          "hours": 16,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        }
+      ]
+    },
+    {
+      "year": "First Year",
+      "semester": "Spring Semester",
+      "total_hours": null,
+      "courses": [
+        {
+          "code": null,
+          "title": "Take General Education/Curriculum courses",
+          "hours": 16,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        }
+      ]
+    },
+    {
+      "year": "Second Year",
+      "semester": "Fall Semester",
+      "total_hours": null,
+      "courses": [
+        {
+          "code": null,
+          "title": "Take General Education/Curriculum courses",
+          "hours": 16,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        }
+      ]
+    },
+    {
+      "year": "Second Year",
+      "semester": "Spring Semester",
+      "total_hours": null,
+      "courses": [
+        {
+          "code": "ED 200",
+          "title": "Education Policy Foundations",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "ED 210",
+          "title": "Principles of Learning and Instruction Across the Lifespan",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "Take General Education/Curriculum courses (e.g., ENGL 480 )",
+          "hours": 10,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        }
+      ]
+    },
+    {
+      "year": "Third Year",
+      "semester": "Fall Semester",
+      "total_hours": null,
+      "courses": [
+        {
+          "code": "SPED 410",
+          "title": "Exceptional Learners",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "Take General Education/Curriculum courses (e.g., ENGL 486 )",
+          "hours": 13,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        }
+      ]
+    },
+    {
+      "year": "Third Year",
+      "semester": "Spring Semester",
+      "total_hours": null,
+      "courses": [
+        {
+          "code": null,
+          "title": "Take General Education/Curriculum courses (e.g., ENGL 487 )",
+          "hours": 16,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        }
+      ]
+    },
+    {
+      "year": "Fourth Year",
+      "semester": "Fall Semester",
+      "total_hours": 12,
+      "courses": [
+        {
+          "code": "ED 425",
+          "title": "Curriculum, Instruction, and Assessment in the Urban Secondary Classroom",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "ENGL 488",
+          "title": "Methods of Teaching English in Middle and Secondary Schools",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "Complete General Education courses",
+          "hours": 5,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        }
+      ]
+    }
+  ]
+}

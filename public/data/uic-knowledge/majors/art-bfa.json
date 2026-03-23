@@ -1,0 +1,392 @@
+{
+  "name": "Art - BFA",
+  "college": "Art",
+  "department": "Art",
+  "url": "https://catalog.uic.edu/ucat/colleges-depts/architecture-design-arts/art-ah/bfa-art/",
+  "totalHours": 129,
+  "summaryRequirements": {
+    "First Year Program": "24",
+    "General Education and Foundation Courses": "33",
+    "Art Major Requirements": "61",
+    "Electives outside the Department of Art": "10-11",
+    "DLG 120": "1",
+    "Total Hours": "129"
+  },
+  "requiredCourses": [
+    {
+      "code": "DLG 120",
+      "subject": "DLG",
+      "number": "120",
+      "title": "UIC First-Year Dialogue Seminar (Required of new freshmen only) a",
+      "hours": 1,
+      "required": true
+    },
+    {
+      "code": "ART 101",
+      "subject": "ART",
+      "number": "101",
+      "title": "Signifying Practices: Art and Visual Culture",
+      "hours": 4,
+      "required": true
+    },
+    {
+      "code": "ART 112",
+      "subject": "ART",
+      "number": "112",
+      "title": "Introduction to Drawing",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ART 130",
+      "subject": "ART",
+      "number": "130",
+      "title": "Introduction to Painting + Color",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ART 140",
+      "subject": "ART",
+      "number": "140",
+      "title": "Introduction to Sculpture",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ART 150",
+      "subject": "ART",
+      "number": "150",
+      "title": "Introduction to New Media Arts",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ART 160",
+      "subject": "ART",
+      "number": "160",
+      "title": "Introduction to Digital Photography",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ART 170",
+      "subject": "ART",
+      "number": "170",
+      "title": "Introduction to Filmmaking",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ENGL 160",
+      "subject": "ENGL",
+      "number": "160",
+      "title": "Academic Writing I: Writing in Academic and Public Contexts",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "ENGL 161",
+      "subject": "ENGL",
+      "number": "161",
+      "title": "Academic Writing II: Writing for Inquiry and Research",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "AH 110",
+      "subject": "AH",
+      "number": "110",
+      "title": "World History of Art and the Built Environment I c",
+      "hours": 4,
+      "required": true
+    },
+    {
+      "code": "AH 111",
+      "subject": "AH",
+      "number": "111",
+      "title": "World History of Art and the Built Environment II c",
+      "hours": 4,
+      "required": true
+    },
+    {
+      "code": "AH 160",
+      "subject": "AH",
+      "number": "160",
+      "title": "Trends in International Contemporary Art Since 1960 c",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "ART 401",
+      "subject": "ART",
+      "number": "401",
+      "title": "Senior Projects: Critique",
+      "hours": 6,
+      "required": true
+    },
+    {
+      "code": "ART 402",
+      "subject": "ART",
+      "number": "402",
+      "title": "Senior Projects: Thesis",
+      "hours": 6,
+      "required": true
+    },
+    {
+      "code": "AH 201",
+      "subject": "AH",
+      "number": "201",
+      "title": "Reading and Writing Art Criticism",
+      "hours": 3,
+      "required": true
+    }
+  ],
+  "sampleSchedule": [
+    {
+      "year": "Freshman Year",
+      "semester": "Fall Semester",
+      "total_hours": 15,
+      "courses": [
+        {
+          "code": "ENGL 160",
+          "title": "Academic Writing I: Writing in Academic and Public Contexts",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "ART 112",
+          "title": "Introduction to Drawing",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "ART 170",
+          "title": "Introduction to Filmmaking",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "ART 101",
+          "title": "Signifying Practices: Art and Visual Culture",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        }
+      ]
+    },
+    {
+      "year": "Freshman Year",
+      "semester": "Spring Semester",
+      "total_hours": null,
+      "courses": [
+        {
+          "code": "ENGL 161",
+          "title": "Academic Writing II: Writing for Inquiry and Research",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "DLG 120",
+          "title": "UIC First-Year Dialogue Seminar ( Required of new freshmen only )",
+          "hours": 1,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "ART 160",
+          "title": "Introduction to Digital Photography",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "ART 130",
+          "title": "Introduction to Painting + Color",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "ART 150",
+          "title": "Introduction to New Media Arts",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        }
+      ]
+    },
+    {
+      "year": "Sophomore Year",
+      "semester": "Fall Semester",
+      "total_hours": 18,
+      "courses": [
+        {
+          "code": "AH 110",
+          "title": "World History of Art and the Built Environment I",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        }
+      ]
+    },
+    {
+      "year": "Sophomore Year",
+      "semester": "Spring Semester",
+      "total_hours": 18,
+      "courses": [
+        {
+          "code": "AH 111",
+          "title": "World History of Art and the Built Environment II",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "Art Elective",
+          "hours": 4,
+          "isElective": true,
+          "electiveType": "humanities_elective"
+        }
+      ]
+    },
+    {
+      "year": "Junior Year",
+      "semester": "Fall Semester",
+      "total_hours": 17,
+      "courses": [
+        {
+          "code": "AH 160",
+          "title": "Trends in International Contemporary Art Since 1960",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "Art Elective",
+          "hours": 4,
+          "isElective": true,
+          "electiveType": "humanities_elective"
+        },
+        {
+          "code": null,
+          "title": "General Elective",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": null,
+          "title": "General Elective",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        }
+      ]
+    },
+    {
+      "year": "Junior Year",
+      "semester": "Spring Semester",
+      "total_hours": 15,
+      "courses": [
+        {
+          "code": "AH 201",
+          "title": "Reading and Writing Art Criticism",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "Art Elective",
+          "hours": 4,
+          "isElective": true,
+          "electiveType": "humanities_elective"
+        },
+        {
+          "code": null,
+          "title": "Art Elective",
+          "hours": 4,
+          "isElective": true,
+          "electiveType": "humanities_elective"
+        }
+      ]
+    },
+    {
+      "year": "Senior Year",
+      "semester": "Fall Semester",
+      "total_hours": 14,
+      "courses": [
+        {
+          "code": "ART 401",
+          "title": "Senior Projects: Critique",
+          "hours": 6,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "AH Elective",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": null,
+          "title": "General Elective",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": null,
+          "title": "General Elective",
+          "hours": 2,
+          "isElective": true,
+          "electiveType": "elective_general"
+        }
+      ]
+    },
+    {
+      "year": "Senior Year",
+      "semester": "Spring Semester",
+      "total_hours": 17,
+      "courses": [
+        {
+          "code": "ART 402",
+          "title": "Senior Projects: Thesis",
+          "hours": 6,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "AH Elective",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": null,
+          "title": "Art Elective",
+          "hours": 4,
+          "isElective": true,
+          "electiveType": "humanities_elective"
+        },
+        {
+          "code": null,
+          "title": "Art Elective",
+          "hours": 4,
+          "isElective": true,
+          "electiveType": "humanities_elective"
+        }
+      ]
+    }
+  ]
+}

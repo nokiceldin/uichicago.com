@@ -17,13 +17,8 @@ export default function ThemeInit() {
       return
     }
 
-    const prefersDark =
-      typeof window !== "undefined" &&
-      window.matchMedia &&
-      window.matchMedia("(prefers-color-scheme: dark)").matches
-
-    if (prefersDark) document.documentElement.classList.add("dark")
-    else document.documentElement.classList.remove("dark")
+    // No saved preference — default to dark mode
+    document.documentElement.classList.add("dark")
   }, [])
 
   return null

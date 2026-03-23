@@ -1,5 +1,5 @@
 # Claude Fix Prompts — Sparky Eval Failures
-_Generated: 2026-03-18T02:48:10.538Z_
+_Generated: 2026-03-22T04:59:20.360Z_
 _Paste each prompt directly to Claude for implementation._
 
 ---

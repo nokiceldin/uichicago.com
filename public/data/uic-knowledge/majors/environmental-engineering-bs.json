@@ -1,0 +1,646 @@
+{
+  "name": "Environmental Engineering - BS",
+  "college": "Civil, Materials, and Environmental Engineering",
+  "department": "Civil, Materials, and Environmental Engineering",
+  "url": "https://catalog.uic.edu/ucat/colleges-depts/engineering/cme/bs-environe/",
+  "totalHours": 128,
+  "summaryRequirements": {
+    "Nonengineering and General Education Requirements": "60",
+    "Required in the College of Engineering": "53",
+    "Technical Electives": "15",
+    "Total Hours": "128"
+  },
+  "requiredCourses": [
+    {
+      "code": "ENGL 160",
+      "subject": "ENGL",
+      "number": "160",
+      "title": "Academic Writing I: Writing in Academic and Public Contexts",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "ENGL 161",
+      "subject": "ENGL",
+      "number": "161",
+      "title": "Academic Writing II: Writing for Inquiry and Research",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "MATH 180",
+      "subject": "MATH",
+      "number": "180",
+      "title": "Calculus I",
+      "hours": 4,
+      "required": true
+    },
+    {
+      "code": "MATH 181",
+      "subject": "MATH",
+      "number": "181",
+      "title": "Calculus II",
+      "hours": 4,
+      "required": true
+    },
+    {
+      "code": "MATH 210",
+      "subject": "MATH",
+      "number": "210",
+      "title": "Calculus III",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "MATH 218",
+      "subject": "MATH",
+      "number": "218",
+      "title": "Applied Linear Algebra",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "MATH 220",
+      "subject": "MATH",
+      "number": "220",
+      "title": "Introduction to Differential Equations",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "PHYS 141",
+      "subject": "PHYS",
+      "number": "141",
+      "title": "General Physics I (Mechanics) b",
+      "hours": 4,
+      "required": true
+    },
+    {
+      "code": "PHYS 142",
+      "subject": "PHYS",
+      "number": "142",
+      "title": "General Physics II (Electricity and Magnetism) b",
+      "hours": 4,
+      "required": true
+    },
+    {
+      "code": "CHEM 122",
+      "subject": "CHEM",
+      "number": "122",
+      "title": "Matter and Energy b",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "CHEM 123",
+      "subject": "CHEM",
+      "number": "123",
+      "title": "Foundations of Chemical Inquiry I b",
+      "hours": 2,
+      "required": true
+    },
+    {
+      "code": "CHEM 124",
+      "subject": "CHEM",
+      "number": "124",
+      "title": "Chemical Dynamics b",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "CHEM 125",
+      "subject": "CHEM",
+      "number": "125",
+      "title": "Foundations of Chemical Inquiry II b",
+      "hours": 2,
+      "required": true
+    },
+    {
+      "code": "EAES 101",
+      "subject": "EAES",
+      "number": "101",
+      "title": "Global Environmental Change b",
+      "hours": 4,
+      "required": true
+    },
+    {
+      "code": "ENGR 100",
+      "subject": "ENGR",
+      "number": "100",
+      "title": "Engineering Success Seminar for Freshmen a",
+      "hours": 1,
+      "required": true
+    },
+    {
+      "code": "CME 119",
+      "subject": "CME",
+      "number": "119",
+      "title": "Introduction to Environmental Engineering and Science",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "CME 197",
+      "subject": "CME",
+      "number": "197",
+      "title": "Introduction to Civil and Environmental Engineering",
+      "hours": 0,
+      "required": true
+    },
+    {
+      "code": "CME 207",
+      "subject": "CME",
+      "number": "207",
+      "title": "Engineering Probability and Economics",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "CME 211",
+      "subject": "CME",
+      "number": "211",
+      "title": "Fluid Mechanics and Hydraulics",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "CME 260",
+      "subject": "CME",
+      "number": "260",
+      "title": "Properties of Materials",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "CME 297",
+      "subject": "CME",
+      "number": "297",
+      "title": "Civil and Environmental Engineering Drawing and Design",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "CME 311",
+      "subject": "CME",
+      "number": "311",
+      "title": "Water Resources Engineering",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "CME 322",
+      "subject": "CME",
+      "number": "322",
+      "title": "Environmental Engineering",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "CME 396",
+      "subject": "CME",
+      "number": "396",
+      "title": "Civil Engineering Systems Design",
+      "hours": 2,
+      "required": true
+    },
+    {
+      "code": "CME 403",
+      "subject": "CME",
+      "number": "403",
+      "title": "Hydraulic Design",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "CME 411",
+      "subject": "CME",
+      "number": "411",
+      "title": "Chemistry for Environmental Professionals",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "CME 421",
+      "subject": "CME",
+      "number": "421",
+      "title": "Water Treatment Design",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "CME 422",
+      "subject": "CME",
+      "number": "422",
+      "title": "Wastewater Treatment Design",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "CME 427",
+      "subject": "CME",
+      "number": "427",
+      "title": "Engineering Hydrology",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "CME 497",
+      "subject": "CME",
+      "number": "497",
+      "title": "Capstone Design",
+      "hours": 2,
+      "required": true
+    },
+    {
+      "code": "CS 109",
+      "subject": "CS",
+      "number": "109",
+      "title": "Programming for Engineers with MatLab",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "CHE 210",
+      "subject": "CHE",
+      "number": "210",
+      "title": "Material and Energy Balances b",
+      "hours": 4,
+      "required": true
+    },
+    {
+      "code": "ME 205",
+      "subject": "ME",
+      "number": "205",
+      "title": "Introduction to Thermodynamics",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "ME 450",
+      "subject": "ME",
+      "number": "450",
+      "title": "Air Pollution Engineering",
+      "hours": 3,
+      "required": true
+    }
+  ],
+  "sampleSchedule": [
+    {
+      "year": "Freshman Year",
+      "semester": "First Semester",
+      "total_hours": 15,
+      "courses": [
+        {
+          "code": "ENGR 100",
+          "title": "Engineering Success Seminar for Freshmen a",
+          "hours": 1,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "CHEM 122",
+          "title": "Matter and Energy and Foundations of Chemical Inquiry I a",
+          "hours": 5,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "CME 119",
+          "title": "Introduction to Environmental Engineering and Science",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "ENGL 160",
+          "title": "Academic Writing I: Writing in Academic and Public Contexts",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "MATH 180",
+          "title": "Calculus I",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        }
+      ]
+    },
+    {
+      "year": "Freshman Year",
+      "semester": "Second Semester",
+      "total_hours": 17,
+      "courses": [
+        {
+          "code": "CME 197",
+          "title": "Introduction to Civil and Environmental Engineering",
+          "hours": 0,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "CHEM 124",
+          "title": "Chemical Dynamics",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "CS 109",
+          "title": "Programming for Engineers with MatLab",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "ENGL 161",
+          "title": "Academic Writing II: Writing for Inquiry and Research",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "MATH 181",
+          "title": "Calculus II",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "PHYS 141",
+          "title": "General Physics I (Mechanics)",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        }
+      ]
+    },
+    {
+      "year": "Sophomore Year",
+      "semester": "First Semester",
+      "total_hours": 18,
+      "courses": [
+        {
+          "code": "CME 211",
+          "title": "Fluid Mechanics and Hydraulics",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "CME 297",
+          "title": "Civil and Environmental Engineering Drawing and Design",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "CHEM 125",
+          "title": "Foundations of Chemical Inquiry II",
+          "hours": 2,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "MATH 210",
+          "title": "Calculus III",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "ME 205",
+          "title": "Introduction to Thermodynamics",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "PHYS 142",
+          "title": "General Physics II (Electricity and Magnetism)",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        }
+      ]
+    },
+    {
+      "year": "Sophomore Year",
+      "semester": "Second Semester",
+      "total_hours": 16,
+      "courses": [
+        {
+          "code": "CHE 210",
+          "title": "Material and Energy Balances",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "CME 207",
+          "title": "Engineering Probability and Economics",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "CME 260",
+          "title": "Properties of Materials",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "CME 322",
+          "title": "Environmental Engineering",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "MATH 220",
+          "title": "Introduction to Differential Equations",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        }
+      ]
+    },
+    {
+      "year": "Junior Year",
+      "semester": "First Semester",
+      "total_hours": 18,
+      "courses": [
+        {
+          "code": "CME 311",
+          "title": "Water Resources Engineering",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "CME 411",
+          "title": "Chemistry for Environmental Professionals",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "CME 421",
+          "title": "Water Treatment Design",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "ME 450",
+          "title": "Air Pollution Engineering",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "STAT 381",
+          "title": "Applied Statistical Methods I or Applied Linear Algebra",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "General Education Requirement course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        }
+      ]
+    },
+    {
+      "year": "Junior Year",
+      "semester": "Second Semester",
+      "total_hours": 16,
+      "courses": [
+        {
+          "code": "CME 403",
+          "title": "Hydraulic Design",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "CME 422",
+          "title": "Wastewater Treatment Design",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "EAES 101",
+          "title": "Global Environmental Change or Earth, Energy, and the Environment",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "Technical Elective I",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "technical_elective"
+        },
+        {
+          "code": null,
+          "title": "General Education Requirement course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        }
+      ]
+    },
+    {
+      "year": "Senior Year",
+      "semester": "First Semester",
+      "total_hours": 14,
+      "courses": [
+        {
+          "code": "CME 396",
+          "title": "Civil Engineering Systems Design",
+          "hours": 2,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "CME 427",
+          "title": "Engineering Hydrology",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "Technical Elective II",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "technical_elective"
+        },
+        {
+          "code": null,
+          "title": "Technical Elective III",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "technical_elective"
+        },
+        {
+          "code": null,
+          "title": "General Education Requirement course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        }
+      ]
+    },
+    {
+      "year": "Senior Year",
+      "semester": "Second Semester",
+      "total_hours": 14,
+      "courses": [
+        {
+          "code": "CME 497",
+          "title": "Capstone Design",
+          "hours": 2,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "Technical Elective IV",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "technical_elective"
+        },
+        {
+          "code": null,
+          "title": "Technical Elective V",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "technical_elective"
+        },
+        {
+          "code": null,
+          "title": "General Education Requirement course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        },
+        {
+          "code": null,
+          "title": "General Education Requirement course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        }
+      ]
+    }
+  ]
+}

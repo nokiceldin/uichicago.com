@@ -1,0 +1,485 @@
+{
+  "name": "Applied Psychology - BA with a Major",
+  "college": "Psychology",
+  "department": "Psychology",
+  "url": "https://catalog.uic.edu/ucat/colleges-depts/liberal-arts-sciences/psych/ba-applied-psychology/",
+  "totalHours": 120,
+  "summaryRequirements": {
+    "Major Requirements": "36",
+    "General Education and Electives to reach minimum Total Hours": "84",
+    "Total Hours": "120"
+  },
+  "requiredCourses": [
+    {
+      "code": "PSCH 100",
+      "subject": "PSCH",
+      "number": "100",
+      "title": "Introduction to Psychology a",
+      "hours": 4,
+      "required": true
+    },
+    {
+      "code": "PSCH 242",
+      "subject": "PSCH",
+      "number": "242",
+      "title": "Introduction to Research in Psychology",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "PSCH 340",
+      "subject": "PSCH",
+      "number": "340",
+      "title": "Psychological Testing",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "PSCH 343",
+      "subject": "PSCH",
+      "number": "343",
+      "title": "Statistical Methods in Behavioral Science b",
+      "hours": 4,
+      "required": true
+    },
+    {
+      "code": "PSCH 385",
+      "subject": "PSCH",
+      "number": "385",
+      "title": "Field Work in Applied Psychology c",
+      "hours": 6,
+      "required": true
+    },
+    {
+      "code": "PSCH 262",
+      "subject": "PSCH",
+      "number": "262",
+      "title": "Behavioral Neuroscience",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "PSCH 350",
+      "subject": "PSCH",
+      "number": "350",
+      "title": "Sensation and Perception",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "PSCH 351",
+      "subject": "PSCH",
+      "number": "351",
+      "title": "Laboratory in Perception",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "PSCH 352",
+      "subject": "PSCH",
+      "number": "352",
+      "title": "Cognition and Memory",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "PSCH 353",
+      "subject": "PSCH",
+      "number": "353",
+      "title": "Laboratory in Cognition and Memory",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "PSCH 360",
+      "subject": "PSCH",
+      "number": "360",
+      "title": "Learning and Conditioning",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "PSCH 361",
+      "subject": "PSCH",
+      "number": "361",
+      "title": "Laboratory in Learning and Conditioning",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "PSCH 363",
+      "subject": "PSCH",
+      "number": "363",
+      "title": "Laboratory in Behavioral Neuroscience",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "PSCH 366",
+      "subject": "PSCH",
+      "number": "366",
+      "title": "Cognitive Neuroscience",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "PSCH 210",
+      "subject": "PSCH",
+      "number": "210",
+      "title": "Theories of Personality",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "PSCH 231",
+      "subject": "PSCH",
+      "number": "231",
+      "title": "Community Psychology",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "PSCH 270",
+      "subject": "PSCH",
+      "number": "270",
+      "title": "Introduction to Psychological and Behavioral Disorders",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "PSCH 312",
+      "subject": "PSCH",
+      "number": "312",
+      "title": "Social Psychology",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "PSCH 313",
+      "subject": "PSCH",
+      "number": "313",
+      "title": "Laboratory in Social Psychology",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "PSCH 320",
+      "subject": "PSCH",
+      "number": "320",
+      "title": "Developmental Psychology",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "PSCH 321",
+      "subject": "PSCH",
+      "number": "321",
+      "title": "Laboratory in Developmental Psychology",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "PSCH 324",
+      "subject": "PSCH",
+      "number": "324",
+      "title": "Cultural Psychology",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "PSCH 331",
+      "subject": "PSCH",
+      "number": "331",
+      "title": "Laboratory in Community and Prevention Research",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "PSCH 381",
+      "subject": "PSCH",
+      "number": "381",
+      "title": "Psychology of Interviewing",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "PSCH 382",
+      "subject": "PSCH",
+      "number": "382",
+      "title": "Psychological Interventions",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "PSCH 384",
+      "subject": "PSCH",
+      "number": "384",
+      "title": "Psychology of Groups",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ENGL 160",
+      "subject": "ENGL",
+      "number": "160",
+      "title": "Academic Writing I: Writing in Academic and Public Contexts",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "ENGL 161",
+      "subject": "ENGL",
+      "number": "161",
+      "title": "Academic Writing II: Writing for Inquiry and Research",
+      "hours": 3,
+      "required": true
+    }
+  ],
+  "sampleSchedule": [
+    {
+      "year": "First Year",
+      "semester": "Fall Semester",
+      "total_hours": 13,
+      "courses": [
+        {
+          "code": "ENGL 160",
+          "title": "Academic Writing I: Writing in Academic and Public Contexts",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "General Education Requirement course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        },
+        {
+          "code": null,
+          "title": "General Education Requirement course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        }
+      ]
+    },
+    {
+      "year": "First Year",
+      "semester": "Spring Semester",
+      "total_hours": null,
+      "courses": [
+        {
+          "code": "ENGL 161",
+          "title": "Academic Writing II: Writing for Inquiry and Research",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "PSCH 100",
+          "title": "Introduction to Psychology",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "General Education Requirement course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        }
+      ]
+    },
+    {
+      "year": "Second Year",
+      "semester": "Fall Semester",
+      "total_hours": 16,
+      "courses": [
+        {
+          "code": null,
+          "title": "Psychology Elective a",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": null,
+          "title": "General Education Requirement course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        },
+        {
+          "code": null,
+          "title": "General Education Requirement course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        },
+        {
+          "code": null,
+          "title": "General Education Requirement course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        }
+      ]
+    },
+    {
+      "year": "Second Year",
+      "semester": "Spring Semester",
+      "total_hours": 16,
+      "courses": [
+        {
+          "code": "PSCH 242",
+          "title": "Introduction to Research in Psychology",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "Psychology Selective b,c",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": null,
+          "title": "General Education Requirement course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        },
+        {
+          "code": null,
+          "title": "Elective",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        }
+      ]
+    },
+    {
+      "year": "Third Year",
+      "semester": "Fall Semester",
+      "total_hours": 16,
+      "courses": [
+        {
+          "code": "PSCH 343",
+          "title": "Statistical Methods in Behavioral Science d",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "Psychology Selective b, c",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": null,
+          "title": "General Education Requirement course/Elective",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        },
+        {
+          "code": null,
+          "title": "General Education Requirement course/Elective",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        },
+        {
+          "code": null,
+          "title": "Electives",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        }
+      ]
+    },
+    {
+      "year": "Third Year",
+      "semester": "Spring Semester",
+      "total_hours": 15,
+      "courses": [
+        {
+          "code": "PSCH 340",
+          "title": "Psychological Testing",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "Psychology Elective e",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": null,
+          "title": "Electives",
+          "hours": 9,
+          "isElective": true,
+          "electiveType": "elective_general"
+        }
+      ]
+    },
+    {
+      "year": "Fourth Year",
+      "semester": "Fall Semester",
+      "total_hours": 15,
+      "courses": [
+        {
+          "code": "PSCH 381",
+          "title": "Psychology of Interviewing or Psychological Interventions or Psychology of Groups",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "Psychology Elective e",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": null,
+          "title": "Electives",
+          "hours": 9,
+          "isElective": true,
+          "electiveType": "elective_general"
+        }
+      ]
+    },
+    {
+      "year": "Fourth Year",
+      "semester": "Spring Semester",
+      "total_hours": 14,
+      "courses": [
+        {
+          "code": "PSCH 385",
+          "title": "Field Work in Applied Psychology",
+          "hours": 6,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "Electives",
+          "hours": 8,
+          "isElective": true,
+          "electiveType": "elective_general"
+        }
+      ]
+    }
+  ]
+}

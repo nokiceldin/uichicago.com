@@ -5,30 +5,40 @@ generator client {
 datasource db {
   provider = "postgresql"
 }
+model Professor {                                                                                                    
+   id String @id @default(cuid())                                                                                       
+   slug String @unique                                                                                                  
+   name String                                                                                                          
+   nameNormalized String?                                                                                               
+   department String                                                                                                    
+   school String                                                                                                        
+   rmpQuality Float?                                                                                                    
+   rmpDifficulty Float?                                                                                                 
+   rmpWouldTakeAgain Int?                                                                                               
+   rmpRatingsCount Int?                                                                                                 
+   rmpUrl String?                                                                                                       
+   createdAt DateTime @default(now())                                                                                   
+   updatedAt DateTime @updatedAt                                                                                        
+   aiSummary String?
+   salary Float?
+   salaryTitle String?
 
-model Professor {
-  id                String   @id @default(cuid())
-  slug              String   @unique
-  name              String
-  nameNormalized    String?
-  department        String
-  school            String
-  rmpQuality        Float?
-  rmpDifficulty     Float?
-  rmpWouldTakeAgain Int?
-  rmpRatingsCount   Int?
-  rmpUrl            String?
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
-  aiSummary         String?
-
-  courseStats CourseInstructorTermStats[]
-  reviews     ProfessorReview[]
-
-  @@index([name])
-  @@index([nameNormalized])
-  @@index([department])
-}
+   bayesianScore Float? @default(0)                                                                                     
+   overallRank Int?                                                                                                     
+   departmentRank Int?                                                                                                  
+   courseCount Int @default(0)                                                                                          
+                                                                                                                        
+   courseStats CourseInstructorTermStats[]                                                                              
+   reviews ProfessorReview[]                                                                                            
+   courseRanks ProfessorCourseRank[]                                                                                    
+                                                                                                                        
+   @@index([name])                                                                                                      
+   @@index([nameNormalized])                                                                                            
+   @@index([department])                                                                                                
+   @@index([bayesianScore])                                                                                             
+   @@index([overallRank])                                                                                               
+   @@index([department, departmentRank])                                                                                
+   }                     
 
 model ProfessorReview {
   id             String    @id
@@ -74,28 +84,54 @@ model Term {
   instructorStats CourseInstructorTermStats[]
   courseStats     CourseTermStats[]
 }
+model Course {                                                                                                       
+   id String @id @default(cuid())                                                                                       
+   subject String                                                                                                       
+   number String                                                                                                        
+   title String                                                                                                         
+   deptCode String?                                                                                                     
+   deptName String?                                                                                                     
+   createdAt DateTime @default(now())                                                                                   
+   updatedAt DateTime @updatedAt                                                                                        
+   avgGpa Float?                                                                                                        
+   difficultyScore Float?                                                                                               
+   totalRegsAllTime Int @default(0)                                                                                     
+   instructorStats CourseInstructorTermStats[]                                                                          
+   termStats CourseTermStats[]                                                                                          
+   isGenEd Boolean @default(false)                                                                                      
+   genEdCategory String?                                                                                                
+   professorRanks ProfessorCourseRank[]                                                                                 
+                                                                                                                        
+   @@unique([subject, number])                                                                                          
+   @@index([deptName])                                                                                                  
+   @@index([subject, number])                                                                                           
+   }              
 
-model Course {
-  id               String                      @id @default(cuid())
-  subject          String
-  number           String
-  title            String
-  deptCode         String?
-  deptName         String?
-  createdAt        DateTime                    @default(now())
-  updatedAt        DateTime                    @updatedAt
-  avgGpa           Float?
-  difficultyScore  Float?
-  totalRegsAllTime Int                         @default(0)
-  instructorStats  CourseInstructorTermStats[]
-  termStats        CourseTermStats[]
-  isGenEd          Boolean                     @default(false)
-  genEdCategory    String?
-
-  @@unique([subject, number])
-  @@index([deptName])
-  @@index([subject, number])
-}
+model ProfessorCourseRank {                                                                                          
+   id String @id @default(cuid())                                                                                       
+   professorId String                                                                                                   
+   courseId String                                                                                                      
+                                                                                                                        
+   rankInCourse Int?                                                                                                    
+   totalProfessors Int @default(0)                                                                                      
+                                                                                                                        
+   professorBayesianScore Float? @default(0)                                                                            
+   avgGpaWithProfessor Float?                                                                                           
+   aRateWithProfessor Float?                                                                                            
+   wRateWithProfessor Float?                                                                                            
+   totalStudents Int @default(0)                                                                                        
+                                                                                                                        
+   createdAt DateTime @default(now())                                                                                   
+   updatedAt DateTime @updatedAt                                                                                        
+                                                                                                                        
+   professor Professor @relation(fields: [professorId], references: [id], onDelete: Cascade)                            
+   course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)                                     
+                                                                                                                        
+   @@unique([professorId, courseId])                                                                                    
+   @@index([professorId])                                                                                               
+   @@index([courseId])                                                                                                  
+   @@index([courseId, rankInCourse])                                                                                    
+   }        
 
 model NewsItem {
   id          String   @id @default(cuid())

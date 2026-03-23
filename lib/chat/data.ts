@@ -1,4 +1,4 @@
-import { prisma } from "@/app/lib/prisma";
+import { prisma } from "@/lib/prisma";
 import { calcGpa, normName, mapKeyToDbName, courseLabel, courseTitle, getProfCourseMap } from "./utils";
 
 // ─── Course detail ────────────────────────────────────────────────────────────
@@ -101,7 +101,9 @@ export async function fetchCoursesByCodesRanked(courseCodes: string[], easiestFi
       difficultyScore: true, totalRegsAllTime: true, deptName: true,
       isGenEd: true, genEdCategory: true,
     },
-    orderBy: easiestFirst ? { avgGpa: "desc" } : { avgGpa: "asc" },
+    orderBy: easiestFirst
+      ? [{ difficultyScore: "desc" }, { avgGpa: "desc" }]
+      : [{ difficultyScore: "asc" }, { avgGpa: "asc" }],
     take: 60,
   });
 }
@@ -125,11 +127,12 @@ export async function fetchCoursesBySubjectOrDept(
     conditions.push(`"deptName" ILIKE $${params.length}`);
   }
 
+  const dir = easiestFirst ? "DESC" : "ASC";
   params.push(limit);
   return prisma.$queryRawUnsafe(
     `SELECT subject, number, title, "avgGpa", "difficultyScore", "totalRegsAllTime", "deptName", "isGenEd", "genEdCategory"
      FROM "Course" WHERE ${conditions.join(" AND ")}
-     ORDER BY "avgGpa" ${easiestFirst ? "DESC" : "ASC"} NULLS LAST LIMIT $${params.length}`,
+     ORDER BY "difficultyScore" ${dir} NULLS LAST, "avgGpa" ${dir} NULLS LAST LIMIT $${params.length}`,
     ...params
   ) as Promise<any[]>;
 }
@@ -143,7 +146,7 @@ export async function fetchGenEdCourses(category?: string | null, limit = 30) {
 
   return prisma.course.findMany({
     where,
-    orderBy: { avgGpa: "desc" },
+    orderBy: [{ difficultyScore: "desc" }, { avgGpa: "desc" }],
     take: limit,
     select: {
       subject: true, number: true, title: true, avgGpa: true,
@@ -157,7 +160,7 @@ export async function fetchGenEdCourses(category?: string | null, limit = 30) {
 export async function fetchProfessorsByDept(deptName?: string | null, limit = 30) {
   if (deptName) {
     return prisma.$queryRawUnsafe(
-      `SELECT name, department, "rmpQuality", "rmpDifficulty", "rmpRatingsCount", "rmpWouldTakeAgain", slug, "aiSummary",
+      `SELECT name, department, "rmpQuality", "rmpDifficulty", "rmpRatingsCount", "rmpWouldTakeAgain", slug, "aiSummary", "salary", "salaryTitle",
        CASE WHEN COALESCE("rmpRatingsCount",0)=0 THEN 0
          ELSE (COALESCE("rmpRatingsCount",0)::float/(COALESCE("rmpRatingsCount",0)+20))*COALESCE("rmpQuality",0)
               +(20::float/(COALESCE("rmpRatingsCount",0)+20))*4.0 END as score
@@ -170,7 +173,7 @@ export async function fetchProfessorsByDept(deptName?: string | null, limit = 30
     ) as Promise<any[]>;
   }
   return prisma.$queryRawUnsafe(
-    `SELECT name, department, "rmpQuality", "rmpDifficulty", "rmpRatingsCount", "rmpWouldTakeAgain", slug, "aiSummary",
+    `SELECT name, department, "rmpQuality", "rmpDifficulty", "rmpRatingsCount", "rmpWouldTakeAgain", slug, "aiSummary", "salary", "salaryTitle",
      CASE WHEN COALESCE("rmpRatingsCount",0)=0 THEN 0
        ELSE (COALESCE("rmpRatingsCount",0)::float/(COALESCE("rmpRatingsCount",0)+20))*COALESCE("rmpQuality",0)
             +(20::float/(COALESCE("rmpRatingsCount",0)+20))*4.0 END as score
@@ -313,7 +316,9 @@ export async function fetchCourseGpaRanking(
       avgGpa: true, difficultyScore: true,
       totalRegsAllTime: true, isGenEd: true, genEdCategory: true,
     },
-    orderBy: easiestFirst ? { avgGpa: "desc" } : { avgGpa: "asc" },
+    orderBy: easiestFirst
+      ? [{ difficultyScore: "desc" }, { avgGpa: "desc" }]
+      : [{ difficultyScore: "asc" }, { avgGpa: "asc" }],
     take: limit,
   });
 

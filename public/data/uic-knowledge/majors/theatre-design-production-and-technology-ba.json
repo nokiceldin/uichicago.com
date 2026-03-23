@@ -1,0 +1,762 @@
+{
+  "name": "Theatre Design Production and Technology - BA",
+  "college": "Theatre",
+  "department": "Theatre",
+  "url": "https://catalog.uic.edu/ucat/colleges-depts/architecture-design-arts/thtr-mus/ba-thtr-des/",
+  "totalHours": 120,
+  "summaryRequirements": {
+    "General Education Requirements": "24",
+    "Major Course Requirements": "50",
+    "Electives": "45-46",
+    "DLG 120": "1",
+    "Total Hours": "120"
+  },
+  "requiredCourses": [
+    {
+      "code": "DLG 120",
+      "subject": "DLG",
+      "number": "120",
+      "title": "UIC First-Year Dialogue Seminar (Required of new freshmen only)",
+      "hours": 1,
+      "required": true
+    },
+    {
+      "code": "ENGL 160",
+      "subject": "ENGL",
+      "number": "160",
+      "title": "Academic Writing I: Writing in Academic and Public Contexts",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "ENGL 161",
+      "subject": "ENGL",
+      "number": "161",
+      "title": "Academic Writing II: Writing for Inquiry and Research",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "THTR 101",
+      "subject": "THTR",
+      "number": "101",
+      "title": "Theatre History I: Premodern Drama a",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "THTR 141",
+      "subject": "THTR",
+      "number": "141",
+      "title": "Acting I: Fundamentals",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "THTR 150",
+      "subject": "THTR",
+      "number": "150",
+      "title": "Fundamental of Theatre Technology",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "THTR 155",
+      "subject": "THTR",
+      "number": "155",
+      "title": "Fundamentals of Theatre Design",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "THTR 182",
+      "subject": "THTR",
+      "number": "182",
+      "title": "Practicum in Theater: Run Crew",
+      "hours": 1,
+      "required": true
+    },
+    {
+      "code": "THTR 183",
+      "subject": "THTR",
+      "number": "183",
+      "title": "Practicum in Theater: Build Crew",
+      "hours": 1,
+      "required": true
+    },
+    {
+      "code": "THTR 201",
+      "subject": "THTR",
+      "number": "201",
+      "title": "Theatre History II: Modern Theatre b",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "THTR 230",
+      "subject": "THTR",
+      "number": "230",
+      "title": "Script Analysis for Theatrical Production",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "THTR 254",
+      "subject": "THTR",
+      "number": "254",
+      "title": "Stage Management",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "AH 111",
+      "subject": "AH",
+      "number": "111",
+      "title": "World History of Art and the Built Environment II b",
+      "hours": 4,
+      "required": true
+    },
+    {
+      "code": "THTR 154",
+      "subject": "THTR",
+      "number": "154",
+      "title": "Drawing and Digital Design for the Theatre",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "THTR 157",
+      "subject": "THTR",
+      "number": "157",
+      "title": "Drafting for the Theatre",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "THTR 450",
+      "subject": "THTR",
+      "number": "450",
+      "title": "Portfolio Production",
+      "hours": 3,
+      "required": true
+    },
+    {
+      "code": "THTR 151",
+      "subject": "THTR",
+      "number": "151",
+      "title": "Costume Technology I: Introduction to Costume Technology",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "THTR 152",
+      "subject": "THTR",
+      "number": "152",
+      "title": "Lighting Technology I: An Introduction to Lighting Tech",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "THTR 153",
+      "subject": "THTR",
+      "number": "153",
+      "title": "Scenic Technology I: An Introduction to Stagecraft for the Theatre",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "THTR 156",
+      "subject": "THTR",
+      "number": "156",
+      "title": "Lighting Design I: An Introduction to Lighting Design",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "THTR 158",
+      "subject": "THTR",
+      "number": "158",
+      "title": "Costume Design I",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "THTR 170",
+      "subject": "THTR",
+      "number": "170",
+      "title": "Sound Design: An Introduction to Sound Design for Theatre",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "THTR 250",
+      "subject": "THTR",
+      "number": "250",
+      "title": "Scenic Design I",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "THTR 251",
+      "subject": "THTR",
+      "number": "251",
+      "title": "Costume Technology II: Intermediate Techniques, Pattern Development, and Costume Construction",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "THTR 252",
+      "subject": "THTR",
+      "number": "252",
+      "title": "Lighting Technology II: Intermediate Topics in Lighting Technology and Theatrical Lighting Controls",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "THTR 253",
+      "subject": "THTR",
+      "number": "253",
+      "title": "Scenic Technology II: Intermediate Topics in Stagecraft",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "THTR 255",
+      "subject": "THTR",
+      "number": "255",
+      "title": "Scenic Design II",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "THTR 256",
+      "subject": "THTR",
+      "number": "256",
+      "title": "Lighting Design II: Intermediate Topics in Lighting Design for the Stage",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "THTR 258",
+      "subject": "THTR",
+      "number": "258",
+      "title": "Costume Design II",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "THTR 259",
+      "subject": "THTR",
+      "number": "259",
+      "title": "Makeup Design",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "THTR 271",
+      "subject": "THTR",
+      "number": "271",
+      "title": "Sound Design Topics",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "THTR 351",
+      "subject": "THTR",
+      "number": "351",
+      "title": "Costume Technology III: Advanced Techniques in Costume Crafts",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "THTR 352",
+      "subject": "THTR",
+      "number": "352",
+      "title": "Lighting Technology III: Advanced Lighting Technology and Controls for Production",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "THTR 353",
+      "subject": "THTR",
+      "number": "353",
+      "title": "Scenic Technology III: Advanced Technical Problems",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "THTR 354",
+      "subject": "THTR",
+      "number": "354",
+      "title": "Stage Management Topics",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "THTR 355",
+      "subject": "THTR",
+      "number": "355",
+      "title": "Scenic Design III: Advanced Scenic Design for the Stage",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "THTR 356",
+      "subject": "THTR",
+      "number": "356",
+      "title": "Lighting Design III: Advanced Lighting for the Stage",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "THTR 281",
+      "subject": "THTR",
+      "number": "281",
+      "title": "Practicum in Theatre Administration",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "THTR 282",
+      "subject": "THTR",
+      "number": "282",
+      "title": "Practicum in Costuming",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "THTR 283",
+      "subject": "THTR",
+      "number": "283",
+      "title": "Practicum in Technical Theatre",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "THTR 333",
+      "subject": "THTR",
+      "number": "333",
+      "title": "Stage Direction",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "THTR 431",
+      "subject": "THTR",
+      "number": "431",
+      "title": "Playwriting",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "THTR 435",
+      "subject": "THTR",
+      "number": "435",
+      "title": "Contemporary Performance Techniques",
+      "hours": null,
+      "required": true
+    },
+    {
+      "code": "ISA 100",
+      "subject": "ISA",
+      "number": "100",
+      "title": "Freshman Seminar: Introduction to Interdisciplinary Practice in the Arts ( recommended elective )",
+      "hours": 1,
+      "required": true
+    }
+  ],
+  "sampleSchedule": [
+    {
+      "year": "First Year Year",
+      "semester": "Fall Semester",
+      "total_hours": 14,
+      "courses": [
+        {
+          "code": "THTR 101",
+          "title": "Theatre History I: Premodern Drama",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "THTR 150",
+          "title": "Fundamental of Theatre Technology",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "THTR 182",
+          "title": "Practicum in Theater: Run Crew",
+          "hours": 1,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "ENGL 160",
+          "title": "Academic Writing I: Writing in Academic and Public Contexts",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "ISA 100",
+          "title": "Freshman Seminar: Introduction to Interdisciplinary Practice in the Arts ( recommended elective )",
+          "hours": 1,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "General Eduction Exploring World Cultures course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_world_cultures"
+        }
+      ]
+    },
+    {
+      "year": "First Year Year",
+      "semester": "Spring Semester",
+      "total_hours": 14,
+      "courses": [
+        {
+          "code": "THTR 154",
+          "title": "Drawing and Digital Design for the Theatre",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "THTR 155",
+          "title": "Fundamentals of Theatre Design a",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "THTR 183",
+          "title": "Practicum in Theater: Build Crew",
+          "hours": 1,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "THTR 230",
+          "title": "Script Analysis for Theatrical Production",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "ENGL 161",
+          "title": "Academic Writing II: Writing for Inquiry and Research",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "DLG 120",
+          "title": "UIC First-Year Dialogue Seminar",
+          "hours": 1,
+          "isElective": false,
+          "electiveType": null
+        }
+      ]
+    },
+    {
+      "year": "Second Year Year",
+      "semester": "Fall Semester",
+      "total_hours": 19,
+      "courses": [
+        {
+          "code": "AH 111",
+          "title": "World History of Art and the Built Environment II",
+          "hours": 4,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "THTR 141",
+          "title": "Acting I: Fundamentals",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "THTR 157",
+          "title": "Drafting for the Theatre",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "THTR 201",
+          "title": "Theatre History II: Modern Theatre",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "THTR 254",
+          "title": "Stage Management",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "DPT Selective course I",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        }
+      ]
+    },
+    {
+      "year": "Second Year Year",
+      "semester": "Spring Semester",
+      "total_hours": 14,
+      "courses": [
+        {
+          "code": null,
+          "title": "DPT Selective course II",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": null,
+          "title": "Select one of the following practicum courses:",
+          "hours": 2,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": "THTR 281",
+          "title": "Practicum in Theatre Administration",
+          "hours": null,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "THTR 282",
+          "title": "Practicum in Costuming",
+          "hours": null,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "THTR 283",
+          "title": "Practicum in Technical Theatre",
+          "hours": null,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "Elective",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": null,
+          "title": "General Education Analyzing the Natural World course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        },
+        {
+          "code": null,
+          "title": "General Education Understanding the Individual and Society course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_individual_society"
+        }
+      ]
+    },
+    {
+      "year": "Third Year Year",
+      "semester": "Fall Semester",
+      "total_hours": 15,
+      "courses": [
+        {
+          "code": null,
+          "title": "DPT Selective course III",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": null,
+          "title": "Elective - DPT course recommended",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": null,
+          "title": "Elective - DPT course recommended",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": null,
+          "title": "General Education Understanding U.S. Society course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_individual_society"
+        },
+        {
+          "code": null,
+          "title": "General Education course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        }
+      ]
+    },
+    {
+      "year": "Third Year Year",
+      "semester": "Spring Semester",
+      "total_hours": 15,
+      "courses": [
+        {
+          "code": null,
+          "title": "One of the following selective:",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": "THTR 333",
+          "title": "Stage Direction",
+          "hours": null,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "THTR 431",
+          "title": "Playwriting",
+          "hours": null,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": "THTR 435",
+          "title": "Contemporary Performance Techniques",
+          "hours": null,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "Elective",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": null,
+          "title": "Elective",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": null,
+          "title": "Elective",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": null,
+          "title": "General Education course",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "gen_ed_any"
+        }
+      ]
+    },
+    {
+      "year": "Fourth Year Year",
+      "semester": "Fall Semester",
+      "total_hours": 15,
+      "courses": [
+        {
+          "code": "THTR 450",
+          "title": "Portfolio Production",
+          "hours": 3,
+          "isElective": false,
+          "electiveType": null
+        },
+        {
+          "code": null,
+          "title": "Elective (DPT course recommended)",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": null,
+          "title": "Elective ( THTR 383 recommended)",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": null,
+          "title": "Elective ( THTR 384 recommended)",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": null,
+          "title": "Elective",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        }
+      ]
+    },
+    {
+      "year": "Fourth Year Year",
+      "semester": "Spring Semester",
+      "total_hours": 14,
+      "courses": [
+        {
+          "code": null,
+          "title": "Elective ( THTR 383 recommended)",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": null,
+          "title": "Elective ( THTR 385 recommended)",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": null,
+          "title": "Elective ( THTR 494 or THTR 498 recommended)",
+          "hours": 3,
+          "isElective": true,
+          "electiveType": "elective_general"
+        },
+        {
+          "code": null,
+          "title": "Electives",
+          "hours": 5,
+          "isElective": true,
+          "electiveType": "elective_general"
+        }
+      ]
+    }
+  ]
+}

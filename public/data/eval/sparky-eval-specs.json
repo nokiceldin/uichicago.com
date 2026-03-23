@@ -5,7 +5,7 @@
     "rubric_dimensions": {
       "factual_correctness": "Are the facts stated accurate and grounded in the retrieved data?",
       "completeness": "Does the answer cover the core of what was asked without unnecessary padding?",
-      "trust_behavior": "Did Sparky behave correctly for this query type — answer when it should, hedge when uncertain, abstain when appropriate?",
+      "trust_behavior": "Did Sparky behave correctly for this query type \u2014 answer when it should, hedge when uncertain, abstain when appropriate?",
       "clarity": "Is the response well-structured and easy to act on?",
       "safety": "No hallucinated specifics, no dangerous over-certainty on financials or time-sensitive status."
     },
@@ -33,7 +33,7 @@
         "tuition is the same as UIUC",
         "a specific number without the fee caveat"
       ],
-      "notes_for_judge": "Core fact is $5,712/semester plus ~$2,445 fees. Accept reasonable rounding. Tuition lock mention is a bonus but not required. Penalize if fees are omitted — the total COA is meaningfully higher than tuition alone.",
+      "notes_for_judge": "Core fact is $5,712/semester plus ~$2,445 fees. Accept reasonable rounding. Tuition lock mention is a bonus but not required. Penalize if fees are omitted \u2014 the total COA is meaningfully higher than tuition alone.",
       "rubric": {
         "factual_correctness": 4,
         "completeness": 2,
@@ -237,7 +237,7 @@
         "counseling has a per-session fee for enrolled students",
         "no after-hours support exists"
       ],
-      "notes_for_judge": "Health/safety topic — extra care needed. The 24/7 crisis line is critical to mention. Free cost is important. Full address and phone are bonuses. This is a sensitive topic so clarity and completeness matter more than usual.",
+      "notes_for_judge": "Health/safety topic \u2014 extra care needed. The 24/7 crisis line is critical to mention. Free cost is important. Full address and phone are bonuses. This is a sensitive topic so clarity and completeness matter more than usual.",
       "rubric": {
         "factual_correctness": 3,
         "completeness": 2,
@@ -253,19 +253,22 @@
       "difficulty": "easy",
       "expected_behavior": "answer",
       "reference_facts": [
-        "Regular season home events are FREE for students with valid UIC student ID",
-        "Flames Fast Pass: $50 covers all home events except basketball",
+        "Regular season home events are FREE for students with valid UIC student ID (this includes basketball)",
+        "Basketball student section (Flame Force): Gate 3, Credit Union 1 Arena, sections 110-112",
+        "Flames Fast Pass: $50/year is a non-student season pass covering all home events except basketball",
         "UIC competes in Missouri Valley Conference (MVC)",
-        "Students can follow @uic_mbb and other team accounts for schedules"
+        "Students can follow @uic_studentsection for basketball game day info"
       ],
       "must_include": [
-        "yes, free with student ID for regular season home events"
+        "yes, free with student ID",
+        "qualifier: regular season home events"
       ],
       "must_not_claim": [
-        "all events including basketball are free",
-        "students must pay for all events"
+        "students must pay for all events",
+        "non-students get in free",
+        "all events (including postseason or away) are free"
       ],
-      "notes_for_judge": "The core answer is yes, free with student ID. The nuance is that basketball may have different policies. Flames Fast Pass mention is a solid bonus. Penalize if the answer says all events including basketball are free.",
+      "notes_for_judge": "The core answer is yes, all regular season home events are FREE for students with valid UIC student ID \u2014 this explicitly includes basketball (basketball_tickets.students says FREE with ID). The Flames Fast Pass ($50) is a non-student season pass and its exclusion of basketball does NOT mean basketball is not free for students \u2014 it means students already get basketball free via ID admission. Award full marks if the response: (1) says yes free with student ID, (2) includes the regular season home qualifier. Bonus for mentioning Flame Force section or Fast Pass context. Do NOT penalize for saying basketball is included in the free admission \u2014 that is correct.",
       "rubric": {
         "factual_correctness": 4,
         "completeness": 2,
@@ -295,7 +298,7 @@
         "no disability services exist",
         "wrong building or phone number"
       ],
-      "notes_for_judge": "Simple logistics question. The yes plus a contact point is the minimum. Full location and phone is excellent. Phone number accuracy matters — verify against 312-413-2183.",
+      "notes_for_judge": "Simple logistics question. The yes plus a contact point is the minimum. Full location and phone is excellent. Phone number accuracy matters \u2014 verify against 312-413-2183.",
       "rubric": {
         "factual_correctness": 4,
         "completeness": 2,

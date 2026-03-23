@@ -34,18 +34,18 @@ export default function Navbar() {
       <div className="flex w-full items-center gap-4 px-4 py-3 sm:px-6">
         <Link
           href="/"
-          className="flex min-w-0 shrink-0 items-center gap-2.5 rounded-xl px-1 py-1 transition hover:opacity-80"
+          className="flex min-w-0 shrink-0 items-center gap-3 rounded-xl px-1 py-1 transition hover:opacity-85"
         >
           <Image
             src="/sparky-icon.png"
 alt="UIC Sparky"
             width={34}
             height={34}
-            className="h-8 w-8 shrink-0 sm:h-9 sm:w-9"
+            className="h-9 w-9 shrink-0 sm:h-10 sm:w-10"
           />
-          <span className="max-w-[88px] text-[11px] font-bold leading-tight text-zinc-900 sm:max-w-none sm:text-sm dark:text-zinc-100">
-            UIC Sparky
-          </span>
+          <span className="max-w-[110px] text-[15px] font-semibold tracking-[-0.025em] text-zinc-950 sm:max-w-none sm:text-[17px] dark:text-zinc-50">
+  UIC Sparky
+</span>
         </Link>
 
         <div className="flex-1 max-w-lg ml-auto mr-4">

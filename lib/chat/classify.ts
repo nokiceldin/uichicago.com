@@ -117,7 +117,7 @@ export async function classifyIntent(
   try {
     // Build context from last few messages so follow-ups work
     const context = conversationHistory
-      .slice(-4)
+      .slice(-8)
       .map((m) => `${m.role}: ${m.content}`)
       .join("\n");
 

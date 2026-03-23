@@ -9,6 +9,12 @@ export interface SessionState {
   activeDomain: string | null;
   lastAnswerType: string | null;
   lastTopics: string[];
+  // Phase 5: multi-turn context
+  confirmedMajor: string | null;        // sticky once set
+  confirmedYear: number | null;         // sticky once set
+  lastResponseExcerpt: string | null;   // first 400 chars of last response
+  lastRetrievedDomain: string | null;   // top domain from last retrieval
+  mentionedCourses: string[];           // all course codes mentioned so far
 }
 
 const DEFAULT_STATE: SessionState = {
@@ -20,6 +26,11 @@ const DEFAULT_STATE: SessionState = {
   activeDomain: null,
   lastAnswerType: null,
   lastTopics: [],
+  confirmedMajor: null,
+  confirmedYear: null,
+  lastResponseExcerpt: null,
+  lastRetrievedDomain: null,
+  mentionedCourses: [],
 };
 
 export async function getSessionState(sessionId: string): Promise<SessionState> {
@@ -39,6 +50,11 @@ export async function getSessionState(sessionId: string): Promise<SessionState> 
       activeDomain: parsed._activeDomain ?? null,
       lastAnswerType: parsed._lastAnswerType ?? null,
       lastTopics: parsed._lastTopics ?? [],
+      confirmedMajor: parsed._confirmedMajor ?? null,
+      confirmedYear: parsed._confirmedYear ?? null,
+      lastResponseExcerpt: parsed._lastResponseExcerpt ?? null,
+      lastRetrievedDomain: parsed._lastRetrievedDomain ?? null,
+      mentionedCourses: parsed._mentionedCourses ?? [],
     };
   } catch {
     return { ...DEFAULT_STATE };
@@ -55,6 +71,11 @@ export async function updateSessionState(
       select: { memory: true },
     });
     const existing = session ? JSON.parse(session.memory) : {};
+    // Merge mentionedCourses (union, capped at 30)
+    const existingCourses: string[] = existing._mentionedCourses ?? [];
+    const newCourses: string[] = updates.mentionedCourses ?? [];
+    const mergedCourses = Array.from(new Set([...existingCourses, ...newCourses])).slice(0, 30);
+
     const updated = {
       ...existing,
       _activeCourseId: updates.activeCourseId ?? existing._activeCourseId ?? null,
@@ -65,6 +86,13 @@ export async function updateSessionState(
       _activeDomain: updates.activeDomain ?? existing._activeDomain ?? null,
       _lastAnswerType: updates.lastAnswerType ?? existing._lastAnswerType ?? null,
       _lastTopics: updates.lastTopics ?? existing._lastTopics ?? [],
+      // Sticky — once set, never overwritten
+      _confirmedMajor: existing._confirmedMajor ?? updates.confirmedMajor ?? null,
+      _confirmedYear: existing._confirmedYear ?? updates.confirmedYear ?? null,
+      // Always updated
+      _lastResponseExcerpt: updates.lastResponseExcerpt ?? existing._lastResponseExcerpt ?? null,
+      _lastRetrievedDomain: updates.lastRetrievedDomain ?? existing._lastRetrievedDomain ?? null,
+      _mentionedCourses: mergedCourses,
     };
     await prisma.conversationSession.upsert({
       where: { sessionId },
@@ -122,6 +150,13 @@ export function extractEntitiesFromQuery(
   else if (intent.isAboutCourses) updates.activeDomain = "courses";
   else if (intent.isAboutHousing) updates.activeDomain = "housing";
   else if (intent.isAboutAthletics) updates.activeDomain = "athletics";
+
+  // Accumulate all course codes mentioned in the message
+  const courseCodes = [...lastMsg.matchAll(/\b([A-Z]{2,5})\s*([0-9]{3}[A-Z]?)\b/g)]
+    .map(m => `${m[1]} ${m[2]}`);
+  if (courseCodes.length > 0) {
+    updates.mentionedCourses = courseCodes;
+  }
 
   return updates;
 }

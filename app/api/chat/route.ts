@@ -42,6 +42,21 @@ import {
 
 const client = new Anthropic();
 
+// ── Vector store empty check ──────────────────────────────────────────────────
+// Checked once per process lifetime and cached. If fewer than 100 chunks exist,
+// vector search is skipped entirely — it adds latency with no useful signal.
+let _vectorStoreEmpty: boolean | null = null;
+async function checkVectorStoreEmpty(): Promise<boolean> {
+  if (_vectorStoreEmpty !== null) return _vectorStoreEmpty;
+  try {
+    const count = await prisma.knowledgeChunk.count();
+    _vectorStoreEmpty = count < 100;
+  } catch {
+    _vectorStoreEmpty = false; // on error, allow vector search to proceed
+  }
+  return _vectorStoreEmpty;
+}
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // TYPES
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -103,14 +118,32 @@ interface RetrievedChunk {
   tokenEstimate: number;
 }
 
-interface AnswerBrief {
-  inferredGoal: string;
-  answerMode: AnswerMode;
-  detectedConstraints: Constraint[];
-  keyFacts: string[];
-  tradeoffs: string[];
-  recommendedApproach: string;
-  domainsUsed: Domain[];
+// ── Planning pipeline types ───────────────────────────────────────────────────
+interface StudentContext {
+  major: string | null;
+  completed_courses: string[];
+  in_progress_courses: string[];
+  constraints: string[];
+}
+
+interface SemesterPlan {
+  term: string;
+  courses: string[];
+  reasoning: string;
+}
+
+interface PlanningRequirements {
+  required_courses: string[];
+  elective_buckets: string[];
+  credit_rules: string[];
+}
+
+interface PlanningObject {
+  intent: string;
+  student_context: StudentContext;
+  requirements: PlanningRequirements;
+  plan_strategy: string;
+  semester_plan: SemesterPlan[];
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -520,6 +553,40 @@ function getAbstainResponse(query: QueryAnalysis): string {
 // ─── Planning query detector — single source of truth used in two places ──────
 // Matches any question about degree requirements, course sequences, graduation
 // plans, or semester scheduling — regardless of whether the user says "plan".
+function normalizeMajor(raw: string): string {
+  const s = raw.trim().toLowerCase();
+  if (s === "cs" || s === "computer science" || s === "comp sci") return "computer_science";
+  if (s === "ece" || s === "electrical" || s === "electrical engineering") return "electrical_engineering";
+  if (s === "me" || s === "mechanical" || s === "mechanical engineering") return "mechanical_engineering";
+  if (s === "ce" || s === "civil" || s === "civil engineering") return "civil_engineering";
+  if (s === "math" || s === "mathematics") return "mathematics";
+  if (s === "physics") return "physics";
+  if (s === "biology" || s === "bio") return "biology";
+  if (s === "chemistry" || s === "chem") return "chemistry";
+  if (s === "nursing") return "nursing";
+  if (s === "psychology" || s === "psych") return "psychology";
+  if (s === "finance" || s === "fin") return "finance";
+  if (s === "accounting" || s === "actg") return "accounting";
+  if (s === "marketing") return "marketing";
+  if (s === "business") return "business";
+  if (s === "economics" || s === "econ") return "economics";
+  if (s === "english") return "english";
+  if (s === "history") return "history";
+  if (s === "political science" || s === "pols" || s === "polisci") return "political_science";
+  if (s === "sociology" || s === "soc") return "sociology";
+  if (s === "philosophy" || s === "phil") return "philosophy";
+  if (s === "art") return "art";
+  if (s === "music") return "music";
+  if (s === "education") return "education";
+  if (s === "information systems" || s === "is" || s === "mis") return "information_systems";
+  if (s === "data science") return "data_science";
+  if (s === "neuroscience") return "neuroscience";
+  if (s === "pre-med" || s === "premed" || s === "pre med") return "pre_med";
+  if (s === "pre-law" || s === "prelaw" || s === "pre law") return "pre_law";
+  // fallback: replace spaces with underscores
+  return s.replace(/\s+/g, "_");
+}
+
 function isPlanningQuery(lower: string): boolean {
   return (
     // Explicit plan/schedule requests
@@ -530,18 +597,35 @@ function isPlanningQuery(lower: string): boolean {
     /\b(required courses?|degree requirements?|major requirements?) (for|to)\b/.test(lower) ||
     // "what do I need to graduate / to finish my degree"
     /\bwhat do i need (to graduate|to finish|to complete (my|the) degree)\b/.test(lower) ||
+    // "how do I complete my CS degree / finish my degree"
+    /\bhow (do i|can i) (complete|finish) (my|the|a) .{0,40}(degree|major|program)\b/.test(lower) ||
     // "can I graduate in 3 years", "on track to graduate"
     /\bcan i graduate in\b/.test(lower) ||
     /\bon track to graduate\b/.test(lower) ||
+    // "how long will it take to graduate / to finish"
+    /\bhow (long|many (years|semesters)) (will it|does it) take (me )?(to graduate|to finish|to complete)\b/.test(lower) ||
     // "requirements left", "requirements remaining", "requirements still needed"
     /\brequirements? (left|remaining|still needed)\b/.test(lower) ||
     // "what should I take next semester / this semester"
     /\bwhat should i take (next|this) (semester|year|term)\b/.test(lower) ||
     // "my next semester schedule", "this semester plan"
     /\b(next|this) semester (schedule|plan|courses?|classes?)\b/.test(lower) ||
+    // "schedule for next semester", "schedule for spring"
+    /\bschedule for (next|this|spring|fall|summer) (semester|term|year)?\b/.test(lower) ||
+    // "roadmap for nursing", "degree roadmap", "path to graduation", "graduation path"
+    /\b(roadmap|degree roadmap|academic roadmap|path to graduation|graduation path|academic path)\b/.test(lower) ||
+    // "course sequence for CS", "academic plan for engineering"
+    /\b(course sequence|academic plan|academic schedule) (for|to)\b/.test(lower) ||
     // "can I fit a minor", "room for a minor"
     /\b(fit|room for|add) a minor\b/.test(lower)
   );
+}
+
+// ── Follow-up query detector ──────────────────────────────────────────────────
+// Detects vague continuation messages that carry no retrieval signal on their own.
+// Used ONLY to trigger entity injection into the retrieval step — never as a fast path.
+function isFollowUpQuery(msg: string): boolean {
+  return /^(tell me more|more info|more details?|elaborate|explain more|expand on that|can you elaborate|what else|any other|go on|continue|what about (that|this|him|her|it|them)|and (him|her|it|them|that|this)|what does that mean|how so|why\s*so?|really\??|interesting|and that class|and that course|what about his|what about her|what about their|more about (him|her|it|that|this))[\s?!.]*$/i.test(msg.trim());
 }
 
 function detectAnswerMode(lower: string): AnswerMode {
@@ -738,7 +822,18 @@ function scoreChunk(content: string, query: QueryAnalysis, domain: Domain): numb
   };
   const modeScore = modeBonus[query.answerMode] ?? 0;
 
-  return Math.min(overlapScore * 0.4 + domainScore * 0.35 + constraintScore + modeScore, 1);
+  let score = Math.min(overlapScore * 0.4 + domainScore * 0.35 + constraintScore + modeScore, 1);
+
+  // Domain penalty: if one domain is dominant (≥0.85) and this chunk is from a different
+  // domain, penalise heavily so off-topic chunks don't crowd out the relevant ones.
+  const dcEntries = Object.entries(query.domainConfidence).sort(([, a], [, b]) => (b ?? 0) - (a ?? 0));
+  const topDomain = dcEntries[0]?.[0];
+  const topConfidence = dcEntries[0]?.[1] ?? 0;
+  if (topConfidence >= 0.85 && domain !== topDomain) {
+    score *= 0.4;
+  }
+
+  return Math.min(score, 1);
 }
 
 function makeChunk(domain: Domain, content: string, baseConfidence: number, query: QueryAnalysis): RetrievedChunk {
@@ -923,8 +1018,11 @@ async function retrieveProfessors(intent: any, query: QueryAnalysis): Promise<Re
           (prof.aiSummary ? `Student consensus: ${prof.aiSummary.slice(0, 300)}\n` : "") +
           `Courses: ${courses.map((c: any) => c.label).join(", ")}`;
         chunks.push(makeChunk("professors", content, 0.98, query));
+        // Specific professor found — skip generic dept list to avoid noise
+        return chunks;
       }
     }
+    // No specific professor matched — fetch dept/generic list
     const deptFilter = intent.deptName || (intent.major ? intent.major.label : null);
     const profs = await fetchProfessorsByDept(deptFilter, 20);
     if (profs.length > 0) {
@@ -1005,6 +1103,370 @@ function semYearNumber(yearStr: string): number {
   if (s.includes("second") || s.includes("2nd")) return 2;
   if (s.includes("third") || s.includes("3rd")) return 3;
   return 4; // fourth, fifth, etc.
+}
+
+// ── Student progress extraction ───────────────────────────────────────────────
+// Pulls year standing and completed course codes from the user's message.
+// Used to personalise the planning scaffold before handing to Claude.
+function extractStudentProgress(rawQuery: string): { completedCourses: string[]; yearStanding: number } {
+  let yearStanding = 0;
+  if (/\b(i'?m\s+a?\s*)?(freshman|first[- ]?year)\b/i.test(rawQuery)) yearStanding = 1;
+  else if (/\b(i'?m\s+a?\s*)?(sophomore|second[- ]?year)\b/i.test(rawQuery)) yearStanding = 2;
+  else if (/\b(i'?m\s+a?\s*)?(junior|third[- ]?year)\b/i.test(rawQuery)) yearStanding = 3;
+  else if (/\b(i'?m\s+a?\s*)?(senior|fourth[- ]?year)\b/i.test(rawQuery)) yearStanding = 4;
+
+  const completedCourses: string[] = [];
+  // Match completion phrases, then extract course codes from the trailing segment
+  const completionPhraseRe =
+    /(?:already\s+took|have\s+taken|already\s+taken|i\s+took|took|completed|finished|done\s+with|i'?ve\s+(?:already\s+)?(?:taken|completed|finished))\s+(.{3,200}?)(?:\.|,?\s+(?:and\s+i|so\b|but\b|now\b|my\b|what\b)|$)/gi;
+  const courseCodeRe = /\b([A-Z&]{2,5})\s+(\d{3}[A-Z]?)\b/g;
+
+  let phraseMatch: RegExpExecArray | null;
+  while ((phraseMatch = completionPhraseRe.exec(rawQuery)) !== null) {
+    const segment = phraseMatch[1];
+    let codeMatch: RegExpExecArray | null;
+    courseCodeRe.lastIndex = 0;
+    while ((codeMatch = courseCodeRe.exec(segment)) !== null) {
+      completedCourses.push(`${codeMatch[1]} ${codeMatch[2]}`);
+    }
+  }
+
+  return { completedCourses: [...new Set(completedCourses)], yearStanding };
+}
+
+// ── Student context extraction (planning pipeline) ────────────────────────────
+// Scans the current query AND conversation history to extract all available
+// student context. Used as input to buildPlanningObject.
+// Rule: if data is absent, set fields to empty/null — never hallucinate.
+function extractStudentContext(
+  rawQuery: string,
+  conversationHistory: ChatMessage[]
+): StudentContext {
+  // Combine all text we have: history (assistant turns omitted to avoid
+  // confusing Claude's prior answers with student facts) + current query.
+  const studentTurns = [
+    ...conversationHistory.filter(m => m.role === "user").map(m => m.content),
+    rawQuery,
+  ].join(" ");
+
+  // ── Major detection ───────────────────────────────────────────────────────
+  // Matches: "I'm a CS major", "studying nursing", "in the engineering program", etc.
+  let major: string | null = null;
+  const majorPatterns: [RegExp, string][] = [
+    [/\b(computer science|cs)\s*(major|program|degree)?\b/i, "Computer Science"],
+    [/\b(electrical (and computer engineering|engineering)|ece)\b/i, "Electrical and Computer Engineering"],
+    [/\b(mechanical engineering|me)\s*(major|program)?\b/i, "Mechanical Engineering"],
+    [/\b(civil engineering)\b/i, "Civil Engineering"],
+    [/\b(bioengineering|bioe)\b/i, "Bioengineering"],
+    [/\b(chemical engineering|che)\b/i, "Chemical Engineering"],
+    [/\b(industrial engineering|ie)\b/i, "Industrial Engineering"],
+    [/\b(nursing)\s*(major|program|degree|student)?\b/i, "Nursing"],
+    [/\b(biology|bios)\s*(major|program)?\b/i, "Biology"],
+    [/\b(chemistry|chem)\s*(major|program)?\b/i, "Chemistry"],
+    [/\b(physics|phys)\s*(major|program)?\b/i, "Physics"],
+    [/\b(mathematics|math)\s*(major|program)?\b/i, "Mathematics"],
+    [/\b(accounting|actg)\s*(major|program)?\b/i, "Accounting"],
+    [/\b(finance|fin)\s*(major|program)?\b/i, "Finance"],
+    [/\b(marketing)\s*(major|program)?\b/i, "Marketing"],
+    [/\b(management)\s*(major|program)?\b/i, "Management"],
+    [/\b(information and decision sciences|ids)\b/i, "Information and Decision Sciences"],
+    [/\b(psychology|psch)\s*(major|program)?\b/i, "Psychology"],
+    [/\b(sociology|soc)\s*(major|program)?\b/i, "Sociology"],
+    [/\b(english)\s*(major|program)?\b/i, "English"],
+    [/\b(history)\s*(major|program)?\b/i, "History"],
+    [/\b(political science|pols)\s*(major|program)?\b/i, "Political Science"],
+    [/\b(architecture)\s*(major|program)?\b/i, "Architecture"],
+    [/\b(public health)\s*(major|program)?\b/i, "Public Health"],
+    [/\b(kinesiology|kin)\s*(major|program)?\b/i, "Kinesiology"],
+  ];
+
+  // Check explicit major/studying phrasing first
+  const majorDeclareRe = /\b(i(?:'?m| am) (?:a |an )?|studying |in the |declared? |my major is |majoring in )([a-z &]+?)(?:\s*(?:major|program|student|degree))?\b/i;
+  const declareMatch = majorDeclareRe.exec(studentTurns);
+  if (declareMatch) {
+    const candidate = declareMatch[2].toLowerCase().trim();
+    for (const [pattern, name] of majorPatterns) {
+      if (pattern.test(candidate)) { major = name; break; }
+    }
+  }
+  // Fall back to scanning all turns
+  if (!major) {
+    for (const [pattern, name] of majorPatterns) {
+      if (pattern.test(studentTurns)) { major = name; break; }
+    }
+  }
+
+  // ── Completed course extraction ───────────────────────────────────────────
+  // Reuse the same regex logic as extractStudentProgress, but applied to all turns.
+  const completedCourses: string[] = [];
+  const completionPhraseRe =
+    /(?:already\s+took|have\s+taken|already\s+taken|i\s+took|took|completed|finished|done\s+with|i'?ve\s+(?:already\s+)?(?:taken|completed|finished))\s+(.{3,200}?)(?:\.|,?\s+(?:and\s+i|so\b|but\b|now\b|my\b|what\b)|$)/gi;
+  const courseCodeRe = /\b([A-Z&]{2,5})\s+(\d{3}[A-Z]?)\b/g;
+
+  let phraseMatch: RegExpExecArray | null;
+  while ((phraseMatch = completionPhraseRe.exec(studentTurns)) !== null) {
+    const segment = phraseMatch[1];
+    let codeMatch: RegExpExecArray | null;
+    courseCodeRe.lastIndex = 0;
+    while ((codeMatch = courseCodeRe.exec(segment)) !== null) {
+      completedCourses.push(`${codeMatch[1]} ${codeMatch[2]}`);
+    }
+  }
+
+  // ── In-progress course extraction ─────────────────────────────────────────
+  const inProgressCourses: string[] = [];
+  const inProgressPhraseRe =
+    /(?:currently\s+(?:taking|in|enrolled in)|taking\s+(?:right\s+now|this\s+semester|this\s+term)|i'?m\s+in|enrolled\s+in|registered\s+for)\s+(.{3,200}?)(?:\.|,?\s+(?:and\s+i|so\b|but\b|what\b)|$)/gi;
+
+  let ipMatch: RegExpExecArray | null;
+  while ((ipMatch = inProgressPhraseRe.exec(studentTurns)) !== null) {
+    const segment = ipMatch[1];
+    let codeMatch: RegExpExecArray | null;
+    courseCodeRe.lastIndex = 0;
+    while ((codeMatch = courseCodeRe.exec(segment)) !== null) {
+      inProgressCourses.push(`${codeMatch[1]} ${codeMatch[2]}`);
+    }
+  }
+
+  // ── Constraints extraction ─────────────────────────────────────────────────
+  const constraints: string[] = [];
+  if (/\b(transfer|transferred|transfer student)\b/i.test(studentTurns))
+    constraints.push("transfer student");
+  if (/\b(part.?time|part time)\b/i.test(studentTurns))
+    constraints.push("part-time");
+  if (/\b(honors|honors college)\b/i.test(studentTurns))
+    constraints.push("honors college");
+  if (/\b(commut(e|er|ing))\b/i.test(studentTurns))
+    constraints.push("commuter");
+  if (/\b(double major|dual degree|second major)\b/i.test(studentTurns))
+    constraints.push("double major");
+  if (/\b(minor in|adding a minor|with a minor)\b/i.test(studentTurns))
+    constraints.push("minor");
+  if (/\b(pre.?med|pre.?health|pre.?law|pre.?dental)\b/i.test(studentTurns))
+    constraints.push("pre-professional track");
+  if (/\b(3 years?|graduate early|finish early|3.?year plan)\b/i.test(studentTurns))
+    constraints.push("accelerated graduation (3 years)");
+  if (/\b(international student|f.?1|f1 visa|ois)\b/i.test(studentTurns))
+    constraints.push("international student");
+
+  return {
+    major,
+    completed_courses: [...new Set(completedCourses)],
+    in_progress_courses: [...new Set(inProgressCourses)],
+    constraints,
+  };
+}
+
+// ── Planning object builder ───────────────────────────────────────────────────
+// EXECUTION ORDER:
+//   Query
+//   → isPlanningQuery()           (detect planning intent)
+//   → extractStudentContext()     (extract who the student is)
+//   → retrieveMajorPlan()         (fetch requirements data)
+//   → buildPlanningObject()       ← this function (structure via Claude)
+//   → final answer generation     (human-readable output from PlanningObject)
+//
+// Throws PlanningObjectError if both attempts fail — callers MUST handle this
+// and return a controlled failure response. Raw scaffold MUST NOT reach the
+// answer generation step.
+
+class PlanningObjectError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "PlanningObjectError";
+  }
+}
+
+// Strict structural validator — throws on any violation.
+// Treats "Major not found" as a valid terminal state with an empty semester_plan.
+function validatePlanningObject(obj: unknown): PlanningObject {
+  if (typeof obj !== "object" || obj === null) throw new Error("root is not an object");
+  const p = obj as Record<string, unknown>;
+
+  if (typeof p["intent"] !== "string" || !(p["intent"] as string).trim())
+    throw new Error("missing or empty 'intent'");
+  if (typeof p["plan_strategy"] !== "string" || !(p["plan_strategy"] as string).trim())
+    throw new Error("missing or empty 'plan_strategy'");
+
+  const sc = p["student_context"] as Record<string, unknown>;
+  if (typeof sc !== "object" || sc === null) throw new Error("missing 'student_context'");
+  if (!Array.isArray(sc["completed_courses"]))  throw new Error("student_context.completed_courses must be array");
+  if (!Array.isArray(sc["in_progress_courses"])) throw new Error("student_context.in_progress_courses must be array");
+  if (!Array.isArray(sc["constraints"]))         throw new Error("student_context.constraints must be array");
+
+  const req = p["requirements"] as Record<string, unknown>;
+  if (typeof req !== "object" || req === null) throw new Error("missing 'requirements'");
+  if (!Array.isArray(req["required_courses"]))  throw new Error("requirements.required_courses must be array");
+  if (!Array.isArray(req["elective_buckets"]))  throw new Error("requirements.elective_buckets must be array");
+  if (!Array.isArray(req["credit_rules"]))      throw new Error("requirements.credit_rules must be array");
+
+  if (!Array.isArray(p["semester_plan"])) throw new Error("semester_plan must be array");
+  const isMajorNotFound = (p["plan_strategy"] as string).toLowerCase().includes("major not found");
+
+  if (!isMajorNotFound && (p["semester_plan"] as unknown[]).length === 0)
+    throw new Error("semester_plan is empty");
+
+  const PLACEHOLDER_RE = /\*|(?:^|\s)(Science|Gen Ed|Technical|Free|General|Core|Major) Elective/i;
+  for (const term of p["semester_plan"] as Record<string, unknown>[]) {
+    if (typeof term["term"] !== "string" || !(term["term"] as string).trim())
+      throw new Error("a semester_plan term is missing its 'term' string");
+    if (!Array.isArray(term["courses"]))
+      throw new Error(`term '${term["term"]}' missing courses array`);
+    if (!isMajorNotFound && (term["courses"] as unknown[]).length === 0)
+      throw new Error(`term '${term["term"]}' has empty courses array`);
+    for (const c of term["courses"] as unknown[]) {
+      if (typeof c !== "string" || !(c as string).trim())
+        throw new Error(`term '${term["term"]}' contains a non-string or blank course entry`);
+      if (PLACEHOLDER_RE.test(c as string))
+        throw new Error(`term '${term["term"]}' contains unresolved placeholder: "${c}"`);
+    }
+  }
+
+  return p as unknown as PlanningObject;
+}
+
+// ── Phase 2: Plan response validation ────────────────────────────────────────
+// Runs AFTER the final answer is generated, BEFORE it is returned to the user.
+// Checks the rendered plan text against the required course manifest.
+function validatePlan(
+  response: string,
+  manifest: string[]
+): {
+  valid: boolean;
+  missingCourses: string[];
+  invalidCourses: string[];
+  duplicateCourses: string[];
+  hasPlaceholders: boolean;
+  foundCodes: string[];
+} {
+  const COURSE_CODE_RE = /\b([A-Z&]{2,5})\s+(\d{3}[A-Z]?)\b/g;
+  const PLACEHOLDER_RE = /\[.+?\]|\bTBD\b|\belective slot\b/i;
+
+  // Collect all occurrences (with duplicates) to detect repeated required courses
+  const allFound: string[] = [];
+  let m: RegExpExecArray | null;
+  COURSE_CODE_RE.lastIndex = 0;
+  while ((m = COURSE_CODE_RE.exec(response)) !== null) {
+    allFound.push(`${m[1]} ${m[2]}`);
+  }
+  const foundCodes = [...new Set(allFound)];
+
+  // Count occurrences of each code — required courses must appear exactly once
+  const countMap = new Map<string, number>();
+  for (const c of allFound) countMap.set(c, (countMap.get(c) ?? 0) + 1);
+  const duplicateCourses = manifest.filter(c => (countMap.get(c) ?? 0) > 1);
+
+  const missingCourses  = manifest.filter(c => !foundCodes.includes(c));
+  const invalidCourses  = foundCodes.filter(c => {
+    const num = c.match(/\d{3}/);
+    return num ? parseInt(num[0], 10) >= 500 : false;
+  });
+  const hasPlaceholders = PLACEHOLDER_RE.test(response);
+
+  return {
+    valid: missingCourses.length === 0 && invalidCourses.length === 0 &&
+           duplicateCourses.length === 0 && !hasPlaceholders,
+    missingCourses,
+    invalidCourses,
+    duplicateCourses,
+    hasPlaceholders,
+    foundCodes,
+  };
+}
+
+function buildCorrectionPrompt(
+  validation: ReturnType<typeof validatePlan>
+): string {
+  const issues: string[] = [];
+  if (validation.missingCourses.length > 0)
+    issues.push(`- Missing required courses (add each exactly once): ${validation.missingCourses.join(", ")}`);
+  if (validation.invalidCourses.length > 0)
+    issues.push(`- Invalid courses ≥500 level (remove entirely): ${validation.invalidCourses.join(", ")}`);
+  if (validation.duplicateCourses.length > 0)
+    issues.push(`- Duplicate required courses (each must appear exactly once): ${validation.duplicateCourses.join(", ")}`);
+  if (validation.hasPlaceholders)
+    issues.push(`- Unresolved placeholders detected — replace ALL with real course codes from the scaffold`);
+
+  return `You MUST fix ALL listed issues. If ANY issue remains, your response will be rejected again.
+
+${issues.join("\n")}
+
+Rules:
+- Include every missing course exactly once
+- Remove all invalid courses (≥500)
+- Replace ALL placeholders with real course codes
+
+Output the FULL corrected plan.`;
+}
+
+function buildPlanningPrompt(
+  scaffoldContent: string,
+  studentCtx: StudentContext,
+  queryIntent: string,
+  strict: boolean
+): string {
+  const strictPrefix = strict
+    ? `CRITICAL: Your previous attempt was rejected because the output was structurally invalid. Output ONLY raw JSON — no markdown, no text, no fences. Start your response with { and end with }.\n\n`
+    : "";
+
+  return `${strictPrefix}You are a UIC academic planning engine. Output ONLY a single valid JSON object — no prose, no markdown fences, no explanation. Start with { and end with }.
+
+REQUIRED SCHEMA (all fields mandatory):
+{"intent":"<string>","student_context":{"major":"<string|null>","completed_courses":["<code>"],"in_progress_courses":["<code>"],"constraints":["<string>"]},"requirements":{"required_courses":["<code>"],"elective_buckets":["<string>"],"credit_rules":["<string>"]},"plan_strategy":"<string>","semester_plan":[{"term":"<Year N Season>","courses":["<code>"],"reasoning":"<string>"}]}
+
+RULES (violations = rejection):
+1. Raw JSON only — no text outside the object.
+2. required_courses verbatim from REQUIRED COURSE MANIFEST — no invented codes.
+3. semester_plan follows SAMPLE SCHEDULE BACKBONE order exactly.
+4. Completed courses MUST NOT appear in semester_plan.
+5. No course code ≥500 in an undergraduate plan.
+6. No placeholder text (e.g. "*Science Elective*") in courses arrays — use real codes from ELECTIVE OPTIONS.
+7. semester_plan must be non-empty unless scaffold says NO PLAN DATA FOUND (then return plan_strategy "Major not found — direct student to catalog.uic.edu" and empty semester_plan array).
+
+STUDENT CONTEXT:
+Major: ${studentCtx.major ?? "not specified"}
+Completed: ${studentCtx.completed_courses.join(", ") || "none"}
+In-progress: ${studentCtx.in_progress_courses.join(", ") || "none"}
+Constraints: ${studentCtx.constraints.join(", ") || "none"}
+Query intent: ${queryIntent}
+
+DEGREE PLAN SCAFFOLD:
+${scaffoldContent}`;
+}
+
+// Throws PlanningObjectError — never returns null.
+async function buildPlanningObject(
+  scaffoldContent: string,
+  studentCtx: StudentContext,
+  queryIntent: string
+): Promise<PlanningObject> {
+  const callClaude = async (strict: boolean): Promise<PlanningObject> => {
+    const prompt = buildPlanningPrompt(scaffoldContent, studentCtx, queryIntent, strict);
+    const response = await client.messages.create({
+      model: "claude-haiku-4-5-20251001",
+      max_tokens: 2000,
+      messages: [{ role: "user", content: prompt }],
+    });
+    const raw = (response.content[0] as any)?.text ?? "";
+    const jsonText = raw.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/i, "").trim();
+    const parsed: unknown = JSON.parse(jsonText);
+    return validatePlanningObject(parsed); // throws on structural violation
+  };
+
+  // Attempt 1
+  try {
+    return await callClaude(false);
+  } catch (err1) {
+    console.warn("[buildPlanningObject] Attempt 1 failed:", (err1 as Error).message);
+  }
+
+  // Attempt 2 — stricter prompt
+  try {
+    return await callClaude(true);
+  } catch (err2) {
+    console.error("[buildPlanningObject] Attempt 2 failed:", (err2 as Error).message);
+    throw new PlanningObjectError("Both planning attempts failed — cannot generate academic plan");
+  }
 }
 
 function formatSampleSchedule(
@@ -1403,12 +1865,60 @@ ${list}`, 0.7, query)];
         yearLabel = `year ${startYear}–${maxYears} of the`;
       }
 
-      const responseText =
-        `Here's the ${yearLabel} sample schedule for **${majorName}** (${majorMatch.totalHours ?? "128"} total credits):\n\n` +
-        schedulePlan +
-        ``;
-      // DIRECT_RESPONSE prefix tells the POST handler to stream this without going through Claude
-      return [makeChunk("major_plan", `DIRECT_RESPONSE:\n${responseText}`, 0.97, query)];
+      // ── Extract student progress and build planning scaffold ─────────────
+      // Claude now receives structured ingredients, not a pre-written plan.
+      const progress = extractStudentProgress(query.rawQuery);
+      const completedCourses = progress.completedCourses;
+
+      // Manifest = only truly required courses (those with defined credit hours),
+      // not elective option pools (which have hours === null in some schemas).
+      const requiredManifest = allRequiredCourses
+        .filter((c: any) => c.hours != null)
+        .map((c: any) => c.code as string)
+        .filter(Boolean);
+
+      const standingLabel = standing > 0
+        ? ["", "freshman (Year 1)", "sophomore (Year 2)", "junior (Year 3)", "senior (Year 4)"][standing]
+        : "not specified";
+      const semestersShown = (startYear === 1 && maxYears === 4)
+        ? "all 4 years"
+        : `Year ${startYear}–${maxYears} only`;
+
+      const studentCtxLines = [
+        `Year standing: ${standingLabel}`,
+        `Semesters in backbone below: ${semestersShown}`,
+        `Completed courses: ${completedCourses.length > 0 ? completedCourses.join(", ") : "none stated"}`,
+        ...(completedCourses.length > 0
+          ? ["ACTION: Remove every completed course from your output. If removing a course makes a semester empty, omit that semester header entirely."]
+          : []),
+      ].join("\n");
+
+      const scaffold = [
+        `=== DEGREE PLAN SCAFFOLD: ${majorName} (${majorMatch.totalHours ?? "128"} total credits) ===`,
+        `College: ${majorMatch.college ?? "N/A"} | Reference: ${majorMatch.url ?? "catalog.uic.edu"}`,
+        ``,
+        `REQUIRED COURSE MANIFEST (every code here must appear in your output exactly once, unless it is listed in COMPLETED COURSES):`,
+        requiredManifest.length > 0 ? requiredManifest.join(", ") : "See scaffold below.",
+        ``,
+        `SAMPLE SCHEDULE BACKBONE (follow this semester structure exactly — do NOT rearrange courses between semesters):`,
+        `Note: placeholder lines like "*Science Elective*" indicate a slot you must fill with a real course code from ELECTIVE OPTIONS below.`,
+        schedulePlan,
+        `ELECTIVE OPTIONS (use these to fill placeholder slots — pick 100-499 level codes only):`,
+        electiveRules ?? "Any approved 100-499 level UIC course.",
+        ``,
+        `STUDENT CONTEXT:`,
+        studentCtxLines,
+        ``,
+        `FORBIDDEN — these errors directly harm the student's academic plan:`,
+        `1. NO courses numbered 500 or above in an undergraduate plan`,
+        `2. NO placeholder lines — replace every "*Science Elective*", "*Gen Ed*", "*Technical Elective*" etc. with a real code from ELECTIVE OPTIONS`,
+        `3. NO invented course codes — only use codes present in this scaffold or ELECTIVE OPTIONS`,
+        `4. Every code in REQUIRED COURSE MANIFEST must appear in your output exactly once, unless it is in COMPLETED COURSES`,
+        `5. Do NOT rearrange courses between semesters — follow SAMPLE SCHEDULE BACKBONE order`,
+        `6. Total credit count in your output should match the degree total (${majorMatch.totalHours ?? "128"} credits)`,
+      ].join("\n");
+
+      return [makeChunk("major_plan", scaffold, 0.97, query)];
     }
 
     // ── COURSES ONLY — no official semester schedule ──────────────────────────
@@ -2276,70 +2786,11 @@ function retrieveRecreation(query: QueryAnalysis): RetrievedChunk[] {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// STAGE 4: ANSWER BRIEF — structured reasoning object before model call
-// ═══════════════════════════════════════════════════════════════════════════════
-
-function buildAnswerBrief(
-  query: QueryAnalysis,
-  chunks: RetrievedChunk[]
-): AnswerBrief {
-  const sortedChunks = [...chunks].sort((a, b) =>
-    (b.relevanceScore * b.sourceConfidence) - (a.relevanceScore * a.sourceConfidence)
-  );
-
-  // Extract key facts from top chunks (first sentence or key stat patterns)
-  const keyFacts: string[] = [];
-  for (const chunk of sortedChunks.slice(0, 4)) {
-    const lines = chunk.content.split("\n").filter(l => l.trim() && !l.startsWith("==="));
-    const statLines = lines.filter(l => l.match(/\$[\d,]+|GPA \d|\d+\/5|\d+%|Suite \d|^\d+\./));
-    if (statLines.length > 0) keyFacts.push(statLines[0].trim());
-    else if (lines[0]) keyFacts.push(lines[0].trim().slice(0, 120));
-  }
-
-  // Detect tradeoffs based on constraints + domains
-  const tradeoffs: string[] = [];
-  if (query.constraints.find(c => c.type === "cost") && chunks.some(c => c.domain === "housing")) {
-    tradeoffs.push("Cheapest dorms (CMW/CMS) require meal plan which adds cost. MRH/TBH cheaper overall with optional meal plan.");
-  }
-  if (query.constraints.find(c => c.type === "cost") && chunks.some(c => c.domain === "financial_aid")) {
-    tradeoffs.push("Aspire Grant covers 100% tuition+fees for IL families under $75k — check eligibility before comparing schools.");
-  }
-  if (chunks.some(c => c.domain === "housing") && chunks.some(c => c.domain === "tuition")) {
-    tradeoffs.push("On-campus adds $10-18k/yr but includes meals and eliminates commute costs/time.");
-  }
-  if (query.constraints.find(c => c.type === "preference" && c.value === "social") && query.constraints.find(c => c.type === "cost")) {
-    tradeoffs.push("Most social dorms (ARC, JST) require meal plans which are the most expensive option.");
-  }
-
-  // Recommended approach
-  const approachMap: Partial<Record<AnswerMode, string>> = {
-    ranking: "Present ranked options with specific metrics justifying the ranking. Name a winner.",
-    comparison: "Structure as parallel criteria comparison. End with a clear recommendation.",
-    recommendation: "Give a direct personalized recommendation based on the detected constraints.",
-    logistics: "Lead with exact operational details: addresses, phone numbers, deadlines.",
-    planning: "Build a complete structured plan with specific course codes and semester breakdown.",
-    discovery: "Give a comprehensive overview with the most useful highlights.",
-    hybrid: "Address each sub-intent in organized sections. Synthesize at the end.",
-  };
-
-  return {
-    inferredGoal: query.primaryGoal,
-    answerMode: query.answerMode,
-    detectedConstraints: query.constraints,
-    keyFacts: keyFacts.slice(0, 6),
-    tradeoffs: tradeoffs.slice(0, 3),
-    recommendedApproach: approachMap[query.answerMode] ?? "Answer directly and specifically.",
-    domainsUsed: [...new Set(sortedChunks.map(c => c.domain))],
-  };
-}
-
-// ═══════════════════════════════════════════════════════════════════════════════
 // STAGE 5: CONTEXT ASSEMBLY — relevance-scored deduplication + token budget
 // ═══════════════════════════════════════════════════════════════════════════════
 
 function assembleContext(
   chunks: RetrievedChunk[],
-  _brief: AnswerBrief,
   isFact = false,
   domainConfidence: Partial<Record<string, number>> = {}
 ): string {
@@ -2478,35 +2929,49 @@ function buildAnswerPack(
 }
 
 function buildSystemPrompt(
-  brief: AnswerBrief,
   memoryContext: string,
   context: string,
   isFact: boolean,
   answerPack?: AnswerPack,
   trustInstruction?: string,
-  feedbackContext?: string
+  isFinancialQuery = false
 ): string {
+  const answerMode: AnswerMode = answerPack?.answerMode ?? "discovery";
+
   const modeInstructions: Record<AnswerMode, string> = {
     ranking: "RANKING: Lead with the top options. Use real GPA numbers, scores, prices to justify rankings. Name a clear winner. Don't hedge — students want a decisive answer.",
     discovery: "DISCOVERY: If this is a simple or casual question, answer briefly and directly. Only give a rich overview if the student is genuinely exploring a broad topic.",
     comparison: "COMPARISON: Structure as clear A vs B with parallel criteria. Acknowledge the real tradeoffs. End with a concrete recommendation tailored to the implied student profile.",
     recommendation: "RECOMMENDATION: You detected specific constraints about this student. Use them. Give a direct, personalized answer — not 'it depends,' but 'given that you care about X and Y, here is what I recommend and why.'",
     logistics: "LOGISTICS: Be precise. Lead with exact addresses, phone numbers, deadlines, URLs, hours. Zero editorializing. Students need to act — give them exactly what they need.",
-planning: "PLANNING: Your ONLY source of truth is the retrieved degree plan data — ignore all training knowledge about course sequences. Follow the PLAN TIER and PLANNING RULES in the data exactly. If the data contains NO PLAN DATA FOUND, you MUST NOT generate any plan — redirect to catalog.uic.edu. If data is present: (1) reproduce the OFFICIAL SAMPLE SCHEDULE verbatim as the semester backbone, (2) every code in REQUIRED COURSE CODE MANIFEST must appear in your output — no omissions, (3) fill elective slots ONLY from the ELECTIVE REQUIREMENTS list — never invent a course code, (4) never include 500+ level courses unless they appear in the manifest, (5) for COURSES_ONLY tier you must not write any semester structure.",
+planning: `PLANNING: The retrieved data contains a PLANNING OBJECT — a pre-validated JSON structure. Your ONLY job is to render it as a readable semester-by-semester plan for the student. NEVER use your training knowledge about course sequences.
+
+READING THE PLANNING OBJECT:
+- "semester_plan" is the authoritative sequence — render each term in order, never rearrange
+- "student_context.completed_courses" are already excluded from semester_plan — do not re-add them
+- "student_context.in_progress_courses" are courses the student is taking now — acknowledge them but do not re-schedule them
+- "requirements.required_courses" lists every code that must appear — verify your output covers them all
+- "plan_strategy" explains the sequencing logic — use it to inform your framing
+
+STRICT OUTPUT RULES:
+(1) Render every term in "semester_plan" as a section header (e.g. ### Year 1 Fall) with its courses bulleted below.
+(2) Use bold for course codes: **CS 111**
+(3) Include the reasoning sentence from each term as a brief italic note under the term header.
+(4) NEVER invent a course code not present in the PlanningObject — if a slot has no code, omit the slot entirely.
+(5) NEVER include any course numbered 500 or above.
+(6) If "plan_strategy" contains "Major not found", DO NOT generate any plan — tell the student their major was not found and direct them to catalog.uic.edu.
+(7) After the plan, add exactly one line: "Verify this against catalog.uic.edu — requirements change each year."
+(8) Honor "student_context.constraints" — if the student has accelerated graduation, honors, or double-major constraints, add a brief note addressing them.`,
     hybrid: "HYBRID: This is a multi-part question. Break it into organized sections. Answer each well. Synthesize with a crisp bottom line that ties it together.",
   };
-
-  const constraintContext = brief.detectedConstraints.length > 0
-    ? `\nDETECTED STUDENT CONSTRAINTS:\n${brief.detectedConstraints.map(c => `- ${c.type}: ${c.value} (importance: ${(c.weight * 100).toFixed(0)}%)`).join("\n")}\n`
-    : "";
-
-  const tradeoffContext = brief.tradeoffs.length > 0
-    ? `\nKEY TRADEOFFS TO ACKNOWLEDGE:\n${brief.tradeoffs.map(t => `- ${t}`).join("\n")}\n`
-    : "";
 
   const groundingInstruction = isFact
     ? `GROUNDING RULE — FACT LOOKUP: The retrieved data below contains the exact answer. Copy addresses, phone numbers, suite numbers, hours, and deadlines VERBATIM — do not paraphrase or approximate them. A wrong suite number or phone number is worse than no answer. If the fact is present, quote it exactly. Keep your answer to 1–3 sentences unless the student asked for more.`
     : `GROUNDING RULE: Synthesize the retrieved data into a clear, specific answer. Reason about it — don't just repeat it. Be specific: cite exact numbers, names, and dates from the data.`;
+
+  const financialRule = isFinancialQuery
+    ? `\nFINANCIAL VERIFICATION RULE: Before writing any dollar amount, verify it appears exactly in the retrieved data. If the exact figure is not present, say "approximately" and refer the student to bursar.uic.edu for the authoritative number.\n`
+    : "";
 
   const corePrinciples = `CORE PRINCIPLES:
 - Never hallucinate — if a fact isn't in the retrieved data, say so and point to the right UIC page
@@ -2517,9 +2982,7 @@ planning: "PLANNING: Your ONLY source of truth is the retrieved degree plan data
 - Read between the lines: if a student seems stressed or implicitly needs an easier path, address that directly
 - If memory shows the student's major/year, tailor the answer to their situation`;
 
-
   const trustLine = trustInstruction ? `\n${trustInstruction}\n` : "";
-  const feedbackLine = feedbackContext ? `\n${feedbackContext}\n` : "";
 
   return `You are Sparky — a smart, friendly UIC assistant. You can have normal conversations AND answer deep questions about UIC with real data. Read the room: casual messages get casual replies, serious questions get detailed answers.
 
@@ -2546,16 +3009,13 @@ YOUR DATA COVERAGE:
 - Admissions, international student policies, CPT/OPT, study abroad
 - Library services, career services
 
-INFERRED STUDENT GOAL: ${brief.inferredGoal}
-ANSWER MODE: ${brief.answerMode.toUpperCase()}
-${constraintContext}${tradeoffContext}
 ${groundingInstruction}
 
-REASONING INSTRUCTION — ${brief.answerMode.toUpperCase()}:
-${modeInstructions[brief.answerMode]}
+REASONING INSTRUCTION — ${answerMode.toUpperCase()}:
+${modeInstructions[answerMode]}
 
 ${corePrinciples}
-${trustLine}${feedbackLine}
+${financialRule}${trustLine}
 UIC: Chicago's only public Research I university. ~33,000 students. ~91% commuters. Majority-minority. Mascot: Sparky the Dragon. Navy and Flames Red. Missouri Valley Conference (MVC). Go Flames!
 ${memoryContext ? "\n" + memoryContext + "\n" : ""}
 ${answerPack ? `
@@ -2643,36 +3103,6 @@ export async function POST(req: Request) {
     });
   }
 
-  // ── Follow-up fast path ───────────────────────────────────────────────────
-const followUpPatterns = /^(tell me more|more info|elaborate|explain more|what about (that|this|him|her|it|them)|and (him|her|it|them|that|this)|what else|any other|go on|continue|what do you mean|how so|why|really\??|interesting|what about his|what about her|what about their|and (what about)?|more details?|can you elaborate|expand on that|what does that mean)[\s?!.]*$/i;
-
-if (followUpPatterns.test(lastMsg.trim()) && messages.length >= 3) {
-  const recentContext = messages.slice(-4).map(m => `${m.role}: ${m.content}`).join("\n");
-  const followUpResponse = await client.messages.create({
-    model: "claude-sonnet-4-20250514",
-    max_tokens: 600,
-    system: `You are Sparky, a UIC assistant. The student is following up on a previous answer. Use the conversation context to give a natural, relevant continuation. Be concise. Don't repeat what you already said.`,
-    messages: [
-      { role: "user", content: `Conversation so far:\n${recentContext}\n\nStudent's follow-up: "${lastMsg}"\n\nContinue naturally.` }
-    ],
-  });
-
-  const followUpText = (followUpResponse.content[0] as any)?.text ?? "Could you be more specific?";
-  const encoder = new TextEncoder();
-  const readable = new ReadableStream({
-    start(controller) {
-      controller.enqueue(encoder.encode(followUpText));
-      controller.close();
-    },
-  });
-  return new Response(readable, {
-    headers: {
-      "Content-Type": "text/plain; charset=utf-8",
-      "Cache-Control": "no-store",
-    },
-  });
-}
-
   // Normalize the message for the regex pipeline (fixes typos/abbreviations).
   // Claude sees the original lastMsg — it handles imperfect text natively.
   const normalizedMsg = normalizeQuery(lastMsg);
@@ -2681,11 +3111,14 @@ if (followUpPatterns.test(lastMsg.trim()) && messages.length >= 3) {
 // ── Fetch memory + session in parallel, then classify ─────────────────────
 const [userMemory, sessionState] = await Promise.all([
   getMemory(sessionId).catch(() => null),
-  getSessionState(sessionId).catch(() => ({
+  getSessionState(sessionId).catch((): import("@/lib/chat/session-state").SessionState => ({
     activeCourseId: null, activeCourseCode: null,
     activeProfessorId: null, activeProfessorName: null,
     activeHall: null,
     activeDomain: null, lastAnswerType: null, lastTopics: [],
+    confirmedMajor: null, confirmedYear: null,
+    lastResponseExcerpt: null, lastRetrievedDomain: null,
+    mentionedCourses: [],
   })),
 ]);
 
@@ -2791,6 +3224,54 @@ if (!lower2.match(/\b(arc|jst|cmw|cms|cmn|mrh|tbh|ssr|psr|cty)\b/i) &&
   // Append hall to query so scoreChunk can match it in housing chunk content
   (query as any)._inheritedHall = sessionState.activeHall;
 }
+
+// ── Follow-up grounding: inject active session entities into retrieval ────────
+// Vague follow-ups ("tell me more", "why", "how so") carry no entity signal.
+// Without injection, retrieval fetches unrelated data and Claude hallucinates.
+// This sets intent + dc so the full retrieval pipeline fetches the right entity.
+// No fast path — the query still goes through every retrieval and scoring step.
+if (isFollowUpQuery(lastMsg)) {
+  if (sessionState.activeProfessorName && !intent.profNameHint) {
+    intent.profNameHint = sessionState.activeProfessorName;
+    intent.isAboutProfessors = true;
+    dc["professors"] = Math.max(dc["professors"] ?? 0, 0.90);
+  }
+  if (sessionState.activeCourseCode && !intent.courseCode) {
+    const parts = sessionState.activeCourseCode.split(" ");
+    if (parts.length >= 2) {
+      intent.courseCode = { subject: parts[0], number: parts[1] };
+    }
+    intent.isAboutCourses = true;
+    dc["courses"] = Math.max(dc["courses"] ?? 0, 0.85);
+  }
+}
+
+  // ── Synchronous major/year extraction ────────────────────────────────────
+  // If the current message establishes major/year for the first time, persist
+  // synchronously so the same request can use them in retrieval and context.
+  if (!sessionState.confirmedMajor || !sessionState.confirmedYear) {
+    const syncUpdates: Partial<typeof sessionState> = {};
+    if (!sessionState.confirmedMajor) {
+      const majorRe = /\b(?:i(?:'m| am)(?: a| an)? |my major is |i(?:'m| am) (?:studying|majoring in) |i (?:study|major in) |i(?:'m| am) in (?:the )?)(computer science|cs|math(?:ematics)?|physics|biology|chemistry|nursing|engineering|finance|accounting|marketing|english|psychology|history|political science|sociology|philosophy|art|music|education|business|economics|ece|electrical|mechanical|civil|pre-?med|pre-?law|information systems|data science|neuroscience)\b/i;
+      const m = lastMsg.match(majorRe) || lastMsg.match(/\b(cs|computer science|math(?:ematics)?|physics|biology|chemistry|nursing|engineering|finance|accounting|marketing|english|psychology|history|political science|sociology|philosophy|art|music|education|business|economics)\s+(?:major|student|degree|program)\b/i);
+      if (m) syncUpdates.confirmedMajor = normalizeMajor(m[1]);
+    }
+    if (!sessionState.confirmedYear) {
+      const yearRe = /\b(freshman|first[- ]year|sophomore|second[- ]year|junior|third[- ]year|senior|fourth[- ]year|[1-4](?:st|nd|rd|th)?[- ]year)\b/i;
+      const y = lastMsg.match(yearRe);
+      if (y) {
+        const t = y[1].toLowerCase().replace(/[\s-]+/, "-");
+        const yearMap: Record<string, number> = { freshman: 1, "first-year": 1, sophomore: 2, "second-year": 2, junior: 3, "third-year": 3, senior: 4, "fourth-year": 4, "1st-year": 1, "2nd-year": 2, "3rd-year": 3, "4th-year": 4 };
+        const yr = yearMap[t] ?? parseInt(t);
+        if (yr >= 1 && yr <= 4) syncUpdates.confirmedYear = yr;
+      }
+    }
+    if (Object.keys(syncUpdates).length > 0) {
+      if (syncUpdates.confirmedMajor) sessionState.confirmedMajor = syncUpdates.confirmedMajor;
+      if (syncUpdates.confirmedYear) sessionState.confirmedYear = syncUpdates.confirmedYear;
+      await updateSessionState(sessionId, syncUpdates);
+    }
+  }
 
   // Memory-boosted retrieval — inject user's known major/interests into intent
 if (userMemory?.major && !intent.subjectCode && !intent.deptName) {
@@ -2942,44 +3423,30 @@ if ((intent.isAboutCourses || intent.wantsEasiest || intent.wantsHardest) && !in
   if ((dc["major_plan"] ?? 0) > 0.5 || query.answerMode === "planning") asyncTasks.push(retrieveMajorPlan(query));
   if ((dc["athletics"] ?? 0) > 0.5 || ci.isAboutAthletics) asyncTasks.push(retrieveAthletics(query));
 
-  // Vector search in parallel — only for discovery/recommendation or when structured retrieval found nothing
+  // Run vector store check and async DB tasks in parallel — neither blocks the other.
+  // vectorTask is built AFTER both resolve since it depends on vectorStoreEmpty.
 const vectorSourceTypes = getVectorSourceTypes(query);
+const [vectorStoreEmpty, asyncResults] = await Promise.all([
+  checkVectorStoreEmpty(),
+  Promise.allSettled(asyncTasks),
+]);
 
-const vectorTask = syncChunks.length < 2
-  ? vectorSearch(lastMsg, 8, { sourceTypes: vectorSourceTypes }).catch(() => [])
-  : vectorSearch(lastMsg, 4, { sourceTypes: vectorSourceTypes }).catch(() => []);
+const vectorTask = vectorStoreEmpty
+  ? Promise.resolve([])
+  : syncChunks.length < 2
+    ? vectorSearch(lastMsg, 8, { sourceTypes: vectorSourceTypes }).catch(() => [])
+    : vectorSearch(lastMsg, 4, { sourceTypes: vectorSourceTypes }).catch(() => []);
 
-  // Await all async work
-  const [asyncResults, vectorResults] = await Promise.all([
-    Promise.allSettled(asyncTasks),
-    vectorTask,
-  ]);
+const vectorResults = await vectorTask;
 
   const asyncChunks: RetrievedChunk[] = [];
   for (const r of asyncResults) {
     if (r.status === "fulfilled") asyncChunks.push(...r.value);
   }
 
-  // ── Plan fast path — bypass Claude entirely ───────────────────────────────
-  // If retrieveMajorPlan built a complete schedule, stream it directly.
-  // The model must not touch it — it will fill in elective labels otherwise.
-  const directPlanChunk = asyncChunks.find(
-    c => c.domain === "major_plan" && c.content.startsWith("DIRECT_RESPONSE:\n")
-  );
-  if (directPlanChunk) {
-    const responseText = directPlanChunk.content.replace("DIRECT_RESPONSE:\n", "");
-    const encoder = new TextEncoder();
-    const readable = new ReadableStream({
-      start(controller) {
-        controller.enqueue(encoder.encode(responseText));
-        controller.close();
-      },
-    });
-    return new Response(readable, {
-      headers: { "Content-Type": "text/plain; charset=utf-8", "Cache-Control": "no-store" },
-    });
-  }
-
+  // Planning queries now flow through Claude with the full scaffold as context.
+  // The DIRECT_RESPONSE fast path has been removed — Claude receives structured
+  // planning ingredients and assembles the final plan with explicit constraints.
   let allChunks = [...syncChunks, ...asyncChunks];
 
   // Add vector results only for domains not already covered by structured retrieval
@@ -3009,22 +3476,110 @@ if (relevantVectors.length > 0 && !query.isFact && query.answerMode !== "plannin
 }
 
   // ── Fallback for completely unmatched queries ─────────────────────────────
+  // Uses domain confidence to return relevant data — not a generic professor dump.
   if (allChunks.length === 0) {
-    const [topProfs, easyCourses] = await Promise.allSettled([
-      fetchProfessorsByDept(null, 10),
-      fetchCoursesBySubjectOrDept(null, null, 10, true),
-    ]);
-    if (topProfs.status === "fulfilled" && topProfs.value.length > 0) {
-      const c = `=== TOP RATED PROFESSORS ===\n` + topProfs.value.map((p: any) => `${p.name} (${p.department}): ${p.rmpQuality}/5`).join("\n");
-      allChunks.push(makeChunk("professors", c, 0.5, query));
+    const topFallbackDomain = Object.entries(query.domainConfidence)
+      .sort(([, a], [, b]) => (b ?? 0) - (a ?? 0))[0]?.[0] ?? "none";
+
+    let fallbackChunks: RetrievedChunk[] = [];
+
+    if (topFallbackDomain === "housing" || topFallbackDomain === "dining") {
+      fallbackChunks.push(...retrieveHousing(ci, query));
+      fallbackChunks.push(...retrieveDining(ci, query));
+    } else if (topFallbackDomain === "tuition" || topFallbackDomain === "financial_aid") {
+      fallbackChunks.push(...retrieveTuition(ci, query));
+    } else if (topFallbackDomain === "health" || topFallbackDomain === "recreation") {
+      fallbackChunks.push(...retrieveHealth(query));
+    } else if (topFallbackDomain === "calendar" || topFallbackDomain === "academic_policy") {
+      fallbackChunks.push(...retrieveCalendar(query));
+    } else if (topFallbackDomain === "transportation" || topFallbackDomain === "campus_map") {
+      fallbackChunks.push(...retrieveCampusMap(query));
+    } else if (topFallbackDomain === "safety") {
+      fallbackChunks.push(...retrieveSafety(query));
+    } else if (topFallbackDomain === "international") {
+      fallbackChunks.push(...retrieveInternational(query));
+    } else if (topFallbackDomain === "library") {
+      fallbackChunks.push(...retrieveLibrary(query));
+    } else if (topFallbackDomain === "admissions") {
+      fallbackChunks.push(...retrieveAdmissions(query));
+    } else if (topFallbackDomain === "student_life" || topFallbackDomain === "greek_life") {
+      fallbackChunks.push(...retrieveStudentLife(query));
+    } else if (topFallbackDomain === "athletics") {
+      fallbackChunks = await retrieveAthletics(query);
+    } else if (topFallbackDomain === "professors") {
+      const topProfs = await fetchProfessorsByDept(null, 10).catch(() => []);
+      if (topProfs.length > 0) {
+        const c = `=== TOP RATED PROFESSORS ===\n` + topProfs.map((p: any) => `${p.name} (${p.department}): ${p.rmpQuality}/5`).join("\n");
+        fallbackChunks.push(makeChunk("professors", c, 0.5, query));
+      }
+    } else if (topFallbackDomain === "courses") {
+      const easyCourses = await fetchCoursesBySubjectOrDept(null, null, 10, true).catch(() => []);
+      if (easyCourses.length > 0) {
+        const c = `=== EASIEST COURSES ===\n` + easyCourses.map((c: any) => `${c.subject} ${c.number} - ${c.title}: GPA ${c.avgGpa}`).join("\n");
+        fallbackChunks.push(makeChunk("courses", c, 0.5, query));
+      }
+    } else {
+      // Truly unknown domain — minimal capability context only
+      fallbackChunks.push(makeChunk("student_life", `=== SPARKY COVERS ===\nCourses & grades, professors & RMP, 4-year plans, tuition & scholarships, housing & dining, student orgs & Greek life, athletics & tickets, campus map, health & counseling, library, international students, careers, safety.`, 0.4, query));
     }
-    if (easyCourses.status === "fulfilled" && easyCourses.value.length > 0) {
-      const c = `=== EASIEST COURSES ===\n` + easyCourses.value.map((c: any) => `${c.subject} ${c.number} - ${c.title}: GPA ${c.avgGpa}`).join("\n");
-      allChunks.push(makeChunk("courses", c, 0.5, query));
+
+    allChunks.push(...fallbackChunks);
+  }
+
+  // planningManifest is populated directly from planningObj inside the Phase 1 block below.
+  // It is declared here so Phase 2 (validation) can read it in the try block.
+  let planningManifest: string[] = [];
+
+  // ── Planning pipeline: MANDATORY PlanningObject before answer generation ────
+  // Pipeline order:
+  //   isPlanningQuery → extractStudentContext → retrieveMajorPlan (above)
+  //   → buildPlanningObject → answer generation
+  //
+  // PlanningObject is NOT optional. Raw scaffold MUST NOT reach the answer call.
+  // On failure: return controlled failure response immediately — no fallback.
+  if (query.answerMode === "planning") {
+    const scaffoldChunk = allChunks.find(c => c.domain === "major_plan");
+    if (scaffoldChunk) {
+      const studentCtx = extractStudentContext(lastMsg, messages.slice(0, -1));
+      let planningObj: PlanningObject;
+      try {
+        planningObj = await buildPlanningObject(
+          scaffoldChunk.content,
+          studentCtx,
+          query.primaryGoal
+        );
+      } catch (err) {
+        // Both attempts failed — return controlled failure. Do NOT proceed with raw scaffold.
+        console.error("[planning pipeline] buildPlanningObject failed after retry:", (err as Error).message);
+        const failMsg = "I couldn't generate a valid academic plan. Please try again.";
+        const enc = new TextEncoder();
+        const failStream = new ReadableStream({
+          start(c) { c.enqueue(enc.encode(failMsg)); c.close(); },
+        });
+        return new Response(failStream, {
+          headers: { "Content-Type": "text/plain; charset=utf-8", "Cache-Control": "no-store" },
+        });
+      }
+
+      // PlanningObject is valid — replace scaffold chunk unconditionally.
+      // The final answer call ONLY sees the structured PlanningObject, not the raw scaffold.
+      scaffoldChunk.content = [
+        `=== PLANNING OBJECT (structured — use this as your sole source of truth) ===`,
+        JSON.stringify(planningObj, null, 2),
+        `=== END PLANNING OBJECT ===`,
+        ``,
+        `STUDENT CONTEXT SUMMARY:`,
+        `  Major: ${planningObj.student_context.major ?? "not specified"}`,
+        `  Completed: ${planningObj.student_context.completed_courses.join(", ") || "none"}`,
+        `  In-progress: ${planningObj.student_context.in_progress_courses.join(", ") || "none"}`,
+        `  Constraints: ${planningObj.student_context.constraints.join(", ") || "none"}`,
+        ``,
+        `Plan strategy: ${planningObj.plan_strategy}`,
+      ].join("\n");
+
+      // Phase 2: capture manifest directly — no string parsing
+      planningManifest = planningObj.requirements.required_courses;
     }
-    allChunks.push(...retrieveStudentLife(query));
-    allChunks.push(...retrieveAdmissions(query));
-    allChunks.push(makeChunk("student_life", `=== SPARKY COVERS ===\nCourses & grades, professors & RMP, 4-year plans, tuition & scholarships, housing & dining, student orgs & Greek life, athletics & tickets, campus map, health & counseling, library, international students, careers, safety.`, 0.4, query));
   }
 
   // ── Build answer brief + assemble context ─────────────────────────────────
@@ -3118,8 +3673,7 @@ if (trust.decision === "abstain") {
   return new Response(readable, { headers });
 }
 
-const brief = buildAnswerBrief(query, rerankedChunks);
-const context = assembleContext(rerankedChunks, brief, query.isFact, query.domainConfidence);
+const context = assembleContext(rerankedChunks, query.isFact, query.domainConfidence);
 const memoryContext = userMemory ? formatMemoryForPrompt(userMemory) : "";
 const answerPack = buildAnswerPack(query, rerankedChunks, intent, sessionState);
 
@@ -3127,44 +3681,16 @@ const answerPack = buildAnswerPack(query, rerankedChunks, intent, sessionState);
     updateMemory(sessionId, messages, userMemory).catch(() => {});
   }
 
-  // Update session entity state
+  // Collect entity state updates — written once per request after response completes
 const stateUpdates = extractEntitiesFromQuery(lastMsg, intent, sessionState);
-if (Object.keys(stateUpdates).length > 0) {
-  updateSessionState(sessionId, stateUpdates).catch(() => {});
-}
-
+const topDomainEntry = Object.entries(query.domainConfidence).sort(([, a], [, b]) => (b ?? 0) - (a ?? 0))[0];
+if (topDomainEntry) stateUpdates.lastRetrievedDomain = topDomainEntry[0];
+// lastResponseExcerpt is added below inside each response path, then a single await write is performed.
 
   // ── Build prompt + call model ─────────────────────────────────────────────
 const trustInstruction = getTrustInstruction(trust);
-
-// Load recent feedback to teach Sparky what works and what doesn't
-const feedbackContext = await (async () => {
-  try {
-    const rows = await prisma.feedback.findMany({
-      orderBy: { createdAt: "desc" },
-      take: 30,
-      select: { message: true, rating: true },
-    });
-    const parsed = rows.flatMap(r => {
-      try { const d = JSON.parse(r.message); return [{ q: d.question ?? "", a: d.answer ?? "", rating: r.rating }]; }
-      catch { return []; }
-    });
-    const good = parsed.filter(r => r.rating === "good");
-    const bad  = parsed.filter(r => r.rating === "bad");
-    if (good.length === 0 && bad.length === 0) return "";
-
-    const fmt = (items: typeof good, limit: number) =>
-      items.slice(0, limit).map(r =>
-        `  Q: "${r.q.slice(0, 120)}"\n  A snippet: "${r.a.slice(0, 200)}"`
-      ).join("\n");
-
-    let out = "=== REAL USER FEEDBACK (learn from this) ===\n";
-    if (good.length > 0) out += `THUMBS UP — these answers worked well:\n${fmt(good, 5)}\n`;
-    if (bad.length > 0)  out += `THUMBS DOWN — these answers missed the mark:\n${fmt(bad, 5)}\n`;
-    out += "Use this to understand what kind of answers students like and avoid repeating patterns that got thumbs down.";
-    return out;
-  } catch { return ""; }
-})();
+const isFinancialQuery = (dc["tuition"] ?? 0) > 0.5 || (dc["financial_aid"] ?? 0) > 0.5 ||
+  ci.isAboutTuition || ci.isAboutFinancialAid || ci.isAboutCostComparison || ci.isAboutPayment;
 
 // ── Uploaded file context ─────────────────────────────────────────────────
 let uploadedFileContext = "";
@@ -3200,7 +3726,7 @@ if (uploadedFile) {
   }
 }
 
-const systemPrompt = buildSystemPrompt(brief, memoryContext, context, query.isFact, answerPack, trustInstruction, feedbackContext) + uploadedFileContext;
+const systemPrompt = buildSystemPrompt(memoryContext, context, query.isFact, answerPack, trustInstruction, isFinancialQuery) + uploadedFileContext;
 const maxTokens = uploadedFile ? 2000
   : query.answerMode === "planning" ? 2800
   : query.answerMode === "hybrid" ? 1800
@@ -3210,6 +3736,7 @@ const maxTokens = uploadedFile ? 2000
   : query.answerMode === "recommendation" ? 900
   : query.answerMode === "comparison" ? 900
   : 600; // discovery default
+
   try {
     // Build multimodal message for last user turn when image is attached
     const apiMessages: Anthropic.MessageParam[] = messages.map((m: ChatMessage, idx: number) => {
@@ -3223,6 +3750,88 @@ const maxTokens = uploadedFile ? 2000
       return { role: m.role as "user" | "assistant", content: m.content };
     });
 
+    const responseHeaders: Record<string, string> = {
+      "Content-Type": "text/plain; charset=utf-8",
+      "X-Content-Type-Options": "nosniff",
+      "Cache-Control": "no-store, no-cache, must-revalidate",
+      "X-Accel-Buffering": "no",
+    };
+    if (isNew) {
+      responseHeaders["Set-Cookie"] = `sparky_session=${sessionId}; Path=/; Max-Age=${60 * 60 * 24 * 365}; SameSite=Lax`;
+    }
+
+    // ── Phase 2: planning validation path ─────────────────────────────────────
+    // Planning responses are collected in full before being returned so they can
+    // be validated deterministically. Non-planning queries use the streaming path.
+    if (query.answerMode === "planning") {
+      // Hard-fail if manifest is empty — cannot validate without required courses list
+      if (planningManifest.length === 0) {
+        throw new Error("Validation failed: empty manifest");
+      }
+
+      // Step 1: generate full response (non-streaming — validation requires complete text)
+      const firstRes = await client.messages.create({
+        model: "claude-sonnet-4-20250514",
+        max_tokens: maxTokens,
+        system: systemPrompt,
+        messages: apiMessages,
+      });
+      let planText = (firstRes.content[0] as any)?.text ?? "";
+
+      // Step 2: validate against manifest
+      const v1 = validatePlan(planText, planningManifest);
+      if (!v1.valid) {
+        console.warn("[validatePlan] Attempt 1 invalid:", {
+          missing: v1.missingCourses,
+          invalid: v1.invalidCourses,
+          placeholders: v1.hasPlaceholders,
+        });
+
+        // Step 3: build correction prompt and retry ONCE
+        const correctionPrompt = buildCorrectionPrompt(v1);
+        const retryRes = await client.messages.create({
+          model: "claude-sonnet-4-20250514",
+          max_tokens: maxTokens,
+          system: systemPrompt,
+          messages: [
+            ...apiMessages,
+            { role: "assistant" as const, content: planText },
+            { role: "user" as const, content: correctionPrompt },
+          ],
+        });
+        const retryText = (retryRes.content[0] as any)?.text ?? "";
+        const v2 = validatePlan(retryText, planningManifest);
+
+        if (v2.valid) {
+          // Retry passed — use corrected plan
+          planText = retryText;
+        } else {
+          // Step 4: second failure — return retry text with disclaimer
+          console.warn("[validatePlan] Attempt 2 still invalid:", {
+            missing: v2.missingCourses,
+            invalid: v2.invalidCourses,
+            placeholders: v2.hasPlaceholders,
+          });
+          planText = retryText + "\n\n*Please verify this plan against catalog.uic.edu*";
+        }
+      }
+
+      // Single write: entity state + excerpt together
+      stateUpdates.lastResponseExcerpt = planText.slice(0, 400);
+      await updateSessionState(sessionId, stateUpdates);
+
+      // Stream the final (validated or disclaimed) plan text back to the client
+      const enc = new TextEncoder();
+      const planStream = new ReadableStream({
+        start(controller) {
+          controller.enqueue(enc.encode(planText));
+          controller.close();
+        },
+      });
+      return new Response(planStream, { headers: responseHeaders });
+    }
+
+    // ── Non-planning: existing streaming path (unchanged) ─────────────────────
     const stream = client.messages.stream({
       model: "claude-sonnet-4-20250514",
       max_tokens: maxTokens,
@@ -3231,30 +3840,26 @@ const maxTokens = uploadedFile ? 2000
     });
 
     const encoder = new TextEncoder();
+    let accumulatedText = "";
     const readable = new ReadableStream({
       async start(controller) {
         try {
           for await (const event of stream) {
-  if (event.type === "content_block_delta" && event.delta.type === "text_delta") {
-    controller.enqueue(encoder.encode(event.delta.text));
-  }
-}
+            if (event.type === "content_block_delta" && event.delta.type === "text_delta") {
+              controller.enqueue(encoder.encode(event.delta.text));
+              accumulatedText += event.delta.text;
+            }
+          }
         } finally {
           controller.close();
+          // Single write: entity state + excerpt together, after stream completes
+          stateUpdates.lastResponseExcerpt = accumulatedText ? accumulatedText.slice(0, 400) : undefined;
+          await updateSessionState(sessionId, stateUpdates);
         }
       },
     });
 
-    const headers: Record<string, string> = {
-      "Content-Type": "text/plain; charset=utf-8",
-      "X-Content-Type-Options": "nosniff",
-      "Cache-Control": "no-store, no-cache, must-revalidate",
-      "X-Accel-Buffering": "no",
-    };
-    if (isNew) {
-      headers["Set-Cookie"] = `sparky_session=${sessionId}; Path=/; Max-Age=${60 * 60 * 24 * 365}; SameSite=Lax`;
-    }
-    return new Response(readable, { headers });
+    return new Response(readable, { headers: responseHeaders });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "Unknown error";
     console.error("Chat API error:", message);

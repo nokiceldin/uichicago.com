@@ -1,0 +1,103 @@
+{
+  "name": "Biological Sciences - BS",
+  "college": "Liberal Arts and Sciences",
+  "department": "Biological Sciences",
+  "url": "https://catalog.uic.edu/ucat/colleges-depts/liberal-arts-sciences/bios/bs/",
+  "totalHours": 120,
+  "sampleSchedule": [
+    {
+      "year": "Freshman Year",
+      "semester": "Fall Semester",
+      "total_hours": 15,
+      "courses": [
+        { "code": "BIOS 100", "title": "Biology of Cells and Organisms", "hours": 4, "isElective": false, "electiveType": null },
+        { "code": "CHEM 112", "title": "General Chemistry I", "hours": 5, "isElective": false, "electiveType": null },
+        { "code": "ENGL 160", "title": "Academic Writing I", "hours": 3, "isElective": false, "electiveType": null },
+        { "code": "MATH 121", "title": "Calculus I", "hours": 5, "isElective": false, "electiveType": null }
+      ]
+    },
+    {
+      "year": "Freshman Year",
+      "semester": "Spring Semester",
+      "total_hours": 16,
+      "courses": [
+        { "code": "BIOS 101", "title": "Biology of Populations and Communities", "hours": 4, "isElective": false, "electiveType": null },
+        { "code": "CHEM 114", "title": "General Chemistry II", "hours": 3, "isElective": false, "electiveType": null },
+        { "code": "CHEM 116", "title": "General Chemistry Laboratory II", "hours": 1, "isElective": false, "electiveType": null },
+        { "code": "ENGL 161", "title": "Academic Writing II", "hours": 3, "isElective": false, "electiveType": null },
+        { "code": "MATH 180", "title": "Calculus II", "hours": 4, "isElective": false, "electiveType": null }
+      ]
+    },
+    {
+      "year": "Sophomore Year",
+      "semester": "Fall Semester",
+      "total_hours": 16,
+      "courses": [
+        { "code": "BIOS 200", "title": "Genetics", "hours": 3, "isElective": false, "electiveType": null },
+        { "code": "BIOS 220", "title": "Ecology", "hours": 3, "isElective": false, "electiveType": null },
+        { "code": "CHEM 232", "title": "Organic Chemistry I", "hours": 5, "isElective": false, "electiveType": null },
+        { "code": "PHYS 141", "title": "General Physics I (Calculus)", "hours": 5, "isElective": false, "electiveType": null }
+      ]
+    },
+    {
+      "year": "Sophomore Year",
+      "semester": "Spring Semester",
+      "total_hours": 14,
+      "courses": [
+        { "code": "BIOS 240", "title": "Cell Biology", "hours": 3, "isElective": false, "electiveType": null },
+        { "code": "BIOS 250", "title": "Microbiology", "hours": 3, "isElective": false, "electiveType": null },
+        { "code": "CHEM 234", "title": "Organic Chemistry II Lab", "hours": 2, "isElective": false, "electiveType": null },
+        { "code": "PHYS 142", "title": "General Physics II (Calculus)", "hours": 5, "isElective": false, "electiveType": null },
+        { "code": "STAT 101", "title": "Introduction to Statistics", "hours": 4, "isElective": false, "electiveType": null }
+      ]
+    },
+    {
+      "year": "Junior Year",
+      "semester": "Fall Semester",
+      "total_hours": 15,
+      "courses": [
+        { "code": "BIOS 300", "title": "Upper-Division Biology Elective", "hours": 3, "isElective": true, "electiveType": "biology" },
+        { "code": "BIOS 310", "title": "Upper-Division Biology Elective", "hours": 3, "isElective": true, "electiveType": "biology" },
+        { "code": "BIOS 320", "title": "Upper-Division Biology Elective", "hours": 3, "isElective": true, "electiveType": "biology" },
+        { "code": null, "title": "Gen Ed Elective", "hours": 3, "isElective": true, "electiveType": "gen_ed" },
+        { "code": null, "title": "Free Elective", "hours": 3, "isElective": true, "electiveType": "free" }
+      ]
+    },
+    {
+      "year": "Junior Year",
+      "semester": "Spring Semester",
+      "total_hours": 15,
+      "courses": [
+        { "code": "BIOS 330", "title": "Upper-Division Biology Elective", "hours": 3, "isElective": true, "electiveType": "biology" },
+        { "code": "BIOS 340", "title": "Upper-Division Biology Elective", "hours": 3, "isElective": true, "electiveType": "biology" },
+        { "code": null, "title": "Gen Ed Elective", "hours": 3, "isElective": true, "electiveType": "gen_ed" },
+        { "code": null, "title": "Gen Ed Elective", "hours": 3, "isElective": true, "electiveType": "gen_ed" },
+        { "code": null, "title": "Free Elective", "hours": 3, "isElective": true, "electiveType": "free" }
+      ]
+    },
+    {
+      "year": "Senior Year",
+      "semester": "Fall Semester",
+      "total_hours": 15,
+      "courses": [
+        { "code": "BIOS 400", "title": "Upper-Division Biology Elective", "hours": 3, "isElective": true, "electiveType": "biology" },
+        { "code": "BIOS 410", "title": "Upper-Division Biology Elective", "hours": 3, "isElective": true, "electiveType": "biology" },
+        { "code": null, "title": "Gen Ed Elective", "hours": 3, "isElective": true, "electiveType": "gen_ed" },
+        { "code": null, "title": "Free Elective", "hours": 3, "isElective": true, "electiveType": "free" },
+        { "code": null, "title": "Free Elective", "hours": 3, "isElective": true, "electiveType": "free" }
+      ]
+    },
+    {
+      "year": "Senior Year",
+      "semester": "Spring Semester",
+      "total_hours": 14,
+      "courses": [
+        { "code": "BIOS 420", "title": "Upper-Division Biology Elective", "hours": 3, "isElective": true, "electiveType": "biology" },
+        { "code": "BIOS 430", "title": "Upper-Division Biology Elective", "hours": 3, "isElective": true, "electiveType": "biology" },
+        { "code": null, "title": "Gen Ed Elective", "hours": 3, "isElective": true, "electiveType": "gen_ed" },
+        { "code": null, "title": "Free Elective", "hours": 3, "isElective": true, "electiveType": "free" },
+        { "code": null, "title": "Free Elective", "hours": 2, "isElective": true, "electiveType": "free" }
+      ]
+    }
+  ]
+}

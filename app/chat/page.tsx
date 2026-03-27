@@ -27,6 +27,25 @@ interface Message {
   attachment?: { name: string; fileType: AttachedFile["fileType"]; preview?: string };
 }
 
+function isFlamesSongRequest(input: string) {
+  const lower = input.toLowerCase();
+  return (
+    (
+      /\b(play|start|put on)\b/.test(lower) &&
+      (
+        /\bthe song\b/.test(lower) ||
+        /\bsong\b/.test(lower) ||
+        /\bmusic\b/.test(lower) ||
+        /\bit\b/.test(lower) ||
+        /\bflames song\b/.test(lower) ||
+        /\bfight song\b/.test(lower) ||
+        /\bfire up flames\b/.test(lower)
+      )
+    ) ||
+    /\bplaythe song\b/.test(lower)
+  );
+}
+
 interface TopicGroup {
   id: string;
   label: string;
@@ -1238,8 +1257,8 @@ function ChatInput({
       <div
         className={`overflow-hidden border transition-all duration-200 ${
           isFloating
-            ? "rounded-[22px] border-zinc-300 dark:border-zinc-700/70 bg-white dark:bg-zinc-900 shadow-[0_10px_30px_rgba(0,0,0,0.1)] dark:shadow-[0_10px_30px_rgba(0,0,0,0.35)]"
-            : "rounded-[22px] border-zinc-300 dark:border-zinc-700/80 bg-white dark:bg-zinc-900 shadow-[0_12px_40px_rgba(0,0,0,0.12)] dark:shadow-[0_12px_40px_rgba(0,0,0,0.45)]"
+            ? "rounded-[24px] border-zinc-300/80 bg-white/92 shadow-[0_14px_34px_rgba(0,0,0,0.08)] dark:border-zinc-700/70 dark:bg-[rgba(21,23,30,0.92)] dark:shadow-[0_14px_34px_rgba(0,0,0,0.35)]"
+            : "rounded-[24px] border-zinc-300/80 bg-white/92 shadow-[0_16px_42px_rgba(0,0,0,0.12)] dark:border-zinc-700/80 dark:bg-[rgba(21,23,30,0.94)] dark:shadow-[0_16px_42px_rgba(0,0,0,0.45)]"
         }`}
       >
       {/* Attachment preview strip */}
@@ -1394,10 +1413,10 @@ function TopicChip({
   return (
     <button
       onClick={onClick}
-      className={`shrink-0 px-3.5 py-1.5 rounded-full border text-[12.5px] font-medium transition-all duration-150 ${
+      className={`shrink-0 rounded-full border px-3.5 py-1.5 text-[12.5px] font-medium transition-all duration-150 ${
         active
-          ? topic.chipActive
-          : `bg-zinc-100/80 dark:bg-zinc-900/80 border-zinc-300/50 dark:border-zinc-700/50 text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:border-zinc-400 dark:hover:border-zinc-500`
+          ? `${topic.chipActive} shadow-[0_10px_24px_rgba(0,0,0,0.14)]`
+          : `bg-zinc-100/70 dark:bg-zinc-900/70 border-zinc-300/40 dark:border-zinc-700/40 text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:border-zinc-400 dark:hover:border-zinc-500 hover:bg-zinc-200/70 dark:hover:bg-zinc-800/70`
       }`}
     >
       {topic.label}
@@ -1419,11 +1438,11 @@ function PromptCard({
     <button
       onClick={onClick}
       style={{ animationDelay: `${delay}ms` }}
-      className="prompt-card group w-full text-left px-4 py-3 rounded-3xl border bg-zinc-100/60 dark:bg-zinc-900/60 border-zinc-300/40 dark:border-zinc-700/40 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-200/80 dark:hover:bg-zinc-800/80 hover:border-zinc-400 dark:hover:border-zinc-600 hover:text-zinc-900 dark:hover:text-white transition-all duration-150 hover:scale-[1.02] active:scale-[0.99] text-[13.5px] font-medium leading-snug flex items-start gap-2.5"
+      className="prompt-card group flex w-full items-start gap-3 rounded-[1.6rem] border border-zinc-300/35 bg-zinc-100/55 px-4 py-3.5 text-left text-[13.5px] font-medium leading-snug text-zinc-600 transition-all duration-150 hover:scale-[1.015] hover:border-zinc-400 hover:bg-zinc-200/75 hover:text-zinc-900 active:scale-[0.99] dark:border-zinc-700/40 dark:bg-[rgba(22,24,30,0.72)] dark:text-zinc-300 dark:hover:border-zinc-600 dark:hover:bg-[rgba(28,32,40,0.9)] dark:hover:text-white"
     >
       <span className="flex-1">{text}</span>
       <svg
-        className="w-3.5 h-3.5 mt-0.5 opacity-30 group-hover:opacity-50 shrink-0 transition-opacity"
+        className="mt-0.5 h-3.5 w-3.5 shrink-0 opacity-30 transition-opacity group-hover:opacity-60"
         fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}
       >
         <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
@@ -1462,28 +1481,36 @@ function EmptyState({
   fileInputRef: React.RefObject<HTMLInputElement | null>;
 }){
 const topic = TOPICS[activeTopic];
-const visiblePrompts = useMemo(() => getRandomItems(topic.items, 4), [topic.id]);
+const visiblePrompts = useMemo(() => getRandomItems(topic.items, 4), [topic.items]);
 
   return (
     <div
-      className="flex flex-col items-center px-4 w-full"
-      style={{ minHeight: "calc(100vh - 64px)", paddingTop: "15vh", paddingBottom: "40px" }}
+      className="relative flex w-full flex-col items-center overflow-hidden px-4"
+      style={{ minHeight: "calc(100vh - 64px)", paddingTop: "12vh", paddingBottom: "48px" }}
     >
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-[420px] bg-[radial-gradient(circle_at_50%_20%,rgba(239,68,68,0.14),transparent_32%),radial-gradient(circle_at_60%_12%,rgba(59,130,246,0.08),transparent_28%)]" />
+
       {/* Identity */}
-      <div className="flex flex-col items-center mb-8">
-        <div className="sparky-float mb-5">
-          <img src="/sparky-icon.png" alt="Sparky" className="w-24 h-24 object-contain drop-shadow-lg" />
+      <div className="relative mb-8 flex flex-col items-center">
+        <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-red-500/20 bg-red-500/8 px-4 py-1.5 text-[11px] font-bold uppercase tracking-[0.22em] text-red-400">
+          Sparky
+          <span className="h-1.5 w-1.5 rounded-full bg-red-500" />
+          UIC AI assistant
         </div>
-        <h1 className="text-[32px] font-semibold text-zinc-900 dark:text-white tracking-tight leading-none mb-3">
-          Hey, I&apos;m Sparky
+        <div className="sparky-float mb-5 rounded-[2rem] border border-white/10 bg-white/[0.03] px-5 py-4 shadow-[0_24px_80px_rgba(0,0,0,0.24)] backdrop-blur-md">
+          <img src="/sparky-icon.png" alt="Sparky" className="h-20 w-20 object-contain drop-shadow-lg" />
+        </div>
+        <h1 className="mb-3 text-center text-[38px] font-black leading-none tracking-[-0.05em] text-zinc-900 dark:text-white sm:text-[46px]">
+          Ask Sparky anything
         </h1>
-        <p className="text-zinc-500 text-[14.5px] text-center max-w-sm leading-relaxed">
-          Ask me anything about UIC — courses, professors, housing, costs, and more.
+        <p className="max-w-xl text-center text-[15px] leading-relaxed text-zinc-500 dark:text-zinc-400 sm:text-[16px]">
+          Courses, professors, housing, costs, campus life, and planning.
+          <span className="text-zinc-700 dark:text-zinc-300"> Start with a question or tap a prompt below.</span>
         </p>
       </div>
 
       {/* Input */}
-      <div className="w-full max-w-3xl mb-6">
+      <div className="mb-6 w-full max-w-3xl">
         <ChatInput
           onStop={onStop}
           value={input}
@@ -1501,11 +1528,14 @@ const visiblePrompts = useMemo(() => getRandomItems(topic.items, 4), [topic.id])
       </div>
 
       {/* Topic tabs + prompt cards */}
-      <div className="w-full max-w-3xl">
+      <div className="w-full max-w-3xl rounded-[2rem] border border-zinc-200/70 bg-white/55 p-3 shadow-[0_18px_50px_rgba(0,0,0,0.06)] backdrop-blur-md dark:border-white/8 dark:bg-[rgba(14,16,22,0.52)] dark:shadow-[0_18px_50px_rgba(0,0,0,0.24)] sm:p-4">
         {/* Scrollable topic chips — negative mx so fade mask reaches edge */}
-        <div className="relative -mx-4">
-<div className="hide-scroll flex gap-1.5 overflow-x-auto pb-4">  
-  {TOPICS.map((t, i) => (
+        <div className="mb-4">
+          <div className="mb-3 px-1 text-[11px] font-bold uppercase tracking-[0.2em] text-zinc-400 dark:text-zinc-500">
+            Explore by topic
+          </div>
+          <div className="hide-scroll flex gap-1.5 overflow-x-auto pb-1">
+            {TOPICS.map((t, i) => (
               <TopicChip
                 key={t.id}
                 topic={t}
@@ -1517,7 +1547,7 @@ const visiblePrompts = useMemo(() => getRandomItems(topic.items, 4), [topic.id])
         </div>
 
         {/* 2-col prompt grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+        <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
           {visiblePrompts.map((item, i) => (
             <PromptCard
               key={item}
@@ -1538,15 +1568,15 @@ const visiblePrompts = useMemo(() => getRandomItems(topic.items, 4), [topic.id])
 function ConversationView({
   messages,
   loading,
-  bottomRef,
   onRegenerate,
   scrollAreaRef,
+  autoScrollRef,
 }: {
   messages: Message[];
   loading: boolean;
-  bottomRef: React.RefObject<HTMLDivElement | null>;
   onRegenerate: () => void;
   scrollAreaRef: React.RefObject<HTMLDivElement | null>;
+  autoScrollRef: React.RefObject<boolean>;
 }) {
   const [showScroll, setShowScroll] = useState(false);
 
@@ -1554,20 +1584,37 @@ function ConversationView({
     const el = scrollAreaRef.current;
     if (!el) return;
     const onScroll = () => {
-      setShowScroll(el.scrollHeight - el.scrollTop - el.clientHeight > 100);
+      const distanceFromBottom = el.scrollHeight - el.scrollTop - el.clientHeight;
+      const shouldAutoScroll = distanceFromBottom <= 72;
+      autoScrollRef.current = shouldAutoScroll;
+      setShowScroll(distanceFromBottom > 180);
     };
+    onScroll();
     el.addEventListener("scroll", onScroll);
     return () => el.removeEventListener("scroll", onScroll);
-  }, [scrollAreaRef]);
+  }, [scrollAreaRef, autoScrollRef]);
 
   const scrollToBottom = () => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+    const el = scrollAreaRef.current;
+    if (!el) return;
+    autoScrollRef.current = true;
+    el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
   };
+
+  useEffect(() => {
+    const el = scrollAreaRef.current;
+    if (!el) return;
+    if (!autoScrollRef.current) return;
+    const frame = requestAnimationFrame(() => {
+      el.scrollTo({ top: el.scrollHeight, behavior: "auto" });
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [messages, loading, scrollAreaRef, autoScrollRef]);
 
   const isStreaming = messages.some(m => m.streaming);
   return (
     <div className="relative">
-      <div className="max-w-3xl mx-auto w-full px-5 pt-8 pb-6">
+      <div className="max-w-3xl mx-auto w-full px-5 pt-8 pb-4">
       <div className="space-y-8">
         {messages.map((msg, i) => {
           const userQuestion = msg.role === "assistant"
@@ -1592,7 +1639,7 @@ function ConversationView({
         })}
         {loading && !isStreaming && <TypingIndicator />}
       </div>
-      <div ref={bottomRef} style={{ height: loading ? "48vh" : "7rem", transition: "height 0.4s ease" }} />
+      <div className="h-4" />
     </div>{showScroll && (
   <button
     onClick={scrollToBottom}
@@ -1630,7 +1677,7 @@ function QuickSuggestBar({
               posthog.capture("chat_prompt_card_clicked", { prompt_text: item, topic: "chat_general" });
               onInputChange(item);
             }}
-            className="shrink-0 h-[30px] px-3.5 rounded-full border border-zinc-200 dark:border-zinc-700/60 bg-transparent text-[12.5px] text-zinc-500 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-100 hover:border-zinc-400 dark:hover:border-zinc-500 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 active:scale-[0.97] transition-all duration-150 whitespace-nowrap"
+            className="shrink-0 h-[32px] rounded-full border border-zinc-200/80 bg-white/55 px-3.5 text-[12.5px] text-zinc-500 shadow-[0_8px_20px_rgba(0,0,0,0.03)] backdrop-blur-sm transition-all duration-150 whitespace-nowrap hover:border-zinc-400 hover:bg-zinc-50 hover:text-zinc-800 active:scale-[0.97] dark:border-zinc-700/60 dark:bg-[rgba(18,20,26,0.7)] dark:text-zinc-400 dark:hover:border-zinc-500 dark:hover:bg-zinc-800/50 dark:hover:text-zinc-100"
             title={item}
           >
             {item}
@@ -1697,6 +1744,7 @@ const handleStop = useCallback(() => {
 
   const searchParams = useSearchParams();
 const [messages, setMessages] = useState<Message[]>([]);
+const flamesAudioRef = useRef<HTMLAudioElement | null>(null);
 const [input, setInput] = useState("");
 const [loading, setLoading] = useState(false);
 const [activeTopic, setActiveTopic] = useState(0);
@@ -1704,10 +1752,11 @@ const [chipRefreshKey, setChipRefreshKey] = useState<number>(0);
 const [attachedFile, setAttachedFile] = useState<AttachedFile | null>(null);
 const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const hasSentInitial = useRef(false);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
+  const autoScrollRef = useRef(true);
+  const sessionIdRef = useRef<string>(Math.random().toString(36).slice(2));
 
   const isEmpty = messages.length === 0;
 
@@ -1719,6 +1768,21 @@ const fileInputRef = useRef<HTMLInputElement>(null);
       handleSend(q);
     }
   }, []);
+
+  useEffect(() => {
+    const timeout = window.setTimeout(() => {
+      if (!inputRef.current) return;
+      if (document.activeElement instanceof HTMLElement) {
+        const tag = document.activeElement.tagName;
+        if (tag === "INPUT" || tag === "TEXTAREA" || document.activeElement.isContentEditable) return;
+      }
+      inputRef.current.focus();
+      const length = inputRef.current.value.length ?? 0;
+      inputRef.current.setSelectionRange(length, length);
+    }, 60);
+
+    return () => window.clearTimeout(timeout);
+  }, [searchParams]);
 
 
   const handleSend = useCallback(async (textOverride?: string) => {
@@ -1746,10 +1810,11 @@ const fileInputRef = useRef<HTMLInputElement>(null);
     });
 
     const scrollArea = scrollAreaRef.current;
-    const msgEl = scrollArea?.querySelector<HTMLElement>(`[data-msg-id="${userMsg.id}"]`);
-    if (scrollArea && msgEl) {
-      const offset = msgEl.getBoundingClientRect().top - scrollArea.getBoundingClientRect().top - 24;
-      scrollArea.scrollBy({ top: offset, behavior: "smooth" });
+    if (scrollArea) {
+      autoScrollRef.current = true;
+      requestAnimationFrame(() => {
+        scrollArea.scrollTo({ top: scrollArea.scrollHeight, behavior: "smooth" });
+      });
     }
     posthog.capture("chat_message_sent", {
       message_length: text.length,
@@ -1767,19 +1832,30 @@ const fileInputRef = useRef<HTMLInputElement>(null);
     }
 
     try {
+      const shouldPlayFlamesSong = isFlamesSongRequest(text);
       const res = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           messages: updated.map(m => ({ role: m.role, content: m.content })),
-          file: fileSnapshot
-            ? { name: fileSnapshot.name, mimeType: fileSnapshot.mimeType, data: fileSnapshot.data, fileType: fileSnapshot.fileType }
-            : null,
+          file: fileSnapshot,
+          stream: true,
+          sessionId: sessionIdRef.current,
         }),
       });
 
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       if (!res.body) throw new Error("No response body");
+
+      if (shouldPlayFlamesSong || res.headers.get("X-Play-Flames-Song") === "true") {
+        let audio = flamesAudioRef.current;
+        if (!audio) {
+          audio = new Audio("/flames-song.mp3");
+          flamesAudioRef.current = audio;
+        }
+        audio.currentTime = 0;
+        void audio.play().catch(() => {});
+      }
 
       const assistantId = uid();
       setMessages((prev: Message[]) => [
@@ -1893,7 +1969,11 @@ setMessages((prev: Message[]) =>
     const res = await fetch("/api/chat", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ messages: withoutLastAssistant }),
+      body: JSON.stringify({
+        messages: withoutLastAssistant,
+        stream: true,
+        sessionId: sessionIdRef.current,
+      }),
     });
 
     if (!res.ok || !res.body) throw new Error("Failed");
@@ -2112,9 +2192,9 @@ const handleKey = useCallback((e: React.KeyboardEvent<HTMLTextAreaElement>) => {
             <ConversationView
   messages={messages}
   loading={loading}
-  bottomRef={bottomRef}
   onRegenerate={handleRegenerate}
   scrollAreaRef={scrollAreaRef}
+  autoScrollRef={autoScrollRef}
 />
           )}
         </div>

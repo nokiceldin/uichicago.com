@@ -7,6 +7,7 @@ import CourseHeader from "../../../components/course/CourseHeader";
 import GradeDistributionCard from "../../../components/course/GradeDistributionCard";
 import CourseInsightCards from "../../../components/course/CourseInsightCards";
 import CourseGpaByProfessor from "../../../components/course/CourseGpaByProfessor";
+import SyllabusSubmissionCard from "../../../components/course/SyllabusSubmissionCard";
 
 function decodeParam(value: string) {
   return decodeURIComponent(value || "").trim();
@@ -107,7 +108,7 @@ export default async function CourseDetailPage({
 
   return (
     <main className="relative min-h-screen bg-zinc-50 text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100">
-      <div className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-72 dark:bg-gradient-to-b dark:from-white/5 dark:to-transparent" />
+      <div className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-72 bg-gradient-to-b from-emerald-50/50 to-transparent dark:from-emerald-950/20 dark:to-transparent" />
       <div className="mx-auto max-w-6xl px-5 py-10">
   <CourseHeader course={course} />
 
@@ -137,6 +138,14 @@ export default async function CourseDetailPage({
             passRate={passRate}
             withdrawalRate={withdrawalRate}
             mostCommonGrade={mostCommonGrade}
+          />
+        </div>
+
+        <div className="mt-6">
+          <SyllabusSubmissionCard
+            courseCode={`${course.subject} ${course.number}`}
+            courseTitle={course.title}
+            department={course.deptName || course.deptCode}
           />
         </div>
 

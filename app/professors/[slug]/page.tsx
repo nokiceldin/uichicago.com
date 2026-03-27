@@ -116,7 +116,7 @@ console.log("peers found:", peers?.length);  // add this after the findMany too
 
   return (
     <main className="relative min-h-screen bg-zinc-50 text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100">
-  <div className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-72 bg-gradient-to-b from-emerald-50/60 to-transparent dark:from-emerald-950/30 dark:to-transparent" />
+  <div className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-72 bg-gradient-to-b from-sky-50/60 to-transparent dark:from-sky-950/30 dark:to-transparent" />
 
   <div className="mx-auto max-w-3xl px-4 py-10 sm:px-6 sm:py-16">
     {/* Profile card */}
@@ -143,7 +143,7 @@ console.log("peers found:", peers?.length);  // add this after the findMany too
                 {professor.aiSummary.split("\n\n").map((block: string, i: number) => {
                   if (block.trim().startsWith("•")) {
                     const items = block.split("\n").map((s: string) => s.replace(/^•\s*/, "").trim()).filter(Boolean);
-                    return <ul key={i} className="mt-3 space-y-1.5 pl-4">{items.map((it: string, idx: number) => <li key={idx} className="flex items-start gap-2 text-zinc-500 dark:text-zinc-400"><span className="mt-1.5 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-emerald-500" />{it}</li>)}</ul>;
+                    return <ul key={i} className="mt-3 space-y-1.5 pl-4">{items.map((it: string, idx: number) => <li key={idx} className="flex items-start gap-2 text-zinc-500 dark:text-zinc-400"><span className="mt-1.5 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-sky-500" />{it}</li>)}</ul>;
                   }
                   return <p key={i} className={i === 0 ? "font-bold text-zinc-900 dark:text-white" : "mt-3 text-zinc-500 dark:text-zinc-400"}>{block}</p>;
                 })}
@@ -159,12 +159,12 @@ console.log("peers found:", peers?.length);  // add this after the findMany too
               ))}
               {professor.salary && (
                 <div className="col-span-2 sm:col-span-1 rounded-xl bg-emerald-50 dark:bg-emerald-500/[0.07] px-4 py-3 ring-1 ring-emerald-200 dark:ring-emerald-500/20">
-                  <div className="text-[10px] font-bold uppercase tracking-widest text-emerald-600 dark:text-emerald-500">Annual Salary</div>
-                  <div className="mt-1 text-sm font-bold text-emerald-700 dark:text-emerald-400">
+                  <div className="text-[10px] font-bold uppercase tracking-widest text-sky-600 dark:text-sky-500">Annual Salary</div>
+                  <div className="mt-1 text-sm font-bold text-sky-700 dark:text-sky-400">
                     ${Number(professor.salary).toLocaleString("en-US", { maximumFractionDigits: 0 })}
                   </div>
                   {professor.salaryTitle && (
-                    <div className="mt-0.5 text-[11px] text-emerald-600/70 dark:text-emerald-500/60 truncate capitalize">
+                    <div className="mt-0.5 truncate text-[11px] capitalize text-sky-600/70 dark:text-sky-500/60">
                       {professor.salaryTitle.toLowerCase().replace(/\b\w/g, (c: string) => c.toUpperCase())}
                     </div>
                   )}
@@ -174,7 +174,7 @@ console.log("peers found:", peers?.length);  // add this after the findMany too
 
             {professor.rmpUrl && (
               <div className="mt-5">
-                <a href={professor.rmpUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-xl border border-zinc-200 bg-white dark:border-white/10 dark:bg-white/5 px-5 py-2.5 text-sm font-semibold text-zinc-700 dark:text-zinc-200 transition hover:bg-zinc-50 dark:hover:bg-white/10 hover:border-zinc-300 dark:hover:border-white/20">
+                <a href={professor.rmpUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-xl border border-zinc-200 bg-white px-5 py-2.5 text-sm font-semibold text-zinc-700 transition hover:bg-zinc-50 hover:border-zinc-300 dark:border-sky-500/15 dark:bg-sky-500/[0.05] dark:text-zinc-200 dark:hover:bg-sky-500/[0.1] dark:hover:border-sky-500/25">
                   View on RateMyProfessors →
                 </a>
               </div>
@@ -203,7 +203,7 @@ console.log("peers found:", peers?.length);  // add this after the findMany too
   <div className="col-span-3 font-bold text-zinc-900 dark:text-zinc-100">
     <Link
       href={`/courses/${r.courseLabel.split(" ")[0].toLowerCase()}/${r.courseLabel.split(" ")[1]?.toLowerCase()}`}
-      className="hover:text-emerald-600 dark:hover:text-emerald-400 hover:underline transition-colors"
+      className="transition-colors hover:text-sky-600 hover:underline dark:hover:text-sky-400"
     >
       {r.courseLabel}
     </Link>
@@ -224,7 +224,7 @@ console.log("peers found:", peers?.length);  // add this after the findMany too
         </div>
 
         <footer className="mt-12 border-t border-zinc-100 dark:border-white/8 pt-8 text-center text-sm text-zinc-400 dark:text-zinc-600">
-          <p>Contact: <a href="mailto:uicratings@gmail.com" className="hover:text-emerald-500 dark:hover:text-emerald-400 transition-colors">uicratings@gmail.com</a></p>
+          <p>Contact: <a href="mailto:uicratings@gmail.com" className="transition-colors hover:text-sky-500 dark:hover:text-sky-400">uicratings@gmail.com</a></p>
           <p className="mt-1">Not affiliated with UIC or RMP.</p>
         </footer>
       </div>

@@ -49,6 +49,8 @@ export interface TrustExplanation {
   relevant_chunk_count: number;
   freshness_state:      "fresh" | "stale" | "unknown";
   domain_matched:       boolean;
+  exact_entity_required: boolean;
+  exact_entity_matched:  boolean;
 }
 
 export interface TrustResult {
@@ -72,6 +74,8 @@ export interface QuerySignal {
   isFact:           boolean;
   answerMode:       string;
   domainConfidence: Partial<Record<string, number>>;
+  exactEntityRequired?: boolean;
+  exactEntityMatch?: boolean;
 }
 
 // ─── THRESHOLDS ───────────────────────────────────────────────────────────────
@@ -338,7 +342,10 @@ export function makeTrustDecision(
     relevant_chunk_count: nRelevant,
     freshness_state:      freshness,
     domain_matched:       domainMatched,
+    exact_entity_required: Boolean(query.exactEntityRequired),
+    exact_entity_matched:  query.exactEntityRequired ? Boolean(query.exactEntityMatch) : true,
   };
+  const exactEntityOk = !query.exactEntityRequired || Boolean(query.exactEntityMatch);
 
   // ── CLASS: personal_data — always abstain ─────────────────────────────────
   if (queryClass === "personal_data") {
@@ -364,7 +371,7 @@ export function makeTrustDecision(
   // ── CLASS: financial ─────────────────────────────────────────────────────
   if (queryClass === "financial") {
     // Official JSON data for tuition/aid = answer (the data is structured and versioned)
-    if (hasHighTrust(chunks) && score >= 0.55 && domainMatched) {
+    if (hasHighTrust(chunks) && score >= 0.45 && domainMatched) {
       return { decision: "answer", confidence: 78, reason: "financial_official_data_present", explanation };
     }
     // Any decent evidence = hedge with verification nudge
@@ -393,20 +400,34 @@ export function makeTrustDecision(
 
   // ── CLASS: stable_fact ────────────────────────────────────────────────────
   if (queryClass === "stable_fact") {
+    if (!exactEntityOk) {
+      if (domainMatched && hasHighTrust(chunks) && score >= 0.35) {
+        return { decision: "hedge", confidence: 42, reason: "stable_fact_entity_not_verified", explanation };
+      }
+      return { decision: "abstain", confidence: 82, reason: "stable_fact_entity_not_verified", explanation };
+    }
+
     // isFact + matching structured data = highest confidence direct answer
-    if (query.isFact && hasMatchingStructuredData(query, chunks)) {
+    if (query.isFact && domainMatched && hasHighTrust(chunks) && score >= 0.45 && hasMatchingStructuredData(query, chunks)) {
       return { decision: "answer", confidence: 93, reason: "fact_query_matching_structured_data", explanation };
     }
 
+    if (query.isFact) {
+      if (domainMatched && hasHighTrust(chunks) && score >= ANSWER_THRESHOLD) {
+        return { decision: "hedge", confidence: 58, reason: "fact_query_partial_structured_support", explanation };
+      }
+      return { decision: "abstain", confidence: 84, reason: "fact_query_needs_stronger_structured_support", explanation };
+    }
+
     // Domain matched + high trust + decent score = answer
-    if (domainMatched && hasHighTrust(chunks) && score >= 0.50) {
+    if (domainMatched && hasHighTrust(chunks) && score >= 0.55) {
       return { decision: "answer", confidence: Math.round(score * 95), reason: "stable_fact_high_trust", explanation };
     }
 
-    // Domain matched + any decent evidence = answer (bias toward helpful)
-    // This is the key change: single decent source is enough for stable UIC facts
+    // Stable facts can still be useful with weaker evidence, but prefer hedging
+    // over direct answers unless we have strong structured support.
     if (domainMatched && score >= ANSWER_THRESHOLD) {
-      return { decision: "answer", confidence: Math.round(score * 80), reason: "stable_fact_sufficient_evidence", explanation };
+      return { decision: "hedge", confidence: Math.round(score * 70), reason: "stable_fact_partial_evidence_hedge", explanation };
     }
 
     // Domain mismatch but strong evidence = hedge (something relevant found)

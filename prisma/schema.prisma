@@ -5,6 +5,66 @@ generator client {
 datasource db {
   provider = "postgresql"
 }
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  accounts      Account[]
+  sessions      Session[]
+  studyProfile  StudyUser?
+
+  @@map("auth_users")
+}
+
+model Account {
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?   @db.Text
+  access_token      String?   @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?   @db.Text
+  session_state     String?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([provider, providerAccountId])
+  @@index([userId])
+  @@map("auth_accounts")
+}
+
+model Session {
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([sessionToken])
+  @@index([userId])
+  @@map("auth_sessions")
+}
+
+model VerificationToken {
+  identifier String
+  token      String
+  expires    DateTime
+
+  @@id([identifier, token])
+  @@unique([token])
+  @@map("auth_verification_tokens")
+}
+
 model Professor {                                                                                                    
    id String @id @default(cuid())                                                                                       
    slug String @unique                                                                                                  
@@ -84,28 +144,38 @@ model Term {
   instructorStats CourseInstructorTermStats[]
   courseStats     CourseTermStats[]
 }
-model Course {                                                                                                       
-   id String @id @default(cuid())                                                                                       
-   subject String                                                                                                       
-   number String                                                                                                        
-   title String                                                                                                         
-   deptCode String?                                                                                                     
-   deptName String?                                                                                                     
-   createdAt DateTime @default(now())                                                                                   
-   updatedAt DateTime @updatedAt                                                                                        
-   avgGpa Float?                                                                                                        
-   difficultyScore Float?                                                                                               
-   totalRegsAllTime Int @default(0)                                                                                     
-   instructorStats CourseInstructorTermStats[]                                                                          
-   termStats CourseTermStats[]                                                                                          
-   isGenEd Boolean @default(false)                                                                                      
-   genEdCategory String?                                                                                                
-   professorRanks ProfessorCourseRank[]                                                                                 
-                                                                                                                        
-   @@unique([subject, number])                                                                                          
-   @@index([deptName])                                                                                                  
-   @@index([subject, number])                                                                                           
-   }              
+model Course {
+  id               String   @id @default(cuid())
+  subject          String
+  number           String
+  code             String   @unique  // computed: subject + " " + number, e.g. "CS 251"
+  title            String
+  deptCode         String?
+  deptName         String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  avgGpa           Float?
+  difficultyScore  Float?
+  totalRegsAllTime Int      @default(0)
+  isGenEd          Boolean  @default(false)
+  genEdCategory    String?
+
+  // V1 relations (unchanged)
+  instructorStats CourseInstructorTermStats[]
+  termStats       CourseTermStats[]
+  professorRanks  ProfessorCourseRank[]
+
+  // V2 back-relations (virtual — no DB columns on Course; FK lives on the V2 side)
+  metaV2           CourseMetaV2?
+  prereqGroups     PrerequisiteGroup[]
+  prereqEdges      PrerequisiteEdge[]   @relation("CourseAsPrereq")
+  requirementItems RequirementItem[]
+  studentRecords   StudentCourseRecord[]
+
+  @@unique([subject, number])
+  @@index([deptName])
+  @@index([subject, number])
+}            
 
 model ProfessorCourseRank {                                                                                          
    id String @id @default(cuid())                                                                                       
@@ -293,4 +363,632 @@ model QueryLog {
   @@index([createdAt])
   @@index([abstained])
   @@index([answerMode])
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SPARKY V2 — DATA MODEL
+// All tables below are new. No V1 table is dropped or destructively altered.
+// ═══════════════════════════════════════════════════════════════════════════════
+
+// ── V2 course metadata extension ─────────────────────────────────────────────
+// 1:1 with Course. Keeps V2-only fields strictly out of the V1 Course table.
+// courseId is @id, so there is exactly one row per course.
+
+model CourseMetaV2 {
+  courseId      String  @id
+  course        Course  @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  creditHours   Int?
+  description   String?  @db.Text
+  offeredFall   Boolean  @default(true)
+  offeredSpring Boolean  @default(true)
+  offeredSummer Boolean  @default(false)
+
+  @@map("v2_course_meta")
+}
+
+// ── Prerequisite Graph ────────────────────────────────────────────────────────
+//
+// A course's prerequisites are expressed as a set of PrerequisiteGroups.
+// ALL groups must be satisfied (AND between groups).
+// Within a group, ANY single edge satisfies it (OR within a group).
+//
+// Example — CS 251 requires CS 141 AND CS 151:
+//   Group A → edge(CS 141)      <- must take CS 141
+//   Group B → edge(CS 151)      <- must take CS 151
+//
+// Example — MATH 210 requires MATH 121 OR MATH 125:
+//   Group A → edge(MATH 121), edge(MATH 125)   <- either satisfies
+
+model PrerequisiteGroup {
+  id       String             @id @default(cuid())
+  courseId String
+  course   Course             @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  edges    PrerequisiteEdge[]
+
+  @@index([courseId])
+  @@map("v2_prerequisite_groups")
+}
+
+model PrerequisiteEdge {
+  id             String            @id @default(cuid())
+  groupId        String
+  group          PrerequisiteGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  prereqCourseId String
+  prereqCourse   Course            @relation("CourseAsPrereq", fields: [prereqCourseId], references: [id], onDelete: Cascade)
+
+  @@unique([groupId, prereqCourseId])
+  @@index([groupId])
+  @@index([prereqCourseId])
+  @@map("v2_prerequisite_edges")
+}
+
+// ── Degree Requirements ───────────────────────────────────────────────────────
+//
+// DegreeProgram → RequirementGroup → RequirementItem (Course)
+//
+// RequirementGroup.type controls how many items must be completed:
+//   REQUIRED         → every item in the group must be taken
+//   CHOOSE_N_COURSES → take at least minCoursesNeeded from the list
+//   CHOOSE_N_CREDITS → accumulate at least minCreditsNeeded credits from the list
+
+enum RequirementGroupType {
+  REQUIRED
+  CHOOSE_N_COURSES
+  CHOOSE_N_CREDITS
+}
+
+model DegreeProgram {
+  id                   String             @id @default(cuid())
+  code                 String             @unique  // "CS-BS", "MATH-BS"
+  name                 String                      // "Computer Science, B.S."
+  department           String
+  totalCreditsRequired Int
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime           @updatedAt
+
+  requirementGroups RequirementGroup[]
+  studentProfiles   StudentPlanProfile[]
+
+  @@map("v2_degree_programs")
+}
+
+model RequirementGroup {
+  id               String        @id @default(cuid())
+  programId        String
+  program          DegreeProgram @relation(fields: [programId], references: [id], onDelete: Cascade)
+  name             String               // "Core Courses", "Technical Electives", "Gen Ed"
+  type             RequirementGroupType
+  minCoursesNeeded Int?          // populated when type = CHOOSE_N_COURSES
+  minCreditsNeeded Int?          // populated when type = CHOOSE_N_CREDITS
+  displayOrder     Int           @default(0)
+
+  items RequirementItem[]
+
+  @@index([programId])
+  @@map("v2_requirement_groups")
+}
+
+model RequirementItem {
+  id       String           @id @default(cuid())
+  groupId  String
+  group    RequirementGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  courseId String
+  course   Course           @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@unique([groupId, courseId])
+  @@index([groupId])
+  @@index([courseId])
+  @@map("v2_requirement_items")
+}
+
+// ── Student Planning Profile ──────────────────────────────────────────────────
+//
+// Session-scoped. Created on demand when a student asks a planning question.
+// Holds completed/in-progress/planned courses and their target graduation term.
+
+model StudentPlanProfile {
+  id                    String         @id @default(cuid())
+  sessionId             String
+  programId             String?
+  program               DegreeProgram? @relation(fields: [programId], references: [id], onDelete: SetNull)
+  targetGradTerm        String?        // "Spring 2027"
+  maxCoursesPerSemester Int            @default(5)
+  createdAt             DateTime       @default(now())
+  updatedAt             DateTime       @updatedAt
+
+  courses StudentCourseRecord[]
+
+  @@index([sessionId])
+  @@map("v2_student_plan_profiles")
+}
+
+// status values: "COMPLETED" | "IN_PROGRESS" | "PLANNED"
+// grade: null when IN_PROGRESS or PLANNED; "A", "B+", "W", etc. when COMPLETED
+model StudentCourseRecord {
+  id        String             @id @default(cuid())
+  profileId String
+  profile   StudentPlanProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  courseId  String
+  course    Course             @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  status    String
+  grade     String?
+  term      String?            // "Fall 2024"
+
+  @@unique([profileId, courseId])
+  @@index([profileId])
+  @@index([courseId])
+  @@map("v2_student_course_records")
+}
+
+enum StudySetVisibility {
+  PRIVATE
+  PUBLIC
+}
+
+enum StudyDifficulty {
+  EASY
+  MEDIUM
+  HARD
+}
+
+enum StudyQuestionType {
+  MULTIPLE_CHOICE
+  TRUE_FALSE
+  SHORT_ANSWER
+  FILL_BLANK
+  MATCHING
+  WRITTEN
+}
+
+enum StudySessionMode {
+  FLASHCARDS
+  LEARN
+  TEST
+  EXAM
+  MATCH
+}
+
+enum StudyNoteSourceType {
+  MANUAL
+  AUDIO
+  IMPORTED
+}
+
+enum StudyNoteStatus {
+  DRAFT
+  PROCESSING
+  READY
+  ERROR
+}
+
+enum StudyTranscriptStatus {
+  IDLE
+  PROCESSING
+  READY
+  ERROR
+}
+
+model StudyUser {
+  id                String             @id @default(cuid())
+  authUserId        String?            @unique
+  authUser          User?              @relation(fields: [authUserId], references: [id], onDelete: SetNull)
+  email             String?            @unique
+  sessionKey        String?            @unique
+  displayName       String?
+  image             String?
+  school            String?            @default("UIC")
+  major             String?
+  currentCourses    String[]           @default([])
+  interests         String[]           @default([])
+  studyPreferences  String?            @db.Text
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  studySets         StudySet[]
+  studySessions     StudySession[]
+  cardProgress      CardProgress[]
+  quizAttempts      QuizAttempt[]
+  examAttempts      ExamAttempt[]
+  reviewQueue       ReviewQueue[]
+  mistakeDeckEntries MistakeDeckEntry[]
+  aiGenerationLogs  AiGenerationLog[]
+  studyNotes        StudyNote[]
+  studyNoteAiLogs   StudyNoteAiGenerationLog[]
+  createdStudyGroups StudyGroup[]      @relation("StudyGroupCreator")
+  studyGroupMemberships StudyGroupMembership[]
+  groupSetLinks     StudyGroupSet[]    @relation("StudyGroupSetAddedBy")
+
+  @@map("study_users")
+}
+
+model StudySet {
+  id          String             @id @default(cuid())
+  ownerId     String?
+  owner       StudyUser?         @relation(fields: [ownerId], references: [id], onDelete: SetNull)
+  title       String
+  description String?            @db.Text
+  course      String?
+  subject     String?
+  tags        String[]           @default([])
+  difficulty  StudyDifficulty    @default(MEDIUM)
+  visibility  StudySetVisibility @default(PRIVATE)
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+
+  flashcards    Flashcard[]
+  studySessions StudySession[]
+  quizzes       StudyQuiz[]
+  exams         StudyExam[]
+  mistakeDecks  MistakeDeckEntry[]
+  aiLogs        AiGenerationLog[]
+  studyGroups   StudyGroupSet[]
+
+  @@index([ownerId])
+  @@index([course])
+  @@index([subject])
+  @@index([visibility])
+  @@map("study_sets")
+}
+
+model StudyGroup {
+  id          String               @id @default(cuid())
+  creatorId   String
+  creator     StudyUser            @relation("StudyGroupCreator", fields: [creatorId], references: [id], onDelete: Cascade)
+  name        String
+  course      String?
+  description String?              @db.Text
+  inviteCode  String               @unique
+  createdAt   DateTime             @default(now())
+  updatedAt   DateTime             @updatedAt
+  memberships StudyGroupMembership[]
+  linkedSets  StudyGroupSet[]
+
+  @@index([creatorId])
+  @@index([inviteCode])
+  @@map("study_groups")
+}
+
+model StudyGroupMembership {
+  id        String     @id @default(cuid())
+  groupId   String
+  userId    String
+  role      String     @default("member")
+  joinedAt  DateTime   @default(now())
+  group     StudyGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  user      StudyUser  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([groupId, userId])
+  @@index([userId])
+  @@map("study_group_memberships")
+}
+
+model StudyGroupSet {
+  id        String     @id @default(cuid())
+  groupId   String
+  setId     String
+  addedById String?
+  createdAt DateTime   @default(now())
+  group     StudyGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  set       StudySet   @relation(fields: [setId], references: [id], onDelete: Cascade)
+  addedBy   StudyUser? @relation("StudyGroupSetAddedBy", fields: [addedById], references: [id], onDelete: SetNull)
+
+  @@unique([groupId, setId])
+  @@index([setId])
+  @@index([addedById])
+  @@map("study_group_sets")
+}
+
+model Flashcard {
+  id             String          @id @default(cuid())
+  setId          String
+  set            StudySet        @relation(fields: [setId], references: [id], onDelete: Cascade)
+  front          String          @db.Text
+  back           String          @db.Text
+  hint           String?         @db.Text
+  mnemonic       String?         @db.Text
+  pronunciation  String?
+  formula        String?         @db.Text
+  example        String?         @db.Text
+  imageFrontUrl  String?
+  imageBackUrl   String?
+  difficulty     StudyDifficulty @default(MEDIUM)
+  tags           String[]        @default([])
+  orderIndex     Int             @default(0)
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+
+  progressEntries CardProgress[]
+  quizQuestions   QuizQuestion[]
+  reviewQueue     ReviewQueue[]
+  mistakeEntries  MistakeDeckEntry[]
+
+  @@index([setId])
+  @@index([orderIndex])
+  @@map("study_flashcards")
+}
+
+model StudySession {
+  id            String           @id @default(cuid())
+  userId        String?
+  user          StudyUser?       @relation(fields: [userId], references: [id], onDelete: SetNull)
+  setId         String
+  set           StudySet         @relation(fields: [setId], references: [id], onDelete: Cascade)
+  mode          StudySessionMode
+  durationMs    Int              @default(0)
+  cardsReviewed Int              @default(0)
+  accuracy      Float?           @default(0)
+  score         Float?           @default(0)
+  startedAt     DateTime
+  endedAt       DateTime?
+  createdAt     DateTime         @default(now())
+
+  @@index([userId])
+  @@index([setId])
+  @@index([mode])
+  @@map("study_sessions")
+}
+
+model CardProgress {
+  id              String    @id @default(cuid())
+  userId          String?
+  user            StudyUser? @relation(fields: [userId], references: [id], onDelete: SetNull)
+  cardId          String
+  card            Flashcard @relation(fields: [cardId], references: [id], onDelete: Cascade)
+  masteryScore    Float     @default(0)
+  confidenceScore Float     @default(0)
+  timesSeen       Int       @default(0)
+  timesCorrect    Int       @default(0)
+  timesWrong      Int       @default(0)
+  lastReviewedAt  DateTime?
+  nextReviewAt    DateTime?
+  starred         Boolean   @default(false)
+  markedDifficult Boolean   @default(false)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@unique([userId, cardId])
+  @@index([cardId])
+  @@index([nextReviewAt])
+  @@map("study_card_progress")
+}
+
+model StudyQuiz {
+  id             String         @id @default(cuid())
+  setId          String
+  set            StudySet       @relation(fields: [setId], references: [id], onDelete: Cascade)
+  title          String
+  mode           String         @default("mixed")
+  questionCount  Int            @default(0)
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  questions QuizQuestion[]
+  attempts  QuizAttempt[]
+
+  @@index([setId])
+  @@map("study_quizzes")
+}
+
+model QuizQuestion {
+  id             String            @id @default(cuid())
+  quizId         String?
+  quiz           StudyQuiz?        @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  cardId         String?
+  card           Flashcard?        @relation(fields: [cardId], references: [id], onDelete: SetNull)
+  type           StudyQuestionType
+  prompt         String            @db.Text
+  choices        String[]          @default([])
+  correctAnswer  String            @db.Text
+  explanation    String?           @db.Text
+  difficulty     StudyDifficulty   @default(MEDIUM)
+  topic          String?
+  orderIndex     Int               @default(0)
+  createdAt      DateTime          @default(now())
+
+  quizAnswers QuizAnswer[]
+
+  @@index([quizId])
+  @@index([cardId])
+  @@map("study_quiz_questions")
+}
+
+model QuizAttempt {
+  id             String      @id @default(cuid())
+  quizId         String
+  quiz           StudyQuiz   @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  userId         String?
+  user           StudyUser?  @relation(fields: [userId], references: [id], onDelete: SetNull)
+  percentCorrect Float       @default(0)
+  durationMs     Int         @default(0)
+  startedAt      DateTime
+  completedAt    DateTime?
+  createdAt      DateTime    @default(now())
+
+  answers QuizAnswer[]
+
+  @@index([quizId])
+  @@index([userId])
+  @@map("study_quiz_attempts")
+}
+
+model QuizAnswer {
+  id          String       @id @default(cuid())
+  attemptId   String
+  attempt     QuizAttempt  @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+  questionId  String
+  question    QuizQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  answerText  String?      @db.Text
+  isCorrect   Boolean      @default(false)
+  score       Float        @default(0)
+  createdAt   DateTime     @default(now())
+
+  @@unique([attemptId, questionId])
+  @@index([questionId])
+  @@map("study_quiz_answers")
+}
+
+model StudyExam {
+  id              String       @id @default(cuid())
+  setId           String
+  set             StudySet     @relation(fields: [setId], references: [id], onDelete: Cascade)
+  title           String
+  durationMinutes Int          @default(30)
+  topicsCovered   String[]     @default([])
+  difficultyMix   String?      @db.Text
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  attempts ExamAttempt[]
+
+  @@index([setId])
+  @@map("study_exams")
+}
+
+model ExamAttempt {
+  id             String      @id @default(cuid())
+  examId         String
+  exam           StudyExam   @relation(fields: [examId], references: [id], onDelete: Cascade)
+  userId         String?
+  user           StudyUser?  @relation(fields: [userId], references: [id], onDelete: SetNull)
+  percentCorrect Float       @default(0)
+  durationMs     Int         @default(0)
+  startedAt      DateTime
+  completedAt    DateTime?
+  resultsJson    String?     @db.Text
+  createdAt      DateTime    @default(now())
+
+  @@index([examId])
+  @@index([userId])
+  @@map("study_exam_attempts")
+}
+
+model ReviewQueue {
+  id         String     @id @default(cuid())
+  userId     String?
+  user       StudyUser? @relation(fields: [userId], references: [id], onDelete: SetNull)
+  cardId     String
+  card       Flashcard  @relation(fields: [cardId], references: [id], onDelete: Cascade)
+  dueAt      DateTime
+  priority   Float      @default(0)
+  status     String     @default("due")
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+
+  @@unique([userId, cardId])
+  @@index([dueAt])
+  @@map("study_review_queue")
+}
+
+model MistakeDeckEntry {
+  id            String     @id @default(cuid())
+  userId        String?
+  user          StudyUser? @relation(fields: [userId], references: [id], onDelete: SetNull)
+  setId         String
+  set           StudySet   @relation(fields: [setId], references: [id], onDelete: Cascade)
+  cardId        String?
+  card          Flashcard? @relation(fields: [cardId], references: [id], onDelete: SetNull)
+  sourceType    String     @default("quiz")
+  sourceAttempt String?
+  createdAt     DateTime   @default(now())
+
+  @@index([userId])
+  @@index([setId])
+  @@map("study_mistake_deck_entries")
+}
+
+model AiGenerationLog {
+  id             String     @id @default(cuid())
+  userId         String?
+  user           StudyUser? @relation(fields: [userId], references: [id], onDelete: SetNull)
+  setId          String?
+  set            StudySet?  @relation(fields: [setId], references: [id], onDelete: SetNull)
+  generationType String
+  inputSummary   String?    @db.Text
+  outputSummary  String?    @db.Text
+  status         String     @default("success")
+  createdAt      DateTime   @default(now())
+
+  @@index([userId])
+  @@index([setId])
+  @@index([generationType])
+  @@map("study_ai_generation_logs")
+}
+
+model StudyNote {
+  id                String               @id @default(cuid())
+  ownerId           String?
+  owner             StudyUser?           @relation(fields: [ownerId], references: [id], onDelete: SetNull)
+  title             String
+  course            String?
+  noteDate          DateTime?
+  subject           String?
+  tags              String[]             @default([])
+  rawContent        String?              @db.Text
+  structuredContent String?              @db.Text
+  transcriptContent String?              @db.Text
+  sourceType        StudyNoteSourceType  @default(MANUAL)
+  visibility        StudySetVisibility   @default(PRIVATE)
+  status            StudyNoteStatus      @default(DRAFT)
+  pinned            Boolean              @default(false)
+  favorite          Boolean              @default(false)
+  createdAt         DateTime             @default(now())
+  updatedAt         DateTime             @updatedAt
+  lastOpenedAt      DateTime             @default(now())
+
+  transcripts       StudyNoteTranscript[]
+  audioSessions     StudyNoteAudioSession[]
+  aiLogs            StudyNoteAiGenerationLog[]
+
+  @@index([ownerId])
+  @@index([course])
+  @@index([subject])
+  @@index([visibility])
+  @@index([lastOpenedAt])
+  @@map("study_notes")
+}
+
+model StudyNoteTranscript {
+  id         String                @id @default(cuid())
+  noteId     String
+  note       StudyNote             @relation(fields: [noteId], references: [id], onDelete: Cascade)
+  content    String                @db.Text
+  status     StudyTranscriptStatus @default(IDLE)
+  createdAt  DateTime              @default(now())
+  updatedAt  DateTime              @updatedAt
+
+  @@index([noteId])
+  @@map("study_note_transcripts")
+}
+
+model StudyNoteAudioSession {
+  id               String                @id @default(cuid())
+  noteId           String
+  note             StudyNote             @relation(fields: [noteId], references: [id], onDelete: Cascade)
+  audioRef         String?
+  durationMs       Int                   @default(0)
+  transcriptStatus StudyTranscriptStatus @default(IDLE)
+  aiStatus         StudyTranscriptStatus @default(IDLE)
+  createdAt        DateTime              @default(now())
+
+  @@index([noteId])
+  @@map("study_note_audio_sessions")
+}
+
+model StudyNoteAiGenerationLog {
+  id            String      @id @default(cuid())
+  noteId        String
+  note          StudyNote   @relation(fields: [noteId], references: [id], onDelete: Cascade)
+  userId        String?
+  user          StudyUser?  @relation(fields: [userId], references: [id], onDelete: SetNull)
+  action        String
+  status        String      @default("success")
+  detail        String?     @db.Text
+  inputSummary  String?     @db.Text
+  outputSummary String?     @db.Text
+  createdAt     DateTime    @default(now())
+
+  @@index([noteId])
+  @@index([userId])
+  @@index([action])
+  @@map("study_note_ai_generation_logs")
 }

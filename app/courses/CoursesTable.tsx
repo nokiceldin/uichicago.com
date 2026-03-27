@@ -39,6 +39,15 @@ export default function CoursesTable({ courses, total, page, pageSize, sort, dep
   const router = useRouter();
   const [qDraft, setQDraft] = useState(q);
 
+  function pushWith(next: Record<string, string | null>) {
+    const params = new URLSearchParams(sp.toString());
+    for (const key of Object.keys(next)) {
+      const val = next[key];
+      if (val == null || val === "") params.delete(key); else params.set(key, val);
+    }
+    router.push(`${pathname}?${params.toString()}`);
+  }
+
   useEffect(() => {
     const trimmed = qDraft.trim();
     const current = (q || "").trim();
@@ -48,15 +57,6 @@ export default function CoursesTable({ courses, total, page, pageSize, sort, dep
     }, 300);
     return () => clearTimeout(timeout);
   }, [qDraft, q]);
-
-  function pushWith(next: Record<string, string | null>) {
-    const params = new URLSearchParams(sp.toString());
-    for (const key of Object.keys(next)) {
-      const val = next[key];
-      if (val == null || val === "") params.delete(key); else params.set(key, val);
-    }
-    router.push(`${pathname}?${params.toString()}`);
-  }
 
   function setPage(n: number) { pushWith({ page: String(n) }); }
   function setSort(s: "difficultyDesc" | "difficultyAsc") { pushWith({ sort: s, page: "1" }); }
@@ -84,7 +84,7 @@ export default function CoursesTable({ courses, total, page, pageSize, sort, dep
   const inputBase = "h-10 w-full rounded-xl border border-zinc-200 bg-white px-4 text-sm text-zinc-900 outline-none placeholder:text-zinc-400 focus:border-red-500 focus:ring-2 focus:ring-red-900/30 transition-colors dark:border-white/10 dark:bg-zinc-900 dark:text-zinc-200 dark:placeholder:text-zinc-600 dark:focus:border-red-500/50 dark:focus:ring-red-500/10";
   const chipBase = "inline-flex items-center gap-1.5 rounded-full border border-zinc-200 bg-zinc-100 px-3 py-1 text-xs font-medium text-zinc-700 hover:bg-zinc-200 transition-colors cursor-pointer dark:border-white/10 dark:bg-white/5 dark:text-zinc-300 dark:hover:bg-white/10";
   const navBtn = "h-9 px-4 rounded-xl border border-zinc-200 bg-white text-sm font-medium text-zinc-700 hover:bg-zinc-50 transition-colors disabled:opacity-30 disabled:cursor-not-allowed dark:border-white/10 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-white/10";
-  const pageBtn = (active: boolean) => "h-9 min-w-9 px-3 rounded-xl border text-sm font-medium transition-all flex items-center justify-center tabular-nums " + (active ? "border-red-500/60 bg-red-600/15 text-red-400 pointer-events-none dark:border-red-500/50 dark:bg-red-500/15 dark:text-red-400" : "border-zinc-200 bg-white text-zinc-700 hover:bg-zinc-50 dark:border-white/10 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-white/10");
+  const pageBtn = (active: boolean) => "h-9 min-w-9 px-3 rounded-xl border text-sm font-medium transition-all flex items-center justify-center tabular-nums " + (active ? "border-zinc-300 bg-zinc-100 text-zinc-900 pointer-events-none dark:border-white/12 dark:bg-white/10 dark:text-white" : "border-zinc-200 bg-white text-zinc-700 hover:bg-zinc-50 dark:border-white/10 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-white/10");
 
   return (
     <main className="relative min-h-screen bg-zinc-50 text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100">
@@ -95,8 +95,8 @@ export default function CoursesTable({ courses, total, page, pageSize, sort, dep
         {/* Header */}
         <div className="mb-8">
           <div className="mb-2">
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-red-800/40 bg-red-600/10 px-3 py-1 text-xs font-semibold uppercase tracking-widest text-red-400 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-400">
-              <span className="h-1.5 w-1.5 rounded-full bg-red-500" />
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-zinc-300 bg-zinc-100 px-3 py-1 text-xs font-semibold uppercase tracking-widest text-zinc-600 dark:border-white/12 dark:bg-white/[0.06] dark:text-zinc-300">
+              <span className="h-1.5 w-1.5 rounded-full bg-zinc-500 dark:bg-zinc-400" />
               {nf.format(total)} courses
             </span>
           </div>
@@ -148,7 +148,7 @@ export default function CoursesTable({ courses, total, page, pageSize, sort, dep
             <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-zinc-100 dark:border-white/5 pt-4">
               <span className="text-xs text-zinc-400 mr-1">Active:</span>
               {dept && <button className={chipBase} onClick={() => setDept("")}>Dept: <strong>{dept}</strong> <span className="text-zinc-400">×</span></button>}
-              {q.trim() && <button className={chipBase} onClick={() => { setQDraft(""); pushWith({ q: null, page: "1" }); }}>Search: <strong>"{q.trim()}"</strong> <span className="text-zinc-400">×</span></button>}
+              {q.trim() && <button className={chipBase} onClick={() => { setQDraft(""); pushWith({ q: null, page: "1" }); }}>Search: <strong>&quot;{q.trim()}&quot;</strong> <span className="text-zinc-400">×</span></button>}
               {major && <button className={chipBase} onClick={() => setMajor("")}>Major: <strong>{selectedMajor?.label}</strong> <span className="text-zinc-400">×</span></button>}
               {major && majorCategory && <button className={chipBase} onClick={() => setMajorCategory("")}>Req: <strong>{majorCategories.find((c) => c.key === majorCategory)?.label}</strong> <span className="text-zinc-400">×</span></button>}
               {gened && <button className={chipBase} onClick={() => setGenEd(false)}>Gen Ed <span className="text-zinc-400">×</span></button>}

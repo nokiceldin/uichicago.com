@@ -127,7 +127,7 @@ export function detectCampusIntent(msg: string) {
     isAboutPayment: /payment plan|installment|nelnet|ui pay|pay over time|how to pay/i.test(m),
     isAboutCostComparison: /compare|vs|versus|uiuc|niu|siu|cheaper|more expensive|other school/i.test(m),
     isAboutDebt: /debt|borrow|loan|average debt|graduate debt/i.test(m),
-    isAboutHousing: /housing|dorm|residence hall|live on campus|room|arc|jst|commons|courtyard|marie robinson|mrh|tbh|ssr|psr|beckham|stukel|roommate|move.?in|apply for housing/i.test(m),
+    isAboutHousing: /housing|dorm|residence hall|\bon campus\b|live on campus|room|arc|jst|commons|courtyard|marie robinson|mrh|tbh|ssr|psr|beckham|stukel|roommate|move.?in|apply for housing/i.test(m),
     isAboutMealPlan: /meal plan|meal swipe|flames fare|ignite|blaze|dining plan|swipes|food plan/i.test(m),
     isAboutDining: /dining|eat|food|restaurant|cafe|cafeteria|chick.?fil|panda|starbucks|subway|sushi|halal|dunkin|market|where to eat|lunch|breakfast|dinner/i.test(m),
     isAboutOffCampus: /off.?campus|apartment|neighborhood|pilsen|west loop|university village|little italy|near campus/i.test(m),

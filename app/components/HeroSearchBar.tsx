@@ -123,25 +123,25 @@ export default function HeroSearchBar() {
 
   return (
     <div className="max-w-2xl mx-auto mb-6">
-      <Link href="/chat" className="group block w-full">
-        <div className="flex items-center gap-3 bg-zinc-100 dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 rounded-xl px-5 py-4 hover:border-red-500 transition-colors cursor-text">
+      <Link href="/chat?focus=1" className="group block w-full">
+        <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/6 px-5 py-4 backdrop-blur-xl transition-colors hover:border-red-400/60 dark:border-white/10 dark:bg-white/6 cursor-text">
           <img
             src="/sparky-icon.png"
             alt="Sparky"
             className="w-7 h-7 object-contain"
           />
-          <span className="flex-1 text-sm text-zinc-500 text-left min-w-0">
+          <span className="min-w-0 flex-1 text-left text-sm text-zinc-300">
             {displayed ? (
-              <span className="text-zinc-700 dark:text-zinc-300">
+              <span className="text-zinc-100">
                 {displayed}
                 <span className="inline-block w-0.5 h-3.5 bg-red-500 ml-0.5 align-middle animate-pulse" />
               </span>
             ) : (
-              <span className="italic">Ask Sparky anything...</span>
+              <span className="italic">Search courses or ask Sparky...</span>
             )}
           </span>
-          <span className="bg-red-600 group-hover:bg-red-500 text-white font-bold px-4 py-2 rounded-lg text-sm transition-colors whitespace-nowrap shrink-0">
-            Ask Sparky →
+          <span className="shrink-0 whitespace-nowrap rounded-xl bg-red-600 px-4 py-2 text-sm font-bold text-white transition-colors group-hover:bg-red-500">
+            Search →
           </span>
         </div>
       </Link>

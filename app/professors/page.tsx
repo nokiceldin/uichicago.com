@@ -42,12 +42,11 @@ export default function Page() {
   const middle = pageButtons.filter((n) => n !== 1 && n !== totalPages);
   const start = (page - 1) * pageSize;
 
-  // Red brand, rating colours unchanged
   const selectBase = "h-9 w-full cursor-pointer rounded-xl border border-zinc-200 bg-white px-3 text-sm text-zinc-900 outline-none focus:border-red-500 focus:ring-2 focus:ring-red-900/20 transition-colors dark:border-white/10 dark:bg-zinc-900 dark:text-zinc-200 dark:focus:border-red-500/50 dark:focus:ring-red-500/10";
   const inputBase = "h-10 w-full rounded-xl border border-zinc-200 bg-white px-4 text-sm text-zinc-900 outline-none placeholder:text-zinc-400 focus:border-red-500 focus:ring-2 focus:ring-red-900/20 transition-colors dark:border-white/10 dark:bg-zinc-900 dark:text-zinc-200 dark:placeholder:text-zinc-600 dark:focus:border-red-500/50 dark:focus:ring-red-500/10";
   const chipBase = "inline-flex items-center gap-1.5 rounded-full border border-zinc-200 bg-zinc-100 px-3 py-1 text-xs font-medium text-zinc-700 hover:bg-zinc-200 transition-colors cursor-pointer dark:border-white/10 dark:bg-white/5 dark:text-zinc-300 dark:hover:bg-white/10";
   const navBtn = "h-9 px-4 rounded-xl border border-zinc-200 bg-white text-sm font-medium text-zinc-700 hover:bg-zinc-50 transition-colors disabled:opacity-30 disabled:cursor-not-allowed dark:border-white/10 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-white/10";
-  const pageBtn = (active: boolean) => "h-9 min-w-9 px-3 rounded-xl border text-sm font-medium transition-all flex items-center justify-center tabular-nums " + (active ? "border-red-500/60 bg-red-600/15 text-red-400 pointer-events-none dark:border-red-500/50 dark:bg-red-500/15 dark:text-red-400" : "border-zinc-200 bg-white text-zinc-700 hover:bg-zinc-50 dark:border-white/10 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-white/10");
+  const pageBtn = (active: boolean) => "h-9 min-w-9 px-3 rounded-xl border text-sm font-medium transition-all flex items-center justify-center tabular-nums " + (active ? "border-zinc-300 bg-zinc-100 text-zinc-900 pointer-events-none dark:border-white/12 dark:bg-white/10 dark:text-white" : "border-zinc-200 bg-white text-zinc-700 hover:bg-zinc-50 dark:border-white/10 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-white/10");
   const hasAnyFilters = query.trim() || dept !== "All" || minRatings !== 0 || minStars !== 0 || sort !== "best";
 
   function clearAll() { setQuery(""); setDept("All"); setMinRatings(0); setMinStars(0); setSort("best"); setPage(1); }
@@ -80,8 +79,8 @@ export default function Page() {
       <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-12">
         <div className="mb-8">
           <div className="mb-2">
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-red-800/40 bg-red-600/10 px-3 py-1 text-xs font-semibold uppercase tracking-widest text-red-400">
-              <span className="h-1.5 w-1.5 rounded-full bg-red-500" />
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-zinc-300 bg-zinc-100 px-3 py-1 text-xs font-semibold uppercase tracking-widest text-zinc-600 dark:border-white/12 dark:bg-white/[0.06] dark:text-zinc-300">
+              <span className="h-1.5 w-1.5 rounded-full bg-zinc-500 dark:bg-zinc-400" />
               {new Intl.NumberFormat("en-US").format(total)} professors
             </span>
           </div>
@@ -119,7 +118,7 @@ export default function Page() {
                 <span>Min reviews</span><span className="tabular-nums text-zinc-600">{minRatings}</span>
               </div>
               <div className="flex h-9 items-center rounded-xl border border-zinc-200 bg-white dark:border-white/10 dark:bg-zinc-900 px-3">
-                <input type="range" min={0} max={200} step={5} value={minRatings} onChange={(e) => { setMinRatings(Number(e.target.value)); setPage(1); }} className="w-full accent-red-500" />
+                <input type="range" min={0} max={200} step={5} value={minRatings} onChange={(e) => { setMinRatings(Number(e.target.value)); setPage(1); }} className="w-full accent-zinc-500 dark:accent-zinc-300" />
               </div>
             </div>
           </div>
@@ -129,7 +128,7 @@ export default function Page() {
               {dept !== "All" && <button className={chipBase} onClick={() => { setDept("All"); setPage(1); }}>Dept: <strong>{dept}</strong> <span className="text-zinc-400">×</span></button>}
               {minStars !== 0 && <button className={chipBase} onClick={() => { setMinStars(0); setPage(1); }}>Rating: <strong>{minStars}+</strong> <span className="text-zinc-400">×</span></button>}
               {minRatings !== 0 && <button className={chipBase} onClick={() => { setMinRatings(0); setPage(1); }}>Reviews: <strong>{minRatings}+</strong> <span className="text-zinc-400">×</span></button>}
-              {query.trim() && <button className={chipBase} onClick={() => { setQuery(""); setPage(1); }}>Search: <strong>"{query.trim()}"</strong> <span className="text-zinc-400">×</span></button>}
+              {query.trim() && <button className={chipBase} onClick={() => { setQuery(""); setPage(1); }}>Search: <strong>&quot;{query.trim()}&quot;</strong> <span className="text-zinc-400">×</span></button>}
               <button onClick={clearAll} className="ml-auto text-xs font-semibold text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 transition-colors">Clear all</button>
             </div>
           )}

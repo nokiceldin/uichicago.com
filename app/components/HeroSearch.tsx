@@ -147,9 +147,9 @@ export default function HeroSearch({ compact = false }: { compact?: boolean }) {
             onChange={(e) => setQuery(e.target.value)}
             onFocus={() => { if (trimmed) setOpen(true); }}
             placeholder={compact ? "Search professors or courses…" : "Search by professor, course code, or title"}
-            className={`w-full rounded-xl border border-zinc-200 bg-white/95 pl-9 text-zinc-900 outline-none transition placeholder:text-zinc-400 focus:border-emerald-400 dark:border-white/10 dark:bg-zinc-900/90 dark:text-zinc-100 dark:placeholder:text-zinc-500 ${
+            className={`w-full rounded-xl border border-zinc-200 bg-white/95 pl-9 text-zinc-900 outline-none transition placeholder:text-zinc-400 focus:border-emerald-400 dark:border-white/10 dark:bg-zinc-900/80 dark:text-zinc-100 dark:placeholder:text-zinc-500 ${
               compact
-                ? "h-9 pr-3 text-xs focus:ring-2 focus:ring-emerald-100 dark:focus:ring-emerald-400/10"
+                ? "h-9 pr-3 text-xs shadow-[inset_0_1px_0_rgba(255,255,255,0.03)] backdrop-blur-md focus:ring-2 focus:ring-emerald-100 dark:border-white/12 dark:bg-white/[0.045] dark:hover:border-white/16 dark:focus:ring-emerald-400/10"
                 : "h-14 pr-28 text-[15px] shadow-lg focus:ring-4 focus:ring-emerald-100 dark:focus:ring-emerald-400/10"
             }`}
           />
@@ -172,7 +172,7 @@ export default function HeroSearch({ compact = false }: { compact?: boolean }) {
       )}
 
       {open && trimmed ? (
-        <div className="absolute left-0 right-0 top-[calc(100%+8px)] z-30 overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-2xl dark:border-white/10 dark:bg-zinc-900">
+        <div className="absolute left-0 right-0 top-[calc(100%+8px)] z-30 overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-2xl dark:border-white/10 dark:bg-zinc-900/95 dark:shadow-[0_24px_80px_rgba(0,0,0,0.45)]">
           {loading ? (
             <div className="px-4 py-4 text-sm text-zinc-500 dark:text-zinc-400">
               Searching...

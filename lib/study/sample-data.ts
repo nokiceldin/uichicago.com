@@ -1,0 +1,101 @@
+import type { StudyLibraryState, StudySet } from "./types";
+
+const now = new Date().toISOString();
+
+export const SAMPLE_STUDY_SET: StudySet = {
+  id: "sample-bios-110-week-7",
+  title: "Week 7 - DNA & Protein Synthesis",
+  description:
+    "Core BIOS 110 flashcards for replication, transcription, translation, mutations, and gene expression.",
+  course: "BIOS 110",
+  subject: "Biology",
+  tags: ["dna", "protein synthesis", "exam 2", "replication"],
+  difficulty: "medium",
+  visibility: "private",
+  createdAt: now,
+  updatedAt: now,
+  cards: [
+    {
+      id: "card-central-dogma",
+      front: "Central dogma of molecular biology",
+      back: "DNA -> RNA -> Protein",
+      hint: "Think information flow.",
+      mnemonic: "Dogma points one way.",
+      example: "DNA is transcribed into mRNA, which is translated into protein.",
+      difficulty: "easy",
+      tags: ["dogma", "transcription", "translation"],
+      orderIndex: 0,
+    },
+    {
+      id: "card-leading-lagging",
+      front: "Leading vs lagging strand",
+      back: "Leading strand is synthesized continuously; lagging strand is synthesized in Okazaki fragments.",
+      hint: "One is smooth, one is stitched together.",
+      difficulty: "medium",
+      tags: ["replication"],
+      orderIndex: 1,
+    },
+    {
+      id: "card-frameshift",
+      front: "Frameshift mutation",
+      back: "A mutation caused by insertion or deletion not in multiples of three, shifting the reading frame.",
+      hint: "Triplet code gets offset.",
+      difficulty: "medium",
+      tags: ["mutations"],
+      orderIndex: 2,
+    },
+    {
+      id: "card-prokaryotes-expression",
+      front: "Prokaryotic gene expression",
+      back: "Transcription and translation can occur simultaneously because there is no nucleus.",
+      hint: "No compartment split.",
+      difficulty: "medium",
+      tags: ["gene expression", "prokaryotes"],
+      orderIndex: 3,
+    },
+    {
+      id: "card-pyrimidines",
+      front: "Pyrimidines",
+      back: "Cytosine, thymine, and uracil are pyrimidines.",
+      hint: "Single-ring bases.",
+      difficulty: "easy",
+      tags: ["bases"],
+      orderIndex: 4,
+    },
+    {
+      id: "card-telomeres",
+      front: "Why prokaryotes do not need telomeres",
+      back: "Their DNA is circular, so there are no chromosome ends to protect.",
+      difficulty: "medium",
+      tags: ["chromosomes", "prokaryotes"],
+      orderIndex: 5,
+    },
+    {
+      id: "card-rrna",
+      front: "rRNA role",
+      back: "rRNA forms the ribosome and catalyzes peptide bond formation.",
+      difficulty: "medium",
+      tags: ["translation", "ribosome"],
+      orderIndex: 6,
+    },
+    {
+      id: "card-mutations",
+      front: "Why mutations occur",
+      back: "Mutations can happen from replication errors or DNA damage.",
+      difficulty: "easy",
+      tags: ["mutations"],
+      orderIndex: 7,
+    },
+  ],
+};
+
+export const DEFAULT_STUDY_LIBRARY: StudyLibraryState = {
+  sets: [],
+  groups: [],
+  notes: [],
+  noteAudioSessions: [],
+  noteAiLogs: [],
+  progress: {},
+  sessions: [],
+  quizResults: [],
+};

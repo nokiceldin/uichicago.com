@@ -1,6 +1,6 @@
 export const dynamic = "force-dynamic";
-export const runtime = "nodejs";  // ADD THIS
-export const revalidate = 0;      // ADD
+export const runtime = "nodejs";
+export const revalidate = 0;
 import { NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
 import { getPostHogClient } from "@/app/lib/posthog-server";
@@ -8,6 +8,7 @@ import { detectIntent, detectCampusIntent } from "@/lib/chat/intent";
 import { classifyIntent } from "@/lib/chat/classify";
 import { vectorSearch, rerankChunks } from "@/lib/chat/vectors";
 import { getSessionState, updateSessionState, extractEntitiesFromQuery } from "@/lib/chat/session-state";
+import { getCurrentStudyUser } from "@/lib/auth/session";
 import { getMemory, updateMemory, formatMemoryForPrompt } from "@/lib/chat/memory";
 import { prisma } from "@/lib/prisma";
 import { diffLabel } from "@/lib/chat/utils";
@@ -38,8 +39,6 @@ import {
   fetchProfessorsForCourse,   // ADD
   fetchCourseGpaRanking,       // ADD
 } from "@/lib/chat/data";
-
-
 const client = new Anthropic();
 
 // ── Vector store empty check ──────────────────────────────────────────────────
@@ -449,6 +448,44 @@ function analyzeQuery(msg: string, conversationHistory: ChatMessage[]): QueryAna
     requiresPersonalization,
     isFact,
   };
+}
+
+function isProductQuestion(lower: string) {
+  return (
+    /\b(who (made|built|created|runs|owns) (this )?(website|site|app|platform)|who made atlas|who built atlas|who made sparky|who built sparky|who made uic chicago|who built uic chicago)\b/i.test(lower) ||
+    /\b(what is this website|what is atlas|what is sparky|what is uic chicago|is this official|who is behind this)\b/i.test(lower)
+  );
+}
+
+function getProductAnswer(lower: string) {
+  if (/\b(is this official|official website|official uic)\b/i.test(lower)) {
+    return "UIChicago is unofficial. It was built by a software engineering team from UIC for students, and it is open and free for all students to use.";
+  }
+
+  if (/\bwhat is (this website|atlas|sparky|uic chicago)\b/i.test(lower)) {
+    return "UIChicago is a student-built platform made by a software engineering team from UIC. It is open and free for all students, and Sparky is the AI part inside it.";
+  }
+
+  return "UIChicago was made by a software engineering team from UIC. It is student-built, open, and free for all students to use — from students to students.";
+}
+
+function isFlamesSongRequest(input: string) {
+  const lower = input.toLowerCase();
+  return (
+    (
+      /\b(play|start|put on)\b/.test(lower) &&
+      (
+        /\bthe song\b/.test(lower) ||
+        /\bsong\b/.test(lower) ||
+        /\bmusic\b/.test(lower) ||
+        /\bit\b/.test(lower) ||
+        /\bflames song\b/.test(lower) ||
+        /\bfight song\b/.test(lower) ||
+        /\bfire up flames\b/.test(lower)
+      )
+    ) ||
+    /\bplaythe song\b/.test(lower)
+  );
 }
 
 // ── Abstention helper ─────────────────────────────────────────────────────
@@ -1421,7 +1458,8 @@ RULES (violations = rejection):
 4. Completed courses MUST NOT appear in semester_plan.
 5. No course code ≥500 in an undergraduate plan.
 6. No placeholder text (e.g. "*Science Elective*") in courses arrays — use real codes from ELECTIVE OPTIONS.
-7. semester_plan must be non-empty unless scaffold says NO PLAN DATA FOUND (then return plan_strategy "Major not found — direct student to catalog.uic.edu" and empty semester_plan array).
+7. DO NOT include HON courses, honors seminars, or honors-only gen eds unless the student explicitly says they are in Honors College / an honors student in STUDENT CONTEXT constraints.
+8. semester_plan must be non-empty unless scaffold says NO PLAN DATA FOUND (then return plan_strategy "Major not found — direct student to catalog.uic.edu" and empty semester_plan array).
 
 STUDENT CONTEXT:
 Major: ${studentCtx.major ?? "not specified"}
@@ -1916,6 +1954,7 @@ ${list}`, 0.7, query)];
         `4. Every code in REQUIRED COURSE MANIFEST must appear in your output exactly once, unless it is in COMPLETED COURSES`,
         `5. Do NOT rearrange courses between semesters — follow SAMPLE SCHEDULE BACKBONE order`,
         `6. Total credit count in your output should match the degree total (${majorMatch.totalHours ?? "128"} credits)`,
+        `7. Do NOT use HON / honors-only courses or honors seminars as gen ed fillers unless STUDENT CONTEXT explicitly says honors college`,
       ].join("\n");
 
       return [makeChunk("major_plan", scaffold, 0.97, query)];
@@ -2142,9 +2181,82 @@ async function retrieveAthletics(query: QueryAnalysis): Promise<RetrievedChunk[]
   try {
     const ath = athleticsData as any;
     const lower = query.rawQuery.toLowerCase();
+    const normalizedQueryWords = lower
+      .replace(/[^a-z0-9\s'-]/g, " ")
+      .split(/\s+/)
+      .filter(Boolean);
+    const personStopwords = new Set([
+      "who", "is", "the", "a", "an", "about", "tell", "me", "of", "at", "uic",
+      "flames", "student", "team", "roster", "on", "for", "and", "in"
+    ]);
+    const meaningfulQueryWords = normalizedQueryWords.filter(
+      (word) => word.length >= 3 && !personStopwords.has(word)
+    );
+    const isPersonQuery = /\bwho is\b|\bwho('s| is)\b|\btell me about\b|\babout\b/.test(lower);
 
     // ── Person lookup: player or coach name mentioned ──────────────────────
     const allTeams = [...ath.teams.mens, ...ath.teams.womens];
+    const allRosters: Record<string, string[]> = ath.current_rosters_2025_2026 ?? {};
+
+    const matchesPersonName = (candidate: string) => {
+      const candidateLower = candidate.toLowerCase();
+      const candidateWords = candidateLower
+        .replace(/[^a-z0-9\s'-]/g, " ")
+        .split(/\s+/)
+        .filter(Boolean)
+        .filter((word) => word.length >= 3 && !["ii", "iii", "jr", "sr", "iv"].includes(word));
+
+      if (!candidateWords.length || !meaningfulQueryWords.length) return false;
+      if (lower.includes(candidateLower)) return true;
+
+      const allQueryWordsCovered = meaningfulQueryWords.every((word) =>
+        candidateWords.some((candidateWord) => candidateWord === word || candidateWord.includes(word))
+      );
+
+      const allCandidateWordsCovered = candidateWords.every((word) =>
+        meaningfulQueryWords.some((queryWord) => queryWord === word || queryWord.includes(word))
+      );
+
+      return allQueryWordsCovered || allCandidateWordsCovered;
+    };
+
+    // ── Fast-path: exact athlete / coach identity queries ──────────────────
+    if (isPersonQuery || meaningfulQueryWords.length >= 2) {
+      for (const [rosterKey, players] of Object.entries(allRosters)) {
+        if (rosterKey === "note") continue;
+        const playerList = players as string[];
+        const matchedPlayer = playerList.find((player) => matchesPersonName(player));
+        if (!matchedPlayer) continue;
+
+        const teamLabel = rosterKey
+          .replace(/_/g, " ")
+          .replace(/^mens /, "Men's ")
+          .replace(/^womens /, "Women's ");
+        const teamInfo = allTeams.find((team: any) =>
+          rosterKey.includes(team.sport.toLowerCase().replace(/\s/g, "_")) ||
+          team.sport.toLowerCase().includes(rosterKey.replace(/_/g, " "))
+        );
+        const coachLine = teamInfo?.coach ? ` Head coach: ${teamInfo.coach}.` : "";
+        return [makeChunk(
+          "athletics",
+          `${matchedPlayer} is a player on the 2025-2026 UIC Flames ${teamLabel} roster.${coachLine}`,
+          1,
+          query
+        )];
+      }
+
+      for (const team of allTeams) {
+        const coachName = team.coach ?? "";
+        if (!coachName || !matchesPersonName(coachName)) continue;
+        const gender = ath.teams.mens.includes(team) ? "Men's" : "Women's";
+        return [makeChunk(
+          "athletics",
+          `${coachName} is the head coach of UIC Flames ${gender} ${team.sport}.${team.conference ? ` Conference: ${team.conference}.` : ""}${team.venue ? ` Venue: ${team.venue}.` : ""}${team.notes ? ` ${team.notes}` : ""}`,
+          1,
+          query
+        )];
+      }
+    }
 
     // ── Fast-path: specific coach query ───────────────────────────────────
     if (lower.match(/\bcoach\b|\bhead coach\b|\bwho coach/)) {
@@ -2195,33 +2307,33 @@ async function retrieveAthletics(query: QueryAnalysis): Promise<RetrievedChunk[]
         0.92, query)];
     }
 
-    const isPersonQuery = lower.match(/\bwho is\b|\bwho('s| is)\b|\btell me about\b|\babout\b/);
-
     // Search rosters for the person
-    const allRosters: Record<string, string[]> = ath.current_rosters_2025_2026 ?? {};
     for (const [rosterKey, players] of Object.entries(allRosters)) {
       if (rosterKey === "note") continue;
       const playerList = players as string[];
       const matched = playerList.filter((p: string) => {
-  const pLower = p.toLowerCase();
-  const pParts = pLower.split(/\s+/).filter(part => part.length >= 3 && !["ii","iii","jr","sr","iv"].includes(part));
-  const qParts = lower.split(/\s+/).filter((w: string) => w.length >= 3);
-  // Match if any meaningful part of the player name appears anywhere in the query
-  const anyPartMatch = pParts.some(part => lower.includes(part));
-  // Match if query words appear in player name (handles reversed names like "nokic eldin" = "eldin nokic")
-  const reversedMatch = qParts.filter((w: string) => !["who","is","the","are","about","tell","me","a","an"].includes(w))
-    .some((w: string) => pLower.includes(w));
-  return anyPartMatch || reversedMatch || lower.includes(pLower);
-});
+        const pLower = p.toLowerCase();
+        const pParts = pLower.split(/\s+/).filter(part => part.length >= 3 && !["ii","iii","jr","sr","iv"].includes(part));
+        const qParts = lower.split(/\s+/).filter((w: string) => w.length >= 3);
+        const anyPartMatch = pParts.some(part => lower.includes(part));
+        const reversedMatch = qParts.filter((w: string) => !["who","is","the","are","about","tell","me","a","an"].includes(w))
+          .some((w: string) => pLower.includes(w));
+        return anyPartMatch || reversedMatch || lower.includes(pLower);
+      });
       if (matched.length > 0) {
         // Find the team this roster belongs to
-        const teamLabel = rosterKey.replace(/_/g, " ");
+        const teamLabel = rosterKey
+          .replace(/_/g, " ")
+          .replace(/^mens /, "Men's ")
+          .replace(/^womens /, "Women's ");
         const teamInfo = allTeams.find((t: any) =>
           rosterKey.includes(t.sport.toLowerCase().replace(/\s/g, "_")) ||
           t.sport.toLowerCase().includes(rosterKey.replace(/_/g, " "))
         );
         chunks.push(makeChunk("athletics",
-          `${matched.join(", ")} — UIC Flames ${teamLabel}${teamInfo ? ` | Coach: ${teamInfo.coach}${teamInfo.notes ? ` | ${teamInfo.notes}` : ""}` : ""}`,
+          matched.map((name) =>
+            `${name} is listed as a player on the 2025-2026 UIC Flames ${teamLabel} roster${teamInfo?.coach ? `. Head coach: ${teamInfo.coach}` : ""}${teamInfo?.notes ? `. ${teamInfo.notes}` : ""}`
+          ).join("\n"),
           0.99, query));
       }
     }
@@ -2245,7 +2357,28 @@ async function retrieveAthletics(query: QueryAnalysis): Promise<RetrievedChunk[]
       (t.sport.toLowerCase().includes("basketball") && lower.match(/basketball|mbb|wbb/)) ||
       (t.sport.toLowerCase().includes("soccer") && lower.includes("soccer")) ||
       (t.sport.toLowerCase().includes("baseball") && lower.includes("baseball")) ||
+      (t.sport.toLowerCase().includes("softball") && lower.includes("softball")) ||
       (t.sport.toLowerCase().includes("volleyball") && lower.includes("volleyball")));
+
+    // ── Fast-path: direct roster / player list requests should stay concise ──
+    if (
+      sportMatch &&
+      lower.match(/\b(players?|roster|who plays|who is on|who's on|some .*players?|show .*players?)\b/)
+    ) {
+      const gender = ath.teams.mens.includes(sportMatch) ? "Men's" : "Women's";
+      const rosterKey = `${gender.toLowerCase().replace("'s","")}_${sportMatch.sport.toLowerCase().replace(/\s/g,"_")}`;
+      const roster = allRosters[rosterKey] as string[] | undefined;
+
+      if (roster && roster.length > 0) {
+        const samplePlayers = roster.slice(0, 6);
+        return [makeChunk(
+          "athletics",
+          `Here are some players on the 2025-2026 UIC Flames ${gender} ${sportMatch.sport} roster:\n${samplePlayers.map((name) => `- ${name}`).join("\n")}`,
+          1,
+          query
+        )];
+      }
+    }
 
     if (sportMatch && chunks.length === 0) {
       const gender = ath.teams.mens.includes(sportMatch) ? "Men's" : "Women's";
@@ -2961,7 +3094,8 @@ STRICT OUTPUT RULES:
 (5) NEVER include any course numbered 500 or above.
 (6) If "plan_strategy" contains "Major not found", DO NOT generate any plan — tell the student their major was not found and direct them to catalog.uic.edu.
 (7) After the plan, add exactly one line: "Verify this against catalog.uic.edu — requirements change each year."
-(8) Honor "student_context.constraints" — if the student has accelerated graduation, honors, or double-major constraints, add a brief note addressing them.`,
+(8) Honor "student_context.constraints" — if the student has accelerated graduation, honors, or double-major constraints, add a brief note addressing them.
+(9) If "student_context.constraints" does NOT explicitly mention honors college or honors student, do not suggest HON courses, honors seminars, or honors-only gen ed substitutions.`,
     hybrid: "HYBRID: This is a multi-part question. Break it into organized sections. Answer each well. Synthesize with a crisp bottom line that ties it together.",
   };
 
@@ -2978,8 +3112,14 @@ STRICT OUTPUT RULES:
 - Be specific: cite exact GPA numbers, dollar amounts, addresses, phone numbers, and dates from the data
 - Use **bold** for course codes, professor names, and critical numbers
 - Match response length to the question: simple fact = 1-3 sentences, planning/comparison = detailed with structure
+- DEFAULT TO NATURAL PROSE: if the answer is simple, conversational, or can be said clearly in 1-3 sentences, do not use bullets
+- USE BULLETS ONLY WHEN THEY HELP: use bullet points or short sections only for rankings, comparisons, step-by-step guidance, multiple options, or grouped facts that are genuinely easier to scan as a list
+- NEVER OVERDO FORMATTING: do not turn normal answers into outlines, and do not stack headings + bullets + labels unless the question truly needs that structure
+- KEEP LISTS SHORT: when you do use bullets, keep them tight and high-signal rather than long or repetitive
+- STOP WHEN THE QUESTION IS ANSWERED: for direct asks like "who is", "give me some players", "what is", "where is", or "when is", answer the asked thing first and do not tack on extra trivia, history, ticket info, or side notes unless the user asked for that broader context
 - Zero filler phrases — students want answers, not preamble
 - Read between the lines: if a student seems stressed or implicitly needs an easier path, address that directly
+- ATHLETICS PERSON RULE: never call someone a coach unless the retrieved data explicitly says they are a coach. If a name appears on a roster, describe them as a player or roster member, and mention the coach separately if helpful.
 - If memory shows the student's major/year, tailor the answer to their situation`;
 
   const trustLine = trustInstruction ? `\n${trustInstruction}\n` : "";
@@ -3103,13 +3243,50 @@ export async function POST(req: Request) {
     });
   }
 
+  if (isProductQuestion(lastMsg.toLowerCase())) {
+    const aboutText = getProductAnswer(lastMsg.toLowerCase());
+    const encoder = new TextEncoder();
+    const readable = new ReadableStream({
+      start(controller) {
+        controller.enqueue(encoder.encode(aboutText));
+        controller.close();
+      },
+    });
+    return new Response(readable, {
+      headers: {
+        "Content-Type": "text/plain; charset=utf-8",
+        "Cache-Control": "no-store",
+      },
+    });
+  }
+
+  if (isFlamesSongRequest(lastMsg)) {
+    const encoder = new TextEncoder();
+    const flamesText = "Lets go Flames!";
+    const readable = new ReadableStream({
+      start(controller) {
+        controller.enqueue(encoder.encode(flamesText));
+        controller.close();
+      },
+    });
+    const headers: Record<string, string> = {
+      "Content-Type": "text/plain; charset=utf-8",
+      "Cache-Control": "no-store",
+      "X-Play-Flames-Song": "true",
+    };
+    if (isNew) {
+      headers["Set-Cookie"] = `sparky_session=${sessionId}; Path=/; Max-Age=${60 * 60 * 24 * 365}; SameSite=Lax`;
+    }
+    return new Response(readable, { headers });
+  }
+
   // Normalize the message for the regex pipeline (fixes typos/abbreviations).
   // Claude sees the original lastMsg — it handles imperfect text natively.
   const normalizedMsg = normalizeQuery(lastMsg);
   const query = analyzeQuery(normalizedMsg, messages.slice(0, -1));
 
 // ── Fetch memory + session in parallel, then classify ─────────────────────
-const [userMemory, sessionState] = await Promise.all([
+const [userMemory, sessionState, authenticatedStudyUser] = await Promise.all([
   getMemory(sessionId).catch(() => null),
   getSessionState(sessionId).catch((): import("@/lib/chat/session-state").SessionState => ({
     activeCourseId: null, activeCourseCode: null,
@@ -3120,7 +3297,23 @@ const [userMemory, sessionState] = await Promise.all([
     lastResponseExcerpt: null, lastRetrievedDomain: null,
     mentionedCourses: [],
   })),
+  getCurrentStudyUser().catch(() => null),
 ]);
+
+if (authenticatedStudyUser) {
+  if (userMemory && !userMemory.major && authenticatedStudyUser.major) {
+    userMemory.major = authenticatedStudyUser.major;
+  }
+  if (userMemory && (!userMemory.interests || userMemory.interests.length === 0) && authenticatedStudyUser.interests.length) {
+    userMemory.interests = authenticatedStudyUser.interests;
+  }
+  if (userMemory && (!userMemory.knownCourses || userMemory.knownCourses.length === 0) && authenticatedStudyUser.currentCourses.length) {
+    userMemory.knownCourses = authenticatedStudyUser.currentCourses;
+  }
+  if (!sessionState.confirmedMajor && authenticatedStudyUser.major) {
+    sessionState.confirmedMajor = authenticatedStudyUser.major;
+  }
+}
 
 // Always run AI classify — it runs in parallel with memory/session so cost is low,
 // and it handles informal phrasing that regex misses.
@@ -3320,6 +3513,22 @@ if ((dc["admissions"] ?? 0) < 0.5 && lower.match(/\b(sat|act|test.?optional|admi
 if ((dc["international"] ?? 0) < 0.5 && lower.match(/\bi.?20\b|opt\b|cpt\b|f.?1\b|international student|ois\b|sevis|renew.*visa|visa.*renew|study abroad/i)) {
   dc["international"] = Math.max(dc["international"] ?? 0, 0.85);
 }
+// Boost for AI-detected major/planning queries that regex keyword scoring misses
+// (e.g. "what majors is UIC best for", "is UIC good for pre-med", "which program is strongest")
+if (aiIntent?.majorKey) {
+  dc["admissions"]  = Math.max(dc["admissions"]  ?? 0, 0.75);
+  dc["major_plan"]  = Math.max(dc["major_plan"]  ?? 0, 0.80);
+}
+
+// Broad ranking/discovery questions about UIC programs that don't use course codes
+if (
+  (aiIntent?.answerMode === "ranking" || aiIntent?.answerMode === "discovery") &&
+  (aiIntent?.isAboutMajor || query.answerMode === "ranking") &&
+  !intent.courseCode &&
+  !intent.subjectCode
+) {
+  dc["admissions"] = Math.max(dc["admissions"] ?? 0, 0.72);
+}
 
   // ── Execute sync (JSON) retrievals immediately ────────────────────────────
   const syncChunks: RetrievedChunk[] = [];
@@ -3431,7 +3640,15 @@ const [vectorStoreEmpty, asyncResults] = await Promise.all([
   Promise.allSettled(asyncTasks),
 ]);
 
-const vectorTask = vectorStoreEmpty
+// Skip vector search for non-academic queries when structured JSON/SQL already found data.
+// The vector store only contains course/professor/news — it adds noise for housing/tuition/calendar queries.
+const isNonAcademicQuery =
+  !intent.isAboutCourses &&
+  !intent.isAboutProfessors &&
+  !intent.isAboutGenEd &&
+  query.answerMode !== "planning";
+
+const vectorTask = vectorStoreEmpty || (isNonAcademicQuery && syncChunks.length >= 2)
   ? Promise.resolve([])
   : syncChunks.length < 2
     ? vectorSearch(lastMsg, 8, { sourceTypes: vectorSourceTypes }).catch(() => [])
@@ -3529,6 +3746,9 @@ if (relevantVectors.length > 0 && !query.isFact && query.answerMode !== "plannin
   // planningManifest is populated directly from planningObj inside the Phase 1 block below.
   // It is declared here so Phase 2 (validation) can read it in the try block.
   let planningManifest: string[] = [];
+  // Set to true in Phase 1 when the planner detects the requested major is not in its data.
+  // Phase 2 uses this to skip manifest validation and stream a graceful fallback instead.
+  let isPlannerMajorNotFound = false;
 
   // ── Planning pipeline: MANDATORY PlanningObject before answer generation ────
   // Pipeline order:
@@ -3579,6 +3799,7 @@ if (relevantVectors.length > 0 && !query.isFact && query.answerMode !== "plannin
 
       // Phase 2: capture manifest directly — no string parsing
       planningManifest = planningObj.requirements.required_courses;
+      isPlannerMajorNotFound = planningObj.plan_strategy?.toLowerCase().includes("major not found") ?? false;
     }
   }
 
@@ -3706,7 +3927,7 @@ if (uploadedFile) {
       type: "image",
       source: { type: "base64", media_type: mediaType, data: uploadedFile.data },
     };
-    uploadedFileContext = `\n\n=== UPLOADED IMAGE ===\nThe student has uploaded an image named "${uploadedFile.name}". It is included as a vision block in the message. Describe and analyze what you see in relation to their question. If it shows a schedule, course list, grade report, or UIC-related content, interpret it and give specific, helpful advice.\n`;
+    uploadedFileContext = `\n\n=== UPLOADED IMAGE ===\nThe student has uploaded an image named "${uploadedFile.name}". It is included as a vision block in the message. Look at it carefully and try to understand what is going on. If it seems UIC-related, make qualified guesses about what it likely shows and explain your confidence. If it looks like a screenshot, flyer, building, classroom, sign, schedule, course page, grade report, registration page, map, student event, or campus location, say that directly and help the student based on what you can see. Do not pretend to be certain when the image is ambiguous — use phrases like "it looks like" or "my best guess is" when needed.\n`;
   } else if (uploadedFile.fileType === "pdf") {
     try {
       // eslint-disable-next-line @typescript-eslint/no-require-imports
@@ -3741,9 +3962,13 @@ const maxTokens = uploadedFile ? 2000
     // Build multimodal message for last user turn when image is attached
     const apiMessages: Anthropic.MessageParam[] = messages.map((m: ChatMessage, idx: number) => {
       if (idx === messages.length - 1 && imageBlock) {
+        const fallbackImagePrompt =
+          !m.content || /^\[Attached:\s*.+\]$/.test(m.content)
+            ? "Analyze this uploaded image. Describe what it likely shows, make qualified guesses if it seems related to UIC, and help the student based on what you can see."
+            : m.content;
         const content: Anthropic.ContentBlockParam[] = [
           imageBlock,
-          { type: "text", text: m.content || "What is in this image?" },
+          { type: "text", text: fallbackImagePrompt },
         ];
         return { role: "user" as const, content };
       }
@@ -3764,9 +3989,35 @@ const maxTokens = uploadedFile ? 2000
     // Planning responses are collected in full before being returned so they can
     // be validated deterministically. Non-planning queries use the streaming path.
     if (query.answerMode === "planning") {
-      // Hard-fail if manifest is empty — cannot validate without required courses list
-      if (planningManifest.length === 0) {
+      // Hard-fail if manifest is empty — but only if this is NOT a "major not found" terminal state.
+      // When major not found, planningObj.plan_strategy contains "Major not found" and semester_plan is [].
+      // That is a valid graceful degradation — let Claude render the "not found" response.
+      const scaffoldChunk = allChunks.find(c => c.domain === "major_plan");
+      const isMajorNotFound =
+        isPlannerMajorNotFound ||
+        (scaffoldChunk?.content.includes("NO PLAN DATA FOUND") ?? false);
+
+      if (planningManifest.length === 0 && !isMajorNotFound) {
         throw new Error("Validation failed: empty manifest");
+      }
+
+      // If major not found, skip Phase 2 validation entirely and stream the graceful response
+      if (isMajorNotFound) {
+        const majorNotFoundMsg =
+          "I don't have a pre-built degree plan for that major in my current data. " +
+          "Here's what I'd suggest:\n\n" +
+          "1. Check **catalog.uic.edu** — search for your major to find the official degree requirements and sample schedule.\n" +
+          "2. Visit your **college advising office** — they can walk you through the exact sequence for your situation.\n" +
+          "3. I can still help you with course difficulty, professor ratings, gen ed options, housing, tuition, and more — just ask!\n\n" +
+          "Would you like me to look up specific courses, find the easiest gen eds to knock out, or help with something else?";
+
+        const enc = new TextEncoder();
+        const fallbackStream = new ReadableStream({
+          start(c) { c.enqueue(enc.encode(majorNotFoundMsg)); c.close(); },
+        });
+        stateUpdates.lastResponseExcerpt = majorNotFoundMsg.slice(0, 400);
+        await updateSessionState(sessionId, stateUpdates);
+        return new Response(fallbackStream, { headers: responseHeaders });
       }
 
       // Step 1: generate full response (non-streaming — validation requires complete text)

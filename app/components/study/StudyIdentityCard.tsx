@@ -14,9 +14,11 @@ type StudyIdentityCardProps = {
   displayName?: string | null;
   email?: string | null;
   profile: StudyProfileForm;
+  collapsed: boolean;
   onProfileChange: (updater: (current: StudyProfileForm) => StudyProfileForm) => void;
   onSave: () => void;
   onSignIn: () => void;
+  onToggleCollapsed: (next: boolean) => void;
 };
 
 export type { StudyProfileForm };
@@ -27,9 +29,11 @@ export default function StudyIdentityCard({
   displayName,
   email,
   profile,
+  collapsed,
   onProfileChange,
   onSave,
   onSignIn,
+  onToggleCollapsed,
 }: StudyIdentityCardProps) {
   if (!isSignedIn) {
     return (
@@ -46,6 +50,35 @@ export default function StudyIdentityCard({
             className="mt-5 inline-flex items-center rounded-full bg-white px-5 py-3 text-sm font-semibold text-zinc-950 transition hover:bg-zinc-100"
           >
             Continue with Google
+          </button>
+        </div>
+      </section>
+    );
+  }
+
+  const summaryParts = [
+    profile.major.trim(),
+    profile.currentCourses.trim(),
+    profile.studyPreferences.trim(),
+  ].filter(Boolean);
+
+  if (collapsed) {
+    return (
+      <section className="rounded-[1.2rem] border border-white/8 bg-white/[0.03] px-5 py-4">
+        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+          <div className="min-w-0">
+            <div className="text-[11px] font-bold uppercase tracking-[0.22em] text-zinc-500">Academic context</div>
+            <div className="mt-1 text-sm font-medium text-white">{displayName || "Your study profile"}</div>
+            <div className="mt-1 truncate text-sm text-zinc-400">
+              {summaryParts.length ? summaryParts.join(" • ") : "Optional study preferences for more personalized help."}
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => onToggleCollapsed(false)}
+            className="inline-flex items-center justify-center rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-sm font-medium text-zinc-100 transition hover:bg-white/[0.08]"
+          >
+            Edit
           </button>
         </div>
       </section>
@@ -118,6 +151,16 @@ export default function StudyIdentityCard({
           className="w-full rounded-2xl border border-white/10 bg-white/[0.05] px-4 py-3 text-sm text-white outline-none placeholder:text-zinc-500"
         />
       </label>
+
+      <div className="mt-4 flex justify-end">
+        <button
+          type="button"
+          onClick={() => onToggleCollapsed(true)}
+          className="text-sm font-medium text-zinc-400 transition hover:text-white"
+        >
+          Hide for now
+        </button>
+      </div>
     </section>
   );
 }

@@ -145,6 +145,13 @@ interface PlanningObject {
   semester_plan: SemesterPlan[];
 }
 
+type EntityVerification = {
+  required: boolean;
+  matched: boolean;
+  expected: string[];
+  matchedBy: string[];
+};
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // STAGE 1: QUERY ANALYSIS — extract structured intent from natural language
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -304,7 +311,7 @@ function analyzeQuery(msg: string, conversationHistory: ChatMessage[]): QueryAna
 
   if (words.some(w => ["professor","prof","instructor","teacher","teach","lecture"].includes(w))) domainConfidence["professors"] = 0.9;
   if (lower.includes("gen ed") || lower.includes("general education") || lower.includes("gen-ed")) domainConfidence["gen_ed"] = 0.95;
-  if (isPlanningQuery(lower)) domainConfidence["major_plan"] = 0.9;
+  if (isPlanningQuery(lower) || isMajorRequirementsLookupQuery(lower)) domainConfidence["major_plan"] = 0.9;
 
   // Financial signals
   if (words.some(w => ["tuition","cost","fee","price","pay","afford","how much","billing"].includes(w))) domainConfidence["tuition"] = 0.85;
@@ -491,15 +498,57 @@ function isFlamesSongRequest(input: string) {
 // ── Abstention helper ─────────────────────────────────────────────────────
 // Returns a specific redirect for each domain rather than a generic refusal.
 // Never calls the model — this is hardcoded authoritative text.
-function getAbstainResponse(query: QueryAnalysis): string {
-  const domain = Object.entries(query.domainConfidence)
-    .sort(([, a], [, b]) => b - a)[0]?.[0] ?? "general";
+function inferAbstainDomain(
+  query: QueryAnalysis,
+  reason?: string
+): string {
+  const lower = query.rawQuery.toLowerCase();
+
+  if (reason === "personal_record_query") return "personal_data";
+  if (reason === "live_status_query_no_realtime_feed") {
+    if (/\b(score|basketball|baseball|soccer|volleyball|game|match)\b/.test(lower)) return "athletics_live";
+    if (/\b(bus|train|cta|route|running on time|arrival|delay)\b/.test(lower)) return "transportation_live";
+    if (/\b(dining|vegan|menu|meal|food|today)\b/.test(lower)) return "dining_live";
+    return "live_status";
+  }
+  if (reason === "out_of_scope_query") {
+    if (/\bsyllabus\b|\blate work\b|\bmakeup (exam|test|quiz)\b|\bdoes (prof|professor|instructor)\b/.test(lower)) {
+      return "course_specific_policy";
+    }
+    if (/\btransfer to (uiuc|northwestern|depaul|loyola|niu|illinois state|chicago state|purdue|indiana|michigan)\b|\bgpa (to|for) (transfer to|get into)\b/.test(lower)) {
+      return "external_transfer";
+    }
+  }
+  if (/\bvegan\b|\bmenu\b|\bdining hall\b|\bfood\b/.test(lower) && /\btoday\b|\btonight\b|\bright now\b/.test(lower)) {
+    return "dining_live";
+  }
+
+  return Object.entries(query.domainConfidence)
+    .sort(([, a], [, b]) => (b ?? 0) - (a ?? 0))[0]?.[0] ?? "general";
+}
+
+function getAbstainResponse(query: QueryAnalysis, reason?: string): string {
+  const domain = inferAbstainDomain(query, reason);
 
   const responses: Partial<Record<string, string>> = {
     registration:
       "I don't have that registration detail. For course credit limits and " +
       "overload approvals, contact your college advising office or the Registrar: " +
       "registrar.uic.edu.",
+    personal_data:
+      "I can't access your personal student records like GPA, grades, billing, or visa status. Check your myUIC portal or contact the relevant UIC office directly for your account-specific information.",
+    course_specific_policy:
+      "I can't see individual course syllabi or professor-specific policies. Check Blackboard or the syllabus your professor posted, or email your instructor directly to confirm the late-work or makeup policy.",
+    external_transfer:
+      "I can't reliably confirm transfer GPA requirements for another university. Check the target school's transfer admissions page or speak with that school's admissions office for the current requirement.",
+    dining_live:
+      "I don't have real-time dining menus for today. Check dining.uic.edu for today's menus and locations, or contact UIC Dining for the most current vegan and dietary option details.",
+    transportation_live:
+      "I don't have real-time transit tracking. Check the CTA Bus Tracker, Ventra app, or transitchicago.com for current arrivals and delays.",
+    athletics_live:
+      "I don't have live or last-night game results in my data. Check uicflames.com, the official UIC Flames social accounts, or ESPN for the latest score.",
+    live_status:
+      "I don't have reliable real-time status data for that. Check the official live source for the office, service, or event you need to confirm.",
     courses:
       "I don't have reliable data to answer that question. For course information, " +
       "check the UIC Schedule of Classes at registrar.uic.edu or the course catalog " +
@@ -658,6 +707,20 @@ function isPlanningQuery(lower: string): boolean {
   );
 }
 
+function isMajorRequirementsLookupQuery(lower: string): boolean {
+  return (
+    /\bwhat (courses?|classes?) (do|must) i (need|complete|finish)\b/.test(lower) ||
+    /\bwhat are the required courses for\b/.test(lower) ||
+    /\b(required courses?|degree requirements?|major requirements?) (for|to)\b/.test(lower) ||
+    /\bwhat do i need (to graduate|to finish|to complete (my|the) degree)\b/.test(lower)
+  ) && !(
+    /\bwhat should i take (next|this) (semester|year|term)\b/.test(lower) ||
+    /\b(next|this) semester (schedule|plan|courses?|classes?)\b/.test(lower) ||
+    /\bschedule for (next|this|spring|fall|summer) (semester|term|year)?\b/.test(lower) ||
+    /\b(4.?year|four.?year|degree plan|course plan|semester.?plan|sequence|roadmap|academic plan|academic schedule)\b/.test(lower)
+  );
+}
+
 // ── Follow-up query detector ──────────────────────────────────────────────────
 // Detects vague continuation messages that carry no retrieval signal on their own.
 // Used ONLY to trigger entity injection into the retrieval step — never as a fast path.
@@ -666,6 +729,7 @@ function isFollowUpQuery(msg: string): boolean {
 }
 
 function detectAnswerMode(lower: string): AnswerMode {
+  if (isMajorRequirementsLookupQuery(lower)) return "discovery";
   if (isPlanningQuery(lower)) return "planning";
   if (lower.match(/\b(should i|recommend|suggest|good for|worth it|would you|best for|which is better for me)\b/)) return "recommendation";
   if (lower.match(/\b(vs|versus|difference between|compare|which is better|or the)\b/)) return "comparison";
@@ -732,6 +796,98 @@ function formatContent(text: string): string {
   html = html.replace(/\n\n/g, "</p><p class='mt-3'>");
   html = html.replace(/\n/g, "<br/>");
   return html;
+}
+
+function normalizeEntityText(value: string): string {
+  return value.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+}
+
+function extractExpectedEntities(
+  rawQuery: string,
+  intent: {
+    courseCode?: { subject: string; number: string } | null;
+    profNameHint?: string | null;
+    deptName?: string | null;
+  },
+  query: QueryAnalysis
+): string[] {
+  const expected = new Set<string>();
+
+  if (intent.courseCode) {
+    expected.add(`${intent.courseCode.subject} ${intent.courseCode.number}`);
+  }
+  if (intent.profNameHint && intent.profNameHint.trim().length >= 3) {
+    expected.add(intent.profNameHint.trim());
+  }
+  if (!query.isFact) {
+    return [...expected];
+  }
+
+  const canonicalEntityPatterns: Array<{ regex: RegExp; label: string }> = [
+    { regex: /\barc\b/i, label: "ARC" },
+    { regex: /\bjst\b/i, label: "JST" },
+    { regex: /\bssr\b/i, label: "SSR" },
+    { regex: /\bpsr\b/i, label: "PSR" },
+    { regex: /\bmrh\b/i, label: "MRH" },
+    { regex: /\btbh\b/i, label: "TBH" },
+    { regex: /\bssb\b/i, label: "SSB" },
+    { regex: /\blhs\b/i, label: "LHS" },
+    { regex: /\bois\b/i, label: "OIS" },
+    { regex: /\bfafsa\b/i, label: "FAFSA" },
+    { regex: /\baspire grant\b/i, label: "Aspire Grant" },
+    { regex: /\bcampuscare\b/i, label: "CampusCare" },
+    { regex: /\bfinancial aid\b/i, label: "Financial Aid" },
+    { regex: /\bcounseling center\b/i, label: "Counseling Center" },
+    { regex: /\bdaley library\b/i, label: "Daley Library" },
+    { regex: /\bengineering building\b/i, label: "Engineering Building" },
+    { regex: /\bstudent center (east|west)\b/i, label: "Student Center" },
+  ];
+
+  for (const { regex, label } of canonicalEntityPatterns) {
+    if (regex.test(rawQuery)) expected.add(label);
+  }
+
+  return [...expected];
+}
+
+function verifyExactEntityMatch(
+  rawQuery: string,
+  intent: {
+    courseCode?: { subject: string; number: string } | null;
+    profNameHint?: string | null;
+    deptName?: string | null;
+  },
+  query: QueryAnalysis,
+  chunks: RetrievedChunk[]
+): EntityVerification {
+  const expected = extractExpectedEntities(rawQuery, intent, query);
+  if (expected.length === 0) {
+    return { required: false, matched: true, expected: [], matchedBy: [] };
+  }
+
+  const haystacks = chunks.map((chunk) => normalizeEntityText(chunk.content));
+  const matchedBy = expected.filter((entity) => {
+    const normalized = normalizeEntityText(entity);
+    if (!normalized) return false;
+
+    return haystacks.some((content) => {
+      if (content.includes(normalized)) return true;
+
+      if (/^[a-z]{2,6} \d{3}[a-z]?$/.test(normalized)) {
+        const compact = normalized.replace(/\s+/g, "");
+        return content.includes(compact);
+      }
+
+      return normalized.split(" ").every((part) => part.length >= 3 && content.includes(part));
+    });
+  });
+
+  return {
+    required: true,
+    matched: matchedBy.length > 0,
+    expected,
+    matchedBy,
+  };
 }
 
 function decomposeQuery(
@@ -922,10 +1078,17 @@ function getVectorSourceTypes(query: QueryAnalysis): string[] {
 
   const sourceTypes = new Set<string>();
 
-  // Always allow your core structured semantic support
-  sourceTypes.add("course");
-  sourceTypes.add("professor");
-  sourceTypes.add("news");
+  const isAcademicLike =
+    (dc["courses"] ?? 0) > 0.5 ||
+    (dc["professors"] ?? 0) > 0.5 ||
+    (dc["gen_ed"] ?? 0) > 0.5 ||
+    (dc["major_plan"] ?? 0) > 0.5 ||
+    /\b(course|courses|class|classes|professor|prof|instructor|gen ed|general education|major|degree|requirement|prerequisite)\b/.test(lower);
+
+  if (isAcademicLike) {
+    sourceTypes.add("course");
+    sourceTypes.add("professor");
+  }
 
   const isAthleticsLike =
     (dc["athletics"] ?? 0) > 0.5 ||
@@ -938,7 +1101,9 @@ function getVectorSourceTypes(query: QueryAnalysis): string[] {
   const isRecentSocialQuery =
     lower.match(/\b(lately|recently|worth mentioning|active lately|current vibe|what are.*doing|who.*worth mentioning)\b/) !== null;
 
-  void isRecentSocialQuery; // no-op, kept for future use
+  if (isAthleticsLike || isStudentLifeLike || isRecentSocialQuery) {
+    sourceTypes.add("news");
+  }
 
   return Array.from(sourceTypes);
 }
@@ -3632,7 +3797,7 @@ if ((intent.isAboutCourses || intent.wantsEasiest || intent.wantsHardest) && !in
   if ((dc["major_plan"] ?? 0) > 0.5 || query.answerMode === "planning") asyncTasks.push(retrieveMajorPlan(query));
   if ((dc["athletics"] ?? 0) > 0.5 || ci.isAboutAthletics) asyncTasks.push(retrieveAthletics(query));
 
-  // Run vector store check and async DB tasks in parallel — neither blocks the other.
+// Run vector store check and async DB tasks in parallel — neither blocks the other.
   // vectorTask is built AFTER both resolve since it depends on vectorStoreEmpty.
 const vectorSourceTypes = getVectorSourceTypes(query);
 const [vectorStoreEmpty, asyncResults] = await Promise.all([
@@ -3648,7 +3813,20 @@ const isNonAcademicQuery =
   !intent.isAboutGenEd &&
   query.answerMode !== "planning";
 
-const vectorTask = vectorStoreEmpty || (isNonAcademicQuery && syncChunks.length >= 2)
+const topDomain = Object.entries(dc)
+  .sort(([, a], [, b]) => (b ?? 0) - (a ?? 0))[0]?.[0] ?? null;
+const structuredDomains = new Set(syncChunks.map((chunk) => chunk.domain));
+const hasStructuredCoverage = syncChunks.length > 0;
+const hasCampusStructuredCoverage = hasStructuredCoverage &&
+  [...structuredDomains].some((domain) => !["courses", "professors", "gen_ed", "major_plan", "news"].includes(domain));
+const shouldSkipVectors =
+  vectorSourceTypes.length === 0 ||
+  vectorStoreEmpty ||
+  (query.isFact && hasStructuredCoverage) ||
+  (isNonAcademicQuery && hasStructuredCoverage) ||
+  (topDomain !== null && !["courses", "professors", "gen_ed", "major_plan", "news"].includes(topDomain) && hasCampusStructuredCoverage);
+
+const vectorTask = shouldSkipVectors
   ? Promise.resolve([])
   : syncChunks.length < 2
     ? vectorSearch(lastMsg, 8, { sourceTypes: vectorSourceTypes }).catch(() => [])
@@ -3807,6 +3985,7 @@ if (relevantVectors.length > 0 && !query.isFact && query.answerMode !== "plannin
   // Rerank all chunks before assembly — never pass raw nearest neighbors to the model
 const rerankTopK = query.isFact ? 3 : query.answerMode === "planning" ? 10 : query.answerMode === "comparison" ? 8 : query.answerMode === "ranking" ? 6 : 7;
 const rerankedChunks = allChunks.length > rerankTopK ? await rerankChunks(lastMsg, allChunks, rerankTopK) : allChunks;
+const entityVerification = verifyExactEntityMatch(lastMsg, intent, query, rerankedChunks);
 
 const trust = makeTrustDecision(
   {
@@ -3814,6 +3993,8 @@ const trust = makeTrustDecision(
     isFact:           query.isFact,
     answerMode:       query.answerMode,
     domainConfidence: query.domainConfidence,
+    exactEntityRequired: entityVerification.required,
+    exactEntityMatch: entityVerification.matched,
   },
   rerankedChunks.map(c => ({
     domain:           c.domain,
@@ -3849,6 +4030,9 @@ console.log(JSON.stringify({
   trustConfidence: trust.confidence,
   trustClass: trust.explanation.query_class,
   primaryDomain: trust.explanation.primary_domain,
+  entityVerificationRequired: entityVerification.required,
+  entityVerificationMatched: entityVerification.matched,
+  entityVerificationExpected: entityVerification.expected,
   topScore: trust.explanation.top_score,
   chunkCount: rerankedChunks.length,
   top3Chunks,
@@ -3874,7 +4058,7 @@ prisma.queryLog.create({
 
 // ── Abstain gate ──────────────────────────────────────────────────────────
 if (trust.decision === "abstain") {
-  const abstainText = getAbstainResponse(query);
+  const abstainText = getAbstainResponse(query, trust.reason);
   const encoder = new TextEncoder();
   const readable = new ReadableStream({
     start(controller) {

@@ -1,0 +1,652 @@
+[
+  {
+    "id": 1,
+    "sessionId": "batch-2026-03-27-01",
+    "question": "What is the in-state undergraduate tuition per semester at UIC?",
+    "status": 200,
+    "ok": true,
+    "answer": "In-state undergraduate tuition at UIC is **$5,712 per semester**, plus **$2,445 in fees**. That's **$476 per credit hour** for in-state students.\n\nUIC also offers a 4-year tuition lock, so your rate is guaranteed for your entire undergraduate career. If you're from an Illinois family earning under $75k, check out the **Aspire Grant** at free.uic.edu — it covers 100% of tuition and fees.",
+    "headers": {
+      "abstained": null,
+      "abstainReason": null,
+      "playFlamesSong": null
+    }
+  },
+  {
+    "id": 2,
+    "sessionId": "batch-2026-03-27-02",
+    "question": "What is the FAFSA school code for UIC?",
+    "status": 200,
+    "ok": true,
+    "answer": "The FAFSA school code for UIC is **001776**.",
+    "headers": {
+      "abstained": null,
+      "abstainReason": null,
+      "playFlamesSong": null
+    }
+  },
+  {
+    "id": 3,
+    "sessionId": "batch-2026-03-27-03",
+    "question": "What is the FAFSA priority deadline at UIC?",
+    "status": 200,
+    "ok": true,
+    "answer": "The FAFSA priority deadline at UIC is **March 15**. UIC's FAFSA code is **001776**.",
+    "headers": {
+      "abstained": null,
+      "abstainReason": null,
+      "playFlamesSong": null
+    }
+  },
+  {
+    "id": 4,
+    "sessionId": "batch-2026-03-27-04",
+    "question": "What is the Aspire Grant and who qualifies?",
+    "status": 200,
+    "ok": true,
+    "answer": "The **Aspire Grant** is UIC's flagship financial aid program that covers **100% of tuition and mandatory fees** — essentially making UIC free for eligible Illinois students. This is a huge benefit that can save families over $15,000 per year.\n\nTo qualify, you must be an Illinois resident from a family earning under **$75,000** annually. There's no separate application — you just need to submit your **FAFSA** (or RISE Act Alternative Application) by **March 15** and get admitted to UIC.\n\nYou can learn more and check your eligibility at **free.uic.edu**. This grant makes UIC incredibly affordable for middle and lower-income Illinois families.",
+    "headers": {
+      "abstained": null,
+      "abstainReason": null,
+      "playFlamesSong": null
+    }
+  },
+  {
+    "id": 5,
+    "sessionId": "batch-2026-03-27-05",
+    "question": "When is the fall tuition bill due?",
+    "status": 200,
+    "ok": true,
+    "answer": "I don't see the specific fall tuition bill due date in my data. For exact payment deadlines, you'll need to check the Student Account Services website at **bursar.uic.edu** or call them at **(312) 996-5885**.\n\nWhat I can tell you is that fall 2025 classes start **August 25, 2025**, so the bill would typically be due before then.",
+    "headers": {
+      "abstained": null,
+      "abstainReason": null,
+      "playFlamesSong": null
+    }
+  },
+  {
+    "id": 6,
+    "sessionId": "batch-2026-03-27-06",
+    "question": "How much does CampusCare cost per year?",
+    "status": 200,
+    "ok": true,
+    "answer": "CampusCare costs **$1,394 per year**. You're automatically enrolled unless you submit a waiver by **September 12, 2025** for fall or **February 7, 2026** for spring if you have qualifying outside insurance.",
+    "headers": {
+      "abstained": null,
+      "abstainReason": null,
+      "playFlamesSong": null
+    }
+  },
+  {
+    "id": 7,
+    "sessionId": "batch-2026-03-27-07",
+    "question": "What payment plan does UIC offer for tuition?",
+    "status": 200,
+    "ok": true,
+    "answer": "I don't see the specific payment plan details in my current data. For accurate information about UIC's tuition payment plan options, installment schedules, and any associated fees, you'll want to check directly with the Bursar's Office.\n\nYou can find all the payment plan details at **bursar.uic.edu** or contact them at **(312) 996-5885**. They'll have the most up-to-date information about monthly payment options, due dates, and enrollment procedures for payment plans.",
+    "headers": {
+      "abstained": null,
+      "abstainReason": null,
+      "playFlamesSong": null
+    }
+  },
+  {
+    "id": 8,
+    "sessionId": "batch-2026-03-27-08",
+    "question": "Does ARC require a meal plan?",
+    "status": 200,
+    "ok": true,
+    "answer": "Yes, **ARC requires a meal plan**. All students living in the Academic and Residential Complex must purchase one of the meal plan options, which range from **Ignite 15** ($2,060/semester) to **Ignite Unlimited** ($2,800/semester).",
+    "headers": {
+      "abstained": null,
+      "abstainReason": null,
+      "playFlamesSong": null
+    }
+  },
+  {
+    "id": 9,
+    "sessionId": "batch-2026-03-27-09",
+    "question": "What is the cheapest room type at ARC per semester?",
+    "status": 200,
+    "ok": true,
+    "answer": "I don't have specific cost information for ARC (Academic and Residential Complex) in my current data. For the most accurate and up-to-date housing costs at ARC, contact **UIC Housing** at **(312) 996-3000** or visit **housing.uic.edu**.\n\nFrom what I do have, the most affordable dorm options I can confirm are **Commons West shared rooms at $5,275/semester** and **Commons South shared rooms at $5,275/semester**, both requiring meal plans.",
+    "headers": {
+      "abstained": null,
+      "abstainReason": null,
+      "playFlamesSong": null
+    }
+  },
+  {
+    "id": 10,
+    "sessionId": "batch-2026-03-27-10",
+    "question": "What residence halls do not require a meal plan?",
+    "status": 200,
+    "ok": true,
+    "answer": "**Marie Robinson Hall (MRH)**, **Taft-Bell House (TBH)**, **Single Student Residence (SSR)**, and **Polk Street Residence (PSR)** do not require meal plans — they're optional for these halls.\n\nAll the other residence halls (ARC, JST, Commons North/West/South, and Courtyard) require meal plans as part of living there.",
+    "headers": {
+      "abstained": null,
+      "abstainReason": null,
+      "playFlamesSong": null
+    }
+  },
+  {
+    "id": 11,
+    "sessionId": "batch-2026-03-27-11",
+    "question": "How do I apply for UIC housing?",
+    "status": 200,
+    "ok": true,
+    "answer": "You apply for UIC housing through the **Housing and Residence Life portal** at **housing.uic.edu**. Contact them at **(312) 996-3000** or **housing@uic.edu** for direct assistance.\n\n**Key deadlines:**\n- **First-year students**: Priority deadline **November 3, 2025**, regular deadline **February 2, 2026**\n- **Transfer students**: **April 1, 2026** for fall, **October 15, 2025** for spring\n\nYou'll need to submit your UIC admissions application first, then you can access the housing portal to select your preferred residence hall and room type.",
+    "headers": {
+      "abstained": null,
+      "abstainReason": null,
+      "playFlamesSong": null
+    }
+  },
+  {
+    "id": 12,
+    "sessionId": "batch-2026-03-27-12",
+    "question": "What LLCs are available at JST?",
+    "status": 200,
+    "ok": true,
+    "answer": "**James Stukel Towers (JST)** has the most Living Learning Community options of any UIC residence hall. The LLCs available at JST are:\n\n- **Innovate** (innovation + entrepreneurship)\n- **PAP STEM** \n- **DuSable Scholars**\n- **Ventures in Business**\n- **SISTERS**\n- **Bayt Al Iman**\n- **Honors**\n- **La Casa**\n- **LEAD ASIA**\n\nThese communities offer faculty mentors, peer community, and priority registration. JST requires a meal plan and costs **$6,871** for suite private or **$6,181** for suite shared rooms.",
+    "headers": {
+      "abstained": null,
+      "abstainReason": null,
+      "playFlamesSong": null
+    }
+  },
+  {
+    "id": 13,
+    "sessionId": "batch-2026-03-27-13",
+    "question": "What is the Ignite Unlimited meal plan and how much does it cost?",
+    "status": 200,
+    "ok": true,
+    "answer": "The **Ignite Unlimited** meal plan costs **$2,800 per semester** and gives you unlimited dining hall swipes plus **$400 in Flames Fare** (dining dollars), **50 exchanges** per semester, and **5 guest passes**.\n\nThis is UIC's premium meal plan option and is required if you live in certain residence halls (ARC, CTY, CMN, CMW, CMS, or JST). It's designed for students who want maximum flexibility and don't want to worry about running out of swipes.",
+    "headers": {
+      "abstained": null,
+      "abstainReason": null,
+      "playFlamesSong": null
+    }
+  },
+  {
+    "id": 14,
+    "sessionId": "batch-2026-03-27-14",
+    "question": "Where is the financial aid office at UIC?",
+    "status": 200,
+    "ok": true,
+    "answer": "The Financial Aid office is located in **Suite 1800, SSB** (Student Services Building) at **1200 W Harrison St**. You can also visit financialaid.uic.edu for more information.",
+    "headers": {
+      "abstained": null,
+      "abstainReason": null,
+      "playFlamesSong": null
+    }
+  },
+  {
+    "id": 15,
+    "sessionId": "batch-2026-03-27-15",
+    "question": "What is the phone number for the counseling center?",
+    "status": 200,
+    "ok": true,
+    "answer": "The UIC Counseling Center phone number is **312-996-3490**. They're open Mon-Fri 8AM-5PM with evening appointments available, and this same number provides 24/7 crisis counseling.",
+    "headers": {
+      "abstained": null,
+      "abstainReason": null,
+      "playFlamesSong": null
+    }
+  },
+  {
+    "id": 16,
+    "sessionId": "batch-2026-03-27-16",
+    "question": "Which CTA train lines serve UIC?",
+    "status": 200,
+    "ok": true,
+    "answer": "The **Blue Line** serves UIC with three stops:\n\n- **UIC-Halsted**: closest to Student Center East, Daley Library, and east campus\n- **Racine**: closest to Student Services Building, Credit Union 1 Arena, and ARC  \n- **Illinois Medical District**: closest to College of Nursing, Library of Health Sciences, and Sport and Fitness Center\n\nBased on what I have, the Blue Line appears to be the primary CTA train service for UIC. For the most current transit information and any other train lines that may serve the campus, check with UIC Transportation Services or visit the CTA website directly.",
+    "headers": {
+      "abstained": null,
+      "abstainReason": null,
+      "playFlamesSong": null
+    }
+  },
+  {
+    "id": 17,
+    "sessionId": "batch-2026-03-27-17",
+    "question": "Are UIC basketball games free for students?",
+    "status": 200,
+    "ok": true,
+    "answer": "Yes, **UIC basketball games are free for students** with a valid UIC student ID. Students sit in the **Flame Force student section** at Gate 3, Credit Union 1 Arena, sections 110-112. Follow **@uic_studentsection** for access details and updates.",
+    "headers": {
+      "abstained": null,
+      "abstainReason": null,
+      "playFlamesSong": null
+    }
+  },
+  {
+    "id": 18,
+    "sessionId": "batch-2026-03-27-18",
+    "question": "What conference does UIC play in?",
+    "status": 200,
+    "ok": true,
+    "answer": "UIC competes in the **Missouri Valley Conference (MVC)**. All 16 Flames athletic teams play in this conference, and students get free admission to regular season home games with their UIC ID.",
+    "headers": {
+      "abstained": null,
+      "abstainReason": null,
+      "playFlamesSong": null
+    }
+  },
+  {
+    "id": 19,
+    "sessionId": "batch-2026-03-27-19",
+    "question": "How many student organizations does UIC have?",
+    "status": 200,
+    "ok": true,
+    "answer": "UIC has **470+ registered student organizations** that you can explore at connect.uic.edu.\n\nThis includes everything from academic and professional clubs to cultural organizations, recreational groups, and Greek life. With over 470 options, there's likely something that matches your interests or career goals.",
+    "headers": {
+      "abstained": null,
+      "abstainReason": null,
+      "playFlamesSong": null
+    }
+  },
+  {
+    "id": 20,
+    "sessionId": "batch-2026-03-27-20",
+    "question": "What are the easiest CS courses at UIC by GPA or easiness?",
+    "status": 200,
+    "ok": true,
+    "answer": "The easiest CS courses at UIC are **CS 533 (Deep Learning for NLP)**, **CS 582 (Information Retrieval)**, and **CS 506 (Intro to Quantum Computing)** — all three have perfect **5.0/5 easiness scores** and **4.0 GPAs**. **CS 505 (Computability & Complexity Theory)** is also very manageable with a **5.0/5 easiness score** and **3.98 GPA**.\n\nThese courses consistently show the highest combination of easiness ratings and grade outcomes, making them your best bets for maintaining a strong GPA while fulfilling CS requirements.",
+    "headers": {
+      "abstained": null,
+      "abstainReason": null,
+      "playFlamesSong": null
+    }
+  },
+  {
+    "id": 21,
+    "sessionId": "batch-2026-03-27-21",
+    "question": "What is the average GPA in CS 211?",
+    "status": 200,
+    "ok": true,
+    "answer": "The average GPA in **CS 211** (Programming Practicum) is **2.59**. \n\nThis course has a difficulty rating of 1.7/5 (Hard), with 35.8% of students earning A grades and a 93.1% pass rate across 2,948 total students.",
+    "headers": {
+      "abstained": null,
+      "abstainReason": null,
+      "playFlamesSong": null
+    }
+  },
+  {
+    "id": 22,
+    "sessionId": "batch-2026-03-27-22",
+    "question": "What are the easiest MATH courses at UIC?",
+    "status": 200,
+    "ok": true,
+    "answer": "The easiest MATH courses at UIC are **MATH 571 - Advanced Topics in Algebraic Geometry** with a perfect **5.0/5 easiness score** and **4.00 GPA**, followed closely by **MATH 589 - Teaching Mathematics** at **4.9/5 easiness** with a **3.95 GPA**. \n\nOther top easy options include **MATH 194 - Special Topics in Math** (**4.5/5 easiness**, **3.81 GPA**) and **MATH 494 - Exploring Social Networks** (**4.4/5 easiness**, **3.76 GPA**). These courses consistently show high GPAs and student success rates, making them your best bets for easier math credits.",
+    "headers": {
+      "abstained": null,
+      "abstainReason": null,
+      "playFlamesSong": null
+    }
+  },
+  {
+    "id": 23,
+    "sessionId": "batch-2026-03-27-23",
+    "question": "What are the easiest gen ed courses at UIC?",
+    "status": 200,
+    "ok": true,
+    "answer": "**ED 101 - Critical Literacies in a Digital World** is your best bet with an easiness score of **4.2/5** and a solid **3.65 GPA**. It fulfills the \"Understanding the Individual and Society\" gen ed requirement.\n\nFor comparison, **ED 252 - Controversies in U.S. Schools** has a lower easiness score of **3.3/5** with a **3.26 GPA**, making ED 101 the clear winner among the ED gen ed options. Both courses satisfy different gen ed categories, so you can pick based on which requirement you need to fill.",
+    "headers": {
+      "abstained": null,
+      "abstainReason": null,
+      "playFlamesSong": null
+    }
+  },
+  {
+    "id": 24,
+    "sessionId": "batch-2026-03-27-24",
+    "question": "What gen ed categories does UIC have?",
+    "status": 200,
+    "ok": true,
+    "answer": "UIC has **six general education categories**:\n\n1. **Analyzing the Natural World**\n2. **Understanding the Individual and Society** \n3. **Understanding the Past**\n4. **Understanding the Creative Arts**\n5. **Exploring World Cultures**\n6. **Understanding U.S. Society**\n\nEach category requires specific courses to fulfill your general education requirements. For detailed course options within each category and how they apply to your specific major, I'd recommend checking with your college's advising office or visiting the **Office of the Registrar** at (312) 996-4350 for the most current gen ed requirements.",
+    "headers": {
+      "abstained": null,
+      "abstainReason": null,
+      "playFlamesSong": null
+    }
+  },
+  {
+    "id": 25,
+    "sessionId": "batch-2026-03-27-25",
+    "question": "Who is the easiest professor for CS 211?",
+    "status": 200,
+    "ok": true,
+    "answer": "**Adam Thomas Koehler** is the easiest professor for CS 211. He gives a **3.07 GPA** with a **43.3% A-rate** and only **3.7% withdrawal rate**, well above the course average of 2.59 GPA. Students also rate him **4.3/5** on RateMyProfessor with 58 reviews, so he's both an easy grader and well-liked teacher.",
+    "headers": {
+      "abstained": null,
+      "abstainReason": null,
+      "playFlamesSong": null
+    }
+  },
+  {
+    "id": 26,
+    "sessionId": "batch-2026-03-27-26",
+    "question": "Who is the easiest professor for MATH 180?",
+    "status": 200,
+    "ok": true,
+    "answer": "**Victor Protsak** is the easiest professor for **MATH 180** with a **3.05 GPA** and **47.6% A-rate**, compared to the course average of 2.67 GPA. He has a low **4.1% withdrawal rate**, meaning students stick with his class rather than dropping out.\n\nHowever, his RMP rating is only **2.2/5** from 112 reviews, so while he grades more generously, students find his teaching style challenging or unclear.",
+    "headers": {
+      "abstained": null,
+      "abstainReason": null,
+      "playFlamesSong": null
+    }
+  },
+  {
+    "id": 27,
+    "sessionId": "batch-2026-03-27-27",
+    "question": "Which ECON 121 professor gives the most As?",
+    "status": 200,
+    "ok": true,
+    "answer": "**Behzod Ahundjanov** gives the most As in ECON 121 with a **48.7% A-rate** and **3.21 GPA** — significantly higher than the course average of 2.88. He also has excellent student reviews with a **4.7/5 rating** on RateMyProfessor from 90 reviews and a 93% \"would take again\" rate, making him both the easiest grader and highest-rated professor for this course.",
+    "headers": {
+      "abstained": null,
+      "abstainReason": null,
+      "playFlamesSong": null
+    }
+  },
+  {
+    "id": 28,
+    "sessionId": "batch-2026-03-27-28",
+    "question": "Who teaches CS 341 and what are their grades like?",
+    "status": 200,
+    "ok": true,
+    "answer": "**Patrick Troy** is your best bet for **CS 341** — he gives out the highest grades with a **2.83 GPA** and **40.3% A-rate**, plus students love him with a perfect **5/5 RMP rating**. **Joseph Hummel** is close behind with a **2.75 GPA** and **40% A-rate**, though he has a **3.8/5 RMP rating** from 82 reviews.\n\nBoth professors are significantly above the course average of **2.56 GPA**, making CS 341 a challenging class (difficulty score **1.6/5**) where picking the right instructor really matters.",
+    "headers": {
+      "abstained": null,
+      "abstainReason": null,
+      "playFlamesSong": null
+    }
+  },
+  {
+    "id": 29,
+    "sessionId": "batch-2026-03-27-29",
+    "question": "What are the required courses for a CS major at UIC?",
+    "status": 200,
+    "ok": true,
+    "answer": "I don't see the original plan you're referring to that needs to be corrected. You've mentioned missing required courses (**CS 261**, **CS 277**, **CS 342**, **CS 362**, **CS 377**) and rules about removing courses ≥500 and replacing placeholders, but I don't have the specific plan document that contains these issues.\n\nCould you please share the plan that needs to be fixed? Once I can see the original semester-by-semester plan with the specific issues you've identified, I'll correct it by:\n\n1. Adding each missing course exactly once: **CS 261**, **CS 277**, **CS 342**, **CS 362**, **CS 377**\n2. Removing any courses numbered 500 or above\n3. Replacing any placeholders with real course codes\n4. Providing the full corrected plan\n\nPlease paste the plan that needs these corrections, and I'll fix it immediately.\n\n*Please verify this plan against catalog.uic.edu*",
+    "headers": {
+      "abstained": null,
+      "abstainReason": null,
+      "playFlamesSong": null
+    }
+  },
+  {
+    "id": 30,
+    "sessionId": "batch-2026-03-27-30",
+    "question": "Can you give me a 4-year plan for a CS major?",
+    "status": 200,
+    "ok": true,
+    "answer": "Here's the corrected 4-year Computer Science degree plan at UIC:\n\n### Year 1 Fall\n- **ENGR 100** - Engineering Success Seminar for Freshmen\n- **CS 111** - Program Design I\n- **MATH 180** - Calculus I\n- **ENGL 160** - Academic Writing I\n- **Gen Ed** - Natural World (without lab)\n\n*Foundation courses to establish programming fundamentals and mathematical prerequisites.*\n\n### Year 1 Spring\n- **CS 141** - Program Design II\n- **MATH 181** - Calculus II\n- **ENGL 161** - Academic Writing II\n- **PHYS 141** - General Physics I (Mechanics)\n- **Gen Ed** - Individual & Society\n\n*Continues programming sequence while adding physics and completing English requirements.*\n\n### Year 2 Fall\n- **CS 151** - Mathematical Foundations of Computing\n- **CS 211** - Programming Practicum\n- **MATH 220** - Calculus III\n- **PHYS 142** - General Physics II (Electricity and Magnetism)\n- **Gen Ed** - Past & Traditions\n\n*Introduces discrete mathematics and advanced programming while completing calculus sequence.*\n\n### Year 2 Spring\n- **CS 251** - Data Structures\n- **CS 261** - Machine Organization\n- **MATH 310** - Applied Linear Algebra\n- **STAT 381** - Applied Statistics\n- **Gen Ed** - Understanding the Creative Arts\n\n*Core computer science concepts with essential mathematical foundations.*\n\n### Year 3 Fall\n- **CS 277** - Object-Oriented Programming and Design\n- **CS 301** - Languages and Automata\n- **CS 341** - Programming Language Design and Implementation\n- **CS 361** - Systems Programming\n- **Gen Ed** - Understanding U.S. Society\n\n*Advanced programming concepts and system-level programming introduction.*\n\n### Year 3 Spring\n- **CS 342** - Software Design\n- **CS 362** - Computer Design\n- **CS 377** - Communication and Ethical Issues in Computing\n- **Technical Elective** - CS\n- **Free Elective**\n\n*Software engineering principles and computer architecture fundamentals.*\n\n### Year 4 Fall\n- **CS 401** - Computer Algorithms I\n- **CS 440** - Software Engineering I\n- **Technical Elective** - CS\n- **Technical Elective** - CS\n- **Free Elective**\n\n*Advanced algorithms and software engineering methodology.*\n\n### Year 4 Spring\n- **CS 441** - Software Engineering II\n- **Technical Elective** - CS\n- **Technical Elective** - CS\n- **Free Elective**\n- **Free Elective**\n\n*Capstone software engineering project and professional preparation.*\n\nVerify this against catalog.uic.edu — requirements change each year.\n\n*Please verify this plan against catalog.uic.edu*",
+    "headers": {
+      "abstained": null,
+      "abstainReason": null,
+      "playFlamesSong": null
+    }
+  },
+  {
+    "id": 31,
+    "sessionId": "batch-2026-03-27-31",
+    "question": "Is CS 341 usually waitlist heavy in spring?",
+    "status": 200,
+    "ok": true,
+    "answer": "I don't have specific waitlist data for **CS 341** in spring semesters. Based on what I have, **CS 341** (Programming Language Design and Implementation) is a challenging course with a 1.6/5 easiness score and has served 1,910 total students historically, suggesting it's a popular required course that could face capacity issues.\n\nFor current spring waitlist status and registration availability, you'll want to check the Student Information System (my.UIC.edu) or contact the Computer Science advising office at (312) 996-3422. They'll have the most up-to-date enrollment numbers and can tell you about typical spring demand patterns.",
+    "headers": {
+      "abstained": null,
+      "abstainReason": null,
+      "playFlamesSong": null
+    }
+  },
+  {
+    "id": 32,
+    "sessionId": "batch-2026-03-27-32",
+    "question": "What does my professor's syllabus say about late work?",
+    "status": 200,
+    "ok": true,
+    "answer": "I don't have current transit details. Check transitchicago.com for CTA schedules or transportation.uic.edu for campus shuttles.",
+    "headers": {
+      "abstained": "true",
+      "abstainReason": "out_of_scope_query",
+      "playFlamesSong": null
+    }
+  },
+  {
+    "id": 33,
+    "sessionId": "batch-2026-03-27-33",
+    "question": "Which dining hall has vegan options today?",
+    "status": 200,
+    "ok": true,
+    "answer": "I don't have the specific housing information you need. Contact UIC Housing directly: housing.uic.edu | 312-413-5255 | housing@uic.edu.",
+    "headers": {
+      "abstained": "true",
+      "abstainReason": "insufficient_evidence",
+      "playFlamesSong": null
+    }
+  },
+  {
+    "id": 34,
+    "sessionId": "batch-2026-03-27-34",
+    "question": "What GPA do I need to transfer to UIUC from UIC?",
+    "status": 200,
+    "ok": true,
+    "answer": "I don't have that admissions detail. Contact Admissions: admissions.uic.edu | 312-996-4350.",
+    "headers": {
+      "abstained": "true",
+      "abstainReason": "out_of_scope_query",
+      "playFlamesSong": null
+    }
+  },
+  {
+    "id": 35,
+    "sessionId": "batch-2026-03-27-35",
+    "question": "Is the 606 bus running on time right now?",
+    "status": 200,
+    "ok": true,
+    "answer": "I don't have real-time bus tracking data for CTA routes like the 606. For current bus arrival times and delays, you'll want to check:\n\n- **CTA Bus Tracker** at ctabustracker.com\n- **Ventra app** on your phone\n- Text your stop ID to 41411\n\nYou can also call CTA customer service at **(312) 836-7000** for current service updates. The CTA website and app will give you the most accurate real-time information for any route delays or schedule changes.",
+    "headers": {
+      "abstained": null,
+      "abstainReason": null,
+      "playFlamesSong": null
+    }
+  },
+  {
+    "id": 36,
+    "sessionId": "batch-2026-03-27-36",
+    "question": "What was my GPA last semester?",
+    "status": 200,
+    "ok": true,
+    "answer": "I don't have reliable data to answer that question. For course information, check the UIC Schedule of Classes at registrar.uic.edu or the course catalog at catalog.uic.edu.",
+    "headers": {
+      "abstained": "true",
+      "abstainReason": "personal_record_query",
+      "playFlamesSong": null
+    }
+  },
+  {
+    "id": 37,
+    "sessionId": "batch-2026-03-27-37",
+    "question": "Does Professor Smith give makeup exams in CS 211?",
+    "status": 200,
+    "ok": true,
+    "answer": "I don't have reliable data to answer that question. For course information, check the UIC Schedule of Classes at registrar.uic.edu or the course catalog at catalog.uic.edu.",
+    "headers": {
+      "abstained": "true",
+      "abstainReason": "out_of_scope_query",
+      "playFlamesSong": null
+    }
+  },
+  {
+    "id": 38,
+    "sessionId": "batch-2026-03-27-38",
+    "question": "Is there a Starbucks inside the engineering building?",
+    "status": 200,
+    "ok": true,
+    "answer": "Based on what I have, there's a **Starbucks** at **Student Center West (SCW)** that's open 7AM-4PM, but the engineering buildings are on East Campus while SCW is on the medical district/West Campus.\n\nI don't see specific dining locations listed inside the engineering buildings themselves. For the most current campus dining map and locations, check with UIC Dining at dining.uic.edu or call (312) 996-2649.",
+    "headers": {
+      "abstained": null,
+      "abstainReason": null,
+      "playFlamesSong": null
+    }
+  },
+  {
+    "id": 39,
+    "sessionId": "batch-2026-03-27-39",
+    "question": "Can I appeal my grade from 3 years ago?",
+    "status": 200,
+    "ok": true,
+    "answer": "I don't have a reliable answer for that policy question. Contact the Registrar's Office at registrar.uic.edu or your college advising office.",
+    "headers": {
+      "abstained": "true",
+      "abstainReason": "personal_record_query",
+      "playFlamesSong": null
+    }
+  },
+  {
+    "id": 40,
+    "sessionId": "batch-2026-03-27-40",
+    "question": "What is my F-1 visa cap-out date?",
+    "status": 200,
+    "ok": true,
+    "answer": "I don't have access to individual student records or specific F-1 visa cap-out dates, as these depend on your personal immigration status and program completion timeline.\n\nFor your exact F-1 cap-out date, you'll need to check with the **Office of International Services (OIS)** directly at **SSB 2160**, call **(312) 996-3121**, or email **ois@uic.edu**. They're open **Monday-Friday 8:30AM-5PM** and can review your I-20 and immigration status to give you the precise date.\n\nYour cap-out date is typically related to your program end date plus any authorized post-completion OPT period, but OIS will have your specific details.",
+    "headers": {
+      "abstained": null,
+      "abstainReason": null,
+      "playFlamesSong": null
+    }
+  },
+  {
+    "id": 41,
+    "sessionId": "batch-2026-03-27-41",
+    "question": "Can I take 21 credits this semester without special approval?",
+    "status": 200,
+    "ok": true,
+    "answer": "Based on what I have, UIC typically has credit hour limits that require special approval for overloads, but I don't have the exact credit threshold or approval process in my current data.\n\nYou'll need to check with your college's advising office for the specific credit limit and approval requirements. Here are the college advising contacts:\n\n**Applied Health Sciences**: 516 AHSB (312) 996-2079  \n**Architecture, Design, and the Arts**: 208 Jefferson Hall (312) 996-2006  \n**Business Administration**: Douglass Hall Suite 110 (312) 996-2700  \n**Education**: 3145 ETMSW (312) 996-4532  \n**Engineering**: 123 SEO (312) 996-3463  \n**Liberal Arts and Sciences**: 3rd Floor University Hall (312) 996-3366  \n**Nursing**: 5th Floor NURS (312) 996-7800  \n**Public Health**: SPHPI Building (312) 355-2536  \n**Urban Planning and Public Affairs**: 115 CUPPA Hall (312) 413-8088\n\nYou can also check the current academic policies at https://advising.uic.edu/student-resources/ or contact your advisor through iAdvise in myUIC.",
+    "headers": {
+      "abstained": null,
+      "abstainReason": null,
+      "playFlamesSong": null
+    }
+  },
+  {
+    "id": 42,
+    "sessionId": "batch-2026-03-27-42",
+    "question": "What was the score of last night's UIC basketball game?",
+    "status": 200,
+    "ok": true,
+    "answer": "I don't have access to real-time game scores or information about what happened \"last night.\" Based on my available data, the most recent UIC men's basketball result I can share is from their 2025-2026 season when they had a strong conference tournament run, reaching the MVC title game (Arch Madness) before losing to Northern Iowa 84-69 in the final.\n\nFor the most current game scores and schedules, check the official UIC Flames athletics website at uicflames.com or follow @UICFlames on social media for live updates.",
+    "headers": {
+      "abstained": null,
+      "abstainReason": null,
+      "playFlamesSong": null
+    }
+  },
+  {
+    "id": 43,
+    "sessionId": "batch-2026-03-27-43",
+    "question": "Where is OIS located and what is their phone number?",
+    "status": 200,
+    "ok": true,
+    "answer": "The Office of International Services (OIS) is located in **Suite 2160, Student Services Building (SSB)** at **1200 W Harrison St**. Their phone number is **(312) 996-3121**.\n\nThey're open Monday-Friday 8:30AM-5PM, and you can also reach them at ois@uic.edu.",
+    "headers": {
+      "abstained": null,
+      "abstainReason": null,
+      "playFlamesSong": null
+    }
+  },
+  {
+    "id": 44,
+    "sessionId": "batch-2026-03-27-44",
+    "question": "Do international students qualify for in-state tuition at UIC?",
+    "status": 200,
+    "ok": true,
+    "answer": "International students on F-1 or J-1 visas do **not** qualify for in-state tuition at UIC. They pay out-of-state rates: **$13,763 per semester** plus $2,445 in fees.\n\nHowever, there are some exceptions for international students who have certain legal statuses. Students with permanent residency, asylum, or other qualifying immigration statuses may be eligible for in-state tuition after meeting Illinois residency requirements.\n\nFor specific questions about your immigration status and tuition classification, contact the **Office of International Services** at **(312) 996-3121** or **ois@uic.edu** — they can review your individual situation and connect you with the right resources.",
+    "headers": {
+      "abstained": null,
+      "abstainReason": null,
+      "playFlamesSong": null
+    }
+  },
+  {
+    "id": 45,
+    "sessionId": "batch-2026-03-27-45",
+    "question": "What are the recreation center hours?",
+    "status": 200,
+    "ok": true,
+    "answer": "The **Student Recreation Facility (SRF)** at **737 S Halsted** is open Monday-Thursday 6AM-11PM, Friday 6AM-9PM, and weekends 9AM-9PM. The **Student Fitness Center (SFC)** at **828 S Wolcott** has the same hours. Both are free for fee-paying students.",
+    "headers": {
+      "abstained": null,
+      "abstainReason": null,
+      "playFlamesSong": null
+    }
+  },
+  {
+    "id": 46,
+    "sessionId": "batch-2026-03-27-46",
+    "question": "Is there a halal food option on campus?",
+    "status": 200,
+    "ok": true,
+    "answer": "Yes! There's **Halal Shack** at the Student Center East (SCE), which is one of UIC's main dining locations. SCE is open Monday-Friday 7:30AM-8PM and weekends 10AM-8PM.\n\nSCE has tons of food options including Chick-fil-A, Panda Express, Dunkin, Subway, Sushi Do, and Moe's, so you'll have plenty of variety beyond just the halal option.",
+    "headers": {
+      "abstained": null,
+      "abstainReason": null,
+      "playFlamesSong": null
+    }
+  },
+  {
+    "id": 47,
+    "sessionId": "batch-2026-03-27-47",
+    "question": "Where should I live if I'm an engineering freshman and want something social?",
+    "status": 200,
+    "ok": true,
+    "answer": "**Academic and Residential Complex (ARC)** is perfect for you as an engineering freshman wanting a social environment. It's designed specifically for first-year students, has the strongest academics-housing integration with study spaces and a gym inside the building, and creates natural community through its freshman-focused environment.\n\nIf you want even more social opportunities, consider **James Stukel Towers (JST)** — it has the most Living Learning Community options of any dorm, including the **PAP STEM** community that would connect you with other engineering and STEM students. JST also has suite-style living and the dining hall right in the building, making it easy to meet people.\n\nBoth require meal plans (which actually helps with the social aspect since you'll eat with other residents), and both are on east campus near the engineering buildings. ARC runs $6,342-$9,005 depending on room type, while JST is $6,181-$6,871.\n\nFor the most current room availability and to apply, check with **University Housing** at (312) 996-3000 or housing.uic.edu.",
+    "headers": {
+      "abstained": null,
+      "abstainReason": null,
+      "playFlamesSong": null
+    }
+  },
+  {
+    "id": 48,
+    "sessionId": "batch-2026-03-27-48",
+    "question": "I'm a commuter, what's the cheapest meal plan worth getting?",
+    "status": 200,
+    "ok": true,
+    "answer": "As a commuter, you're not required to get a meal plan, but if you want one, the **Blaze 160** is designed specifically for commuters at **$2,350/semester**. It gives you 160 swipes plus $750 in Flames Fare (which works at places like Chick-fil-A, Panda Express, and Starbucks on campus) plus 30 exchanges.\n\nHowever, you might want to consider just paying out-of-pocket instead. With 160 swipes costing $2,350, that's about $14.69 per swipe. You could easily eat cheaper by just buying meals as needed, especially since you have access to the **Market at Halsted** (open 24 hours) and all the food court options in SCE and SCW without a meal plan.\n\nThe **Commuter Student Resource Center** in SCE Suite 245 also has free lockers and a lounge where you can store and eat your own food if you want to save even more.",
+    "headers": {
+      "abstained": null,
+      "abstainReason": null,
+      "playFlamesSong": null
+    }
+  },
+  {
+    "id": 49,
+    "sessionId": "batch-2026-03-27-49",
+    "question": "Can you compare ARC vs JST for a first-year student?",
+    "status": 200,
+    "ok": true,
+    "answer": "**ARC vs JST for First-Year Students:**\n\n**Academic and Residential Complex (ARC):**\n- **Cost:** Traditional shared $6,342, traditional private $7,292, semi suite shared $7,531, semi suite private $9,005\n- **Perks:** Most modern building with gym inside, strongest academics-housing integration, best in-building amenities\n- **Style:** Traditional and semi-suite options\n\n**James Stukel Towers (JST):**\n- **Cost:** Suite shared $6,181, suite private $6,871\n- **Perks:** Suite-style living, dining hall in the building, most LLC (Living Learning Community) options, high-rise with great Chicago views\n- **Style:** Suite living only\n\n**Key Similarities:** Both require meal plans, both are first-year only buildings.\n\n**Recommendation:** If you want the cheapest option with suite living and great views, choose **JST suite shared ($6,181)**. If you want the newest facilities with a gym and don't mind spending more, go with **ARC traditional shared ($6,342)** for good value or splurge on ARC semi suite private ($9,005) for the premium experience. JST wins on cost and views, ARC wins on modern amenities and academics integration.",
+    "headers": {
+      "abstained": null,
+      "abstainReason": null,
+      "playFlamesSong": null
+    }
+  },
+  {
+    "id": 50,
+    "sessionId": "batch-2026-03-27-50",
+    "question": "What should a sophomore CS major take next semester?",
+    "status": 200,
+    "ok": true,
+    "answer": "As a sophomore CS major, you should focus on core CS requirements and math foundations for next semester (Spring 2026). Here's what I'd recommend based on the typical CS sequence:\n\n**Priority courses to consider:**\n- **CS 251** - Data Structures (if not taken yet) - this is crucial for upper-level CS courses\n- **CS 261** - Machine Organization - fundamental computer systems knowledge\n- **MATH 220** - Calculus I or **MATH 210** - Calculus III (depending on your math progress)\n- **PHYS 105** - General Physics I (required for CS degree)\n\n**Also consider:**\n- **CS 277** - Introduction to Algorithms (if you've completed CS 251)\n- General education requirements to stay on track\n\nSince you're a sophomore, you should have completed **CS 111**, **CS 141**, **CS 151**, and **CS 211** by now. If you're missing any of these prerequisites, prioritize those first.\n\nI'd recommend meeting with your CS advisor in **123 SEO** at **(312) 996-3463** to confirm your specific course sequence and ensure you're on track for graduation. Registration for Spring 2026 opens **November 3, 2025**.\n\nWhat CS courses have you already completed? This would help me give you a more targeted recommendation.",
+    "headers": {
+      "abstained": null,
+      "abstainReason": null,
+      "playFlamesSong": null
+    }
+  }
+]

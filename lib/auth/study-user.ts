@@ -1,4 +1,5 @@
 import prisma from "@/lib/prisma";
+import { Prisma } from "@prisma/client";
 
 type AuthUserSeed = {
   id: string;
@@ -8,6 +9,12 @@ type AuthUserSeed = {
 };
 
 export async function ensureStudyUserForAuthUser(authUser: AuthUserSeed) {
+  const updateData = {
+    email: authUser.email,
+    displayName: authUser.name,
+    image: authUser.image,
+  };
+
   const byAuthId = await prisma.studyUser.findUnique({
     where: { authUserId: authUser.id },
   });
@@ -40,13 +47,43 @@ export async function ensureStudyUserForAuthUser(authUser: AuthUserSeed) {
     }
   }
 
-  return prisma.studyUser.create({
-    data: {
-      authUserId: authUser.id,
-      email: authUser.email,
-      displayName: authUser.name,
-      image: authUser.image,
-      school: "UIC",
-    },
-  });
+  try {
+    return await prisma.studyUser.create({
+      data: {
+        authUserId: authUser.id,
+        email: authUser.email,
+        displayName: authUser.name,
+        image: authUser.image,
+        school: "UIC",
+      },
+    });
+  } catch (error) {
+    if (!(error instanceof Prisma.PrismaClientKnownRequestError) || error.code !== "P2002") {
+      throw error;
+    }
+
+    const recovered =
+      (await prisma.studyUser.findUnique({
+        where: { authUserId: authUser.id },
+      })) ||
+      (authUser.email
+        ? await prisma.studyUser.findUnique({
+            where: { email: authUser.email },
+          })
+        : null);
+
+    if (!recovered) {
+      throw error;
+    }
+
+    return prisma.studyUser.update({
+      where: { id: recovered.id },
+      data: {
+        authUserId: authUser.id,
+        email: authUser.email ?? recovered.email,
+        displayName: authUser.name ?? recovered.displayName,
+        image: authUser.image ?? recovered.image,
+      },
+    });
+  }
 }

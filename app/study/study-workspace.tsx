@@ -194,6 +194,7 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
     studyPreferences: "",
   });
   const [isSavingProfile, setIsSavingProfile] = useState(false);
+  const [contextCollapsed, setContextCollapsed] = useState(false);
   const [triviaIndex, setTriviaIndex] = useState(0);
   const [selectedTriviaChoice, setSelectedTriviaChoice] = useState<string | null>(null);
 
@@ -312,6 +313,16 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
           interests: Array.isArray(payload.profile?.interests) ? payload.profile.interests.join(", ") : "",
           studyPreferences: payload.profile?.studyPreferences || "",
         });
+
+        const hasSavedContext = Boolean(
+          payload.profile?.major ||
+          (Array.isArray(payload.profile?.currentCourses) && payload.profile.currentCourses.length) ||
+          (Array.isArray(payload.profile?.interests) && payload.profile.interests.length) ||
+          payload.profile?.studyPreferences,
+        );
+        if (hasSavedContext) {
+          setContextCollapsed(true);
+        }
 
         setLibrary((current) => {
           const remoteSets = Array.isArray(payload.library?.sets) ? payload.library.sets : [];
@@ -473,6 +484,7 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
         throw new Error(payload.error || "Could not save your academic context.");
       }
       showToast("Academic context saved.");
+      setContextCollapsed(true);
     } catch (error) {
       showToast(error instanceof Error ? error.message : "Could not save your academic context.", "error");
     } finally {
@@ -1294,9 +1306,11 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
               displayName={session?.user?.name}
               email={session?.user?.email}
               profile={profile}
+              collapsed={contextCollapsed}
               onProfileChange={setProfile}
               onSave={saveAcademicContext}
               onSignIn={promptGoogleSignIn}
+              onToggleCollapsed={setContextCollapsed}
             />
 
             {folderFilter ? (

@@ -2,7 +2,6 @@ import type { NextAuthOptions } from "next-auth";
 import Google from "next-auth/providers/google";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import prisma from "@/lib/prisma";
-import { ensureStudyUserForAuthUser } from "@/lib/auth/study-user";
 
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma),
@@ -12,8 +11,8 @@ export const authOptions: NextAuthOptions = {
   },
   providers: [
     Google({
-      clientId: process.env.AUTH_GOOGLE_ID ?? "",
-      clientSecret: process.env.AUTH_GOOGLE_SECRET ?? "",
+      clientId: process.env.AUTH_GOOGLE_ID ?? process.env.GOOGLE_CLIENT_ID ?? "",
+      clientSecret: process.env.AUTH_GOOGLE_SECRET ?? process.env.GOOGLE_CLIENT_SECRET ?? "",
       authorization: {
         params: {
           prompt: "select_account",
@@ -25,13 +24,7 @@ export const authOptions: NextAuthOptions = {
     signIn: "/auth/signin",
   },
   callbacks: {
-    async signIn({ user }) {
-      await ensureStudyUserForAuthUser({
-        id: user.id!,
-        email: user.email ?? null,
-        name: user.name ?? null,
-        image: user.image ?? null,
-      });
+    async signIn() {
       return true;
     },
     async session({ session, user }) {

@@ -2,10 +2,11 @@
 export const dynamic = "force-dynamic";
 import SparkyMarkdown from "../components/SparkyMarkdown";
 import { useState, useRef, useEffect, useCallback, useMemo, Suspense } from "react";
-import { useSearchParams } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { flushSync } from "react-dom";
 import posthog from "posthog-js";
-const BETA_PASSWORD = "uicsparky2026";
+import { Check, Ellipsis, MessageSquare, Pencil, PanelLeftClose, PanelLeftOpen, Plus, Trash2, X } from "lucide-react";
+import { useSession } from "next-auth/react";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -25,6 +26,115 @@ interface Message {
   error?: boolean;
   streaming?: boolean;
   attachment?: { name: string; fileType: AttachedFile["fileType"]; preview?: string };
+}
+
+interface ConversationSummary {
+  id: string;
+  title: string;
+  preview: string;
+  messageCount: number;
+  createdAt: string;
+  updatedAt: string;
+  lastMessageAt: string;
+}
+
+interface StoredConversation extends ConversationSummary {
+  messages: Message[];
+}
+
+const LOCAL_CHAT_STORAGE_KEY = "sparky_chat_conversations_v1";
+
+async function readJsonSafely(response: Response) {
+  const text = await response.text();
+  if (!text) return null;
+
+  try {
+    return JSON.parse(text) as Record<string, unknown>;
+  } catch {
+    return null;
+  }
+}
+
+function formatConversationTimestamp(value: string) {
+  const date = new Date(value);
+  const now = new Date();
+  const sameDay = date.toDateString() === now.toDateString();
+  if (sameDay) {
+    return date.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+  }
+  return date.toLocaleDateString([], { month: "short", day: "numeric" });
+}
+
+function buildAutoConversationTitle(messages: Pick<Message, "role" | "content">[]) {
+  const firstUserMessage = messages.find((message) => message.role === "user" && message.content.trim())?.content.trim();
+  if (!firstUserMessage) return "New chat";
+  return firstUserMessage.length > 60 ? `${firstUserMessage.slice(0, 60).trimEnd()}...` : firstUserMessage;
+}
+
+function makeConversationSummary(conversation: StoredConversation): ConversationSummary {
+  return {
+    id: conversation.id,
+    title: conversation.title,
+    preview: conversation.preview,
+    messageCount: conversation.messageCount,
+    createdAt: conversation.createdAt,
+    updatedAt: conversation.updatedAt,
+    lastMessageAt: conversation.lastMessageAt,
+  };
+}
+
+function loadLocalConversations(): StoredConversation[] {
+  if (typeof window === "undefined") return [];
+
+  try {
+    const raw = window.localStorage.getItem(LOCAL_CHAT_STORAGE_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return [];
+
+    return parsed
+      .filter((item) => item && typeof item.id === "string")
+      .map((item) => ({
+        id: String(item.id),
+        title: typeof item.title === "string" && item.title.trim() ? item.title : "New chat",
+        preview: typeof item.preview === "string" ? item.preview : "",
+        messageCount: Number.isFinite(item.messageCount) ? Number(item.messageCount) : Array.isArray(item.messages) ? item.messages.length : 0,
+        createdAt: typeof item.createdAt === "string" ? item.createdAt : new Date().toISOString(),
+        updatedAt: typeof item.updatedAt === "string" ? item.updatedAt : new Date().toISOString(),
+        lastMessageAt: typeof item.lastMessageAt === "string" ? item.lastMessageAt : new Date().toISOString(),
+        messages: Array.isArray(item.messages) ? (item.messages as Message[]) : [],
+      }))
+      .sort((a, b) => new Date(b.lastMessageAt).getTime() - new Date(a.lastMessageAt).getTime());
+  } catch {
+    return [];
+  }
+}
+
+function saveLocalConversations(items: StoredConversation[]) {
+  if (typeof window === "undefined") return;
+
+  try {
+    window.localStorage.setItem(LOCAL_CHAT_STORAGE_KEY, JSON.stringify(items));
+  } catch {
+    // Ignore storage failures so chat still works in-memory.
+  }
+}
+
+function upsertLocalConversation(conversation: StoredConversation) {
+  const current = loadLocalConversations();
+  saveLocalConversations([conversation, ...current.filter((item) => item.id !== conversation.id)]);
+}
+
+function deleteLocalConversationById(conversationId: string) {
+  saveLocalConversations(loadLocalConversations().filter((item) => item.id !== conversationId));
+}
+
+function getLocalConversationById(conversationId: string) {
+  return loadLocalConversations().find((item) => item.id === conversationId) ?? null;
+}
+
+function isLocalConversationId(conversationId: string | null) {
+  return typeof conversationId === "string" && conversationId.startsWith("local_");
 }
 
 function isFlamesSongRequest(input: string) {
@@ -1257,8 +1367,8 @@ function ChatInput({
       <div
         className={`overflow-hidden border transition-all duration-200 ${
           isFloating
-            ? "rounded-[24px] border-zinc-300/80 bg-white/92 shadow-[0_14px_34px_rgba(0,0,0,0.08)] dark:border-zinc-700/70 dark:bg-[rgba(21,23,30,0.92)] dark:shadow-[0_14px_34px_rgba(0,0,0,0.35)]"
-            : "rounded-[24px] border-zinc-300/80 bg-white/92 shadow-[0_16px_42px_rgba(0,0,0,0.12)] dark:border-zinc-700/80 dark:bg-[rgba(21,23,30,0.94)] dark:shadow-[0_16px_42px_rgba(0,0,0,0.45)]"
+            ? "rounded-[20px] border-zinc-300/80 bg-white/92 shadow-[0_14px_34px_rgba(0,0,0,0.08)] dark:border-zinc-700/70 dark:bg-[rgba(21,23,30,0.92)] dark:shadow-[0_14px_34px_rgba(0,0,0,0.35)] sm:rounded-[24px]"
+            : "rounded-[20px] border-zinc-300/80 bg-white/92 shadow-[0_16px_42px_rgba(0,0,0,0.12)] dark:border-zinc-700/80 dark:bg-[rgba(21,23,30,0.94)] dark:shadow-[0_16px_42px_rgba(0,0,0,0.45)] sm:rounded-[24px]"
         }`}
       >
       {/* Attachment preview strip */}
@@ -1284,7 +1394,7 @@ function ChatInput({
         </div>
       )}
 
-      <div className="flex items-end min-h-[50px]">
+      <div className="flex min-h-[50px] items-end">
         {/* Hidden file input */}
         <input
           ref={fileInputRef}
@@ -1295,7 +1405,7 @@ function ChatInput({
         />
 
         {/* Left: attach button */}
-        <div className="flex items-end pl-3 pb-3">
+        <div className="flex items-end pb-3 pl-2.5 sm:pl-3">
           <button
             type="button"
             onClick={() => setMenuOpen(o => !o)}
@@ -1324,12 +1434,12 @@ function ChatInput({
           onKeyDown={onKeyDown}
           placeholder={attachedFile ? "Ask about this file..." : "Ask Sparky anything about UIC..."}
           rows={1}
-          className="flex-1 bg-transparent text-zinc-900 dark:text-white placeholder:text-zinc-400 outline-none resize-none text-[16px] font-normal leading-relaxed px-3 py-[18px]"
+          className="flex-1 resize-none bg-transparent px-2 py-4 text-[16px] font-normal leading-relaxed text-zinc-900 outline-none placeholder:text-zinc-400 dark:text-white sm:px-3 sm:py-[18px]"
           style={{ maxHeight: "180px" }}
         />
 
         {/* Right buttons */}
-        <div className="flex items-end gap-1.5 pr-3 pb-3">
+        <div className="flex items-end gap-1.5 pb-3 pr-2.5 sm:pr-3">
           {/* Mic button — hidden while Sparky is responding */}
           {!loading && (
             <button
@@ -1485,22 +1595,22 @@ const visiblePrompts = useMemo(() => getRandomItems(topic.items, 4), [topic.item
 
   return (
     <div
-      className="relative flex w-full flex-col items-center overflow-hidden px-4"
-      style={{ minHeight: "calc(100vh - 64px)", paddingTop: "12vh", paddingBottom: "48px" }}
+      className="relative flex w-full flex-col items-center overflow-hidden px-4 pb-8 pt-12 sm:pb-12 sm:pt-[12vh]"
+      style={{ minHeight: "calc(100vh - 64px)" }}
     >
       <div className="pointer-events-none absolute inset-x-0 top-0 h-[420px] bg-[radial-gradient(circle_at_50%_20%,rgba(239,68,68,0.14),transparent_32%),radial-gradient(circle_at_60%_12%,rgba(59,130,246,0.08),transparent_28%)]" />
 
       {/* Identity */}
-      <div className="relative mb-8 flex flex-col items-center">
+      <div className="relative mb-6 flex flex-col items-center sm:mb-8">
         <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-red-500/20 bg-red-500/8 px-4 py-1.5 text-[11px] font-bold uppercase tracking-[0.22em] text-red-400">
           Sparky
           <span className="h-1.5 w-1.5 rounded-full bg-red-500" />
           UIC AI assistant
         </div>
-        <div className="sparky-float mb-5 rounded-[2rem] border border-white/10 bg-white/[0.03] px-5 py-4 shadow-[0_24px_80px_rgba(0,0,0,0.24)] backdrop-blur-md">
-          <img src="/sparky-icon.png" alt="Sparky" className="h-20 w-20 object-contain drop-shadow-lg" />
+        <div className="sparky-float mb-4 rounded-[1.6rem] border border-white/10 bg-white/[0.03] px-4 py-3 shadow-[0_24px_80px_rgba(0,0,0,0.24)] backdrop-blur-md sm:mb-5 sm:rounded-[2rem] sm:px-5 sm:py-4">
+          <img src="/sparky-icon.png" alt="Sparky" className="h-16 w-16 object-contain drop-shadow-lg sm:h-20 sm:w-20" />
         </div>
-        <h1 className="mb-3 text-center text-[38px] font-black leading-none tracking-[-0.05em] text-zinc-900 dark:text-white sm:text-[46px]">
+        <h1 className="mb-3 text-center text-[32px] font-black leading-none tracking-[-0.05em] text-zinc-900 dark:text-white sm:text-[46px]">
           Ask Sparky anything
         </h1>
         <p className="max-w-xl text-center text-[15px] leading-relaxed text-zinc-500 dark:text-zinc-400 sm:text-[16px]">
@@ -1528,7 +1638,7 @@ const visiblePrompts = useMemo(() => getRandomItems(topic.items, 4), [topic.item
       </div>
 
       {/* Topic tabs + prompt cards */}
-      <div className="w-full max-w-3xl rounded-[2rem] border border-zinc-200/70 bg-white/55 p-3 shadow-[0_18px_50px_rgba(0,0,0,0.06)] backdrop-blur-md dark:border-white/8 dark:bg-[rgba(14,16,22,0.52)] dark:shadow-[0_18px_50px_rgba(0,0,0,0.24)] sm:p-4">
+      <div className="w-full max-w-3xl rounded-[1.6rem] border border-zinc-200/70 bg-white/55 p-3 shadow-[0_18px_50px_rgba(0,0,0,0.06)] backdrop-blur-md dark:border-white/8 dark:bg-[rgba(14,16,22,0.52)] dark:shadow-[0_18px_50px_rgba(0,0,0,0.24)] sm:rounded-[2rem] sm:p-4">
         {/* Scrollable topic chips — negative mx so fade mask reaches edge */}
         <div className="mb-4">
           <div className="mb-3 px-1 text-[11px] font-bold uppercase tracking-[0.2em] text-zinc-400 dark:text-zinc-500">
@@ -1614,7 +1724,7 @@ function ConversationView({
   const isStreaming = messages.some(m => m.streaming);
   return (
     <div className="relative">
-      <div className="max-w-3xl mx-auto w-full px-5 pt-8 pb-4">
+      <div className="mx-auto w-full max-w-3xl px-3 pt-6 pb-4 sm:px-5 sm:pt-8">
       <div className="space-y-8">
         {messages.map((msg, i) => {
           const userQuestion = msg.role === "assistant"
@@ -1643,7 +1753,7 @@ function ConversationView({
     </div>{showScroll && (
   <button
     onClick={scrollToBottom}
-    className="fixed left-1/2 -translate-x-1/2 bottom-[116px] z-20 flex items-center justify-center w-10 h-10 rounded-full border border-zinc-300/80 dark:border-zinc-700/80 bg-white dark:bg-zinc-900 text-zinc-500 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-all duration-150 shadow-[0_8px_24px_rgba(0,0,0,0.12)] dark:shadow-[0_8px_24px_rgba(0,0,0,0.35)]"
+    className="fixed left-1/2 bottom-[96px] z-20 flex h-10 w-10 -translate-x-1/2 items-center justify-center rounded-full border border-zinc-300/80 bg-white text-zinc-500 shadow-[0_8px_24px_rgba(0,0,0,0.12)] transition-all duration-150 hover:bg-zinc-100 hover:text-zinc-900 dark:border-zinc-700/80 dark:bg-zinc-900 dark:text-zinc-300 dark:shadow-[0_8px_24px_rgba(0,0,0,0.35)] dark:hover:bg-zinc-800 dark:hover:text-white sm:bottom-[116px]"
     aria-label="Scroll to bottom"
   >
     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -1688,10 +1798,249 @@ function QuickSuggestBar({
   );
 }
 
+function ChatHistorySidebar({
+  open,
+  loading,
+  signedIn,
+  items,
+  activeConversationId,
+  onToggle,
+  onNewChat,
+  onOpenConversation,
+  onRenameConversation,
+  onDeleteConversation,
+}: {
+  open: boolean;
+  loading: boolean;
+  signedIn: boolean;
+  items: ConversationSummary[];
+  activeConversationId: string | null;
+  onToggle: () => void;
+  onNewChat: () => void;
+  onOpenConversation: (conversationId: string) => void;
+  onRenameConversation: (conversationId: string, title: string) => Promise<void> | void;
+  onDeleteConversation: (conversationId: string) => void;
+}) {
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [draftTitle, setDraftTitle] = useState("");
+  const [menuId, setMenuId] = useState<string | null>(null);
+
+  const startEditing = (conversationId: string, currentTitle: string) => {
+    setEditingId(conversationId);
+    setDraftTitle(currentTitle);
+  };
+
+  const cancelEditing = () => {
+    setEditingId(null);
+    setDraftTitle("");
+    setMenuId(null);
+  };
+
+  const saveEditing = async (conversationId: string) => {
+    const nextTitle = draftTitle.trim();
+    if (!nextTitle) {
+      cancelEditing();
+      return;
+    }
+    await onRenameConversation(conversationId, nextTitle);
+    cancelEditing();
+  };
+
+  return (
+    <aside
+      className={`${open ? "w-[280px] min-w-[280px]" : "w-[76px] min-w-[76px]"} flex h-full shrink-0 flex-col border-r border-zinc-200/70 bg-zinc-50/85 transition-all duration-200 dark:border-white/8 dark:bg-[#0c0d12]`}
+    >
+      <div className="flex items-center justify-between px-4 pb-3 pt-4">
+        {open ? (
+          <div>
+            <div className="text-xs font-bold uppercase tracking-[0.18em] text-zinc-400 dark:text-zinc-500">Sparky</div>
+            <div className="mt-1 text-sm font-semibold text-zinc-900 dark:text-white">Chat history</div>
+          </div>
+        ) : null}
+        <button
+          type="button"
+          onClick={onToggle}
+          className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-zinc-200 bg-white text-zinc-600 shadow-sm transition hover:bg-zinc-50 dark:border-white/10 dark:bg-white/[0.04] dark:text-zinc-300 dark:hover:bg-white/[0.08]"
+          aria-label={open ? "Collapse history" : "Expand history"}
+        >
+          {open ? <PanelLeftClose className="h-4 w-4" /> : <PanelLeftOpen className="h-4 w-4" />}
+        </button>
+      </div>
+
+      <div className="px-3">
+        <button
+          type="button"
+          onClick={onNewChat}
+          className={`inline-flex w-full items-center gap-2 rounded-2xl border border-zinc-200 bg-white px-3 py-3 text-sm font-semibold text-zinc-900 shadow-sm transition hover:bg-zinc-50 dark:border-white/10 dark:bg-white/[0.05] dark:text-white dark:hover:bg-white/[0.08] ${open ? "justify-start" : "justify-center px-0"}`}
+        >
+          <Plus className="h-4 w-4" />
+          {open ? <span>New chat</span> : null}
+        </button>
+      </div>
+
+      <div className="mt-4 flex-1 overflow-y-auto px-2 pb-3">
+        {loading ? (
+          <div className={`space-y-2 ${open ? "" : "hidden"}`}>
+            {Array.from({ length: 5 }).map((_, index) => (
+              <div key={index} className="h-16 rounded-2xl bg-zinc-200/70 dark:bg-white/[0.05]" />
+            ))}
+          </div>
+        ) : !signedIn && items.length === 0 ? (
+          <div className={`rounded-2xl border border-dashed border-zinc-200 bg-white/70 p-4 text-sm text-zinc-500 dark:border-white/10 dark:bg-white/[0.03] dark:text-zinc-400 ${open ? "" : "hidden"}`}>
+            Chats save on this device automatically. Sign in if you want them synced across sessions.
+          </div>
+        ) : items.length === 0 ? (
+          <div className={`rounded-2xl border border-dashed border-zinc-200 bg-white/70 p-4 text-sm text-zinc-500 dark:border-white/10 dark:bg-white/[0.03] dark:text-zinc-400 ${open ? "" : "hidden"}`}>
+            No saved chats yet. Start a conversation and Sparky will keep it here.
+          </div>
+        ) : (
+          <div className="space-y-1">
+            {items.map((item) => {
+              const active = item.id === activeConversationId;
+              const isEditing = editingId === item.id;
+              return (
+                <div
+                  key={item.id}
+                  className={`group relative rounded-xl transition ${active ? "bg-white shadow-sm dark:bg-white/[0.05]" : "hover:bg-white/70 dark:hover:bg-white/[0.035]"}`}
+                >
+                  {open ? (
+                    <>
+                      {isEditing ? (
+                        <div className="flex items-center gap-1 px-2 py-1.5">
+                          <input
+                            autoFocus
+                            value={draftTitle}
+                            onChange={(event) => setDraftTitle(event.target.value)}
+                            onClick={(event) => event.stopPropagation()}
+                            onKeyDown={(event) => {
+                              if (event.key === "Enter") {
+                                event.preventDefault();
+                                void saveEditing(item.id);
+                              }
+                              if (event.key === "Escape") {
+                                event.preventDefault();
+                                cancelEditing();
+                              }
+                            }}
+                            onBlur={() => {
+                              void saveEditing(item.id);
+                            }}
+                            className="w-full rounded-md border border-zinc-300 bg-white px-2 py-1 text-[13px] font-medium text-zinc-900 outline-none focus:border-red-400 dark:border-white/10 dark:bg-white/[0.05] dark:text-white"
+                          />
+                          <button
+                            type="button"
+                            onMouseDown={(event) => event.preventDefault()}
+                            onClick={(event) => {
+                              event.stopPropagation();
+                              void saveEditing(item.id);
+                            }}
+                            className="inline-flex h-7 w-7 items-center justify-center rounded-md text-zinc-500 hover:bg-zinc-100 hover:text-zinc-800 dark:text-zinc-400 dark:hover:bg-white/[0.06] dark:hover:text-white"
+                            aria-label="Save chat name"
+                          >
+                            <Check className="h-3.5 w-3.5" />
+                          </button>
+                          <button
+                            type="button"
+                            onMouseDown={(event) => event.preventDefault()}
+                            onClick={(event) => {
+                              event.stopPropagation();
+                              cancelEditing();
+                            }}
+                            className="inline-flex h-7 w-7 items-center justify-center rounded-md text-zinc-500 hover:bg-zinc-100 hover:text-zinc-800 dark:text-zinc-400 dark:hover:bg-white/[0.06] dark:hover:text-white"
+                            aria-label="Cancel renaming"
+                          >
+                            <X className="h-3.5 w-3.5" />
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-1 px-2 py-1">
+                          <button
+                            type="button"
+                            onClick={() => onOpenConversation(item.id)}
+                            className="min-w-0 flex-1 rounded-lg px-2 py-2 text-left text-[14px] font-medium leading-5 text-zinc-900 transition hover:bg-zinc-100/70 dark:text-white dark:hover:bg-white/[0.04]"
+                          >
+                            <div className="truncate">{item.title}</div>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={(event) => {
+                              event.stopPropagation();
+                              setMenuId((current) => (current === item.id ? null : item.id));
+                            }}
+                            className={`inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-zinc-500 transition hover:bg-zinc-100 hover:text-zinc-800 dark:text-zinc-400 dark:hover:bg-white/[0.06] dark:hover:text-white ${menuId === item.id ? "opacity-100" : "opacity-0 group-hover:opacity-100"}`}
+                            aria-label="Conversation options"
+                          >
+                            <Ellipsis className="h-4 w-4" />
+                          </button>
+                        </div>
+                      )}
+
+                      {menuId === item.id && !isEditing ? (
+                        <div className="absolute right-2 top-[calc(100%+0.15rem)] z-20 w-32 rounded-xl border border-zinc-200 bg-white p-1.5 shadow-[0_18px_40px_rgba(15,23,42,0.16)] dark:border-white/10 dark:bg-[#171922]">
+                          <button
+                            type="button"
+                            onClick={(event) => {
+                              event.stopPropagation();
+                              startEditing(item.id, item.title);
+                            }}
+                            className="inline-flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-left text-[12px] font-medium text-zinc-700 transition hover:bg-zinc-100 dark:text-zinc-200 dark:hover:bg-white/[0.06]"
+                          >
+                            <Pencil className="h-3.5 w-3.5" />
+                            Rename
+                          </button>
+                          <button
+                            type="button"
+                            onClick={(event) => {
+                              event.stopPropagation();
+                              setMenuId(null);
+                              onDeleteConversation(item.id);
+                            }}
+                            className="inline-flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-left text-[12px] font-medium text-zinc-700 transition hover:bg-zinc-100 dark:text-zinc-200 dark:hover:bg-white/[0.06]"
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                            Delete
+                          </button>
+                        </div>
+                      ) : null}
+                    </>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => onOpenConversation(item.id)}
+                      className="flex w-full justify-center px-0 py-2"
+                    >
+                      <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-zinc-900/90 text-white dark:bg-white/[0.08]">
+                        <MessageSquare className="h-3.5 w-3.5" />
+                      </div>
+                    </button>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    </aside>
+  );
+}
+
 // ─── Main Component ───────────────────────────────────────────────────────────
 
 function ChatContent() {
   const stopRef = useRef<(() => void) | null>(null);
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const { data: session, status: sessionStatus } = useSession();
+  const isSignedIn = sessionStatus === "authenticated" && Boolean(session?.user?.id);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [conversations, setConversations] = useState<ConversationSummary[]>([]);
+  const [historyLoading, setHistoryLoading] = useState(false);
+  const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
+  const [loadingConversationId, setLoadingConversationId] = useState<string | null>(null);
+  const createConversationPromiseRef = useRef<Promise<string | null> | null>(null);
+  const activeConversationIdRef = useRef<string | null>(null);
+  const searchConversationId = searchParams.get("c");
 
 // ── File attachment handler ────────────────────────────────────────────────
 const handleFileSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
@@ -1742,7 +2091,6 @@ const handleStop = useCallback(() => {
   setLoading(false);
 }, []);
 
-  const searchParams = useSearchParams();
 const [messages, setMessages] = useState<Message[]>([]);
 const flamesAudioRef = useRef<HTMLAudioElement | null>(null);
 const [input, setInput] = useState("");
@@ -1759,6 +2107,289 @@ const fileInputRef = useRef<HTMLInputElement>(null);
   const sessionIdRef = useRef<string>(Math.random().toString(36).slice(2));
 
   const isEmpty = messages.length === 0;
+
+  useEffect(() => {
+    activeConversationIdRef.current = activeConversationId;
+  }, [activeConversationId]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (window.innerWidth >= 768) {
+      setSidebarOpen(true);
+    }
+  }, []);
+
+  const upsertConversationSummary = useCallback((summary: ConversationSummary) => {
+    setConversations((current) => [summary, ...current.filter((item) => item.id !== summary.id)]);
+  }, []);
+
+  const syncConversationParam = useCallback((conversationId: string | null) => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (conversationId) params.set("c", conversationId);
+    else params.delete("c");
+    const next = params.toString();
+    router.replace(next ? `${pathname}?${next}` : pathname, { scroll: false });
+  }, [pathname, router, searchParams]);
+
+  const refreshConversations = useCallback(async () => {
+    const localItems = loadLocalConversations().map(makeConversationSummary);
+
+    if (!isSignedIn) {
+      setConversations(localItems);
+      return;
+    }
+
+    setHistoryLoading(true);
+    try {
+      const response = await fetch("/api/chat/conversations", { cache: "no-store" });
+      const payload = await readJsonSafely(response);
+      const remoteItems = Array.isArray(payload?.items) ? (payload.items as ConversationSummary[]) : [];
+      const merged = [...remoteItems, ...localItems.filter((localItem) => !remoteItems.some((remoteItem) => remoteItem.id === localItem.id))];
+      setConversations(merged);
+    } catch {
+      setConversations(localItems);
+    } finally {
+      setHistoryLoading(false);
+    }
+  }, [isSignedIn]);
+
+  const createConversation = useCallback(async (seedMessages: Message[] = []) => {
+    if (!isSignedIn) {
+      const now = new Date().toISOString();
+      const localConversation: StoredConversation = {
+        id: `local_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+        title: buildAutoConversationTitle(seedMessages),
+        preview: seedMessages[seedMessages.length - 1]?.content ?? "",
+        messageCount: seedMessages.length,
+        createdAt: now,
+        updatedAt: now,
+        lastMessageAt: now,
+        messages: seedMessages,
+      };
+      upsertLocalConversation(localConversation);
+      const summary = makeConversationSummary(localConversation);
+      setActiveConversationId(summary.id);
+      sessionIdRef.current = summary.id;
+      syncConversationParam(summary.id);
+      upsertConversationSummary(summary);
+      return summary.id;
+    }
+
+    if (createConversationPromiseRef.current) return createConversationPromiseRef.current;
+
+    createConversationPromiseRef.current = (async () => {
+      try {
+        const response = await fetch("/api/chat/conversations", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ messages: seedMessages }),
+        });
+        const payload = await readJsonSafely(response);
+        if (!response.ok || !payload) {
+          if (response.status !== 401) {
+            console.warn("Failed to create conversation.", payload);
+          }
+          return null;
+        }
+
+        const summary: ConversationSummary = {
+          id: String(payload.id),
+          title: String(payload.title),
+          preview: seedMessages[seedMessages.length - 1]?.content ?? "",
+          messageCount: Number(payload.messageCount ?? 0),
+          createdAt: String(payload.createdAt),
+          updatedAt: String(payload.updatedAt),
+          lastMessageAt: String(payload.lastMessageAt),
+        };
+        setActiveConversationId(summary.id);
+        sessionIdRef.current = summary.id;
+        syncConversationParam(summary.id);
+        upsertConversationSummary(summary);
+        return summary.id;
+      } catch (error) {
+        console.warn("Failed to create conversation.", error);
+        const now = new Date().toISOString();
+        const localConversation: StoredConversation = {
+          id: `local_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+          title: buildAutoConversationTitle(seedMessages),
+          preview: seedMessages[seedMessages.length - 1]?.content ?? "",
+          messageCount: seedMessages.length,
+          createdAt: now,
+          updatedAt: now,
+          lastMessageAt: now,
+          messages: seedMessages,
+        };
+        upsertLocalConversation(localConversation);
+        const summary = makeConversationSummary(localConversation);
+        setActiveConversationId(summary.id);
+        sessionIdRef.current = summary.id;
+        syncConversationParam(summary.id);
+        upsertConversationSummary(summary);
+        return summary.id;
+      }
+    })();
+
+    try {
+      return await createConversationPromiseRef.current;
+    } finally {
+      createConversationPromiseRef.current = null;
+    }
+  }, [isSignedIn, syncConversationParam, upsertConversationSummary]);
+
+  const persistConversationSnapshot = useCallback(async (conversationId: string, nextMessages: Message[]) => {
+    const now = new Date().toISOString();
+    const storedConversation: StoredConversation = {
+      id: conversationId,
+      title: buildAutoConversationTitle(nextMessages),
+      preview: nextMessages[nextMessages.length - 1]?.content ?? "",
+      messageCount: nextMessages.length,
+      createdAt: getLocalConversationById(conversationId)?.createdAt ?? now,
+      updatedAt: now,
+      lastMessageAt: now,
+      messages: nextMessages,
+    };
+
+    if (!isSignedIn || isLocalConversationId(conversationId)) {
+      upsertLocalConversation(storedConversation);
+      upsertConversationSummary(makeConversationSummary(storedConversation));
+      return;
+    }
+
+    const response = await fetch(`/api/chat/conversations/${conversationId}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ messages: nextMessages }),
+    });
+    const payload = await readJsonSafely(response);
+    if (!response.ok) {
+      throw new Error((typeof payload?.error === "string" && payload.error) || "Failed to save conversation.");
+    }
+    if (!payload) {
+      throw new Error("Failed to save conversation.");
+    }
+
+    upsertConversationSummary({
+      id: String(payload.id),
+      title: String(payload.title),
+      preview: nextMessages[nextMessages.length - 1]?.content ?? "",
+      messageCount: Number(payload.messageCount ?? 0),
+      createdAt: String(payload.createdAt),
+      updatedAt: String(payload.updatedAt),
+      lastMessageAt: String(payload.lastMessageAt),
+    });
+  }, [isSignedIn, upsertConversationSummary]);
+
+  const openConversation = useCallback(async (conversationId: string) => {
+    if (loadingConversationId === conversationId) return;
+    setLoadingConversationId(conversationId);
+    try {
+      if (!isSignedIn || isLocalConversationId(conversationId)) {
+        const localConversation = getLocalConversationById(conversationId);
+        if (!localConversation) {
+          throw new Error("Failed to load conversation.");
+        }
+        setMessages(localConversation.messages);
+        setActiveConversationId(conversationId);
+        sessionIdRef.current = conversationId;
+        syncConversationParam(conversationId);
+        setInput("");
+        setAttachedFile(null);
+        return;
+      }
+
+      const response = await fetch(`/api/chat/conversations/${conversationId}`, { cache: "no-store" });
+      const payload = await readJsonSafely(response);
+      if (!response.ok) {
+        throw new Error((typeof payload?.error === "string" && payload.error) || "Failed to load conversation.");
+      }
+      if (!payload) {
+        throw new Error("Failed to load conversation.");
+      }
+      setMessages(Array.isArray(payload.messages) ? (payload.messages as Message[]) : []);
+      setActiveConversationId(conversationId);
+      sessionIdRef.current = conversationId;
+      syncConversationParam(conversationId);
+      setInput("");
+      setAttachedFile(null);
+    } finally {
+      setLoadingConversationId(null);
+    }
+  }, [isSignedIn, loadingConversationId, syncConversationParam]);
+
+  const startNewConversation = useCallback(() => {
+    setMessages([]);
+    setInput("");
+    setAttachedFile(null);
+    setLoading(false);
+    setActiveConversationId(null);
+    sessionIdRef.current = Math.random().toString(36).slice(2);
+    syncConversationParam(null);
+  }, [syncConversationParam]);
+
+  const deleteConversation = useCallback(async (conversationId: string) => {
+    if (!isSignedIn || isLocalConversationId(conversationId)) {
+      deleteLocalConversationById(conversationId);
+    } else {
+      await fetch(`/api/chat/conversations/${conversationId}`, { method: "DELETE" });
+    }
+    setConversations((current) => current.filter((item) => item.id !== conversationId));
+    if (activeConversationIdRef.current === conversationId) {
+      startNewConversation();
+    }
+  }, [isSignedIn, startNewConversation]);
+
+  const renameConversation = useCallback(async (conversationId: string, title: string) => {
+    if (!isSignedIn || isLocalConversationId(conversationId)) {
+      const existing = getLocalConversationById(conversationId);
+      if (!existing) return;
+      upsertLocalConversation({
+        ...existing,
+        title,
+        updatedAt: new Date().toISOString(),
+      });
+      setConversations((current) =>
+        current.map((item) => (item.id === conversationId ? { ...item, title } : item)),
+      );
+      return;
+    }
+
+    const response = await fetch(`/api/chat/conversations/${conversationId}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ title }),
+    });
+    const payload = await readJsonSafely(response);
+    if (!response.ok) {
+      throw new Error((typeof payload?.error === "string" && payload.error) || "Failed to rename conversation.");
+    }
+    if (!payload) {
+      throw new Error("Failed to rename conversation.");
+    }
+
+    setConversations((current) =>
+      current.map((item) => (item.id === conversationId ? { ...item, title: String(payload.title) } : item)),
+    );
+  }, [isSignedIn]);
+
+  useEffect(() => {
+    void refreshConversations();
+  }, [refreshConversations]);
+
+  useEffect(() => {
+    if (!searchConversationId) return;
+    if (searchConversationId === activeConversationIdRef.current) return;
+    void openConversation(searchConversationId);
+  }, [openConversation, searchConversationId]);
+
+  useEffect(() => {
+    if (isSignedIn) return;
+    setConversations(loadLocalConversations().map(makeConversationSummary));
+    setActiveConversationId(null);
+    setMessages([]);
+    setInput("");
+    setAttachedFile(null);
+    sessionIdRef.current = Math.random().toString(36).slice(2);
+  }, [isSignedIn]);
 
   // Handle ?q= param
   useEffect(() => {
@@ -1802,6 +2433,17 @@ const fileInputRef = useRef<HTMLInputElement>(null);
         : undefined,
     };
     const updated = [...messages, userMsg];
+    let effectiveConversationId = activeConversationIdRef.current;
+
+    try {
+      effectiveConversationId = effectiveConversationId ?? await createConversation(updated);
+      if (effectiveConversationId) {
+        await persistConversationSnapshot(effectiveConversationId, updated);
+      }
+    } catch (error) {
+      console.error("Failed to save chat history:", error);
+      effectiveConversationId = null;
+    }
 
     // flushSync forces React to commit the DOM synchronously so we can
     // measure and scroll immediately — no setTimeout needed.
@@ -1841,6 +2483,7 @@ const fileInputRef = useRef<HTMLInputElement>(null);
           file: fileSnapshot,
           stream: true,
           sessionId: sessionIdRef.current,
+          conversationId: effectiveConversationId,
         }),
       });
 
@@ -1939,21 +2582,33 @@ setMessages((prev: Message[]) =>
       : m
   )
 );
+
+      if (effectiveConversationId) {
+        const finalMessages = [
+          ...updated,
+          { id: assistantId, role: "assistant" as const, content: accumulated, streaming: false },
+        ];
+        await persistConversationSnapshot(effectiveConversationId, finalMessages);
+      }
     } catch {
+      const errorMessage: Message = {
+        id: uid(),
+        role: "assistant",
+        content: "Something went wrong reaching Sparky. Please try again.",
+        error: true,
+      };
       setMessages((prev: Message[]) => [
         ...prev,
-        {
-          id: uid(),
-          role: "assistant",
-          content: "Something went wrong reaching Sparky. Please try again.",
-          error: true,
-        },
+        errorMessage,
       ]);
+      if (effectiveConversationId) {
+        await persistConversationSnapshot(effectiveConversationId, [...updated, errorMessage]).catch(() => undefined);
+      }
     } finally {
       setLoading(false);
       setTimeout(() => inputRef.current?.focus(), 50);
     }
-  }, [input, messages, loading]);
+  }, [activeConversationId, attachedFile, createConversation, input, loading, messages, persistConversationSnapshot]);
 
   const handleRegenerate = useCallback(async () => {
   if (loading) return;
@@ -1973,6 +2628,7 @@ setMessages((prev: Message[]) =>
         messages: withoutLastAssistant,
         stream: true,
         sessionId: sessionIdRef.current,
+        conversationId: activeConversationIdRef.current,
       }),
     });
 
@@ -2040,13 +2696,23 @@ setMessages(prev =>
     m.id === assistantId ? { ...m, content: accumulated2, streaming: false } : m
   )
 );
+    if (activeConversationIdRef.current) {
+      await persistConversationSnapshot(activeConversationIdRef.current, [
+        ...withoutLastAssistant,
+        { id: assistantId, role: "assistant", content: accumulated2, streaming: false },
+      ]).catch(() => undefined);
+    }
   } catch {
-    setMessages(prev => [...prev, { id: uid(), role: "assistant", content: "Something went wrong. Please try again.", error: true }]);
+    const errorMessage: Message = { id: uid(), role: "assistant", content: "Something went wrong. Please try again.", error: true };
+    setMessages(prev => [...prev, errorMessage]);
+    if (activeConversationIdRef.current) {
+      await persistConversationSnapshot(activeConversationIdRef.current, [...withoutLastAssistant, errorMessage]).catch(() => undefined);
+    }
   } finally {
     setLoading(false);
     setTimeout(() => inputRef.current?.focus(), 50);
   }
-}, [messages, loading, stopRef, inputRef]);
+}, [loading, messages, persistConversationSnapshot, stopRef, inputRef]);
 
 const handleKey = useCallback((e: React.KeyboardEvent<HTMLTextAreaElement>) => {
   if (e.key === "Enter" && !e.shiftKey) {
@@ -2167,186 +2833,124 @@ const handleKey = useCallback((e: React.KeyboardEvent<HTMLTextAreaElement>) => {
       `}</style>
 
       <div
-        className="flex flex-col bg-white dark:bg-[#080808] text-zinc-900 dark:text-white"
+        className="flex overflow-hidden bg-white text-zinc-900 dark:bg-[#080808] dark:text-white"
         style={{ height: "calc(100vh - 64px)", animation: "slideUp 0.25s ease forwards" }}
       >
-        {/* Scrollable area */}
-        <div ref={scrollAreaRef} className="flex-1 overflow-y-auto chat-scroll">
-          {isEmpty ? (
-            <EmptyState
-              onStop={handleStop}
-              activeTopic={activeTopic}
-              setActiveTopic={setActiveTopic}
-              onSend={handleSend}
-              input={input}
-              onInputChange={setInput}
-              onKeyDown={handleKey}
-              loading={loading}
-              inputRef={inputRef}
-              attachedFile={attachedFile}
-              onAttach={handleFileSelect}
-              onRemoveAttachment={() => setAttachedFile(null)}
-              fileInputRef={fileInputRef}
-            />
-          ) : (
-            <ConversationView
-  messages={messages}
-  loading={loading}
-  onRegenerate={handleRegenerate}
-  scrollAreaRef={scrollAreaRef}
-  autoScrollRef={autoScrollRef}
-/>
-          )}
+        <div className="hidden md:flex">
+          <ChatHistorySidebar
+            open={sidebarOpen}
+            loading={historyLoading || sessionStatus === "loading"}
+            signedIn={isSignedIn}
+            items={conversations}
+            activeConversationId={activeConversationId}
+            onToggle={() => setSidebarOpen((value) => !value)}
+            onNewChat={startNewConversation}
+            onOpenConversation={(conversationId) => {
+              void openConversation(conversationId);
+            }}
+            onRenameConversation={renameConversation}
+            onDeleteConversation={(conversationId) => {
+              void deleteConversation(conversationId);
+            }}
+          />
         </div>
 
-        {/* Bottom controls — only when chatting */}
-        {/* Bottom composer module */}
-{!isEmpty && (
-  <div className="shrink-0 bg-white/98 dark:bg-[#080808]/98 backdrop-blur-xl px-4 pb-4 pt-2">
-    <div className="max-w-[860px] mx-auto">
-      <div className="flex flex-col gap-[10px]">
-        <QuickSuggestBar
-  onSend={handleSend}
-  onInputChange={setInput}
-  refreshKey={chipRefreshKey}
-/>
+        {sidebarOpen ? (
+          <div className="fixed inset-0 z-40 bg-black/45 backdrop-blur-sm md:hidden" onClick={() => setSidebarOpen(false)}>
+            <div className="h-full max-w-[280px]" onClick={(event) => event.stopPropagation()}>
+              <ChatHistorySidebar
+                open
+                loading={historyLoading || sessionStatus === "loading"}
+                signedIn={isSignedIn}
+                items={conversations}
+                activeConversationId={activeConversationId}
+                onToggle={() => setSidebarOpen(false)}
+                onNewChat={() => {
+                  startNewConversation();
+                  setSidebarOpen(false);
+                }}
+                onOpenConversation={(conversationId) => {
+                  void openConversation(conversationId).then(() => setSidebarOpen(false));
+                }}
+                onRenameConversation={renameConversation}
+                onDeleteConversation={(conversationId) => {
+                  void deleteConversation(conversationId);
+                }}
+              />
+            </div>
+          </div>
+        ) : null}
 
-        <ChatInput
-          onStop={handleStop}
-          value={input}
-          onChange={setInput}
-          onSend={handleSend}
-          onKeyDown={handleKey}
-          loading={loading}
-          inputRef={inputRef}
-          variant="fixed"
-          attachedFile={attachedFile}
-          onAttach={handleFileSelect}
-          onRemoveAttachment={() => setAttachedFile(null)}
-          fileInputRef={fileInputRef}
-        />
+        <div className="flex min-w-0 flex-1 flex-col">
+          <div ref={scrollAreaRef} className="flex-1 overflow-y-auto chat-scroll">
+            {isEmpty ? (
+              <EmptyState
+                onStop={handleStop}
+                activeTopic={activeTopic}
+                setActiveTopic={setActiveTopic}
+                onSend={handleSend}
+                input={input}
+                onInputChange={setInput}
+                onKeyDown={handleKey}
+                loading={loading}
+                inputRef={inputRef}
+                attachedFile={attachedFile}
+                onAttach={handleFileSelect}
+                onRemoveAttachment={() => setAttachedFile(null)}
+                fileInputRef={fileInputRef}
+              />
+            ) : (
+              <ConversationView
+                messages={messages}
+                loading={loading}
+                onRegenerate={handleRegenerate}
+                scrollAreaRef={scrollAreaRef}
+                autoScrollRef={autoScrollRef}
+              />
+            )}
+          </div>
 
-        <p className="text-center text-zinc-400 dark:text-zinc-600 text-[11.5px] leading-none tracking-wide">
-          Sparky can make mistakes. Verify important information.
-        </p>
-      </div>
-    </div>
-  </div>
-)}
+          {!isEmpty && (
+            <div className="shrink-0 bg-white/98 px-4 pb-4 pt-2 backdrop-blur-xl dark:bg-[#080808]/98">
+              <div className="mx-auto max-w-[860px]">
+                <div className="flex flex-col gap-[10px]">
+                  <QuickSuggestBar
+                    onSend={handleSend}
+                    onInputChange={setInput}
+                    refreshKey={chipRefreshKey}
+                  />
+
+                  <ChatInput
+                    onStop={handleStop}
+                    value={input}
+                    onChange={setInput}
+                    onSend={handleSend}
+                    onKeyDown={handleKey}
+                    loading={loading}
+                    inputRef={inputRef}
+                    variant="fixed"
+                    attachedFile={attachedFile}
+                    onAttach={handleFileSelect}
+                    onRemoveAttachment={() => setAttachedFile(null)}
+                    fileInputRef={fileInputRef}
+                  />
+
+                  <p className="text-center text-[11.5px] leading-none tracking-wide text-zinc-400 dark:text-zinc-600">
+                    Sparky can make mistakes. Verify important information.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     </>
-  );
-}
-
-// ─── Password Gate ────────────────────────────────────────────────────────────
-
-const STORAGE_KEY = "sparky_beta_unlocked";
-
-function PasswordGate({ onUnlock }: { onUnlock: () => void }) {
-  const [value, setValue] = useState("");
-  const [error, setError] = useState(false);
-  const [shake, setShake] = useState(false);
-  const inputRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => {
-    inputRef.current?.focus();
-  }, []);
-
-  const attempt = () => {
-    if (value === BETA_PASSWORD) {
-      try { localStorage.setItem(STORAGE_KEY, "1"); } catch {}
-      onUnlock();
-    } else {
-      setError(true);
-      setShake(true);
-      setTimeout(() => setShake(false), 500);
-      setValue("");
-      setTimeout(() => inputRef.current?.focus(), 50);
-    }
-  };
-
-  return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-white dark:bg-[#080808] px-4">
-      <style>{`
-        @keyframes sparkyFloat { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)} }
-        @keyframes gateShake  { 0%,100%{transform:translateX(0)} 20%,60%{transform:translateX(-6px)} 40%,80%{transform:translateX(6px)} }
-        .sparky-float { animation: sparkyFloat 3.5s ease-in-out infinite; }
-        .gate-shake   { animation: gateShake 0.45s ease; }
-      `}</style>
-
-      <div className="w-full max-w-sm flex flex-col items-center gap-6">
-        {/* Logo */}
-        <div className="sparky-float">
-          <img src="/sparky-icon.png" alt="Sparky" className="w-20 h-20 object-contain drop-shadow-lg" />
-        </div>
-
-        <div className="text-center">
-          <h1 className="text-2xl font-black text-zinc-900 dark:text-white tracking-tight mb-1.5">UIC Sparky Beta</h1>
-          <p className="text-zinc-500 text-sm">Enter the beta password to continue.</p>
-        </div>
-
-        {/* Input */}
-        <div className={`w-full ${shake ? "gate-shake" : ""}`}>
-          <input
-            ref={inputRef}
-            type="password"
-            value={value}
-            onChange={e => { setValue(e.target.value); setError(false); }}
-            onKeyDown={e => e.key === "Enter" && attempt()}
-            placeholder="Beta password"
-            className={`w-full bg-zinc-100 dark:bg-zinc-900 border rounded-xl px-4 py-3 text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-600 outline-none text-[16px] transition-colors ${
-              error ? "border-red-500 focus:border-red-400" : "border-zinc-300 dark:border-zinc-700 focus:border-zinc-400 dark:focus:border-zinc-500"
-            }`}
-          />
-          {error && (
-            <p className="mt-2 text-red-400 text-xs flex items-center gap-1.5">
-              <svg className="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <circle cx="12" cy="12" r="10"/><path d="M12 8v4m0 4h.01"/>
-              </svg>
-              Incorrect password. Please try again.
-            </p>
-          )}
-        </div>
-
-        <button
-          onClick={attempt}
-          disabled={!value.trim()}
-          className="w-full py-3 rounded-xl font-semibold text-[16px] transition-all bg-red-600 hover:bg-red-500 disabled:bg-zinc-800 disabled:text-zinc-600 disabled:cursor-not-allowed text-white shadow-lg shadow-red-900/30"
-        >
-          Enter Sparky
-        </button>
-      </div>
-    </div>
   );
 }
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function ChatPage() {
-  const [unlocked, setUnlocked] = useState<boolean | null>(null);
-
-  useEffect(() => {
-    try {
-      setUnlocked(localStorage.getItem(STORAGE_KEY) === "1");
-    } catch {
-      setUnlocked(false);
-    }
-  }, []);
-
-  // Still checking localStorage — show nothing to avoid flash
-  if (unlocked === null) {
-    return (
-      <div className="flex items-center justify-center h-screen bg-white dark:bg-[#080808] text-zinc-500 text-sm gap-2.5">
-        <div className="w-4 h-4 border-2 border-red-600 border-t-transparent rounded-full animate-spin" />
-        Loading Sparky...
-      </div>
-    );
-  }
-
-  if (!unlocked) {
-    return <PasswordGate onUnlock={() => setUnlocked(true)} />;
-  }
-
   return (
     <Suspense
       fallback={

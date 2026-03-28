@@ -3,27 +3,39 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { signIn, useSession } from "next-auth/react";
+import { signIn, signOut, useSession } from "next-auth/react";
 import {
   BarChart3,
+  Bookmark,
   BookOpen,
   Brain,
   Check,
   CheckCircle2,
+  ChevronDown,
   ChevronLeft,
   ChevronRight,
   Clock3,
   Copy,
   FileText,
   Flame,
+  Folder,
+  FolderPlus,
   FolderOpen,
+  Globe,
+  Grid2x2,
+  GripVertical,
+  ImageIcon,
   Layers3,
   Maximize2,
+  MoreHorizontal,
   Plus,
+  Pencil,
   Play,
   Pause,
   RotateCcw,
+  Rocket,
   Search,
+  Share2,
   Shuffle,
   Sparkles,
   Star,
@@ -32,22 +44,28 @@ import {
   Trophy,
   Users,
   UserPlus,
+  UserRound,
   Volume2,
+  WandSparkles,
   X,
+  LogOut,
 } from "lucide-react";
 import { buildQuestionBank, buildStudySession, computeStudyDashboard, createStudyId, fuzzyMatch, getDefaultProgress, getRecommendedCards, reorderCards, updateProgressForReview } from "@/lib/study/engine";
 import { DEFAULT_STUDY_LIBRARY } from "@/lib/study/sample-data";
-import type { CardProgress, QuizQuestion, QuizResult, StudyCard, StudyGroup, StudyLibraryState, StudySet, StudySurface } from "@/lib/study/types";
+import type { CardProgress, QuizQuestion, QuizResult, StructuredLectureNotes, StudyCard, StudyGroup, StudyLibraryState, StudyNote, StudySet, StudySurface } from "@/lib/study/types";
 import NotesWorkspace from "@/app/study/NotesWorkspace";
-import StudyIdentityCard, { type StudyProfileForm } from "@/app/components/study/StudyIdentityCard";
+import FeatureTour from "@/app/components/onboarding/FeatureTour";
+import { estimateFlashcardCountFromText, parseExplicitFlashcardsFromText } from "@/lib/study/flashcard-parser";
 
 const STORAGE_KEY = "uic-atlas-study-library-v1";
 const MATCH_BESTS_KEY = "uic-atlas-study-match-bests-v1";
+const CUSTOM_FOLDERS_KEY = "uic-atlas-study-custom-folders-v1";
 
 type Screen = "dashboard" | "groups" | "create" | "overview" | "flashcards" | "learn" | "test" | "match";
 type StudyFilter = "all" | "starred" | "difficult" | "missed" | "unseen";
 type ToastTone = "default" | "error" | "reward";
 type StudyToast = { message: string; tone: ToastTone } | null;
+type LibrarySection = "flashcards" | "notes" | "groups" | "guides";
 type StudyCourseSuggestion = {
   id: string;
   code: string;
@@ -70,14 +88,25 @@ type GeneratedCardPayload = {
 };
 type DraftSetErrors = {
   title?: string;
-  course?: string;
   cards?: string;
+};
+type DraftGuideErrors = {
+  title?: string;
+  course?: string;
+  content?: string;
+  guide?: string;
 };
 
 type StudyWorkspaceProps = {
   forcedSetId?: string;
   standaloneSetView?: boolean;
 };
+
+type SaveDestinationDialogState = {
+  afterSave: "overview" | "learn";
+  folder: string;
+  newFolderName: string;
+} | null;
 
 type TriviaQuestion = {
   prompt: string;
@@ -124,6 +153,36 @@ const magneticHoverProps = {
   },
 };
 
+function normalizeFolderPath(value: string) {
+  return value
+    .split("/")
+    .map((part) => part.trim())
+    .filter(Boolean)
+    .join("/");
+}
+
+function folderLabelFromPath(path: string) {
+  const parts = path.split("/").filter(Boolean);
+  return parts[parts.length - 1] || path;
+}
+
+function parentFolderPath(path: string) {
+  const parts = path.split("/").filter(Boolean);
+  return parts.length > 1 ? parts.slice(0, -1).join("/") : "";
+}
+
+function isFolderOrDescendant(path: string, candidate: string) {
+  return candidate === path || candidate.startsWith(`${path}/`);
+}
+
+function resolveSetFolder(set: StudySet) {
+  return normalizeFolderPath(set.folder || set.course || set.subject || "");
+}
+
+function resolveNoteFolder(note: StudyNote) {
+  return normalizeFolderPath(note.folder || note.course || note.subject || "");
+}
+
 const emptyDraftCard = (index: number): StudyCard => ({
   id: createStudyId("card"),
   front: "",
@@ -146,6 +205,7 @@ const emptyDraftSet = (): StudySet => {
     id: createStudyId("set"),
     title: "",
     description: "",
+    folder: "",
     course: "",
     subject: "",
     tags: [],
@@ -157,12 +217,38 @@ const emptyDraftSet = (): StudySet => {
   };
 };
 
+const emptyDraftGuide = (): StudyNote => {
+  const now = new Date().toISOString();
+  return {
+    id: createStudyId("note"),
+    title: "",
+    folder: "",
+    course: "",
+    noteDate: now.slice(0, 10),
+    subject: "",
+    tags: [],
+    rawContent: "",
+    structuredContent: null,
+    transcriptContent: "",
+    sourceType: "imported",
+    visibility: "private",
+    status: "draft",
+    createdAt: now,
+    updatedAt: now,
+    lastOpenedAt: now,
+    pinned: false,
+    favorite: false,
+  };
+};
+
 export default function StudyWorkspace({ forcedSetId, standaloneSetView = false }: StudyWorkspaceProps) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const { data: session, status } = useSession();
+  const { status } = useSession();
   const isCreateRoute = pathname === "/study/create";
+  const createType = searchParams.get("type") === "guide" ? "guide" : "flashcards";
+  const isGuideCreateRoute = isCreateRoute && createType === "guide";
   const [hydrated, setHydrated] = useState(false);
   const [library, setLibrary] = useState<StudyLibraryState>(DEFAULT_STUDY_LIBRARY);
   const [surface, setSurface] = useState<StudySurface>("home");
@@ -171,7 +257,11 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
   const [search, setSearch] = useState("");
   const [subjectFilter, setSubjectFilter] = useState("all");
   const [difficultyFilter, setDifficultyFilter] = useState("all");
+  const [librarySection, setLibrarySection] = useState<LibrarySection>("flashcards");
+  const [customFolders, setCustomFolders] = useState<string[]>([]);
   const [draftSet, setDraftSet] = useState<StudySet>(emptyDraftSet());
+  const [saveDestinationDialog, setSaveDestinationDialog] = useState<SaveDestinationDialogState>(null);
+  const [draftGuide, setDraftGuide] = useState<StudyNote>(emptyDraftGuide());
   const [groupName, setGroupName] = useState("");
   const [groupCourse, setGroupCourse] = useState("");
   const [groupDescription, setGroupDescription] = useState("");
@@ -179,22 +269,19 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
   const [selectedGroupId, setSelectedGroupId] = useState("");
   const [groupTab, setGroupTab] = useState<"materials" | "members">("materials");
   const [createGroupOpen, setCreateGroupOpen] = useState(false);
+  const [groupSetPickerGroupId, setGroupSetPickerGroupId] = useState("");
+  const [folderActionsOpen, setFolderActionsOpen] = useState(false);
+  const [folderLibraryPickerOpen, setFolderLibraryPickerOpen] = useState(false);
+  const [moveLibraryItem, setMoveLibraryItem] = useState<{ type: "set" | "note"; id: string; title: string } | null>(null);
   const [importText, setImportText] = useState("");
   const [courseSuggestions, setCourseSuggestions] = useState<StudyCourseSuggestion[]>([]);
   const [publicSearchResults, setPublicSearchResults] = useState<StudySet[]>([]);
   const [draftSetErrors, setDraftSetErrors] = useState<DraftSetErrors>({});
+  const [draftGuideErrors, setDraftGuideErrors] = useState<DraftGuideErrors>({});
   const [draggingCardId, setDraggingCardId] = useState<string | null>(null);
   const [toast, setToast] = useState<StudyToast>(null);
   const [isGenerating, setIsGenerating] = useState(false);
-  const [profile, setProfile] = useState<StudyProfileForm>({
-    school: "UIC",
-    major: "",
-    currentCourses: "",
-    interests: "",
-    studyPreferences: "",
-  });
-  const [isSavingProfile, setIsSavingProfile] = useState(false);
-  const [contextCollapsed, setContextCollapsed] = useState(false);
+  const [generatedGuide, setGeneratedGuide] = useState<StructuredLectureNotes | null>(null);
   const [triviaIndex, setTriviaIndex] = useState(0);
   const [selectedTriviaChoice, setSelectedTriviaChoice] = useState<string | null>(null);
 
@@ -215,8 +302,19 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
         });
         setSelectedSetId(parsed.sets?.[0]?.id || "");
       }
+
+      const rawFolders = window.localStorage.getItem(CUSTOM_FOLDERS_KEY);
+      if (rawFolders) {
+        const parsedFolders = JSON.parse(rawFolders);
+        setCustomFolders(
+          Array.isArray(parsedFolders)
+            ? parsedFolders.map((entry) => normalizeFolderPath(String(entry))).filter(Boolean)
+            : [],
+        );
+      }
     } catch {
       setLibrary(DEFAULT_STUDY_LIBRARY);
+      setCustomFolders([]);
     } finally {
       setHydrated(true);
     }
@@ -225,6 +323,18 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
   useEffect(() => {
     setScreen(isCreateRoute ? "create" : "dashboard");
   }, [isCreateRoute]);
+
+  useEffect(() => {
+    const requestedFolder = normalizeFolderPath(searchParams.get("folder") || "");
+    if (!isCreateRoute || isGuideCreateRoute) return;
+    setDraftSet((current) => (current.folder === requestedFolder ? current : { ...current, folder: requestedFolder }));
+  }, [isCreateRoute, isGuideCreateRoute, searchParams]);
+
+  useEffect(() => {
+    const requestedFolder = normalizeFolderPath(searchParams.get("folder") || "");
+    if (!isGuideCreateRoute) return;
+    setDraftGuide((current) => (current.folder === requestedFolder ? current : { ...current, folder: requestedFolder }));
+  }, [isGuideCreateRoute, searchParams]);
 
   useEffect(() => {
     const requestedSetId = forcedSetId || searchParams.get("set");
@@ -262,6 +372,24 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
     }
   }, [searchParams]);
 
+  useEffect(() => {
+    if (searchParams.get("view") !== "library") return;
+    const requestedSection = searchParams.get("section");
+    if (requestedSection === "flashcards" || requestedSection === "notes" || requestedSection === "groups" || requestedSection === "guides") {
+      setLibrarySection(requestedSection);
+    }
+  }, [searchParams]);
+
+  useEffect(() => {
+    const requestedMode = searchParams.get("mode");
+    const requestedSet = searchParams.get("set");
+    const requestedScreen = searchParams.get("screen");
+    if (pathname !== "/study") return;
+    if (requestedMode !== "flashcards") return;
+    if (requestedSet || requestedScreen) return;
+    router.replace("/study/create?type=flashcards");
+  }, [pathname, router, searchParams]);
+
   const globalQuery = (searchParams.get("query") || "").trim();
   const folderFilter = (searchParams.get("folder") || "").trim();
   const libraryView = searchParams.get("view") === "library";
@@ -272,6 +400,13 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
 
   useEffect(() => {
     if (!isCreateRoute) return;
+    if (isGuideCreateRoute) {
+      setDraftGuide(emptyDraftGuide());
+      setDraftSet(emptyDraftSet());
+      setGeneratedGuide(null);
+      setImportText("");
+      return;
+    }
     const editSetId = searchParams.get("edit");
     if (!editSetId) {
       setDraftSet(emptyDraftSet());
@@ -284,7 +419,7 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
       setDraftSet(existingSet);
       setImportText("");
     }
-  }, [isCreateRoute, library.sets, searchParams]);
+  }, [isCreateRoute, isGuideCreateRoute, library.sets, searchParams]);
 
   useEffect(() => {
     if (!hydrated) return;
@@ -305,24 +440,6 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
 
         const payload = await response.json();
         if (cancelled) return;
-
-        setProfile({
-          school: payload.profile?.school || "UIC",
-          major: payload.profile?.major || "",
-          currentCourses: Array.isArray(payload.profile?.currentCourses) ? payload.profile.currentCourses.join(", ") : "",
-          interests: Array.isArray(payload.profile?.interests) ? payload.profile.interests.join(", ") : "",
-          studyPreferences: payload.profile?.studyPreferences || "",
-        });
-
-        const hasSavedContext = Boolean(
-          payload.profile?.major ||
-          (Array.isArray(payload.profile?.currentCourses) && payload.profile.currentCourses.length) ||
-          (Array.isArray(payload.profile?.interests) && payload.profile.interests.length) ||
-          payload.profile?.studyPreferences,
-        );
-        if (hasSavedContext) {
-          setContextCollapsed(true);
-        }
 
         setLibrary((current) => {
           const remoteSets = Array.isArray(payload.library?.sets) ? payload.library.sets : [];
@@ -357,6 +474,10 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
     return () => window.clearTimeout(timeout);
   }, [toast]);
 
+  useEffect(() => {
+    window.localStorage.setItem(CUSTOM_FOLDERS_KEY, JSON.stringify(customFolders));
+  }, [customFolders]);
+
   const activeTriviaQuestion = HOME_TRIVIA_QUESTIONS[triviaIndex % HOME_TRIVIA_QUESTIONS.length];
 
   useEffect(() => {
@@ -369,7 +490,7 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
   }, [selectedTriviaChoice]);
 
   useEffect(() => {
-    const query = draftSet.course.trim();
+    const query = (isGuideCreateRoute ? draftGuide.course : draftSet.course).trim();
     if (!isCreateRoute || query.length < 2) {
       setCourseSuggestions([]);
       return;
@@ -400,7 +521,7 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
       controller.abort();
       window.clearTimeout(timeout);
     };
-  }, [draftSet.course, isCreateRoute]);
+  }, [draftGuide.course, draftSet.course, isCreateRoute, isGuideCreateRoute]);
 
   useEffect(() => {
     if (!Object.keys(draftSetErrors).length) return;
@@ -409,11 +530,22 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
     setDraftSetErrors((current) => {
       const next = { ...current };
       if (next.title && draftSet.title.trim()) delete next.title;
-      if (next.course && draftSet.course.trim()) delete next.course;
       if (next.cards && cleanedCards.length > 0) delete next.cards;
       return next;
     });
   }, [draftSet.cards, draftSet.course, draftSet.title, draftSetErrors]);
+
+  useEffect(() => {
+    if (!Object.keys(draftGuideErrors).length) return;
+    setDraftGuideErrors((current) => {
+      const next = { ...current };
+      if (next.title && draftGuide.title.trim()) delete next.title;
+      if (next.course && draftGuide.course.trim()) delete next.course;
+      if (next.content && importText.trim()) delete next.content;
+      if (next.guide && generatedGuide) delete next.guide;
+      return next;
+    });
+  }, [draftGuide.course, draftGuide.title, draftGuideErrors, generatedGuide, importText]);
 
   useEffect(() => {
     const query = search.trim();
@@ -454,44 +586,6 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
     });
   };
 
-  const parseCommaSeparated = (value: string) =>
-    value
-      .split(",")
-      .map((entry) => entry.trim())
-      .filter(Boolean);
-
-  const saveAcademicContext = async () => {
-    if (!isSignedIn) {
-      promptGoogleSignIn();
-      return;
-    }
-
-    try {
-      setIsSavingProfile(true);
-      const response = await fetch("/api/study/me", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          school: profile.school,
-          major: profile.major,
-          currentCourses: parseCommaSeparated(profile.currentCourses),
-          interests: parseCommaSeparated(profile.interests),
-          studyPreferences: profile.studyPreferences,
-        }),
-      });
-      const payload = await response.json();
-      if (!response.ok) {
-        throw new Error(payload.error || "Could not save your academic context.");
-      }
-      showToast("Academic context saved.");
-      setContextCollapsed(true);
-    } catch (error) {
-      showToast(error instanceof Error ? error.message : "Could not save your academic context.", "error");
-    } finally {
-      setIsSavingProfile(false);
-    }
-  };
-
   const selectedSet = useMemo(
     () => library.sets.find((set) => set.id === (forcedSetId || selectedSetId)) ?? library.sets[0],
     [forcedSetId, library.sets, selectedSetId],
@@ -525,7 +619,13 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
     }
     const params = new URLSearchParams();
     if (targetSetId) params.set("set", targetSetId);
-    if (nextScreen !== "groups" && surface !== "home") params.set("mode", surface);
+    if (nextScreen !== "groups") {
+      if (surface !== "home") {
+        params.set("mode", surface);
+      } else if (targetSetId && nextScreen !== "dashboard") {
+        params.set("mode", "flashcards");
+      }
+    }
     if (nextScreen !== "dashboard") params.set("screen", nextScreen);
     router.push(`/study${params.toString() ? `?${params.toString()}` : ""}`);
   };
@@ -543,10 +643,10 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
   const setList = useMemo(() => {
     const normalizedSearch = search.toLowerCase().trim();
     return library.sets.filter((set) => {
-      const folderLabel = (set.course || set.subject || set.title).trim();
+      const folderLabel = resolveSetFolder(set);
       const matchesSearch =
         !normalizedSearch ||
-        [set.title, set.course, set.subject, set.description, ...set.tags].join(" ").toLowerCase().includes(normalizedSearch);
+        [set.title, set.course, set.subject, set.folder, set.description, ...set.tags].join(" ").toLowerCase().includes(normalizedSearch);
       const matchesFolder = !folderFilter || folderLabel === folderFilter;
       const matchesSubject = subjectFilter === "all" || set.subject === subjectFilter;
       const matchesDifficulty = difficultyFilter === "all" || set.difficulty === difficultyFilter;
@@ -557,10 +657,10 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
   const matchingNotes = useMemo(() => {
     const normalizedSearch = search.toLowerCase().trim();
     return library.notes.filter((note) => {
-      const folderLabel = (note.course || note.subject || note.title).trim();
+      const folderLabel = resolveNoteFolder(note);
       const matchesSearch =
         !normalizedSearch ||
-        [note.title, note.course, note.subject, note.rawContent, note.transcriptContent, ...note.tags]
+        [note.title, note.course, note.subject, note.folder, note.rawContent, note.transcriptContent, ...note.tags]
           .join(" ")
           .toLowerCase()
           .includes(normalizedSearch);
@@ -569,10 +669,45 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
     });
   }, [folderFilter, library.notes, search]);
 
+  const matchingGuides = useMemo(() => matchingNotes.filter((note) => Boolean(note.structuredContent)), [matchingNotes]);
+
+  const matchingGroups = useMemo(() => {
+    const normalizedSearch = search.toLowerCase().trim();
+    return library.groups.filter((group) => {
+      if (!normalizedSearch) return true;
+      return [group.name, group.course, group.description, ...group.memberNames].join(" ").toLowerCase().includes(normalizedSearch);
+    });
+  }, [library.groups, search]);
+
+  const availableFolders = useMemo(() => {
+    const setFolders = library.sets.map((set) => resolveSetFolder(set));
+    const noteFolders = library.notes.map((note) => resolveNoteFolder(note));
+    return Array.from(new Set([...customFolders, ...setFolders, ...noteFolders].filter(Boolean))).sort((a, b) => a.localeCompare(b));
+  }, [customFolders, library.notes, library.sets]);
+
   const subjects = Array.from(new Set(library.sets.map((set) => set.subject).filter(Boolean)));
   const selectedGroup = library.groups.find((group) => group.id === selectedGroupId) ?? library.groups[0];
   const folderSetPreview = setList.slice(0, 12);
   const folderNotePreview = matchingNotes.slice(0, 8);
+  const childFolders = useMemo(() => {
+    if (!folderFilter) return [];
+
+    const libraryFolders = [
+      ...library.sets.map((set) => resolveSetFolder(set)),
+      ...library.notes.map((note) => resolveNoteFolder(note)),
+    ].filter(Boolean);
+
+    const allFolders = Array.from(new Set([...customFolders, ...libraryFolders]));
+    return allFolders.filter((folder) => parentFolderPath(folder) === folderFilter);
+  }, [customFolders, folderFilter, library.notes, library.sets]);
+  const librarySearchPlaceholder =
+    librarySection === "flashcards"
+      ? "Search flashcards"
+      : librarySection === "notes"
+        ? "Search notes"
+        : librarySection === "groups"
+          ? "Search study groups"
+          : "Search study guides";
 
   useEffect(() => {
     if (!library.groups.length) {
@@ -584,7 +719,13 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
     }
   }, [library.groups, selectedGroupId]);
 
-  const saveDraftSet = async () => {
+  const saveDraftSet = async ({
+    afterSave,
+    folder,
+  }: {
+    afterSave: "overview" | "learn";
+    folder?: string;
+  }) => {
     const cleanedCards = draftSet.cards
       .map((card, index) => ({
         ...card,
@@ -602,7 +743,6 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
 
     const nextErrors: DraftSetErrors = {};
     if (!draftSet.title.trim()) nextErrors.title = "Enter a set title.";
-    if (!draftSet.course.trim()) nextErrors.course = "Choose what class this set is for.";
     if (cleanedCards.length === 0) nextErrors.cards = "Add at least one card with both a front and back.";
 
     if (Object.keys(nextErrors).length > 0) {
@@ -618,6 +758,7 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
       ...draftSet,
       title: draftSet.title.trim(),
       description: draftSet.description.trim(),
+      folder: normalizeFolderPath(folder ?? draftSet.folder ?? ""),
       course: draftSet.course.trim(),
       subject: draftSet.subject.trim() || "General",
       tags: draftSet.tags.filter(Boolean),
@@ -688,10 +829,58 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
     setDraftSet(emptyDraftSet());
     setImportText("");
     if (isCreateRoute) {
-      router.push(`/study?set=${encodeURIComponent(nextSet.id)}`);
+      const params = new URLSearchParams({
+        mode: "flashcards",
+        set: nextSet.id,
+        screen: afterSave === "learn" ? "learn" : "overview",
+      });
+      router.push(`/study?${params.toString()}`);
     } else {
-      openStudyScreen("overview", nextSet.id);
+      openStudyScreen(afterSave === "learn" ? "learn" : "overview", nextSet.id);
     }
+  };
+
+  const openSaveDestinationDialog = (afterSave: "overview" | "learn") => {
+    setSaveDestinationDialog({
+      afterSave,
+      folder: normalizeFolderPath(draftSet.folder || ""),
+      newFolderName: "",
+    });
+  };
+
+  const confirmSaveDestination = async () => {
+    if (!saveDestinationDialog) return;
+
+    const createdFolder = normalizeFolderPath(saveDestinationDialog.newFolderName);
+    const selectedFolder = normalizeFolderPath(saveDestinationDialog.folder);
+    const targetFolder = createdFolder || selectedFolder;
+
+    if (createdFolder) {
+      setCustomFolders((current) => (current.includes(createdFolder) ? current : [createdFolder, ...current]));
+    }
+
+    setDraftSet((current) => ({ ...current, folder: targetFolder }));
+    setSaveDestinationDialog(null);
+    await saveDraftSet({
+      afterSave: saveDestinationDialog.afterSave,
+      folder: targetFolder,
+    });
+  };
+
+  const deleteDraftSet = () => {
+    const editSetId = searchParams.get("edit");
+    if (editSetId && library.sets.some((set) => set.id === editSetId)) {
+      deleteSet(editSetId, { stayOnCreate: true });
+      return;
+    }
+
+    const confirmed = window.confirm("Delete this draft set?");
+    if (!confirmed) return;
+
+    setDraftSet(emptyDraftSet());
+    setImportText("");
+    setSaveDestinationDialog(null);
+    showToast("Draft deleted.");
   };
 
   const duplicateSet = (set: StudySet) => {
@@ -762,7 +951,7 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
     }
   };
 
-  const deleteSet = (setId: string) => {
+  const deleteSet = (setId: string, options?: { stayOnCreate?: boolean }) => {
     const target = library.sets.find((set) => set.id === setId);
     if (!target) return;
 
@@ -795,27 +984,124 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
 
     const remaining = library.sets.filter((set) => set.id !== setId);
     setSelectedSetId(remaining[0]?.id || "");
-    openStudyScreen(remaining.length ? "overview" : "dashboard", remaining[0]?.id);
+    if (options?.stayOnCreate) {
+      router.push("/study/create?type=flashcards");
+    } else {
+      openStudyScreen(remaining.length ? "overview" : "dashboard", remaining[0]?.id);
+    }
     showToast("Study set deleted.");
   };
 
+  const moveSetToFolder = (setId: string, folder: string) => {
+    const normalizedFolder = normalizeFolderPath(folder);
+    let nextSet: StudySet | null = null;
+
+    setLibrary((current) => {
+      const sets = current.sets.map((set) => {
+        if (set.id !== setId) return set;
+        nextSet = { ...set, folder: normalizedFolder, updatedAt: new Date().toISOString() };
+        return nextSet;
+      });
+      return { ...current, sets };
+    });
+
+    if (!nextSet) return;
+
+    showToast(normalizedFolder ? `Moved to ${folderLabelFromPath(normalizedFolder)}.` : "Removed from folder.");
+
+    if (isSignedIn) {
+      fetch("/api/study/sets", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ set: nextSet }),
+      }).catch(() => undefined);
+    }
+  };
+
+  const moveNoteToFolder = (noteId: string, folder: string) => {
+    const normalizedFolder = normalizeFolderPath(folder);
+
+    setLibrary((current) => ({
+      ...current,
+      notes: current.notes.map((note) =>
+        note.id === noteId
+          ? {
+              ...note,
+              folder: normalizedFolder,
+              updatedAt: new Date().toISOString(),
+            }
+          : note,
+      ),
+    }));
+
+    showToast(normalizedFolder ? `Moved to ${folderLabelFromPath(normalizedFolder)}.` : "Removed from folder.");
+  };
+
+  const createSubfolder = (parent: string) => {
+    const nextLabel = window.prompt("New folder name");
+    if (!nextLabel) return;
+    const nextPath = normalizeFolderPath(`${parent}/${nextLabel}`);
+    if (!nextPath) return;
+    setCustomFolders((current) => (current.includes(nextPath) ? current : [nextPath, ...current]));
+    router.push(`/study?folder=${encodeURIComponent(nextPath)}`);
+    showToast(`Created ${folderLabelFromPath(nextPath)}.`);
+  };
+
+  const renameCurrentFolder = (path: string) => {
+    const nextLabel = window.prompt("Rename folder", folderLabelFromPath(path));
+    if (!nextLabel) return;
+    const nextPath = normalizeFolderPath(parentFolderPath(path) ? `${parentFolderPath(path)}/${nextLabel}` : nextLabel);
+    if (!nextPath || nextPath === path) return;
+
+    setCustomFolders((current) => {
+      const updated = current.map((entry) => (isFolderOrDescendant(path, entry) ? `${nextPath}${entry.slice(path.length)}` : entry));
+      return Array.from(new Set(updated.map((entry) => normalizeFolderPath(entry)).filter(Boolean)));
+    });
+    setLibrary((current) => ({
+      ...current,
+      sets: current.sets.map((set) => {
+        const folder = resolveSetFolder(set);
+        return isFolderOrDescendant(path, folder) ? { ...set, folder: `${nextPath}${folder.slice(path.length)}` } : set;
+      }),
+      notes: current.notes.map((note) => {
+        const folder = resolveNoteFolder(note);
+        return isFolderOrDescendant(path, folder) ? { ...note, folder: `${nextPath}${folder.slice(path.length)}` } : note;
+      }),
+    }));
+    setFolderActionsOpen(false);
+    router.push(`/study?folder=${encodeURIComponent(nextPath)}`);
+    showToast(`Renamed to ${folderLabelFromPath(nextPath)}.`);
+  };
+
+  const deleteCurrentFolder = (path: string) => {
+    if (!window.confirm(`Delete "${folderLabelFromPath(path)}" and remove its folder assignments?`)) return;
+
+    setCustomFolders((current) => current.filter((entry) => !isFolderOrDescendant(path, entry)));
+    setLibrary((current) => ({
+      ...current,
+      sets: current.sets.map((set) => {
+        const folder = resolveSetFolder(set);
+        return isFolderOrDescendant(path, folder) ? { ...set, folder: "" } : set;
+      }),
+      notes: current.notes.map((note) => {
+        const folder = resolveNoteFolder(note);
+        return isFolderOrDescendant(path, folder) ? { ...note, folder: "" } : note;
+      }),
+    }));
+    setFolderActionsOpen(false);
+    router.push("/study?view=library");
+    showToast("Folder deleted.");
+  };
+
   const importFromText = () => {
-    const parsed = importText
-      .split(/\n+/)
-      .map((line) => line.trim())
-      .filter(Boolean)
-      .map((line, index) => {
-        const [front, ...rest] = line.split(/::| - | – |: /);
-        return {
-          ...emptyDraftCard(index),
-          front: front?.trim() || "",
-          back: rest.join(" ").trim() || "",
-        };
-      })
-      .filter((card) => card.front && card.back);
+    const parsed = parseExplicitFlashcardsFromText(importText).map((card, index) => ({
+      ...emptyDraftCard(index),
+      front: card.front,
+      back: card.back,
+    }));
 
     if (!parsed.length) {
-      showToast("Use one line per card like Term :: Definition.", "error");
+      showToast("Use clear flashcard text like Term :: Definition or Question on one line and Answer below it.", "error");
       return;
     }
 
@@ -833,6 +1119,7 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
     }
     setIsGenerating(true);
     try {
+      const explicitCards = parseExplicitFlashcardsFromText(importText);
       const response = await fetch("/api/study/generate-flashcards", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -840,7 +1127,7 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
           sourceMaterial: importText,
           course: draftSet.course,
           topic: draftSet.subject || draftSet.title,
-          desiredCount: 12,
+          desiredCount: explicitCards.length || estimateFlashcardCountFromText(importText),
           difficultyTarget: draftSet.difficulty,
         }),
       });
@@ -867,6 +1154,44 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
     }
   };
 
+  const generateStudyGuide = async () => {
+    if (!importText.trim()) {
+      setDraftGuideErrors((current) => ({ ...current, content: "Paste your source text before generating a study guide." }));
+      showToast("Paste your notes, reading, or lecture text first.", "error");
+      return;
+    }
+
+    setIsGenerating(true);
+    try {
+      const response = await fetch("/api/study/notes/structure", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          transcript: importText,
+          course: draftGuide.course,
+          subject: draftGuide.subject,
+          title: draftGuide.title || "Study Guide",
+        }),
+      });
+      const payload = await response.json();
+      if (!response.ok) throw new Error(payload.error || "Failed to generate study guide.");
+
+      setGeneratedGuide(payload as StructuredLectureNotes);
+      setDraftGuide((current) => ({
+        ...current,
+        title: current.title || (payload as StructuredLectureNotes).title || "Study Guide",
+        rawContent: importText,
+        structuredContent: payload as StructuredLectureNotes,
+        status: "ready",
+      }));
+      showToast("Study guide generated.", "reward");
+    } catch (error) {
+      showToast(error instanceof Error ? error.message : "Study guide generation failed.", "error");
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
   const importPdfFile = async (file: File) => {
     const formData = new FormData();
     formData.append("file", file);
@@ -882,6 +1207,87 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
     } catch (error) {
       showToast(error instanceof Error ? error.message : "Could not import that file.", "error");
     }
+  };
+
+  const saveStudyGuide = async () => {
+    const nextErrors: DraftGuideErrors = {};
+    if (!draftGuide.title.trim()) nextErrors.title = "Enter a guide title.";
+    if (!draftGuide.course.trim()) nextErrors.course = "Choose what class this guide is for.";
+    if (!importText.trim()) nextErrors.content = "Paste the source text for this guide.";
+    if (!generatedGuide) nextErrors.guide = "Generate the guide before saving it.";
+
+    if (Object.keys(nextErrors).length > 0) {
+      setDraftGuideErrors(nextErrors);
+      showToast("Fill the required fields before saving.", "error");
+      return;
+    }
+
+    setDraftGuideErrors({});
+
+    const now = new Date().toISOString();
+    let nextGuide: StudyNote = {
+      ...draftGuide,
+      title: draftGuide.title.trim(),
+      folder: normalizeFolderPath(draftGuide.folder || ""),
+      course: draftGuide.course.trim(),
+      subject: draftGuide.subject.trim() || "General",
+      rawContent: importText.trim(),
+      structuredContent: generatedGuide,
+      transcriptContent: "",
+      sourceType: "imported",
+      visibility: draftGuide.visibility,
+      status: "ready",
+      updatedAt: now,
+      createdAt: draftGuide.createdAt || now,
+      lastOpenedAt: now,
+    };
+
+    if (nextGuide.visibility === "public") {
+      try {
+        const publishResponse = await fetch("/api/study/public-notes", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ note: nextGuide }),
+        });
+        const publishPayload = await publishResponse.json();
+        if (!publishResponse.ok) {
+          nextGuide = { ...nextGuide, visibility: "private" };
+          showToast(publishPayload.error || "This guide was kept private.", "error");
+        } else {
+          showToast("Study guide saved and shared.");
+        }
+      } catch {
+        nextGuide = { ...nextGuide, visibility: "private" };
+        showToast("Could not publish this guide, so it was saved privately instead.", "error");
+      }
+    } else {
+      try {
+        await fetch("/api/study/public-notes", {
+          method: "DELETE",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ noteId: nextGuide.id }),
+        });
+      } catch {}
+    }
+
+    setLibrary((current) => {
+      const exists = current.notes.some((note) => note.id === nextGuide.id);
+      return {
+        ...current,
+        notes: exists
+          ? current.notes.map((note) => (note.id === nextGuide.id ? nextGuide : note))
+          : [nextGuide, ...current.notes],
+      };
+    });
+
+    if (nextGuide.visibility !== "public") {
+      showToast("Study guide saved.");
+    }
+
+    setDraftGuide(emptyDraftGuide());
+    setGeneratedGuide(null);
+    setImportText("");
+    router.push(`/study?mode=notes&note=${encodeURIComponent(nextGuide.id)}`);
   };
 
   const updateCardProgress = (setId: string, cardId: string, updater: (current: CardProgress) => CardProgress) => {
@@ -944,7 +1350,6 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
           name,
           course: groupCourse.trim(),
           description: groupDescription.trim(),
-          selectedSetId: selectedSet?.id,
         }),
       });
       const payload = await response.json();
@@ -1056,8 +1461,10 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
         groups: current.groups.map((group) => (group.id === groupId ? updatedGroup : group)),
       }));
       showToast("Set added to group.");
+      return true;
     } catch (error) {
       showToast(error instanceof Error ? error.message : "Failed to link study set.", "error");
+      return false;
     }
   };
 
@@ -1130,43 +1537,60 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
   if (isCreateRoute) {
     return (
       <main className="min-h-screen bg-transparent pb-20 text-white">
-        <div className="mx-auto max-w-[1080px] px-1 pb-14 pt-3 sm:px-2">
+        <div className="mx-auto max-w-[1240px] px-1 pb-14 pt-3 sm:px-2">
           <div className="study-appear mb-8 flex items-center justify-between gap-4">
             <div>
-              <div className="inline-flex items-center gap-2 text-sm font-semibold text-white">
-                <Sparkles className="h-4 w-4 text-indigo-300" />
-                Generate Study Guides
-              </div>
+              <h1 className="text-[2rem] font-bold tracking-[-0.04em] text-white">
+                {isGuideCreateRoute ? "Create a new study guide" : "Create a new flashcard set"}
+              </h1>
             </div>
             <button
               onClick={() => router.push("/study")}
               {...magneticHoverProps}
               className="study-premium-button inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/[0.05] text-zinc-200"
-              aria-label="Close study guides"
+              aria-label="Close create view"
             >
               <X className="h-4 w-4" />
             </button>
           </div>
 
-          <CreateView
-            draftSet={draftSet}
-            courseSuggestions={courseSuggestions}
-            importText={importText}
-            isGenerating={isGenerating}
-            draggingCardId={draggingCardId}
-            onDraftSetChange={setDraftSet}
-            onImportTextChange={setImportText}
-            onGenerateWithAi={generateWithAi}
-            onImportPdfFile={importPdfFile}
-            onImportFromText={importFromText}
-            onSave={saveDraftSet}
-            draftSetErrors={draftSetErrors}
-            onDragStart={setDraggingCardId}
-            onDragEnd={() => setDraggingCardId(null)}
-            onReorder={(draggedId, targetId) =>
-              setDraftSet((current) => ({ ...current, cards: reorderCards(current.cards, draggedId, targetId) }))
-            }
-          />
+          {isGuideCreateRoute ? (
+            <GuideCreateView
+              draftGuide={draftGuide}
+              generatedGuide={generatedGuide}
+              availableFolders={availableFolders}
+              courseSuggestions={courseSuggestions}
+              importText={importText}
+              isGenerating={isGenerating}
+              draftGuideErrors={draftGuideErrors}
+              onDraftGuideChange={setDraftGuide}
+              onImportTextChange={setImportText}
+              onGenerate={generateStudyGuide}
+              onImportPdfFile={importPdfFile}
+              onSave={saveStudyGuide}
+            />
+          ) : (
+            <CreateView
+              draftSet={draftSet}
+              importText={importText}
+              isGenerating={isGenerating}
+              draggingCardId={draggingCardId}
+              isEditing={Boolean(searchParams.get("edit"))}
+              onDraftSetChange={setDraftSet}
+              onImportTextChange={setImportText}
+              onGenerateWithAi={generateWithAi}
+              onImportPdfFile={importPdfFile}
+              onImportFromText={importFromText}
+              onRequestSave={openSaveDestinationDialog}
+              onDeleteSet={deleteDraftSet}
+              draftSetErrors={draftSetErrors}
+              onDragStart={setDraggingCardId}
+              onDragEnd={() => setDraggingCardId(null)}
+              onReorder={(draggedId, targetId) =>
+                setDraftSet((current) => ({ ...current, cards: reorderCards(current.cards, draggedId, targetId) }))
+              }
+            />
+          )}
         </div>
 
         {toast && (
@@ -1182,6 +1606,17 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
             {toast.message}
           </div>
         )}
+        {saveDestinationDialog ? (
+          <SaveSetDialog
+            dialog={saveDestinationDialog}
+            availableFolders={availableFolders}
+            onDialogChange={setSaveDestinationDialog}
+            onCancel={() => setSaveDestinationDialog(null)}
+            onConfirm={() => {
+              void confirmSaveDestination();
+            }}
+          />
+        ) : null}
       </main>
     );
   }
@@ -1192,7 +1627,7 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
         <div className="mx-auto max-w-[1120px] px-4 pb-14 pt-5 sm:px-6">
           <div className="study-appear mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <button
-              onClick={() => router.push("/study?mode=flashcards")}
+              onClick={() => router.push("/study?view=library")}
               {...magneticHoverProps}
               className="study-premium-button inline-flex items-center gap-2 rounded-2xl border border-white/10 bg-white/[0.05] px-4 py-3 text-sm font-semibold text-zinc-100"
             >
@@ -1209,7 +1644,9 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
               <OverviewView
                 set={selectedSet}
                 progressMap={selectedProgress}
+                availableFolders={availableFolders}
                 onModeChange={(nextScreen) => openStudyScreen(nextScreen, selectedSet.id)}
+                onMoveToFolder={(folder) => moveSetToFolder(selectedSet.id, folder)}
                 onDuplicate={() => duplicateSet(selectedSet)}
                 onDelete={() => deleteSet(selectedSet.id)}
                 onEdit={() => {
@@ -1226,6 +1663,33 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
 
   return (
     <main className="min-h-screen bg-transparent pb-20 text-white">
+      {surface === "home" && !libraryView && !folderFilter && screen !== "groups" ? (
+        <FeatureTour
+          storageKey="uichicago-tour-study-home-v1"
+          steps={[
+            {
+              targetId: "study-nav-search",
+              title: "Search across your study space",
+              description: "Use the top search to jump between your sets, folders, and notes without manually hunting for them.",
+            },
+            {
+              targetId: "study-nav-create",
+              title: "Create something quickly",
+              description: "The plus button opens fast actions for new sets, study guides, folders, and groups.",
+            },
+            {
+              targetId: "study-home-recents",
+              title: "Pick up where you left off",
+              description: "Your recent and active sets live here, so you can open a deck and continue studying in one click.",
+            },
+            {
+              targetId: "study-home-modes",
+              title: "Switch between study styles",
+              description: "Jump into flashcards, notes, or AI-generated study guides depending on how you want to prepare.",
+            },
+          ]}
+        />
+      ) : null}
       <div className="mx-auto max-w-[1280px] px-1 pb-16 pt-3 sm:px-2">
         {surface === "home" ? (
           <div className="space-y-6">
@@ -1253,6 +1717,7 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
                 onJoinGroup={joinGroup}
                 onDeleteGroup={deleteGroup}
                 onAddSetToGroup={addSetToGroup}
+                onOpenAddSetPicker={setGroupSetPickerGroupId}
               />
             ) : (
             <>
@@ -1261,37 +1726,73 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
                 <div className="flex flex-col gap-5">
                   <div>
                     <div className="text-[11px] font-bold uppercase tracking-[0.22em] text-indigo-200/80">
-                      Study mode
+                      Your school
                     </div>
                     <h1 className="text-[2.2rem] font-bold tracking-[-0.05em] text-white md:text-[2.7rem]">
                       Your library
                     </h1>
                   </div>
 
-                  <div className="flex flex-wrap items-center gap-6 border-b border-white/10 pb-3 text-sm">
-                    <button className="border-b-2 border-[#7b61ff] pb-3 font-semibold text-white">Flashcard sets</button>
-                    <button onClick={() => openSurface("notes")} className="pb-3 text-zinc-400 transition hover:text-white">Notes</button>
-                    <button onClick={() => openStudyScreen("groups")} className="pb-3 text-zinc-400 transition hover:text-white">Study groups</button>
-                    <button onClick={() => router.push("/study/create")} className="pb-3 text-zinc-400 transition hover:text-white">Study guides</button>
+                  <div className="hide-scroll flex items-center gap-6 overflow-x-auto border-b border-white/10 pb-3 text-sm">
+                    <button
+                      onClick={() => setLibrarySection("flashcards")}
+                      className={`pb-3 font-semibold transition ${librarySection === "flashcards" ? "border-b-2 border-[#7b61ff] text-white" : "text-zinc-400 hover:text-white"}`}
+                    >
+                      Flashcard sets
+                    </button>
+                    <button
+                      onClick={() => setLibrarySection("notes")}
+                      className={`pb-3 font-semibold transition ${librarySection === "notes" ? "border-b-2 border-[#7b61ff] text-white" : "text-zinc-400 hover:text-white"}`}
+                    >
+                      Notes
+                    </button>
+                    <button
+                      onClick={() => setLibrarySection("groups")}
+                      className={`pb-3 font-semibold transition ${librarySection === "groups" ? "border-b-2 border-[#7b61ff] text-white" : "text-zinc-400 hover:text-white"}`}
+                    >
+                      Study groups
+                    </button>
+                    <button
+                      onClick={() => setLibrarySection("guides")}
+                      className={`pb-3 font-semibold transition ${librarySection === "guides" ? "border-b-2 border-[#7b61ff] text-white" : "text-zinc-400 hover:text-white"}`}
+                    >
+                      Study guides
+                    </button>
                   </div>
 
-                  <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-                    <select
-                      value={difficultyFilter}
-                      onChange={(event) => setDifficultyFilter(event.target.value)}
-                      className="h-10 min-w-[140px] rounded-full border border-white/10 bg-white/[0.06] px-4 text-sm text-zinc-200 outline-none"
-                    >
-                      <option value="all">Recent</option>
-                      <option value="easy">Easy sets</option>
-                      <option value="medium">Medium sets</option>
-                      <option value="hard">Hard sets</option>
-                    </select>
-                    <div className="relative w-full max-w-[440px]">
+                  <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
+                    {(librarySection === "flashcards" && setList.length > 0) ||
+                    (librarySection === "notes" && matchingNotes.length > 0) ||
+                    (librarySection === "groups" && matchingGroups.length > 0) ||
+                    (librarySection === "guides" && matchingGuides.length > 0) ? (
+                      <select
+                        value={difficultyFilter}
+                        onChange={(event) => setDifficultyFilter(event.target.value)}
+                        className="h-10 w-full rounded-full border border-white/10 bg-white/[0.06] px-4 text-sm text-zinc-200 outline-none lg:min-w-[140px] lg:w-auto"
+                      >
+                        <option value="all">Recent</option>
+                        {librarySection === "flashcards" ? (
+                          <>
+                            <option value="easy">Easy sets</option>
+                            <option value="medium">Medium sets</option>
+                            <option value="hard">Hard sets</option>
+                          </>
+                        ) : null}
+                      </select>
+                    ) : (
+                      <div className="text-sm text-zinc-500">
+                        {librarySection === "flashcards" && "No flashcard sets yet"}
+                        {librarySection === "notes" && "No notes yet"}
+                        {librarySection === "groups" && "No study groups yet"}
+                        {librarySection === "guides" && "No study guides yet"}
+                      </div>
+                    )}
+                    <div className="relative w-full max-w-[360px]">
                       <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-500" />
                       <input
                         value={search}
                         onChange={(event) => setSearch(event.target.value)}
-                        placeholder="Search flashcards"
+                        placeholder={librarySearchPlaceholder}
                         className="h-11 w-full rounded-xl border border-white/10 bg-white/[0.06] pl-11 pr-4 text-sm text-white outline-none placeholder:text-zinc-500"
                       />
                     </div>
@@ -1299,176 +1800,173 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
                 </div>
               </section>
             ) : null}
-
-            <StudyIdentityCard
-              isSignedIn={isSignedIn}
-              isSaving={isSavingProfile}
-              displayName={session?.user?.name}
-              email={session?.user?.email}
-              profile={profile}
-              collapsed={contextCollapsed}
-              onProfileChange={setProfile}
-              onSave={saveAcademicContext}
-              onSignIn={promptGoogleSignIn}
-              onToggleCollapsed={setContextCollapsed}
-            />
-
             {folderFilter ? (
-              <section className="space-y-8">
-                <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_320px] xl:items-start">
+              <section className="mx-auto max-w-[860px] space-y-8 pb-24">
+                <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
                   <div>
                     <div className="flex items-start gap-4">
-                      <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-white/[0.05] text-white">
-                        <FolderOpen className="h-8 w-8" />
+                      <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-white/[0.05] text-white">
+                        <Folder className="h-8 w-8" />
                       </div>
-                      <div className="min-w-0">
+                      <div>
                         <h2 className="text-[2rem] font-bold tracking-[-0.04em] text-white">
-                          {folderFilter}
+                          {folderLabelFromPath(folderFilter)}
                         </h2>
-                        <div className="mt-2 text-sm text-zinc-400">
-                          {folderSetPreview.length} flashcard set{folderSetPreview.length === 1 ? "" : "s"} and {folderNotePreview.length} note{folderNotePreview.length === 1 ? "" : "s"}
-                        </div>
+                        <div className="mt-1 text-sm text-zinc-400">Add course info</div>
                       </div>
                     </div>
 
                     <div className="mt-6 flex flex-wrap items-center gap-3">
-                      <button className="rounded-full border border-white/20 bg-transparent px-4 py-2 text-sm font-semibold text-white">
+                      <button className="rounded-full border border-white/40 bg-transparent px-4 py-2 text-sm font-semibold text-white">
                         All
                       </button>
-                      <button className="rounded-full border border-white/10 bg-white/[0.05] px-4 py-2 text-sm text-zinc-300 transition hover:bg-white/[0.08] hover:text-white">
-                        Flashcard sets
-                      </button>
-                      <button className="rounded-full border border-white/10 bg-white/[0.05] px-4 py-2 text-sm text-zinc-300 transition hover:bg-white/[0.08] hover:text-white">
-                        Notes
+                      <button className="rounded-full border border-white/10 bg-white/[0.05] px-4 py-2 text-sm text-zinc-300">
+                        + Tag
                       </button>
                     </div>
                   </div>
 
-                  <div className="flex flex-col gap-3">
-                    <div className="relative">
-                      <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-500" />
-                      <input
-                        value={search}
-                        onChange={(event) => setSearch(event.target.value)}
-                        placeholder="Search this folder"
-                        className="h-12 w-full rounded-xl border border-white/10 bg-white/[0.06] pl-11 pr-4 text-sm text-white outline-none placeholder:text-zinc-500"
-                      />
-                    </div>
-                    <div className="text-xs text-zinc-500">
-                      Everything in this folder stays grouped here so it is easier to jump back in.
+                  <div className="relative flex w-full flex-col items-start gap-3 lg:max-w-[420px]">
+                    <button
+                      onClick={() => setFolderActionsOpen((current) => !current)}
+                      className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/[0.08] text-zinc-200"
+                    >
+                      <MoreHorizontal className="h-4 w-4" />
+                    </button>
+                    {folderActionsOpen ? (
+                      <div className="absolute left-0 top-12 z-20 w-[220px] rounded-[1.2rem] border border-white/10 bg-[#171b42] p-2 shadow-[0_24px_50px_rgba(0,0,0,0.36)]">
+                        <button
+                          onClick={() => renameCurrentFolder(folderFilter)}
+                          className="flex w-full items-center gap-2 rounded-[0.9rem] px-3 py-2.5 text-left text-sm font-medium text-zinc-200 transition hover:bg-white/[0.06]"
+                        >
+                          <Pencil className="h-4 w-4" />
+                          Rename folder
+                        </button>
+                        <button
+                          onClick={() => createSubfolder(folderFilter)}
+                          className="mt-1 flex w-full items-center gap-2 rounded-[0.9rem] px-3 py-2.5 text-left text-sm font-medium text-zinc-200 transition hover:bg-white/[0.06]"
+                        >
+                          <FolderPlus className="h-4 w-4" />
+                          New folder
+                        </button>
+                        <button
+                          onClick={() => {
+                            setFolderLibraryPickerOpen(true);
+                            setFolderActionsOpen(false);
+                          }}
+                          className="mt-1 flex w-full items-center gap-2 rounded-[0.9rem] px-3 py-2.5 text-left text-sm font-medium text-zinc-200 transition hover:bg-white/[0.06]"
+                        >
+                          <BookOpen className="h-4 w-4" />
+                          Add from library
+                        </button>
+                        <button
+                          onClick={() => deleteCurrentFolder(folderFilter)}
+                          className="mt-1 flex w-full items-center gap-2 rounded-[0.9rem] px-3 py-2.5 text-left text-sm font-medium text-red-200 transition hover:bg-red-500/[0.12]"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                          Delete folder
+                        </button>
+                      </div>
+                    ) : null}
+                    <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-center">
+                      <select
+                        value="recent"
+                        onChange={() => undefined}
+                        className="h-10 w-full rounded-full border border-white/10 bg-white/[0.06] px-4 text-sm text-zinc-200 outline-none sm:w-[140px]"
+                      >
+                        <option value="recent">Recent</option>
+                      </select>
+                      <div className="relative w-full">
+                        <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-500" />
+                        <input
+                          value={search}
+                          onChange={(event) => setSearch(event.target.value)}
+                          placeholder="Search this folder"
+                          className="h-12 w-full rounded-xl border border-white/10 bg-white/[0.06] pl-11 pr-4 text-sm text-white outline-none placeholder:text-zinc-500"
+                        />
+                      </div>
                     </div>
                   </div>
                 </div>
 
-                <div className="grid gap-10 xl:grid-cols-[minmax(0,1fr)_320px]">
-                  <div className="space-y-8">
-                    <div>
-                      <div className="mb-4 flex items-center justify-between gap-4">
-                        <div className="text-sm font-semibold text-white">Recent</div>
-                        <div className="text-xs text-zinc-500">
-                          {folderSetPreview.length + folderNotePreview.length} item{folderSetPreview.length + folderNotePreview.length === 1 ? "" : "s"}
-                        </div>
-                      </div>
-
-                      <div className="space-y-3">
-                        {folderSetPreview.length ? (
-                          folderSetPreview.map((set) => (
-                            <button
-                              key={set.id}
-                              onClick={() => {
-                                setSelectedSetId(set.id);
-                                openStudyScreen("overview", set.id);
-                              }}
-                              className="flex w-full items-start gap-4 rounded-2xl border border-transparent px-4 py-3 text-left transition hover:bg-white/[0.04]"
-                            >
-                              <div className="mt-1 flex h-9 w-9 items-center justify-center rounded-xl bg-[#243252] text-[#8fd3ff]">
-                                <BookOpen className="h-4 w-4" />
-                              </div>
-                              <div className="min-w-0 flex-1">
-                                <div className="truncate text-sm font-semibold text-white">{set.title}</div>
-                                <div className="mt-1 text-xs text-zinc-400">
-                                  Flashcard set • {set.cards.length} terms • by you
-                                </div>
-                              </div>
-                            </button>
-                          ))
-                        ) : (
-                          <div className="rounded-2xl border border-dashed border-white/12 bg-white/[0.03] px-5 py-6 text-sm text-zinc-400">
-                            No flashcard sets inside this folder yet.
+                <div>
+                  <div className="mb-5 flex items-center gap-2 text-sm font-medium text-zinc-300">
+                    <span>Recent</span>
+                  </div>
+                  <div className="space-y-5">
+                    {folderSetPreview.length ? (
+                      folderSetPreview.map((set) => (
+                        <button
+                          key={set.id}
+                          onClick={() => {
+                            setSelectedSetId(set.id);
+                            openStudyScreen("overview", set.id);
+                          }}
+                          className="flex w-full items-start gap-4 text-left transition hover:opacity-90"
+                        >
+                          <div className="mt-1 flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-[#253a6a] text-sky-200">
+                            <BookOpen className="h-3.5 w-3.5" />
                           </div>
-                        )}
+                          <div className="min-w-0 flex-1">
+                            <div className="line-clamp-1 text-sm font-semibold text-white">{set.title}</div>
+                            <div className="mt-1 text-xs text-zinc-300">
+                              Flashcard set • {set.cards.length} terms • by you
+                            </div>
+                          </div>
+                          <MoreHorizontal className="mt-1 h-4 w-4 text-zinc-500" />
+                        </button>
+                      ))
+                    ) : (
+                      <div className="rounded-2xl border border-dashed border-white/12 bg-white/[0.03] px-5 py-6 text-sm text-zinc-400">
+                        No flashcard sets inside this folder yet.
                       </div>
-                    </div>
-
-                    {folderNotePreview.length ? (
-                      <div>
-                        <div className="mb-4 text-sm font-semibold text-white">Notes</div>
-                        <div className="space-y-3">
-                          {folderNotePreview.map((note) => (
-                            <button
-                              key={note.id}
-                              onClick={() => router.push(`/study?mode=notes&note=${encodeURIComponent(note.id)}&folder=${encodeURIComponent(folderFilter)}`)}
-                              className="flex w-full items-start gap-4 rounded-2xl border border-transparent px-4 py-3 text-left transition hover:bg-white/[0.04]"
-                            >
-                              <div className="mt-1 flex h-9 w-9 items-center justify-center rounded-xl bg-white/[0.05] text-zinc-200">
-                                <FileText className="h-4 w-4" />
-                              </div>
-                              <div className="min-w-0 flex-1">
-                                <div className="truncate text-sm font-semibold text-white">{note.title}</div>
-                                <div className="mt-1 text-xs text-zinc-400">
-                                  Note • by you
-                                </div>
-                              </div>
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                    ) : null}
+                    )}
                   </div>
+                </div>
 
-                  <div className="space-y-4">
-                    <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-5">
-                      <div className="text-[11px] font-bold uppercase tracking-[0.18em] text-zinc-500">
-                        Folder actions
-                      </div>
-                      <div className="mt-4 space-y-3">
+                {childFolders.length ? (
+                  <div>
+                    <div className="mb-4 text-sm font-medium text-zinc-300">Subfolders</div>
+                    <div className="space-y-4">
+                      {childFolders.map((folder) => (
                         <button
-                          onClick={() => router.push("/study/create")}
-                          className="flex w-full items-center justify-center rounded-full bg-[#4f46e5] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#5d53f3]"
+                          key={folder}
+                          onClick={() => router.push(`/study?folder=${encodeURIComponent(folder)}`)}
+                          className="flex w-full items-start gap-4 text-left transition hover:opacity-90"
                         >
-                          Add sets
+                          <div className="mt-1 flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-white/[0.06] text-white">
+                            <Folder className="h-3.5 w-3.5" />
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <div className="line-clamp-1 text-sm font-semibold text-white">{folderLabelFromPath(folder)}</div>
+                            <div className="mt-1 text-xs text-zinc-300">Folder • by you</div>
+                          </div>
+                          <MoreHorizontal className="mt-1 h-4 w-4 text-zinc-500" />
                         </button>
-                        <button
-                          onClick={() => openSurface("notes")}
-                          className="flex w-full items-center justify-center rounded-full border border-white/10 bg-white/[0.05] px-4 py-2.5 text-sm font-semibold text-zinc-200 transition hover:bg-white/[0.09] hover:text-white"
-                        >
-                          Open notes
-                        </button>
-                      </div>
-                    </div>
-
-                    <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-5">
-                      <div className="text-[11px] font-bold uppercase tracking-[0.18em] text-zinc-500">
-                        In this folder
-                      </div>
-                      <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-1">
-                        <div className="rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-4">
-                          <div className="text-[11px] font-bold uppercase tracking-[0.18em] text-zinc-500">Flashcard sets</div>
-                          <div className="mt-2 text-2xl font-semibold text-white">{folderSetPreview.length}</div>
-                        </div>
-                        <div className="rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-4">
-                          <div className="text-[11px] font-bold uppercase tracking-[0.18em] text-zinc-500">Notes</div>
-                          <div className="mt-2 text-2xl font-semibold text-white">{folderNotePreview.length}</div>
-                        </div>
-                      </div>
+                      ))}
                     </div>
                   </div>
+                ) : null}
+
+                <div className="fixed bottom-6 left-1/2 z-20 flex -translate-x-1/2 items-center gap-1 rounded-full border border-white/10 bg-[#1f2147] p-2 shadow-[0_20px_40px_rgba(0,0,0,0.34)]">
+                  <button className="rounded-full bg-white/[0.1] px-12 py-3 text-sm font-semibold text-zinc-300">
+                    Study
+                  </button>
+                  <button
+                    onClick={() => router.push(`/study/create?type=flashcards&folder=${encodeURIComponent(folderFilter)}`)}
+                    className="rounded-full bg-[#5561ff] px-8 py-3 text-sm font-semibold text-white"
+                  >
+                    + Add sets
+                  </button>
+                  <button className="inline-flex h-11 w-14 items-center justify-center rounded-full border border-[#4f68ff] bg-[#171a38] text-[#8ea5ff]">
+                    <Sparkles className="h-4 w-4" />
+                  </button>
                 </div>
               </section>
             ) : (
-            <section className="space-y-8">
+            <section className={`${libraryView || folderFilter ? "space-y-8" : "mx-auto max-w-[860px] space-y-10"}`}>
 
-              {selectedSet ? (
+              {librarySection === "flashcards" && selectedSet && !libraryView && !folderFilter ? (
                 <div>
                   <div className="mb-3 text-[11px] font-bold uppercase tracking-[0.18em] text-zinc-500">
                     Jump back in
@@ -1499,7 +1997,7 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
                       <div className="mt-2 text-xs text-zinc-400">
                         {dashboard.totalCards}/{Math.max(dashboard.totalCards, selectedSet.cards.length)} cards tracked
                       </div>
-                      <div className="mt-6 flex flex-wrap gap-3">
+                      <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
                         <button
                           onClick={() => {
                             openSurface("flashcards");
@@ -1523,7 +2021,7 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
                       <div className="mt-3 text-sm leading-6 text-zinc-300">
                         Your strongest deck right now is <span className="font-semibold text-white">{selectedSet.title}</span>. One quick round in Learn or Match keeps the momentum up.
                       </div>
-                      <div className="mt-5 flex gap-3">
+                      <div className="mt-5 flex flex-col gap-3 sm:flex-row">
                         <button
                           onClick={() => {
                             openSurface("flashcards");
@@ -1548,39 +2046,95 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
                 </div>
               ) : null}
 
-              <div>
-                <div className="mb-3 text-[11px] font-bold uppercase tracking-[0.18em] text-zinc-500">
-                  {globalQuery ? "Search results" : libraryView ? "Recently added" : "Recents"}
-                </div>
-                <div className="grid gap-3 md:grid-cols-2">
-                  {setList.length ? (
-                    setList.slice(0, 6).map((set) => (
-                      <button
-                        key={set.id}
-                        onClick={() => {
-                          setSelectedSetId(set.id);
-                          openStudyScreen("overview", set.id);
-                        }}
-                        className="block w-full rounded-xl border border-white/10 bg-[#4b537a] px-4 py-4 text-left transition hover:bg-[#566089]"
-                      >
-                        <div className="text-[11px] text-zinc-300">
-                          {set.cards.length} Terms
+              {librarySection === "flashcards" ? (
+                libraryView ? (
+                  <div className="space-y-8">
+                    {setList.length ? (
+                      groupSetsByPeriod(setList).map((group) => (
+                        <div key={group.label}>
+                          <div className="mb-3 flex items-center gap-3">
+                            <div className="text-[11px] font-bold uppercase tracking-[0.18em] text-zinc-400">
+                              {group.label}
+                            </div>
+                            <div className="h-px flex-1 bg-white/10" />
+                          </div>
+                          <div className="space-y-2">
+                            {group.items.map((set) => (
+                              <div
+                                key={set.id}
+                                className="flex items-center gap-3 rounded-lg border border-white/8 bg-[#444d74] px-4 py-3 transition hover:bg-[#4c567f]"
+                              >
+                                <button
+                                  onClick={() => {
+                                    setSelectedSetId(set.id);
+                                    openStudyScreen("overview", set.id);
+                                  }}
+                                  className="min-w-0 flex-1 text-left"
+                                >
+                                  <div className="text-[11px] font-semibold text-zinc-200">
+                                    {set.cards.length} Terms
+                                    <span className="mx-2 text-zinc-400">•</span>
+                                    {set.course || set.subject || "by you"}
+                                  </div>
+                                  <div className="mt-1 text-[1.15rem] font-semibold text-white">{set.title}</div>
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => setMoveLibraryItem({ type: "set", id: set.id, title: set.title })}
+                                  className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-white/[0.08] text-zinc-200 transition hover:bg-white/[0.14]"
+                                  aria-label={`Move ${set.title} to folder`}
+                                >
+                                  <Folder className="h-4 w-4" />
+                                </button>
+                              </div>
+                            ))}
+                          </div>
                         </div>
-                        <div className="mt-1 text-[1.15rem] font-semibold text-white">{set.title}</div>
-                        <div className="mt-1 text-xs text-zinc-300">
-                          {[set.course || set.subject, new Date(set.updatedAt).toLocaleDateString("en-US")].filter(Boolean).join(" • ")}
-                        </div>
-                      </button>
-                    ))
-                  ) : (
-                    <div className="rounded-xl border border-dashed border-white/12 bg-white/[0.03] px-5 py-6 text-sm text-zinc-400">
-                      No flashcard sets yet. Create one or turn notes into a study guide.
+                      ))
+                    ) : (
+                      <div className="rounded-xl border border-dashed border-white/12 bg-white/[0.03] px-5 py-6 text-sm text-zinc-400">
+                        No flashcard sets yet. Create one or turn notes into a study guide.
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div data-tour="study-home-recents">
+                    <div className="mb-3 text-[11px] font-bold uppercase tracking-[0.18em] text-zinc-500">
+                      {globalQuery ? "Search results" : "Recents"}
                     </div>
-                  )}
-                </div>
-              </div>
+                    <div className="grid gap-x-12 gap-y-5 md:grid-cols-2">
+                      {setList.length ? (
+                        setList.slice(0, 5).map((set) => (
+                          <button
+                            key={set.id}
+                            onClick={() => {
+                              setSelectedSetId(set.id);
+                              openStudyScreen("overview", set.id);
+                            }}
+                            className="flex items-start gap-3 text-left transition hover:opacity-90"
+                          >
+                            <div className="mt-1 flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-[#253a6a] text-sky-200">
+                              <BookOpen className="h-3.5 w-3.5" />
+                            </div>
+                            <div>
+                              <div className="line-clamp-1 text-sm font-semibold text-white">{set.title}</div>
+                              <div className="mt-1 text-xs text-zinc-300">
+                                {set.cards.length} cards • by you
+                              </div>
+                            </div>
+                          </button>
+                        ))
+                      ) : (
+                        <div className="rounded-xl border border-dashed border-white/12 bg-white/[0.03] px-5 py-6 text-sm text-zinc-400">
+                          No flashcard sets yet. Create one or turn notes into a study guide.
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )
+              ) : null}
 
-              {(folderFilter || globalQuery) && (
+              {librarySection === "flashcards" && (folderFilter || globalQuery) && (
                 <div>
                   <div className="mb-3 text-[11px] font-bold uppercase tracking-[0.18em] text-zinc-500">
                     Matching notes
@@ -1609,14 +2163,151 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
                 </div>
               )}
 
+              {librarySection === "notes" ? (
+                <div>
+                  <div className="mb-3 text-[11px] font-bold uppercase tracking-[0.18em] text-zinc-500">Recently added</div>
+                  <div className="grid gap-3 md:grid-cols-2">
+                    {matchingNotes.length ? (
+                      matchingNotes.slice(0, 8).map((note) => (
+                        <div
+                          key={note.id}
+                          className="flex items-start gap-3 rounded-xl border border-white/10 bg-white/[0.05] px-4 py-4 transition hover:bg-white/[0.08]"
+                        >
+                          <button
+                            onClick={() => router.push(`/study?mode=notes&note=${encodeURIComponent(note.id)}`)}
+                            className="min-w-0 flex-1 text-left"
+                          >
+                            <div className="text-[11px] text-zinc-400">{note.course || note.subject || "Note"}</div>
+                            <div className="mt-1 text-[1.05rem] font-semibold text-white">{note.title}</div>
+                            <div className="mt-1 line-clamp-2 text-xs leading-5 text-zinc-400">
+                              {note.rawContent || note.transcriptContent || "Open note"}
+                            </div>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setMoveLibraryItem({ type: "note", id: note.id, title: note.title })}
+                            className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-white/[0.08] text-zinc-200 transition hover:bg-white/[0.14]"
+                            aria-label={`Move ${note.title} to folder`}
+                          >
+                            <Folder className="h-4 w-4" />
+                          </button>
+                        </div>
+                      ))
+                    ) : (
+                      <div className="rounded-xl border border-dashed border-white/12 bg-white/[0.03] px-5 py-6 text-sm text-zinc-400">
+                        No notes here yet. When you create one, it will show up here without leaving the library.
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ) : null}
+
+              {librarySection === "groups" ? (
+                <div>
+                  <div className="mb-3 text-[11px] font-bold uppercase tracking-[0.18em] text-zinc-500">Your study groups</div>
+                  <div className="grid gap-3 md:grid-cols-2">
+                    {matchingGroups.length ? (
+                      matchingGroups.slice(0, 8).map((group) => (
+                        <button
+                          key={group.id}
+                          onClick={() => {
+                            setSelectedGroupId(group.id);
+                            openStudyScreen("groups");
+                          }}
+                          className="block w-full rounded-xl border border-white/10 bg-white/[0.05] px-4 py-4 text-left transition hover:bg-white/[0.08]"
+                        >
+                          <div className="text-[11px] text-zinc-400">{group.course || "Study group"}</div>
+                          <div className="mt-1 text-[1.05rem] font-semibold text-white">{group.name}</div>
+                          <div className="mt-1 text-xs leading-5 text-zinc-400">
+                            {group.memberNames.length} member{group.memberNames.length === 1 ? "" : "s"} • {group.setIds.length} set{group.setIds.length === 1 ? "" : "s"}
+                          </div>
+                        </button>
+                      ))
+                    ) : (
+                      <div className="rounded-xl border border-dashed border-white/12 bg-white/[0.03] px-5 py-6 text-sm text-zinc-400">
+                        No study groups here yet. When you create or join one, it will show up here first.
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ) : null}
+
+              {librarySection === "guides" ? (
+                <div>
+                  <div className="mb-3 text-[11px] font-bold uppercase tracking-[0.18em] text-zinc-500">Study guides</div>
+                  <div className="grid gap-3 md:grid-cols-2">
+                    {matchingGuides.length ? (
+                      matchingGuides.slice(0, 8).map((guide) => (
+                        <div
+                          key={guide.id}
+                          className="flex items-start gap-3 rounded-xl border border-white/10 bg-white/[0.05] px-4 py-4 transition hover:bg-white/[0.08]"
+                        >
+                          <button
+                            onClick={() => router.push(`/study?mode=notes&note=${encodeURIComponent(guide.id)}`)}
+                            className="min-w-0 flex-1 text-left"
+                          >
+                            <div className="text-[11px] text-zinc-400">{guide.course || guide.subject || "Study guide"}</div>
+                            <div className="mt-1 text-[1.05rem] font-semibold text-white">{guide.title}</div>
+                            <div className="mt-1 line-clamp-2 text-xs leading-5 text-zinc-400">
+                              {guide.structuredContent?.summary || guide.rawContent || "Open guide"}
+                            </div>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setMoveLibraryItem({ type: "note", id: guide.id, title: guide.title })}
+                            className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-white/[0.08] text-zinc-200 transition hover:bg-white/[0.14]"
+                            aria-label={`Move ${guide.title} to folder`}
+                          >
+                            <Folder className="h-4 w-4" />
+                          </button>
+                        </div>
+                      ))
+                    ) : (
+                      <div className="rounded-xl border border-dashed border-white/12 bg-white/[0.03] px-5 py-6 text-sm text-zinc-400">
+                        No study guides here yet. Create one and it will show up here in the library.
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ) : null}
+
+              {librarySection === "flashcards" && !libraryView && !folderFilter ? (
               <div>
-                <div className="mb-3 text-[11px] font-bold uppercase tracking-[0.18em] text-zinc-500">
+                <div className="mb-3 text-[11px] font-bold uppercase tracking-[0.18em] text-zinc-300">
+                  Personalize your content
+                </div>
+                <div className="rounded-[1.35rem] border border-white/10 bg-[#26264d] p-5 shadow-[inset_0_-20px_30px_rgba(84,94,156,0.08)]">
+                  <div className="flex items-start justify-between gap-4">
+                    <Search className="h-10 w-10 text-white" />
+                    <MoreHorizontal className="h-5 w-5 text-zinc-400" />
+                  </div>
+                  <div className="mt-5 text-[1.05rem] font-semibold text-white">
+                    Find the latest content based on your courses or exams
+                  </div>
+                  <div className="mt-5 flex flex-wrap items-center gap-3">
+                    <span className="rounded-full bg-white/[0.08] px-4 py-2 text-xs font-semibold text-zinc-200">
+                      Update school and courses
+                    </span>
+                    <span className="rounded-full bg-white/[0.08] px-4 py-2 text-xs font-semibold text-zinc-200">
+                      Update standardized exams
+                    </span>
+                    <button className="ml-auto inline-flex h-10 w-16 items-center justify-center rounded-full border border-[#4f68ff] bg-[#171a38] text-[#8ea5ff] shadow-[0_0_0_2px_rgba(79,104,255,0.15)]">
+                      <Sparkles className="h-4 w-4" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+              ) : null}
+
+              {librarySection === "flashcards" && !libraryView && !folderFilter ? (
+              <div>
+                <div className="mb-3 text-[11px] font-bold uppercase tracking-[0.18em] text-zinc-300">
                   Study exactly what you need
                 </div>
-                <div className="grid gap-4 xl:grid-cols-2">
+                <div className="space-y-8">
                   <button
-                    onClick={() => router.push("/study/create")}
-                    className="rounded-[1.5rem] border border-white/10 bg-[#2e315d] p-5 text-left transition hover:bg-[#383d71]"
+                    onClick={() => router.push("/study/create?type=flashcards")}
+                    className="w-full rounded-[1.45rem] border border-white/10 bg-[#26264d] p-4 text-left transition hover:bg-[#2d2f58]"
                   >
                     <div className="flex h-full items-center gap-5">
                       <div className="flex-1">
@@ -1630,7 +2321,7 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
                           </span>
                         </div>
                       </div>
-                      <div className="hidden h-32 w-52 overflow-hidden rounded-[1.2rem] border border-white/10 bg-[#d9e5fb] md:block">
+                      <div className="hidden h-40 w-[270px] overflow-hidden rounded-[1.2rem] border border-white/10 bg-[#d9e5fb] md:block">
                         <div className="relative flex h-full items-center justify-center">
                           <div className="absolute left-8 top-8 h-16 w-12 rounded-[0.9rem] bg-[#ffffff] shadow-[0_8px_20px_rgba(31,41,55,0.12)]" />
                           <div className="absolute left-16 top-11 h-16 w-12 rotate-[-10deg] rounded-[0.9rem] bg-[#7c8cff] shadow-[0_10px_24px_rgba(79,70,229,0.18)]" />
@@ -1651,7 +2342,7 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
                         openSurface("flashcards");
                         openStudyScreen("match", selectedSet.id);
                       }}
-                      className="rounded-[1.5rem] border border-white/10 bg-[#2a2f58] p-5 text-left transition hover:bg-[#353b6b]"
+                      className="w-full rounded-[1.45rem] border border-white/10 bg-[#26264d] p-4 text-left transition hover:bg-[#2d2f58]"
                     >
                       <div className="flex h-full items-center gap-5">
                         <div className="flex-1">
@@ -1666,7 +2357,7 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
                             </span>
                           </div>
                         </div>
-                        <div className="hidden h-32 w-52 overflow-hidden rounded-[1.2rem] border border-white/10 bg-[#d2eef5] md:block">
+                        <div className="hidden h-40 w-[270px] overflow-hidden rounded-[1.2rem] border border-white/10 bg-[#d2eef5] md:block">
                           <div className="relative flex h-full items-center justify-center">
                             <div className="absolute inset-y-5 left-7 w-16 rounded-[1rem] bg-white/80" />
                             <div className="absolute inset-y-5 left-[6.2rem] w-16 rounded-[1rem] bg-[#b8e6d2]" />
@@ -1684,15 +2375,17 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
                   ) : null}
                 </div>
               </div>
+              ) : null}
 
-              <div className="grid gap-4 xl:grid-cols-3">
+              {librarySection === "flashcards" && !libraryView && !folderFilter ? (
+              <div data-tour="study-home-modes" className="hidden grid gap-4 xl:grid-cols-3">
                 <button
-                  onClick={() => router.push("/study?mode=flashcards")}
+                  onClick={() => router.push("/study/create?type=flashcards")}
                   className="rounded-xl border border-white/10 bg-white/[0.05] p-5 text-left transition hover:bg-white/[0.08]"
                 >
                   <div className="text-[11px] font-bold uppercase tracking-[0.18em] text-zinc-500">Flashcards</div>
-                  <div className="mt-2 text-xl font-semibold text-white">Study with recall.</div>
-                  <div className="mt-2 text-sm leading-6 text-zinc-400">Open your decks, review cards, and track mastery.</div>
+                  <div className="mt-2 text-xl font-semibold text-white">Create right away.</div>
+                  <div className="mt-2 text-sm leading-6 text-zinc-400">Jump straight into a new set, then find saved decks in your library or folders.</div>
                 </button>
                 <button
                   onClick={() => openSurface("notes")}
@@ -1703,67 +2396,17 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
                   <div className="mt-2 text-sm leading-6 text-zinc-400">Write notes, record lectures, and clean them up later.</div>
                 </button>
                 <button
-                  onClick={() => router.push("/study/create")}
+                  onClick={() => router.push("/study/create?type=guide")}
                   className="rounded-xl border border-white/10 bg-white/[0.05] p-5 text-left transition hover:bg-white/[0.08]"
                 >
                   <div className="text-[11px] font-bold uppercase tracking-[0.18em] text-zinc-500">Study guides</div>
                   <div className="mt-2 text-xl font-semibold text-white">Generate from text.</div>
-                  <div className="mt-2 text-sm leading-6 text-zinc-400">Paste material and turn it into a guide and flashcards.</div>
+                  <div className="mt-2 text-sm leading-6 text-zinc-400">Paste material and turn it into a simple study guide.</div>
                 </button>
               </div>
-
-              {!libraryView ? (
-              <div>
-                <div className="mb-3 text-[11px] font-bold uppercase tracking-[0.18em] text-zinc-500">
-                  Learn questions
-                </div>
-                <div className="max-w-[760px] rounded-[1.5rem] border border-white/10 bg-[#282856] p-5">
-                  <div className="text-[11px] font-bold uppercase tracking-[0.18em] text-zinc-400">General trivia</div>
-                  <div className="mt-3 text-sm text-zinc-400">{triviaIndex + 1} / {HOME_TRIVIA_QUESTIONS.length}</div>
-                  <div className="mt-2 text-[1.4rem] font-medium text-white">
-                    {activeTriviaQuestion.prompt}
-                  </div>
-                  <div className="mt-5 space-y-3">
-                    {activeTriviaQuestion.choices.map((choice) => {
-                      const isAnswered = Boolean(selectedTriviaChoice);
-                      const isCorrectChoice = choice === activeTriviaQuestion.correctAnswer;
-                      const isPickedChoice = choice === selectedTriviaChoice;
-                      const isWrongPick = isAnswered && isPickedChoice && !isCorrectChoice;
-                      const isRightState = isAnswered && isCorrectChoice;
-                      return (
-                      <button
-                        key={choice}
-                        type="button"
-                        onClick={() => {
-                          if (selectedTriviaChoice) return;
-                          setSelectedTriviaChoice(choice);
-                        }}
-                        className={`block w-full rounded-xl border px-4 py-4 text-left text-sm transition ${
-                          isRightState
-                            ? "border-emerald-400/70 bg-emerald-500/18 text-white"
-                            : isWrongPick
-                              ? "border-rose-400/70 bg-rose-500/18 text-white"
-                              : "border-white/10 bg-transparent text-zinc-200 hover:bg-white/[0.05]"
-                        }`}
-                      >
-                        {choice}
-                      </button>
-                      );
-                    })}
-                  </div>
-                  <div className="mt-4 text-xs text-zinc-500">Picks show instantly, then the next question loads automatically.</div>
-                </div>
-              </div>
               ) : null}
 
-              {!libraryView ? (
-              <div className="grid gap-3 md:grid-cols-4">
-                <StatCard label="Study sets" value={`${dashboard.totalSets}`} icon={<Layers3 className="h-4 w-4" />} />
-                <StatCard label="Groups" value={`${dashboard.totalGroups}`} icon={<Users className="h-4 w-4" />} />
-                <StatCard label="Cards tracked" value={`${dashboard.totalCards}`} icon={<BookOpen className="h-4 w-4" />} />
-                <StatCard label="Avg accuracy" value={`${dashboard.averageAccuracy}%`} icon={<Target className="h-4 w-4" />} />
-              </div>
-              ) : null}
+              
             </section>
             )}
             </>
@@ -1794,13 +2437,13 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
           </div>
         ) : isFocusedStudyMode ? (
           <div className="study-appear">
-            <div className="mx-auto max-w-[980px]">
+            <div className="mx-auto max-w-[1380px]">
               {focusedModeContent}
             </div>
           </div>
         ) : (
           <>
-        {!isFocusedStudyMode && <div className="study-appear mb-4 flex items-center justify-between gap-4">
+        {!isFocusedStudyMode && <div className="study-appear mb-4">
           <button
             onClick={goToStudyHome}
             className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-sm font-medium text-zinc-300 transition hover:bg-white/[0.07] hover:text-white"
@@ -1808,56 +2451,9 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
             <ChevronLeft className="h-4 w-4" />
             Back to study home
           </button>
-          <div className="text-xs font-medium uppercase tracking-[0.18em] text-zinc-500">
-            Flashcards workspace
-          </div>
         </div>}
-        {!isFocusedStudyMode && <section className="study-appear study-premium-panel rounded-[1.5rem] p-5 md:p-6">
-          <div className="relative flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
-            <div className="max-w-2xl">
-              <div className="text-[11px] font-bold uppercase tracking-[0.22em] text-zinc-500">
-                Flashcards workspace
-              </div>
-              <h1 className="mt-4 max-w-[11ch] text-[2rem] font-bold tracking-[-0.05em] text-white md:text-[2.5rem]">
-                Flashcards, test, and match.
-              </h1>
-              <p className="mt-3 max-w-xl text-sm leading-6 text-zinc-400">
-                Build a set, study fast, and keep your progress in one place.
-              </p>
-            </div>
 
-            <div className="grid gap-3 sm:grid-cols-2 lg:min-w-[344px]">
-              <button
-                onClick={() => {
-                  setDraftSet(emptyDraftSet());
-                  router.push("/study/create");
-                }}
-                {...magneticHoverProps}
-                className="study-premium-button inline-flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/[0.06] px-5 py-3 text-sm font-semibold text-white"
-              >
-                <Plus className="h-4 w-4" />
-                Create study set
-              </button>
-              <button
-                onClick={() => router.push("/study/create")}
-                {...magneticHoverProps}
-                className="study-premium-button inline-flex items-center justify-center gap-2 rounded-2xl border border-white/12 bg-white/5 px-5 py-3 text-sm font-semibold text-zinc-100"
-              >
-                <Plus className="h-4 w-4" />
-                Add another set
-              </button>
-            </div>
-          </div>
-
-          <div className="relative mt-5 grid gap-3 md:grid-cols-4">
-            <StatCard label="Study sets" value={`${dashboard.totalSets}`} icon={<Layers3 className="h-4 w-4" />} />
-            <StatCard label="Groups" value={`${dashboard.totalGroups}`} icon={<Users className="h-4 w-4" />} />
-            <StatCard label="Cards tracked" value={`${dashboard.totalCards}`} icon={<BookOpen className="h-4 w-4" />} />
-            <StatCard label="Avg accuracy" value={`${dashboard.averageAccuracy}%`} icon={<Target className="h-4 w-4" />} />
-          </div>
-        </section>}
-
-        <div className={`mt-6 grid gap-5 ${isFocusedStudyMode ? "grid-cols-1" : "lg:grid-cols-[minmax(0,1fr)_250px] lg:items-start"}`}>
+        <div className={`grid gap-5 ${isFocusedStudyMode ? "grid-cols-1" : "lg:grid-cols-[minmax(0,1fr)_270px] lg:items-start"}`}>
           <section className="order-1 space-y-6">
             {screen === "dashboard" && (
               <DashboardView
@@ -1872,7 +2468,7 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
                   }
                   openStudyScreen("overview");
                 }}
-                onCreateSet={() => router.push("/study/create")}
+                onCreateSet={() => router.push("/study/create?type=flashcards")}
               />
             )}
 
@@ -1900,22 +2496,24 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
                 onJoinGroup={joinGroup}
                 onDeleteGroup={deleteGroup}
                 onAddSetToGroup={addSetToGroup}
+                onOpenAddSetPicker={setGroupSetPickerGroupId}
               />
             )}
 
             {screen === "create" && (
               <CreateView
                 draftSet={draftSet}
-                courseSuggestions={courseSuggestions}
                 importText={importText}
                 isGenerating={isGenerating}
                 draggingCardId={draggingCardId}
+                isEditing={Boolean(searchParams.get("edit"))}
                 onDraftSetChange={setDraftSet}
                 onImportTextChange={setImportText}
                 onGenerateWithAi={generateWithAi}
                 onImportPdfFile={importPdfFile}
                 onImportFromText={importFromText}
-                onSave={saveDraftSet}
+                onRequestSave={openSaveDestinationDialog}
+                onDeleteSet={deleteDraftSet}
                 draftSetErrors={draftSetErrors}
                 onDragStart={setDraggingCardId}
                 onDragEnd={() => setDraggingCardId(null)}
@@ -1929,7 +2527,9 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
               <OverviewView
                 set={selectedSet}
                 progressMap={selectedProgress}
+                availableFolders={availableFolders}
                 onModeChange={(nextScreen) => openStudyScreen(nextScreen, selectedSet.id)}
+                onMoveToFolder={(folder) => moveSetToFolder(selectedSet.id, folder)}
                 onDuplicate={() => duplicateSet(selectedSet)}
                 onDelete={() => deleteSet(selectedSet.id)}
                 onEdit={() => {
@@ -1942,61 +2542,43 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
 
           {!isFocusedStudyMode && <aside className="order-2 space-y-4 lg:sticky lg:top-24">
             <div className="study-premium-panel study-appear rounded-[1.6rem] p-4 backdrop-blur-xl">
-              <div className="text-xs font-bold uppercase tracking-[0.22em] text-zinc-500">Workspace</div>
-              <div className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-1">
-                <NavButton active={screen === "dashboard"} onClick={() => openStudyScreen("dashboard")} icon={<BarChart3 className="h-4 w-4" />}>
-                  Dashboard
-                </NavButton>
-                <NavButton active={screen === "groups"} onClick={() => openStudyScreen("groups")} icon={<Users className="h-4 w-4" />}>
-                  Study groups
-                </NavButton>
-                <NavButton active={false} onClick={() => router.push("/study/create")} icon={<Plus className="h-4 w-4" />}>
-                  Create set
-                </NavButton>
-                <NavButton active={screen === "overview"} onClick={() => openStudyScreen("overview")} icon={<BookOpen className="h-4 w-4" />}>
-                  Current set
-                </NavButton>
+              <div className="flex items-center gap-2 text-sm font-semibold text-white">
+                <Search className="h-4 w-4 text-zinc-400" />
+                Find sets
+              </div>
+              <input
+                value={search}
+                onChange={(event) => setSearch(event.target.value)}
+                placeholder="Search your course, title, tags..."
+                className="study-premium-input mt-3 w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white outline-none placeholder:text-zinc-500"
+              />
+              <div className="mt-3 grid gap-2">
+                <select
+                  value={subjectFilter}
+                  onChange={(event) => setSubjectFilter(event.target.value)}
+                  className="study-premium-input rounded-2xl border border-white/10 bg-white/5 px-3 py-3 text-sm text-zinc-200 outline-none"
+                >
+                  <option value="all">All subjects</option>
+                  {subjects.map((subject) => (
+                    <option key={subject} value={subject}>
+                      {subject}
+                    </option>
+                  ))}
+                </select>
+                <select
+                  value={difficultyFilter}
+                  onChange={(event) => setDifficultyFilter(event.target.value)}
+                  className="study-premium-input rounded-2xl border border-white/10 bg-white/5 px-3 py-3 text-sm text-zinc-200 outline-none"
+                >
+                  <option value="all">All difficulty</option>
+                  <option value="easy">Easy</option>
+                  <option value="medium">Medium</option>
+                  <option value="hard">Hard</option>
+                </select>
               </div>
               <div className="mt-4 border-t border-white/8 pt-4">
-                <div className="flex items-center gap-2 text-sm font-semibold text-white">
-                  <Search className="h-4 w-4 text-zinc-400" />
-                  Find sets
-                </div>
-                <input
-                  value={search}
-                  onChange={(event) => setSearch(event.target.value)}
-                  placeholder="Search your course, title, tags..."
-                  className="study-premium-input mt-3 w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white outline-none placeholder:text-zinc-500"
-                />
-                <div className="mt-3 grid gap-2">
-                  <select
-                    value={subjectFilter}
-                    onChange={(event) => setSubjectFilter(event.target.value)}
-                    className="study-premium-input rounded-2xl border border-white/10 bg-white/5 px-3 py-3 text-sm text-zinc-200 outline-none"
-                  >
-                    <option value="all">All subjects</option>
-                    {subjects.map((subject) => (
-                      <option key={subject} value={subject}>
-                        {subject}
-                      </option>
-                    ))}
-                  </select>
-                  <select
-                    value={difficultyFilter}
-                    onChange={(event) => setDifficultyFilter(event.target.value)}
-                    className="study-premium-input rounded-2xl border border-white/10 bg-white/5 px-3 py-3 text-sm text-zinc-200 outline-none"
-                  >
-                    <option value="all">All difficulty</option>
-                    <option value="easy">Easy</option>
-                    <option value="medium">Medium</option>
-                    <option value="hard">Hard</option>
-                  </select>
-                </div>
+                <div className="text-xs font-bold uppercase tracking-[0.22em] text-zinc-500">Library</div>
               </div>
-            </div>
-
-            <div className="study-premium-panel study-appear rounded-[1.6rem] p-4 backdrop-blur-xl">
-              <div className="text-xs font-bold uppercase tracking-[0.22em] text-zinc-500">Library</div>
               <div className="mt-3 space-y-2">
                 {setList.slice(0, 6).map((set) => (
                   <div
@@ -2092,6 +2674,185 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
       </>
         )}
       </div>
+
+      {folderLibraryPickerOpen ? (
+        <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/45 px-4 pt-24">
+          <div className="w-full max-w-[680px] rounded-[1.6rem] border border-white/10 bg-[#1a1645] p-6 shadow-[0_30px_80px_rgba(0,0,0,0.4)]">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <div className="text-[1.7rem] font-bold tracking-[-0.04em] text-white">Add from library</div>
+                <div className="mt-2 text-sm leading-6 text-zinc-400">
+                  Add flashcard sets or notes from your library into {folderLabelFromPath(folderFilter)}.
+                </div>
+              </div>
+              <button
+                onClick={() => setFolderLibraryPickerOpen(false)}
+                className="rounded-full p-2 text-zinc-400 transition hover:bg-white/[0.06] hover:text-white"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            <div className="mt-6 space-y-3">
+              {[...library.sets, ...library.notes].length ? (
+                <>
+                  {library.sets.map((set) => (
+                    <button
+                      key={set.id}
+                      type="button"
+                      onClick={() => moveSetToFolder(set.id, folderFilter)}
+                      className="flex w-full items-start justify-between rounded-xl border border-white/10 bg-white/[0.04] px-4 py-4 text-left transition hover:bg-white/[0.08]"
+                    >
+                      <div>
+                        <div className="text-sm font-semibold text-white">{set.title}</div>
+                        <div className="mt-1 text-xs text-zinc-400">
+                          Flashcard set • {[set.course || set.subject, `${set.cards.length} cards`].filter(Boolean).join(" • ")}
+                        </div>
+                      </div>
+                      <span className="text-xs font-semibold text-zinc-300">{resolveSetFolder(set) === folderFilter ? "Added" : "Add"}</span>
+                    </button>
+                  ))}
+                  {library.notes.map((note) => (
+                    <button
+                      key={note.id}
+                      type="button"
+                      onClick={() => moveNoteToFolder(note.id, folderFilter)}
+                      className="flex w-full items-start justify-between rounded-xl border border-white/10 bg-white/[0.04] px-4 py-4 text-left transition hover:bg-white/[0.08]"
+                    >
+                      <div>
+                        <div className="text-sm font-semibold text-white">{note.title}</div>
+                        <div className="mt-1 text-xs text-zinc-400">
+                          {note.structuredContent ? "Study guide" : "Note"} • {note.course || note.subject || "General"}
+                        </div>
+                      </div>
+                      <span className="text-xs font-semibold text-zinc-300">{resolveNoteFolder(note) === folderFilter ? "Added" : "Add"}</span>
+                    </button>
+                  ))}
+                </>
+              ) : (
+                <div className="rounded-xl border border-dashed border-white/12 bg-white/[0.03] px-5 py-6 text-sm text-zinc-400">
+                  Nothing in your library yet.
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      ) : null}
+
+      {moveLibraryItem ? (
+        <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/45 px-4 pt-24">
+          <div className="w-full max-w-[560px] rounded-[1.6rem] border border-white/10 bg-[#1a1645] p-6 shadow-[0_30px_80px_rgba(0,0,0,0.4)]">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <div className="text-[1.7rem] font-bold tracking-[-0.04em] text-white">Move to folder</div>
+                <div className="mt-2 text-sm leading-6 text-zinc-400">
+                  Choose which folder should contain {moveLibraryItem.title}.
+                </div>
+              </div>
+              <button
+                onClick={() => setMoveLibraryItem(null)}
+                className="rounded-full p-2 text-zinc-400 transition hover:bg-white/[0.06] hover:text-white"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            <div className="mt-6 space-y-3">
+              <button
+                type="button"
+                onClick={() => {
+                  if (moveLibraryItem.type === "set") {
+                    moveSetToFolder(moveLibraryItem.id, "");
+                  } else {
+                    moveNoteToFolder(moveLibraryItem.id, "");
+                  }
+                  setMoveLibraryItem(null);
+                }}
+                className="flex w-full items-center justify-between rounded-xl border border-white/10 bg-white/[0.04] px-4 py-4 text-left text-sm font-semibold text-white transition hover:bg-white/[0.08]"
+              >
+                <span>No folder</span>
+                <span className="text-xs text-zinc-400">Remove folder</span>
+              </button>
+              {availableFolders.map((folder) => (
+                <button
+                  key={folder}
+                  type="button"
+                  onClick={() => {
+                    if (moveLibraryItem.type === "set") {
+                      moveSetToFolder(moveLibraryItem.id, folder);
+                    } else {
+                      moveNoteToFolder(moveLibraryItem.id, folder);
+                    }
+                    setMoveLibraryItem(null);
+                  }}
+                  className="flex w-full items-center justify-between rounded-xl border border-white/10 bg-white/[0.04] px-4 py-4 text-left text-sm font-semibold text-white transition hover:bg-white/[0.08]"
+                >
+                  <span>{folderLabelFromPath(folder)}</span>
+                  <span className="text-xs text-zinc-400">{folder}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      ) : null}
+
+      {groupSetPickerGroupId ? (
+        <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/45 px-4 pt-24">
+          <div className="w-full max-w-[620px] rounded-[1.6rem] border border-white/10 bg-[#1a1645] p-6 shadow-[0_30px_80px_rgba(0,0,0,0.4)]">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <div className="text-[1.7rem] font-bold tracking-[-0.04em] text-white">Add a set</div>
+                <div className="mt-2 text-sm leading-6 text-zinc-400">
+                  Choose exactly which flashcard set should be linked to this study group.
+                </div>
+              </div>
+              <button
+                onClick={() => setGroupSetPickerGroupId("")}
+                className="rounded-full p-2 text-zinc-400 transition hover:bg-white/[0.06] hover:text-white"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            <div className="mt-6 space-y-3">
+              {library.sets.length ? (
+                library.sets.map((set) => {
+                  const alreadyLinked = library.groups.find((group) => group.id === groupSetPickerGroupId)?.setIds.includes(set.id);
+                  return (
+                    <button
+                      key={set.id}
+                      type="button"
+                      disabled={alreadyLinked}
+                      onClick={async () => {
+                        const added = await addSetToGroup(groupSetPickerGroupId, set.id);
+                        if (added) {
+                          setGroupSetPickerGroupId("");
+                        }
+                      }}
+                      className={`flex w-full items-start justify-between rounded-xl border px-4 py-4 text-left transition ${
+                        alreadyLinked
+                          ? "cursor-not-allowed border-white/8 bg-white/[0.03] text-zinc-500"
+                          : "border-white/10 bg-white/[0.04] hover:bg-white/[0.08]"
+                      }`}
+                    >
+                      <div>
+                        <div className="text-sm font-semibold text-white">{set.title}</div>
+                        <div className="mt-1 text-xs text-zinc-400">
+                          {[set.course || set.subject, `${set.cards.length} cards`].filter(Boolean).join(" • ")}
+                        </div>
+                      </div>
+                      <span className="text-xs font-semibold text-zinc-300">
+                        {alreadyLinked ? "Added" : "Add"}
+                      </span>
+                    </button>
+                  );
+                })
+              ) : (
+                <div className="rounded-xl border border-dashed border-white/12 bg-white/[0.03] px-5 py-6 text-sm text-zinc-400">
+                  No flashcard sets yet. Create one first, then add it to this group.
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      ) : null}
 
       {toast && (
         <div
@@ -2281,6 +3042,7 @@ function GroupsView({
   onJoinGroup,
   onDeleteGroup,
   onAddSetToGroup,
+  onOpenAddSetPicker,
 }: {
   groups: StudyGroup[];
   sets: StudySet[];
@@ -2304,6 +3066,7 @@ function GroupsView({
   onJoinGroup: () => void;
   onDeleteGroup: (groupId: string) => void;
   onAddSetToGroup: (groupId: string, setId: string) => void;
+  onOpenAddSetPicker: (groupId: string) => void;
 }) {
   const groupSets = selectedGroup ? selectedGroup.setIds.map((setId) => sets.find((set) => set.id === setId)).filter(Boolean) as StudySet[] : [];
   const copyInviteLink = async () => {
@@ -2349,14 +3112,12 @@ function GroupsView({
               <h2 className="text-[2.1rem] font-bold tracking-[-0.05em] text-white">{selectedGroup.name}</h2>
             </div>
             <div className="flex items-center gap-3">
-              {selectedSet ? (
-                <button
-                  onClick={() => onAddSetToGroup(selectedGroup.id, selectedSet.id)}
-                  className="rounded-full bg-white/[0.08] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-white/[0.14]"
-                >
-                  Add a set
-                </button>
-              ) : null}
+              <button
+                onClick={() => onOpenAddSetPicker(selectedGroup.id)}
+                className="rounded-full bg-white/[0.08] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-white/[0.14]"
+              >
+                Add a set
+              </button>
               <button
                 onClick={() => onDeleteGroup(selectedGroup.id)}
                 className="rounded-full border border-red-400/20 bg-red-500/10 px-4 py-2.5 text-sm font-semibold text-red-100 transition hover:bg-red-500/20"
@@ -2400,7 +3161,7 @@ function GroupsView({
                   </div>
                   <div className="text-[2rem] font-semibold tracking-[-0.04em] text-white">Add sets to your group</div>
                   <button
-                    onClick={() => selectedSet && onAddSetToGroup(selectedGroup.id, selectedSet.id)}
+                    onClick={() => onOpenAddSetPicker(selectedGroup.id)}
                     className="mt-6 rounded-full bg-white/[0.14] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-white/[0.2]"
                   >
                     Add sets
@@ -2513,182 +3274,174 @@ function GroupsView({
 
 function CreateView({
   draftSet,
-  courseSuggestions,
   importText,
   isGenerating,
   draftSetErrors,
   draggingCardId,
+  isEditing,
   onDraftSetChange,
   onImportTextChange,
   onGenerateWithAi,
   onImportPdfFile,
   onImportFromText,
-  onSave,
+  onRequestSave,
+  onDeleteSet,
   onDragStart,
   onDragEnd,
   onReorder,
 }: {
   draftSet: StudySet;
-  courseSuggestions: StudyCourseSuggestion[];
   importText: string;
   isGenerating: boolean;
   draftSetErrors: DraftSetErrors;
   draggingCardId: string | null;
+  isEditing: boolean;
   onDraftSetChange: React.Dispatch<React.SetStateAction<StudySet>>;
   onImportTextChange: (value: string) => void;
   onGenerateWithAi: () => void;
   onImportPdfFile: (file: File) => Promise<void>;
   onImportFromText: () => void;
-  onSave: () => void;
+  onRequestSave: (afterSave: "overview" | "learn") => void;
+  onDeleteSet: () => void;
   onDragStart: (cardId: string | null) => void;
   onDragEnd: () => void;
   onReorder: (draggedId: string, targetId: string) => void;
 }) {
+  const [cardSearchOpen, setCardSearchOpen] = useState(false);
+  const [cardSearchQuery, setCardSearchQuery] = useState("");
+
+  const visibleCards = useMemo(() => {
+    const query = cardSearchQuery.trim().toLowerCase();
+    if (!query) return draftSet.cards;
+    return draftSet.cards.filter((card) =>
+      [card.front, card.back].join(" ").toLowerCase().includes(query),
+    );
+  }, [cardSearchQuery, draftSet.cards]);
+
+  const swapAllTermsAndDefinitions = () => {
+    onDraftSetChange((current) => ({
+      ...current,
+      cards: current.cards.map((card, index) => ({
+        ...card,
+        front: card.back,
+        back: card.front,
+        orderIndex: index,
+      })),
+    }));
+  };
+
+  const toggleVisibility = () => {
+    onDraftSetChange((current) => ({
+      ...current,
+      visibility: current.visibility === "public" ? "private" : "public",
+    }));
+  };
+
   return (
-    <div className="grid gap-5 2xl:grid-cols-[minmax(0,1fr)_360px]">
-      <div className="space-y-5">
-        <div className="study-premium-panel study-appear rounded-[1.5rem] p-5 backdrop-blur-xl">
-          <div className="flex items-center justify-between gap-4 border-b border-white/10 pb-4">
-            <div className="text-sm font-semibold text-white">Paste text or upload a PDF</div>
-            <label className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-white/10 bg-white/[0.05] px-4 py-2 text-sm font-semibold text-zinc-100 transition hover:bg-white/[0.08]">
-              <FileText className="h-4 w-4" />
-              Upload PDF
-              <input
-                type="file"
-                accept=".pdf,.txt,text/plain,application/pdf"
-                className="hidden"
-                onChange={(event) => {
-                  const file = event.target.files?.[0];
-                  if (!file) return;
-                  void onImportPdfFile(file);
-                  event.currentTarget.value = "";
-                }}
-              />
-            </label>
-          </div>
-
-          <div className="mt-4">
-            <textarea
-              value={importText}
-              onChange={(event) => onImportTextChange(event.target.value)}
-              rows={9}
-              placeholder="Put your notes here. We'll do the rest."
-              className="w-full rounded-xl border border-white/10 bg-[#49527a] px-4 py-4 text-sm leading-7 text-white outline-none placeholder:text-zinc-300"
-            />
-            <div className="mt-2 text-right text-xs text-zinc-500">
-              {importText.length.toLocaleString()}/100,000 characters
-            </div>
-          </div>
-
-          <div className="mt-10">
-            <div className="text-sm font-semibold text-white">From this upload, you&apos;ll also get</div>
-            <div className="mt-4 inline-flex items-center gap-3 rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3">
-              <span className="inline-flex h-10 w-10 items-center justify-center rounded-lg bg-[#253a6a] text-sky-200">
-                <BookOpen className="h-5 w-5" />
-              </span>
-              <div>
-                <div className="text-sm font-semibold text-white">Flashcards</div>
-                <div className="text-xs text-zinc-400">Memorize your material</div>
-              </div>
-            </div>
-          </div>
-
-          <div className="mt-10 flex items-center justify-between gap-4">
-            <div className="max-w-md text-xs leading-6 text-zinc-500">
-              This product is enhanced by AI and may provide incorrect content. Do not enter personal data.
-            </div>
+    <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_320px] 2xl:grid-cols-[minmax(0,1fr)_340px]">
+      <div className="space-y-5 xl:order-1">
+        <div className="study-appear rounded-[1.5rem]">
+          <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
             <button
-              onClick={onGenerateWithAi}
-              disabled={isGenerating}
-              {...magneticHoverProps}
-              className="study-premium-button rounded-full bg-white/[0.1] px-5 py-3 text-sm font-semibold text-white disabled:opacity-50"
+              type="button"
+              onClick={toggleVisibility}
+              className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.06] px-3 py-1 text-xs font-semibold text-zinc-200 transition hover:bg-white/[0.12]"
             >
-              {isGenerating ? "Generating..." : "Generate"}
+              <Globe className="h-3.5 w-3.5" />
+              {draftSet.visibility === "public" ? "Public" : "Private"}
             </button>
-          </div>
-        </div>
-
-        <div className="study-premium-panel study-appear rounded-[1.5rem] p-5 backdrop-blur-xl">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-            <div>
-              <div className="text-xs font-bold uppercase tracking-[0.22em] text-zinc-500">Set details</div>
-              <h2 className="mt-2 max-w-lg text-[1.45rem] font-semibold tracking-[-0.03em] text-white">Review and save</h2>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => onRequestSave("overview")}
+                {...magneticHoverProps}
+                className="study-premium-button rounded-full bg-white/[0.16] px-5 py-2.5 text-sm font-semibold text-white"
+              >
+                Create
+              </button>
+              <button
+                onClick={() => onRequestSave("learn")}
+                {...magneticHoverProps}
+                className="study-premium-button rounded-full bg-[#5561ff] px-5 py-2.5 text-sm font-semibold text-white shadow-[0_12px_24px_rgba(85,97,255,0.24)]"
+              >
+                Create and practice
+              </button>
             </div>
-            <button onClick={onSave} {...magneticHoverProps} className="study-premium-button self-start rounded-xl border border-white/10 bg-white/[0.06] px-4 py-2.5 text-sm font-semibold text-white">
-              Save set
-            </button>
           </div>
 
-          <div className="mt-6 grid gap-4">
+          <div className="grid gap-4">
             <label className="grid gap-2">
-              <span className="text-xs font-bold uppercase tracking-[0.18em] text-zinc-500">Set title <span className="text-red-400">*</span></span>
               <input
                 value={draftSet.title}
                 onChange={(event) =>
                   onDraftSetChange((current) => ({ ...current, title: event.target.value }))
                 }
-                placeholder="Set title"
-                className={`study-premium-input rounded-2xl border bg-white/[0.05] px-4 py-3 text-lg font-semibold text-white outline-none placeholder:text-zinc-500 ${
+                placeholder="Title"
+                className={`study-premium-input h-11 rounded-xl border bg-[#444d74] px-4 text-base font-semibold text-white outline-none placeholder:text-zinc-300 ${
                   draftSetErrors.title ? "border-red-400/40" : "border-white/10"
                 }`}
               />
               {draftSetErrors.title ? <span className="text-xs text-red-300">{draftSetErrors.title}</span> : null}
             </label>
             <label className="grid gap-2">
-              <span className="text-xs font-bold uppercase tracking-[0.18em] text-zinc-500">Description</span>
               <textarea
                 value={draftSet.description}
                 onChange={(event) => onDraftSetChange((current) => ({ ...current, description: event.target.value }))}
                 placeholder="Add a description..."
-                rows={3}
-                className="study-premium-input rounded-2xl border border-white/10 bg-white/[0.05] px-4 py-3 text-sm text-zinc-200 outline-none placeholder:text-zinc-500"
+                rows={2}
+                className="study-premium-input rounded-xl border border-white/10 bg-[#444d74] px-4 py-3 text-sm text-zinc-100 outline-none placeholder:text-zinc-300"
               />
             </label>
-            <div className="grid gap-3 md:grid-cols-2">
-              <label className="grid gap-2">
-                <span className="text-xs font-bold uppercase tracking-[0.18em] text-zinc-500">Course <span className="text-red-400">*</span></span>
-                <input
-                  list="study-course-suggestions"
-                  value={draftSet.course}
-                  onChange={(event) => onDraftSetChange((current) => ({ ...current, course: event.target.value }))}
-                  placeholder="Choose a course like CS 211"
-                  className={`study-premium-input rounded-2xl border bg-white/[0.05] px-4 py-3 text-sm text-white outline-none placeholder:text-zinc-500 ${
-                    draftSetErrors.course ? "border-red-400/40" : "border-white/10"
-                  }`}
-                />
-                <datalist id="study-course-suggestions">
-                  {courseSuggestions.map((course) => (
-                    <option key={course.id} value={course.code}>
-                      {course.title}
-                    </option>
-                  ))}
-                </datalist>
-                {draftSetErrors.course ? <span className="text-xs text-red-300">{draftSetErrors.course}</span> : null}
-              </label>
-              <label className="grid gap-2">
-                <span className="text-xs font-bold uppercase tracking-[0.18em] text-zinc-500">Subject</span>
-                <input
-                  value={draftSet.subject}
-                  onChange={(event) => onDraftSetChange((current) => ({ ...current, subject: event.target.value }))}
-                  placeholder="Subject"
-                  className="study-premium-input rounded-2xl border border-white/10 bg-white/[0.05] px-4 py-3 text-sm text-white outline-none placeholder:text-zinc-500"
-                />
-              </label>
-            </div>
           </div>
 
-          <div className="mt-6 flex flex-wrap gap-3">
+          <div className="mt-6 flex flex-wrap items-center gap-3">
             <button onClick={onImportFromText} {...magneticHoverProps} className="study-premium-button rounded-full border border-white/10 bg-white/[0.05] px-4 py-2 text-sm font-semibold text-zinc-100">
-              Import parsed cards
+              + Import
+            </button>
+            <div className="ml-auto flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setCardSearchOpen((current) => !current)}
+              className={`inline-flex h-10 w-10 items-center justify-center rounded-full text-zinc-300 transition ${
+                cardSearchOpen ? "bg-[#5561ff] text-white" : "bg-white/[0.06]"
+              }`}
+              aria-label="Search terms and definitions"
+            >
+              <Search className="h-4 w-4" />
             </button>
             <button
-              onClick={() => onDraftSetChange((current) => ({ ...current, cards: [...current.cards, emptyDraftCard(current.cards.length)] }))}
-              {...magneticHoverProps}
-              className="study-premium-button rounded-full border border-white/10 bg-white/[0.05] px-4 py-2 text-sm font-semibold text-zinc-100"
+              type="button"
+              onClick={swapAllTermsAndDefinitions}
+              className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/[0.06] text-zinc-300 transition hover:bg-white/[0.1] hover:text-white"
+              aria-label="Swap all terms and definitions"
             >
-              Add card
+              <Shuffle className="h-4 w-4" />
             </button>
+            <button
+              type="button"
+              onClick={onDeleteSet}
+              className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/[0.06] text-zinc-300 transition hover:bg-red-500/15 hover:text-red-100"
+              aria-label={isEditing ? "Delete set" : "Delete draft"}
+            >
+              <Trash2 className="h-4 w-4" />
+            </button>
+            </div>
           </div>
+          {cardSearchOpen ? (
+            <div className="mt-3 rounded-2xl border border-white/10 bg-white/[0.04] p-3">
+              <div className="relative">
+                <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-500" />
+                <input
+                  value={cardSearchQuery}
+                  onChange={(event) => setCardSearchQuery(event.target.value)}
+                  placeholder="Search a term or definition"
+                  className="h-11 w-full rounded-xl border border-white/10 bg-[#1a163c] pl-11 pr-4 text-sm text-white outline-none placeholder:text-zinc-500"
+                />
+              </div>
+              <div className="mt-2 text-xs text-zinc-400">
+                {visibleCards.length} of {draftSet.cards.length} cards shown
+              </div>
+            </div>
+          ) : null}
           {draftSetErrors.cards ? (
             <div className="mt-3 rounded-2xl border border-red-400/20 bg-red-500/8 px-4 py-3 text-sm text-red-200">
               {draftSetErrors.cards}
@@ -2696,7 +3449,7 @@ function CreateView({
           ) : null}
 
           <div className="mt-6 space-y-4">
-            {draftSet.cards.map((card, index) => (
+            {visibleCards.map((card, index) => (
               <div
                 key={card.id}
                 draggable
@@ -2704,13 +3457,16 @@ function CreateView({
                 onDragEnd={onDragEnd}
                 onDragOver={(event) => event.preventDefault()}
                 onDrop={() => draggingCardId && onReorder(draggingCardId, card.id)}
-                className="study-premium-card rounded-[1.5rem] p-4"
+                className="rounded-[1.2rem] border border-white/10 bg-[#444d74] p-4"
               >
-                <div className="flex items-center justify-between gap-3">
-                  <div className="text-sm font-semibold text-zinc-300">Card {index + 1}</div>
+                <div className="flex items-center justify-between gap-3 text-zinc-300">
+                  <div className="text-sm font-semibold">{index + 1}</div>
                   <div className="flex items-center gap-2">
-                    <button
-                      onClick={() =>
+                    <button type="button" className="inline-flex h-8 w-8 items-center justify-center rounded-full text-zinc-300">
+                      <GripVertical className="h-4 w-4" />
+                    </button>
+                  <button
+                    onClick={() =>
                         onDraftSetChange((current) => ({
                           ...current,
                           cards: current.cards.flatMap((existing) =>
@@ -2739,24 +3495,435 @@ function CreateView({
                     </button>
                   </div>
                 </div>
-                <div className="mt-4 grid gap-3 md:grid-cols-2">
-                  <textarea
-                    value={card.front}
-                    onChange={(event) => updateDraftCard(onDraftSetChange, card.id, { front: event.target.value })}
-                    placeholder="Enter term / front"
-                    rows={3}
-                    className="study-premium-input rounded-2xl border border-white/10 bg-[#1a2030] px-4 py-3 text-sm text-white outline-none placeholder:text-zinc-500"
-                  />
-                  <textarea
-                    value={card.back}
-                    onChange={(event) => updateDraftCard(onDraftSetChange, card.id, { back: event.target.value })}
-                    placeholder="Enter definition / back"
-                    rows={3}
-                    className="study-premium-input rounded-2xl border border-white/10 bg-[#1a2030] px-4 py-3 text-sm text-white outline-none placeholder:text-zinc-500"
-                  />
+                <div className="mt-4 grid gap-3 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_96px]">
+                  <div className="rounded-xl bg-[#1a163c] p-3">
+                    <textarea
+                      value={card.front}
+                      onChange={(event) => updateDraftCard(onDraftSetChange, card.id, { front: event.target.value })}
+                      placeholder="Enter term"
+                      rows={3}
+                      className="study-premium-input w-full resize-none bg-transparent text-sm text-white outline-none placeholder:text-zinc-400"
+                    />
+                    <div className="mt-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-zinc-400">Term</div>
+                  </div>
+                  <div className="rounded-xl bg-[#1a163c] p-3">
+                    <textarea
+                      value={card.back}
+                      onChange={(event) => updateDraftCard(onDraftSetChange, card.id, { back: event.target.value })}
+                      placeholder="Enter definition"
+                      rows={3}
+                      className="study-premium-input w-full resize-none bg-transparent text-sm text-white outline-none placeholder:text-zinc-400"
+                    />
+                    <div className="mt-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-zinc-400">Definition</div>
+                  </div>
+                  <button
+                    type="button"
+                    className="flex min-h-[120px] flex-col items-center justify-center rounded-xl border border-dashed border-white/25 bg-transparent text-zinc-300 transition hover:bg-white/[0.05]"
+                  >
+                    <ImageIcon className="h-5 w-5" />
+                    <span className="mt-2 text-xs font-semibold">Image</span>
+                  </button>
                 </div>
               </div>
             ))}
+            {!visibleCards.length ? (
+              <div className="rounded-[1.2rem] border border-dashed border-white/12 bg-white/[0.03] px-5 py-8 text-sm text-zinc-400">
+                No cards matched that search yet.
+              </div>
+            ) : null}
+          </div>
+          <div className="mt-8 flex justify-center">
+            <button
+              onClick={() => onDraftSetChange((current) => ({ ...current, cards: [...current.cards, emptyDraftCard(current.cards.length)] }))}
+              {...magneticHoverProps}
+              className="study-premium-button rounded-full bg-white/[0.12] px-6 py-3 text-sm font-semibold text-white"
+            >
+              Add a card
+            </button>
+          </div>
+          <div className="mt-8 flex justify-end gap-3">
+            <button
+              onClick={() => onRequestSave("overview")}
+              {...magneticHoverProps}
+              className="study-premium-button rounded-full bg-white/[0.12] px-5 py-2.5 text-sm font-semibold text-white"
+            >
+              Create
+            </button>
+            <button
+              onClick={() => onRequestSave("learn")}
+              {...magneticHoverProps}
+              className="study-premium-button rounded-full bg-[#5561ff] px-5 py-2.5 text-sm font-semibold text-white"
+            >
+              Create and practice
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div className="space-y-5 xl:order-2 xl:sticky xl:top-6 xl:self-start">
+        <div className="study-appear rounded-[1.5rem] border border-white/10 bg-[#444d74] p-5">
+          <div className="flex items-center justify-between gap-4 pb-4">
+            <div>
+              <div className="flex items-center gap-2 text-sm font-semibold text-[#96c9ff]">
+                <WandSparkles className="h-4 w-4" />
+                Smart Assist
+                <span className="rounded-full bg-[#63b0ff]/20 px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.18em] text-[#9cd0ff]">
+                  Beta
+                </span>
+              </div>
+            </div>
+            <button type="button" className="inline-flex h-9 w-9 items-center justify-center rounded-full text-white/80 transition hover:bg-white/[0.08]">
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+
+          <div className="mt-4">
+            <textarea
+              value={importText}
+              onChange={(event) => onImportTextChange(event.target.value)}
+              rows={15}
+              placeholder="Enter a prompt (e.g. “summarize photosynthesis”), paste notes or upload a document to create flashcards."
+              className="w-full rounded-xl border border-white/10 bg-[#3b446a] px-4 py-4 text-sm leading-7 text-white outline-none placeholder:text-zinc-200"
+            />
+            <div className="mt-2 text-right text-xs text-zinc-300">
+              {importText.length.toLocaleString()}/100,000 characters
+            </div>
+          </div>
+
+          <div className="mt-6 flex items-center gap-3">
+            <label className="inline-flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-full bg-white/[0.12] px-4 py-3 text-sm font-semibold text-white transition hover:bg-white/[0.16]">
+              <Plus className="h-4 w-4" />
+              Upload
+              <input
+                type="file"
+                accept=".pdf,.txt,text/plain,application/pdf"
+                className="hidden"
+                onChange={(event) => {
+                  const file = event.target.files?.[0];
+                  if (!file) return;
+                  void onImportPdfFile(file);
+                  event.currentTarget.value = "";
+                }}
+              />
+            </label>
+            <button
+              onClick={onGenerateWithAi}
+              disabled={isGenerating}
+              {...magneticHoverProps}
+              className="study-premium-button flex-1 rounded-full bg-[#2f355a] px-4 py-3 text-sm font-semibold text-white disabled:opacity-50"
+            >
+              {isGenerating ? "Generating..." : "Start"}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function SaveSetDialog({
+  dialog,
+  availableFolders,
+  onDialogChange,
+  onCancel,
+  onConfirm,
+}: {
+  dialog: NonNullable<SaveDestinationDialogState>;
+  availableFolders: string[];
+  onDialogChange: React.Dispatch<React.SetStateAction<SaveDestinationDialogState>>;
+  onCancel: () => void;
+  onConfirm: () => void;
+}) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#070b17]/72 px-4 backdrop-blur-sm">
+      <div className="w-full max-w-[480px] rounded-[1.7rem] border border-white/10 bg-[#171b42] p-6 shadow-[0_28px_80px_rgba(0,0,0,0.42)]">
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <div className="text-[1.55rem] font-bold tracking-[-0.04em] text-white">Save flashcard set</div>
+            <div className="mt-2 text-sm leading-6 text-zinc-300">
+              Choose a folder, or leave it without one. You can also create a new folder right now.
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={onCancel}
+            className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/[0.06] text-zinc-200 transition hover:bg-white/[0.12]"
+            aria-label="Close save dialog"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+
+        <div className="mt-6 space-y-4">
+          <label className="grid gap-2">
+            <span className="text-xs font-semibold uppercase tracking-[0.18em] text-zinc-400">Save in folder</span>
+            <select
+              value={dialog.folder}
+              onChange={(event) =>
+                onDialogChange((current) =>
+                  current ? { ...current, folder: event.target.value } : current,
+                )
+              }
+              className="h-11 rounded-xl border border-white/10 bg-[#222754] px-4 text-sm text-white outline-none"
+            >
+              <option value="">No folder</option>
+              {availableFolders.map((folder) => (
+                <option key={folder} value={folder}>
+                  {folder}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <label className="grid gap-2">
+            <span className="text-xs font-semibold uppercase tracking-[0.18em] text-zinc-400">Or create a new folder</span>
+            <input
+              value={dialog.newFolderName}
+              onChange={(event) =>
+                onDialogChange((current) =>
+                  current ? { ...current, newFolderName: event.target.value } : current,
+                )
+              }
+              placeholder="New folder name"
+              className="h-11 rounded-xl border border-white/10 bg-[#222754] px-4 text-sm text-white outline-none placeholder:text-zinc-500"
+            />
+          </label>
+        </div>
+
+        <div className="mt-6 flex flex-wrap justify-end gap-3">
+          <button
+            type="button"
+            onClick={onCancel}
+            className="rounded-full border border-white/10 bg-white/[0.05] px-5 py-2.5 text-sm font-semibold text-zinc-200 transition hover:bg-white/[0.1]"
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            onClick={onConfirm}
+            className="rounded-full bg-[#5561ff] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#6570ff]"
+          >
+            {dialog.afterSave === "learn" ? "Create and practice" : "Create"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function GuideCreateView({
+  draftGuide,
+  generatedGuide,
+  availableFolders,
+  courseSuggestions,
+  importText,
+  isGenerating,
+  draftGuideErrors,
+  onDraftGuideChange,
+  onImportTextChange,
+  onGenerate,
+  onImportPdfFile,
+  onSave,
+}: {
+  draftGuide: StudyNote;
+  generatedGuide: StructuredLectureNotes | null;
+  availableFolders: string[];
+  courseSuggestions: StudyCourseSuggestion[];
+  importText: string;
+  isGenerating: boolean;
+  draftGuideErrors: DraftGuideErrors;
+  onDraftGuideChange: React.Dispatch<React.SetStateAction<StudyNote>>;
+  onImportTextChange: (value: string) => void;
+  onGenerate: () => void;
+  onImportPdfFile: (file: File) => Promise<void>;
+  onSave: () => void;
+}) {
+  return (
+    <div className="grid gap-5 2xl:grid-cols-[minmax(0,1fr)_360px]">
+      <div className="space-y-5">
+        <div className="study-premium-panel study-appear rounded-[1.5rem] p-5 backdrop-blur-xl">
+          <div className="flex items-center justify-between gap-4 border-b border-white/10 pb-4">
+            <div className="text-sm font-semibold text-white">Paste text or upload a PDF</div>
+            <label className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-white/10 bg-white/[0.05] px-4 py-2 text-sm font-semibold text-zinc-100 transition hover:bg-white/[0.08]">
+              <FileText className="h-4 w-4" />
+              Upload PDF
+              <input
+                type="file"
+                accept=".pdf,.txt,text/plain,application/pdf"
+                className="hidden"
+                onChange={(event) => {
+                  const file = event.target.files?.[0];
+                  if (!file) return;
+                  void onImportPdfFile(file);
+                  event.currentTarget.value = "";
+                }}
+              />
+            </label>
+          </div>
+
+          <div className="mt-4">
+            <textarea
+              value={importText}
+              onChange={(event) => onImportTextChange(event.target.value)}
+              rows={10}
+              placeholder="Paste the text you want turned into a study guide."
+              className={`w-full rounded-xl border px-4 py-4 text-sm leading-7 text-white outline-none placeholder:text-zinc-300 ${
+                draftGuideErrors.content ? "border-red-400/40 bg-[#4c3554]" : "border-white/10 bg-[#49527a]"
+              }`}
+            />
+            <div className="mt-2 flex items-center justify-between gap-3">
+              {draftGuideErrors.content ? <span className="text-xs text-red-300">{draftGuideErrors.content}</span> : <span />}
+              <div className="text-right text-xs text-zinc-500">
+                {importText.length.toLocaleString()}/100,000 characters
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-10 flex items-center justify-between gap-4">
+            <div className="max-w-md text-xs leading-6 text-zinc-500">
+              Study guides stay separate from flashcards here. This flow only creates a structured guide from your text.
+            </div>
+            <button
+              onClick={onGenerate}
+              disabled={isGenerating}
+              {...magneticHoverProps}
+              className="study-premium-button rounded-full bg-white/[0.1] px-5 py-3 text-sm font-semibold text-white disabled:opacity-50"
+            >
+              {isGenerating ? "Generating..." : "Generate guide"}
+            </button>
+          </div>
+        </div>
+
+        <div className="study-premium-panel study-appear rounded-[1.5rem] p-5 backdrop-blur-xl">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+            <div>
+              <div className="text-xs font-bold uppercase tracking-[0.22em] text-zinc-500">Guide details</div>
+              <h2 className="mt-2 max-w-lg text-[1.45rem] font-semibold tracking-[-0.03em] text-white">Review and save</h2>
+            </div>
+            <button onClick={onSave} {...magneticHoverProps} className="study-premium-button self-start rounded-xl border border-white/10 bg-white/[0.06] px-4 py-2.5 text-sm font-semibold text-white">
+              Save guide
+            </button>
+          </div>
+
+          <div className="mt-6 grid gap-4">
+            <label className="grid gap-2">
+              <span className="text-xs font-bold uppercase tracking-[0.18em] text-zinc-500">Guide title <span className="text-red-400">*</span></span>
+              <input
+                value={draftGuide.title}
+                onChange={(event) => onDraftGuideChange((current) => ({ ...current, title: event.target.value }))}
+                placeholder="Study guide title"
+                className={`study-premium-input rounded-2xl border bg-white/[0.05] px-4 py-3 text-lg font-semibold text-white outline-none placeholder:text-zinc-500 ${
+                  draftGuideErrors.title ? "border-red-400/40" : "border-white/10"
+                }`}
+              />
+              {draftGuideErrors.title ? <span className="text-xs text-red-300">{draftGuideErrors.title}</span> : null}
+            </label>
+
+            <div className="grid gap-3 md:grid-cols-2">
+              <label className="grid gap-2">
+                <span className="text-xs font-bold uppercase tracking-[0.18em] text-zinc-500">Course <span className="text-red-400">*</span></span>
+                <input
+                  list="study-guide-course-suggestions"
+                  value={draftGuide.course}
+                  onChange={(event) => onDraftGuideChange((current) => ({ ...current, course: event.target.value }))}
+                  placeholder="Choose a course like CS 211"
+                  className={`study-premium-input rounded-2xl border bg-white/[0.05] px-4 py-3 text-sm text-white outline-none placeholder:text-zinc-500 ${
+                    draftGuideErrors.course ? "border-red-400/40" : "border-white/10"
+                  }`}
+                />
+                <datalist id="study-guide-course-suggestions">
+                  {courseSuggestions.map((course) => (
+                    <option key={course.id} value={course.code}>
+                      {course.title}
+                    </option>
+                  ))}
+                </datalist>
+                {draftGuideErrors.course ? <span className="text-xs text-red-300">{draftGuideErrors.course}</span> : null}
+              </label>
+              <label className="grid gap-2">
+                <span className="text-xs font-bold uppercase tracking-[0.18em] text-zinc-500">Subject</span>
+                <input
+                  value={draftGuide.subject}
+                  onChange={(event) => onDraftGuideChange((current) => ({ ...current, subject: event.target.value }))}
+                  placeholder="Subject"
+                  className="study-premium-input rounded-2xl border border-white/10 bg-white/[0.05] px-4 py-3 text-sm text-white outline-none placeholder:text-zinc-500"
+                />
+              </label>
+            </div>
+
+            <label className="grid gap-2">
+              <span className="text-xs font-bold uppercase tracking-[0.18em] text-zinc-500">Folder</span>
+              <select
+                value={draftGuide.folder || ""}
+                onChange={(event) => onDraftGuideChange((current) => ({ ...current, folder: event.target.value }))}
+                className="study-premium-input rounded-2xl border border-white/10 bg-white/[0.05] px-4 py-3 text-sm text-white outline-none"
+              >
+                <option value="">No folder</option>
+                {availableFolders.map((folder) => (
+                  <option key={folder} value={folder}>
+                    {folder}
+                  </option>
+                ))}
+              </select>
+              <span className="text-xs text-zinc-500">Choose where this guide should appear in your library.</span>
+            </label>
+          </div>
+
+          {draftGuideErrors.guide ? (
+            <div className="mt-4 rounded-2xl border border-red-400/20 bg-red-500/8 px-4 py-3 text-sm text-red-200">
+              {draftGuideErrors.guide}
+            </div>
+          ) : null}
+
+          <div className="mt-6">
+            {generatedGuide ? (
+              <div className="space-y-4">
+                <div className="rounded-[1.2rem] border border-emerald-400/10 bg-emerald-500/[0.05] p-4">
+                  <div className="text-xs font-bold uppercase tracking-[0.18em] text-emerald-200/80">Summary</div>
+                  <div className="mt-2 text-sm leading-7 text-zinc-200">{generatedGuide.summary}</div>
+                </div>
+
+                <div className="grid gap-4 md:grid-cols-2">
+                  {generatedGuide.sections.map((section) => (
+                    <div key={section.heading} className="rounded-[1.2rem] border border-white/8 bg-white/[0.03] p-4">
+                      <div className="text-sm font-semibold text-white">{section.heading}</div>
+                      <ul className="mt-3 space-y-2 text-sm leading-6 text-zinc-300">
+                        {section.items.length ? (
+                          section.items.map((item) => <li key={item} className="flex gap-2"><span className="mt-2 h-1.5 w-1.5 rounded-full bg-red-400" /><span>{item}</span></li>)
+                        ) : (
+                          <li className="text-zinc-500">Nothing extracted yet.</li>
+                        )}
+                      </ul>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div className="rounded-[1.2rem] border border-white/8 bg-white/[0.03] p-4">
+                    <div className="text-sm font-semibold text-white">Key terms</div>
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      {generatedGuide.keyTerms.length ? generatedGuide.keyTerms.map((term) => (
+                        <span key={term} className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1.5 text-xs text-zinc-200">
+                          {term}
+                        </span>
+                      )) : <span className="text-sm text-zinc-500">No key terms yet.</span>}
+                    </div>
+                  </div>
+                  <div className="rounded-[1.2rem] border border-white/8 bg-white/[0.03] p-4">
+                    <div className="text-sm font-semibold text-white">Questions to review</div>
+                    <ul className="mt-3 space-y-2 text-sm leading-6 text-zinc-300">
+                      {generatedGuide.questionsToReview.length ? generatedGuide.questionsToReview.map((item) => (
+                        <li key={item} className="flex gap-2"><span className="mt-2 h-1.5 w-1.5 rounded-full bg-sky-400" /><span>{item}</span></li>
+                      )) : <li className="text-zinc-500">No review questions yet.</li>}
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="rounded-[1.2rem] border border-dashed border-white/10 bg-white/[0.03] px-5 py-8 text-sm leading-6 text-zinc-400">
+                Generate a study guide to preview the structured summary here before saving.
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -2768,8 +3935,8 @@ function CreateView({
             <label className="grid gap-2">
               <span className="text-xs font-bold uppercase tracking-[0.18em] text-zinc-500">Visibility</span>
               <select
-                value={draftSet.visibility}
-                onChange={(event) => onDraftSetChange((current) => ({ ...current, visibility: event.target.value as StudySet["visibility"] }))}
+                value={draftGuide.visibility}
+                onChange={(event) => onDraftGuideChange((current) => ({ ...current, visibility: event.target.value as StudyNote["visibility"] }))}
                 className="study-premium-input rounded-2xl border border-white/10 bg-white/[0.05] px-4 py-3 text-sm text-white outline-none"
               >
                 <option value="private">Private</option>
@@ -2777,9 +3944,9 @@ function CreateView({
               </select>
             </label>
             <div className="text-xs leading-6 text-zinc-500">
-              {draftSet.visibility === "public"
-                ? "Public sets are searchable by course for other students."
-                : "Private sets stay in your own library only."}
+              {draftGuide.visibility === "public"
+                ? "Public guides are searchable by course for other students."
+                : "Private guides stay in your own library only."}
             </div>
           </div>
         </div>
@@ -2791,14 +3958,18 @@ function CreateView({
 function OverviewView({
   set,
   progressMap,
+  availableFolders,
   onModeChange,
+  onMoveToFolder,
   onDuplicate,
   onDelete,
   onEdit,
 }: {
   set: StudySet;
   progressMap: Record<string, CardProgress>;
+  availableFolders: string[];
   onModeChange: (screen: Screen) => void;
+  onMoveToFolder: (folder: string) => void;
   onDuplicate: () => void;
   onDelete: () => void;
   onEdit: () => void;
@@ -2808,63 +3979,174 @@ function OverviewView({
     : 0;
   const starred = set.cards.filter((card) => progressMap[card.id]?.starred).length;
   const difficult = set.cards.filter((card) => progressMap[card.id]?.markedDifficult).length;
+  const [previewIndex, setPreviewIndex] = useState(0);
+  const [previewFlipped, setPreviewFlipped] = useState(false);
+  const [trackPreviewProgress, setTrackPreviewProgress] = useState(false);
+  const previewCard = set.cards[previewIndex] ?? set.cards[0];
+  const modeTiles = [
+    { label: "Flashcards", icon: <Copy className="h-4 w-4" />, active: true, onClick: () => onModeChange("flashcards") },
+    { label: "Learn", icon: <Brain className="h-4 w-4" />, active: false, onClick: () => onModeChange("learn") },
+    { label: "Test", icon: <Target className="h-4 w-4" />, active: false, onClick: () => onModeChange("test") },
+    { label: "Blocks", icon: <Grid2x2 className="h-4 w-4" />, active: false, onClick: () => onModeChange("flashcards") },
+    { label: "Blast", icon: <Rocket className="h-4 w-4" />, active: false, onClick: () => onModeChange("learn") },
+    { label: "Match", icon: <Shuffle className="h-4 w-4" />, active: false, onClick: () => onModeChange("match") },
+  ];
+
+  useEffect(() => {
+    setPreviewIndex(0);
+    setPreviewFlipped(false);
+  }, [set.id]);
+
+  if (!previewCard) {
+    return <EmptyModeState title="No cards in this set yet." onBack={() => onModeChange("flashcards")} />;
+  }
 
   return (
-    <div className="space-y-6">
-      <div className="study-premium-panel study-appear rounded-[1.75rem] p-6 backdrop-blur-xl">
-        <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
-          <div className="max-w-3xl">
-            <div className="inline-flex rounded-full border border-indigo-400/20 bg-indigo-500/10 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.22em] text-indigo-200">
-              {set.course || set.subject}
+    <div className="mx-auto max-w-[860px] space-y-6">
+      <div className="study-appear">
+        <div className="flex flex-col gap-5">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+            <div>
+              <div className="flex items-center gap-2 text-sm text-zinc-300">
+                <Folder className="h-3.5 w-3.5" />
+                {set.folder ? folderLabelFromPath(set.folder) : set.course || set.subject || "Study set"}
+              </div>
+              <h1 className="mt-4 text-[2.2rem] font-bold tracking-[-0.04em] text-white">
+                {set.title}
+              </h1>
             </div>
-            <h2 className="mt-4 text-4xl font-black tracking-[-0.05em] text-white">{set.title}</h2>
-            <p className="mt-4 max-w-2xl text-sm leading-7 text-zinc-400">{set.description || "Study set ready for flashcards, learn mode, test mode, and matching practice."}</p>
-            <div className="mt-5 flex flex-wrap gap-2">
-              {set.tags.map((tag) => (
-                <span key={tag} className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-xs text-zinc-300">
-                  {tag}
-                </span>
-              ))}
+            <div className="flex flex-wrap items-center gap-2">
+              <button className="inline-flex items-center gap-2 rounded-full border border-[#6a63f6] bg-[#2a255a] px-4 py-2 text-sm font-semibold text-white">
+                <Bookmark className="h-4 w-4 fill-current" />
+                Saved
+              </button>
+              <button className="inline-flex items-center gap-2 rounded-full bg-white/[0.08] px-4 py-2 text-sm font-semibold text-zinc-200">
+                <Users className="h-4 w-4" />
+                Groups
+              </button>
+              <button className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/[0.08] text-zinc-200">
+                <Share2 className="h-4 w-4" />
+              </button>
+              <button className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/[0.08] text-zinc-200">
+                <MoreHorizontal className="h-4 w-4" />
+              </button>
             </div>
           </div>
-          <div className="grid gap-3 sm:grid-cols-3">
-            <button onClick={onEdit} {...magneticHoverProps} className="study-premium-button rounded-2xl border border-white/10 bg-white/[0.05] px-4 py-3 text-sm font-semibold text-zinc-100">
-              Edit set
+
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {modeTiles.map((tile) => (
+              <button
+                key={tile.label}
+                onClick={tile.onClick}
+                className={`flex items-center gap-3 rounded-xl px-5 py-4 text-left text-sm font-semibold transition ${
+                  tile.active
+                    ? "bg-[#3b4568] text-white"
+                    : "bg-[#3b4568] text-zinc-100 hover:bg-[#455178]"
+                }`}
+              >
+                <span className="text-[#70a7ff]">{tile.icon}</span>
+                {tile.label}
+              </button>
+            ))}
+          </div>
+
+          <div className="rounded-[1.7rem] border border-white/10 bg-[#444d74] p-6 shadow-[0_24px_60px_rgba(0,0,0,0.24)]">
+            <div className="flex items-center justify-between text-sm text-zinc-200">
+              <div className="inline-flex items-center gap-2">
+                <Sparkles className="h-3.5 w-3.5" />
+                Get a hint
+              </div>
+              <div className="flex items-center gap-4 text-zinc-100">
+                <button onClick={onEdit} className="transition hover:text-white">Edit</button>
+                <button className="transition hover:text-white">Audio</button>
+                <button className="transition hover:text-white">Star</button>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setPreviewFlipped((current) => !current)}
+              className="mt-5 flex h-[290px] w-full items-center justify-center rounded-[1.5rem] text-center text-[2.05rem] font-medium tracking-[-0.03em] text-white"
+            >
+              {previewFlipped ? previewCard.back : previewCard.front}
             </button>
-            <button onClick={onDuplicate} {...magneticHoverProps} className="study-premium-button rounded-2xl border border-white/10 bg-white/[0.05] px-4 py-3 text-sm font-semibold text-zinc-100">
+          </div>
+
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <button
+              onClick={() => setTrackPreviewProgress((current) => !current)}
+              className="inline-flex items-center gap-3 text-sm font-medium text-zinc-300"
+            >
+              Track progress
+              <span className={`relative h-5 w-10 rounded-full ${trackPreviewProgress ? "bg-[#5561ff]" : "bg-white/15"}`}>
+                <span className={`absolute top-0.5 h-4 w-4 rounded-full bg-white transition ${trackPreviewProgress ? "left-5" : "left-0.5"}`} />
+              </span>
+            </button>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => {
+                  setPreviewIndex((current) => Math.max(0, current - 1));
+                  setPreviewFlipped(false);
+                }}
+                className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-white/[0.08] text-zinc-100"
+              >
+                <ChevronLeft className="h-5 w-5" />
+              </button>
+              <div className="min-w-[78px] text-center text-sm font-semibold text-white">
+                {previewIndex + 1} / {set.cards.length}
+              </div>
+              <button
+                onClick={() => {
+                  setPreviewIndex((current) => Math.min(set.cards.length - 1, current + 1));
+                  setPreviewFlipped(false);
+                }}
+                className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-white/[0.08] text-zinc-100"
+              >
+                <ChevronRight className="h-5 w-5" />
+              </button>
+            </div>
+            <div className="flex items-center gap-3">
+              <button onClick={() => onModeChange("flashcards")} className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/[0.08] text-zinc-100">
+                <Play className="h-4 w-4" />
+              </button>
+              <button onClick={() => onModeChange("match")} className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/[0.08] text-zinc-100">
+                <Shuffle className="h-4 w-4" />
+              </button>
+              <button className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/[0.08] text-zinc-100">
+                <Maximize2 className="h-4 w-4" />
+              </button>
+            </div>
+          </div>
+
+          <div className="border-t border-white/10 pt-5">
+            <div className="grid gap-4 md:grid-cols-4">
+              <StatCard label="Cards" value={`${set.cards.length}`} icon={<BookOpen className="h-4 w-4" />} />
+              <StatCard label="Mastery" value={`${mastery}%`} icon={<Trophy className="h-4 w-4" />} />
+              <StatCard label="Starred" value={`${starred}`} icon={<Star className="h-4 w-4" />} />
+              <StatCard label="Difficult" value={`${difficult}`} icon={<Flame className="h-4 w-4" />} />
+            </div>
+          </div>
+
+          <div className="flex flex-wrap gap-3 pt-2">
+            <select
+              value={set.folder || ""}
+              onChange={(event) => onMoveToFolder(event.target.value)}
+              className="study-premium-input rounded-full border border-white/10 bg-white/[0.05] px-4 py-2.5 text-sm font-semibold text-zinc-100 outline-none"
+            >
+              <option value="">No folder</option>
+              {availableFolders.map((folder) => (
+                <option key={folder} value={folder}>
+                  {folder}
+                </option>
+              ))}
+            </select>
+            <button onClick={onDuplicate} className="rounded-full border border-white/10 bg-white/[0.05] px-4 py-2.5 text-sm font-semibold text-zinc-100">
               Copy set
             </button>
-            <button onClick={onDelete} {...magneticHoverProps} className="study-premium-button rounded-2xl border border-red-400/20 bg-red-500/10 px-4 py-3 text-sm font-semibold text-red-100">
+            <button onClick={onDelete} className="rounded-full border border-red-400/20 bg-red-500/10 px-4 py-2.5 text-sm font-semibold text-red-100">
               Delete set
             </button>
           </div>
-        </div>
-
-        <div className="mt-8 grid gap-4 md:grid-cols-4">
-          <StatCard label="Cards" value={`${set.cards.length}`} icon={<BookOpen className="h-4 w-4" />} />
-          <StatCard label="Mastery" value={`${mastery}%`} icon={<Trophy className="h-4 w-4" />} />
-          <StatCard label="Starred" value={`${starred}`} icon={<Star className="h-4 w-4" />} />
-          <StatCard label="Difficult" value={`${difficult}`} icon={<Flame className="h-4 w-4" />} />
-        </div>
-      </div>
-
-      <div className="grid gap-4 lg:grid-cols-5">
-        <ModeCard icon={<Copy className="h-5 w-5" />} title="Flashcards" body="Flip through cards with smooth controls, shuffle, star, and review filters." onClick={() => onModeChange("flashcards")} />
-        <ModeCard icon={<Brain className="h-5 w-5" />} title="Learn" body="Adaptive review repeats weak cards sooner and mastered cards less often." onClick={() => onModeChange("learn")} />
-        <ModeCard icon={<Target className="h-5 w-5" />} title="Test" body="Multiple choice, true/false, written, and mixed mode." onClick={() => onModeChange("test")} />
-        <ModeCard icon={<Shuffle className="h-5 w-5" />} title="Match" body="Fast matching practice for memorization-heavy review sessions." onClick={() => onModeChange("match")} />
-      </div>
-
-      <div className="study-premium-panel study-appear rounded-[1.75rem] p-6 backdrop-blur-xl">
-        <div className="text-xs font-bold uppercase tracking-[0.22em] text-zinc-500">Preview cards</div>
-        <div className="mt-5 grid gap-4 md:grid-cols-2">
-          {set.cards.slice(0, 4).map((card) => (
-            <div key={card.id} className="study-premium-card rounded-[1.4rem] p-5">
-              <div className="text-xs uppercase tracking-[0.18em] text-zinc-500">{card.tags[0] || set.subject}</div>
-              <div className="mt-3 text-lg font-semibold text-white">{card.front}</div>
-              <div className="mt-4 text-sm leading-7 text-zinc-400">{card.back}</div>
-            </div>
-          ))}
         </div>
       </div>
     </div>
@@ -3062,104 +4344,83 @@ function FlashcardsMode({
   };
 
   return (
-    <div className="space-y-5">
-      <ModeHeader title={`${set.title} • Flashcards`} onBack={onBack} />
-      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
-        {[
-          { screen: "flashcards" as Screen, label: "Flashcards", icon: <Copy className="h-4 w-4" /> },
-          { screen: "learn" as Screen, label: "Learn", icon: <Brain className="h-4 w-4" /> },
-          { screen: "test" as Screen, label: "Test", icon: <Target className="h-4 w-4" /> },
-          { screen: "match" as Screen, label: "Match", icon: <Shuffle className="h-4 w-4" /> },
-        ].map((mode) => (
-          <button
-            key={mode.screen}
-            onClick={() => onModeChange(mode.screen)}
-            {...magneticHoverProps}
-            className={`study-premium-button inline-flex items-center gap-3 rounded-[1.2rem] border px-4 py-3 text-left text-sm font-semibold transition ${
-              mode.screen === "flashcards"
-                ? "border-sky-300/24 bg-sky-100 text-slate-950 shadow-[0_16px_36px_rgba(125,211,252,0.16)]"
-                : "border-white/10 bg-white/[0.04] text-zinc-100 hover:bg-white/[0.08]"
-            }`}
-          >
-            <span className={`inline-flex rounded-xl p-2 ${mode.screen === "flashcards" ? "bg-slate-950/8 text-slate-900" : "bg-white/[0.06] text-indigo-200"}`}>
-              {mode.icon}
-            </span>
-            <span>{mode.label}</span>
-          </button>
-        ))}
-      </div>
-      <div ref={panelRef} className={`study-premium-panel study-appear rounded-[1.85rem] p-5 backdrop-blur-xl ${isFullscreen ? "study-flashcards-fullscreen h-full min-h-screen overflow-auto p-8" : ""}`}>
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <div className="flex flex-wrap gap-2">
-            {([
-              { value: "all", label: "All" },
-              { value: "starred", label: "Starred" },
-              { value: "difficult", label: "Difficult" },
-              { value: "missed", label: "Missed" },
-              { value: "unseen", label: "Unseen" },
-            ] as Array<{ value: StudyFilter; label: string }>).map((item) => (
+    <div className="mx-auto max-w-[860px] space-y-5">
+      <div className="study-appear">
+        <div className="flex flex-col gap-5">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+            <div>
               <button
-                key={item.value}
-                onClick={() => {
-                  setFilter(item.value);
-                  setIndex(0);
-                }}
-                {...magneticHoverProps}
-                className={`study-premium-button rounded-full px-3 py-2 text-xs font-semibold transition ${
-                  filter === item.value ? "bg-white text-zinc-950" : "border border-white/10 bg-white/[0.03] text-zinc-300 hover:bg-white/[0.06]"
-                }`}
+                onClick={onBack}
+                className="mb-3 inline-flex items-center gap-2 text-sm text-zinc-300 transition hover:text-white"
               >
-                {item.label}
+                <Folder className="h-3.5 w-3.5" />
+                Back to set
+              </button>
+              <h1 className="text-[2.2rem] font-bold tracking-[-0.04em] text-white">{set.title}</h1>
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <button className="inline-flex items-center gap-2 rounded-full border border-[#6a63f6] bg-[#2a255a] px-4 py-2 text-sm font-semibold text-white">
+                <Bookmark className="h-4 w-4 fill-current" />
+                Saved
+              </button>
+              <button className="inline-flex items-center gap-2 rounded-full bg-white/[0.08] px-4 py-2 text-sm font-semibold text-zinc-200">
+                <Users className="h-4 w-4" />
+                Groups
+              </button>
+              <button className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/[0.08] text-zinc-200">
+                <Share2 className="h-4 w-4" />
+              </button>
+              <button className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/[0.08] text-zinc-200">
+                <MoreHorizontal className="h-4 w-4" />
+              </button>
+            </div>
+          </div>
+
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {[
+              { screen: "flashcards" as Screen, label: "Flashcards", icon: <Copy className="h-4 w-4" /> },
+              { screen: "learn" as Screen, label: "Learn", icon: <Brain className="h-4 w-4" /> },
+              { screen: "test" as Screen, label: "Test", icon: <Target className="h-4 w-4" /> },
+              { screen: "flashcards" as Screen, label: "Blocks", icon: <Grid2x2 className="h-4 w-4" /> },
+              { screen: "learn" as Screen, label: "Blast", icon: <Rocket className="h-4 w-4" /> },
+              { screen: "match" as Screen, label: "Match", icon: <Shuffle className="h-4 w-4" /> },
+            ].map((mode) => (
+              <button
+                key={mode.label}
+                onClick={() => onModeChange(mode.screen)}
+                className="flex items-center gap-3 rounded-xl bg-[#3b4568] px-5 py-4 text-left text-sm font-semibold text-white transition hover:bg-[#455178]"
+              >
+                <span className="text-[#70a7ff]">{mode.icon}</span>
+                <span>{mode.label}</span>
               </button>
             ))}
           </div>
+        </div>
+      </div>
+
+      <div ref={panelRef} className={`study-premium-panel study-appear rounded-[1.85rem] p-5 backdrop-blur-xl ${isFullscreen ? "study-flashcards-fullscreen h-full min-h-screen overflow-auto p-8" : ""}`}>
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <div className="flex items-center gap-2 text-sm text-zinc-200">
+            <Sparkles className="h-3.5 w-3.5" />
+            {card.hint || "Get a hint"}
+          </div>
           <div className="flex items-center gap-3">
+            <button onClick={onBack} className="text-zinc-100 transition hover:text-white">Edit</button>
+            <button className="text-zinc-100 transition hover:text-white">Audio</button>
             <button
-              onClick={() => setTrackProgress((current) => !current)}
-              {...magneticHoverProps}
-              className={`study-premium-button inline-flex items-center gap-3 rounded-full border px-3 py-2 text-xs font-semibold transition ${
-                trackProgress
-                  ? "border-indigo-300/30 bg-indigo-400/20 text-indigo-100"
-                  : "border-white/10 bg-white/[0.03] text-zinc-300"
-              }`}
+              onClick={() => onToggleFlag(card.id, { starred: !currentProgress.starred })}
+              className="text-zinc-100 transition hover:text-white"
             >
-              <span>Track progress</span>
-              <span className={`relative h-6 w-11 rounded-full transition ${trackProgress ? "bg-indigo-500/90" : "bg-white/12"}`}>
-                <span className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition ${trackProgress ? "left-[1.35rem]" : "left-0.5"}`} />
-              </span>
-            </button>
-            <button
-              onClick={() => {
-                setAutoplay((current) => !current);
-                setRecentFeedback(null);
-              }}
-              {...magneticHoverProps}
-              className={`study-premium-button inline-flex h-10 w-10 items-center justify-center rounded-full border text-zinc-200 transition ${autoplay ? "scale-105 border-sky-300/30 bg-sky-400/20 text-sky-100 shadow-[0_10px_24px_rgba(56,189,248,0.18)]" : "border-white/10 bg-white/[0.03]"}`}
-              title={autoplay ? "Stop autoplay" : "Autoplay"}
-              aria-label={autoplay ? "Stop autoplay" : "Autoplay"}
-            >
-              {autoplay ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
-            </button>
-            <button
-              onClick={toggleFullscreen}
-              {...magneticHoverProps}
-              className={`study-premium-button inline-flex h-10 w-10 items-center justify-center rounded-full border text-zinc-200 transition ${isFullscreen ? "border-white/20 bg-white/[0.08]" : "border-white/10 bg-white/[0.03]"}`}
-              title={isFullscreen ? "Exit full screen" : "Full screen"}
-            >
-              <Maximize2 className="h-4 w-4" />
+              Star
             </button>
           </div>
-        </div>
-
-        <div className="mt-5 h-2 rounded-full bg-white/6">
-          <div className="h-2 rounded-full bg-[#7b86b5]" style={{ width: `${((index + 1) / cards.length) * 100}%` }} />
         </div>
 
         <div ref={containerRef} className={`mt-6 ${isFullscreen ? "mx-auto w-full max-w-6xl" : ""}`}>
           <button
             type="button"
             onClick={() => setFlipped((current) => !current)}
-            className={`group relative w-full select-none overflow-hidden rounded-[2rem] [perspective:1800px] outline-none focus:outline-none focus-visible:outline-none focus-visible:ring-0 ${isFullscreen ? "h-[68vh] max-h-[760px] min-h-[520px]" : "h-[420px]"}`}
+            className={`group relative w-full cursor-pointer select-none overflow-hidden rounded-[2rem] [perspective:1800px] outline-none focus:outline-none focus-visible:outline-none focus-visible:ring-0 ${isFullscreen ? "h-[68vh] max-h-[760px] min-h-[520px]" : "h-[420px]"}`}
             onTouchStart={(event) => {
               touchStartX.current = event.touches[0]?.clientX ?? null;
             }}
@@ -3178,26 +4439,51 @@ function FlashcardsMode({
           >
             <div
               key={`${card.id}-${index}`}
-              className={`relative h-full w-full rounded-[2rem] will-change-transform transition-transform duration-[420ms] ease-[cubic-bezier(0.22,1,0.36,1)] [transform-style:preserve-3d] ${
-                flipped ? "[transform:rotateY(180deg)]" : ""
-              } ${cardMotion === "next" ? "study-card-enter-next" : cardMotion === "prev" ? "study-card-enter-prev" : ""}`}
+              className={`relative h-full w-full rounded-[2rem] ${
+                cardMotion === "next"
+                  ? isFullscreen
+                    ? "study-card-enter-next-full"
+                    : "study-card-enter-next"
+                  : cardMotion === "prev"
+                    ? isFullscreen
+                      ? "study-card-enter-prev-full"
+                      : "study-card-enter-prev"
+                    : ""
+              }`}
             >
-              <div className="absolute inset-0 flex h-full w-full [backface-visibility:hidden] items-center justify-center rounded-[2rem] border border-white/10 bg-[#343d62] p-8 text-center shadow-[0_30px_80px_rgba(0,0,0,0.3)]">
-                <div>
-                  {card.hint ? (
-                    <div className="mb-5 flex items-center justify-center gap-2 text-sm text-zinc-300">
-                      <BookOpen className="h-4 w-4" />
-                      {card.hint}
-                    </div>
-                  ) : null}
-                  <div className="text-4xl font-medium tracking-[-0.03em] text-white">{card.front}</div>
+              <div
+                className={`relative h-full w-full transform-gpu rounded-[2rem] will-change-transform transition-transform ${isFullscreen ? "duration-[680ms] ease-[cubic-bezier(0.16,1,0.3,1)]" : "duration-[420ms] ease-[cubic-bezier(0.22,1,0.36,1)]"}`}
+                style={{
+                  transformStyle: "preserve-3d",
+                  WebkitTransformStyle: "preserve-3d",
+                  transform: flipped ? "rotateY(180deg)" : "rotateY(0deg)",
+                }}
+              >
+                <div
+                  className="absolute inset-0 flex h-full w-full transform-gpu items-center justify-center rounded-[2rem] border border-white/10 bg-[#444d74] p-8 text-center shadow-[0_30px_80px_rgba(0,0,0,0.3)]"
+                  style={{
+                    backfaceVisibility: "hidden",
+                    WebkitBackfaceVisibility: "hidden",
+                    transform: "rotateY(0deg)",
+                  }}
+                >
+                  <div>
+                    <div className="text-4xl font-medium tracking-[-0.03em] text-white">{card.front}</div>
+                  </div>
                 </div>
-              </div>
-              <div className="absolute inset-0 flex h-full w-full [backface-visibility:hidden] [transform:rotateY(180deg)] items-center justify-center rounded-[2rem] border border-white/10 bg-[linear-gradient(180deg,#1a2037_0%,#232d4b_100%)] p-8 text-center shadow-[0_30px_80px_rgba(0,0,0,0.3)]">
-                <div className="max-w-3xl">
-                  <div className="text-3xl font-medium tracking-[-0.03em] text-white">{card.back}</div>
-                  {card.example ? <div className="mt-5 text-sm leading-7 text-zinc-300">Example: {card.example}</div> : null}
-                  {card.mnemonic ? <div className="mt-3 text-sm leading-7 text-zinc-400">Memory trick: {card.mnemonic}</div> : null}
+                <div
+                  className="absolute inset-0 flex h-full w-full transform-gpu items-center justify-center rounded-[2rem] border border-white/10 bg-[linear-gradient(180deg,#1a2037_0%,#232d4b_100%)] p-8 text-center shadow-[0_30px_80px_rgba(0,0,0,0.3)]"
+                  style={{
+                    backfaceVisibility: "hidden",
+                    WebkitBackfaceVisibility: "hidden",
+                    transform: "rotateY(180deg)",
+                  }}
+                >
+                  <div className="max-w-3xl">
+                    <div className="text-3xl font-medium tracking-[-0.03em] text-white">{card.back}</div>
+                    {card.example ? <div className="mt-5 text-sm leading-7 text-zinc-300">Example: {card.example}</div> : null}
+                    {card.mnemonic ? <div className="mt-3 text-sm leading-7 text-zinc-400">Memory trick: {card.mnemonic}</div> : null}
+                  </div>
                 </div>
               </div>
             </div>
@@ -3205,34 +4491,26 @@ function FlashcardsMode({
         </div>
 
         <div className="mt-6 flex flex-wrap items-center justify-between gap-4">
-          <div className="flex items-center gap-3 text-sm text-zinc-400">
-            <span>{index + 1} / {cards.length}</span>
-            <span className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-xs font-semibold text-zinc-300">
-              Mastery {setMastery}%
-            </span>
-            {trackProgress ? (
-              <span className={`rounded-full border px-3 py-1 text-xs font-semibold transition ${
-                recentFeedback === "knew"
-                  ? "border-emerald-400/30 bg-emerald-500/15 text-emerald-200"
-                  : recentFeedback === "missed"
-                  ? "border-red-400/30 bg-red-500/15 text-red-200"
-                  : "border-white/10 bg-white/[0.04] text-zinc-300"
-              }`}>
-                {recentFeedback === "knew" ? "Marked known" : recentFeedback === "missed" ? "Marked difficult" : `Card ${currentProgress.masteryScore}%`}
+          <div className="flex items-center gap-3 text-sm text-zinc-300">
+            <button
+              onClick={() => setTrackProgress((current) => !current)}
+              className="inline-flex items-center gap-3"
+            >
+              Track progress
+              <span className={`relative h-5 w-10 rounded-full ${trackProgress ? "bg-[#5561ff]" : "bg-white/15"}`}>
+                <span className={`absolute top-0.5 h-4 w-4 rounded-full bg-white transition ${trackProgress ? "left-5" : "left-0.5"}`} />
               </span>
-            ) : null}
+            </button>
           </div>
           <div className="flex flex-wrap items-center gap-2">
             {!trackProgress ? (
               <>
                 <IconControlButton onClick={() => moveCard("prev")} icon={<ChevronLeft className="h-5 w-5" />} label="Previous card" />
-                <IconControlButton onClick={() => setFlipped((current) => !current)} icon={<Copy className="h-4.5 w-4.5" />} label="Flip card" />
-                <IconControlButton
-                  onClick={() => onToggleFlag(card.id, { starred: !currentProgress.starred })}
-                  icon={<Star className={`h-4.5 w-4.5 ${currentProgress.starred ? "fill-current" : ""}`} />}
-                  label={currentProgress.starred ? "Unstar card" : "Star card"}
-                  active={currentProgress.starred}
-                />
+                <div className="min-w-[88px] text-center text-base font-semibold tracking-[-0.03em] text-white">
+                  {index + 1} / {cards.length}
+                </div>
+                <IconControlButton onClick={() => moveCard("next")} icon={<ChevronRight className="h-5 w-5" />} label="Next card" />
+                <IconControlButton onClick={() => setAutoplay((current) => !current)} icon={autoplay ? <Pause className="h-4.5 w-4.5" /> : <Play className="h-4.5 w-4.5" />} label="Autoplay" active={autoplay} />
                 <IconControlButton
                   onClick={() => {
                     const next = [...cards];
@@ -3248,7 +4526,7 @@ function FlashcardsMode({
                   label="Shuffle cards"
                   active={Boolean(shuffledCardIds?.length)}
                 />
-                <IconControlButton onClick={goToNextCard} icon={<ChevronRight className="h-5 w-5" />} label="Next card" />
+                <IconControlButton onClick={toggleFullscreen} icon={<Maximize2 className="h-4.5 w-4.5" />} label="Full screen" active={isFullscreen} />
               </>
             ) : (
               <>
@@ -3294,138 +4572,273 @@ function LearnMode({
   onSessionSave: (session: ReturnType<typeof buildStudySession>) => void;
   onCelebrate: (message: string) => void;
 }) {
-  const queue = useMemo(() => getRecommendedCards(set, progressMap), [progressMap, set]);
+  const { data: session } = useSession();
+  const questions = useMemo(() => {
+    const bank = buildQuestionBank(set).filter((question) => question.type === "multiple_choice" && (question.choices?.length || 0) >= 4);
+    return bank.length ? bank : buildQuestionBank(set).filter((question) => question.type === "true_false");
+  }, [set]);
   const [index, setIndex] = useState(0);
-  const [revealed, setRevealed] = useState(false);
   const [startedAt] = useState(() => new Date().toISOString());
-  const [streak, setStreak] = useState(0);
-  const [rewardPopId, setRewardPopId] = useState(0);
-  const card = queue[index];
+  const [score, setScore] = useState(0);
+  const [selectedChoice, setSelectedChoice] = useState<string | null>(null);
+  const [submitted, setSubmitted] = useState(false);
+  const [showExplanation, setShowExplanation] = useState(false);
+  const [profileMenuOpen, setProfileMenuOpen] = useState(false);
+  const profileMenuRef = useRef<HTMLDivElement | null>(null);
+  const question = questions[index];
 
-  if (!card) {
+  const profileName = session?.user?.name?.trim() || "Profile";
+  const profileInitials = profileName
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase() || "")
+    .join("") || "P";
+
+  useEffect(() => {
+    const handler = (event: KeyboardEvent) => {
+      if (!submitted) return;
+      if (event.key.length === 1 || event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        setShowExplanation(false);
+        setSelectedChoice(null);
+        setSubmitted(false);
+        setIndex((current) => {
+          if (current >= questions.length - 1) return current;
+          return current + 1;
+        });
+      }
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [questions.length, submitted]);
+
+  useEffect(() => {
+    if (!profileMenuOpen) return;
+
+    const handlePointerDown = (event: MouseEvent) => {
+      if (!profileMenuRef.current?.contains(event.target as Node)) {
+        setProfileMenuOpen(false);
+      }
+    };
+
+    window.addEventListener("pointerdown", handlePointerDown);
+    return () => window.removeEventListener("pointerdown", handlePointerDown);
+  }, [profileMenuOpen]);
+
+  if (!question) {
     return <EmptyModeState title="No cards available to learn right now." onBack={onBack} />;
   }
 
-  const nextCard = (result: "knew" | "missed") => {
-    onProgress(card.id, result);
-    const nextStreak = result === "knew" ? streak + 1 : 0;
-    setStreak(nextStreak);
-    if (result === "knew") {
-      setRewardPopId((current) => current + 1);
-    }
-    if (result === "knew" && (nextStreak === 3 || nextStreak === 6)) {
-      onCelebrate(nextStreak === 3 ? "Three in a row. You’re warming up." : "Six in a row. You’re locked in.");
-    }
-    if (index === queue.length - 1) {
-      onSessionSave(buildStudySession(set.id, "learn", startedAt, queue.length, result === "knew" ? 100 : 60));
-      if (result === "knew") onCelebrate("Learn session complete. Nice finish.");
+  const correctAnswer = Array.isArray(question.correctAnswer) ? question.correctAnswer[0] : String(question.correctAnswer);
+  const choices =
+    question.type === "true_false"
+      ? ["True", "False"]
+      : (question.choices ?? []);
+  const selectedIsCorrect =
+    submitted &&
+    selectedChoice != null &&
+    ((question.type === "true_false" ? selectedChoice.toLowerCase() : selectedChoice) === String(question.correctAnswer));
+  const currentCard =
+    set.cards.find((card) => stripQuestionPrompt(question.prompt).includes(card.front) || question.prompt.includes(card.front)) ??
+    set.cards[index];
+
+  const continueLearn = () => {
+    if (index === questions.length - 1) {
+      onSessionSave(
+        buildStudySession(
+          set.id,
+          "learn",
+          startedAt,
+          questions.length,
+          Math.round(((score + (selectedIsCorrect ? 1 : 0)) / Math.max(questions.length, 1)) * 100),
+        ),
+      );
+      if (selectedIsCorrect) onCelebrate("Learn session complete. Nice finish.");
       setIndex(0);
-      setRevealed(false);
-      setStreak(0);
+      setScore(0);
+      setSelectedChoice(null);
+      setSubmitted(false);
+      setShowExplanation(false);
       return;
     }
     setIndex((current) => current + 1);
-    setRevealed(false);
+    setSelectedChoice(null);
+    setSubmitted(false);
+    setShowExplanation(false);
+  };
+
+  const submitChoice = (choice: string) => {
+    if (submitted) return;
+    setSelectedChoice(choice);
+    setSubmitted(true);
+
+    const normalizedChoice = question.type === "true_false" ? choice.toLowerCase() : choice;
+    const isCorrect = normalizedChoice === String(question.correctAnswer);
+    if (currentCard) {
+      onProgress(currentCard.id, isCorrect ? "knew" : "missed");
+    }
+    if (isCorrect) {
+      setScore((current) => current + 1);
+      onCelebrate("Nice. Keep going.");
+    }
   };
 
   return (
-    <div className="study-appear space-y-5">
-      <div className="mx-auto flex w-full max-w-5xl items-center justify-between gap-4 text-zinc-200">
-        <div className="flex items-center gap-3">
+    <div className="study-appear mx-auto max-w-[1240px] space-y-6">
+      <div className="flex items-center justify-between gap-4">
+        <div className="flex items-center gap-4">
           <button
             onClick={onBack}
-            {...magneticHoverProps}
-            className="study-premium-button inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-white/[0.04]"
-            aria-label="Back to set"
+            className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/[0.06] text-zinc-200"
           >
-            <ChevronLeft className="h-5 w-5" />
+            <ChevronLeft className="h-4 w-4" />
           </button>
           <div className="text-sm font-semibold text-white">Learn</div>
         </div>
-        <div className="hidden text-xs text-zinc-500 md:block">{set.title}</div>
-        <Link href="/study" {...magneticHoverProps} className="study-premium-button inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-white/[0.04]">
-          <Layers3 className="h-4.5 w-4.5" />
-        </Link>
+        <div className="flex items-center gap-3">
+          <div ref={profileMenuRef} className="relative">
+            <button
+              type="button"
+              onClick={() => setProfileMenuOpen((current) => !current)}
+              className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.06] pl-2 pr-3 py-2 text-sm font-semibold text-zinc-100 transition hover:bg-white/[0.1]"
+              aria-label="Open profile menu"
+              aria-expanded={profileMenuOpen}
+            >
+              <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-[#6e4cff] text-[11px] font-bold text-white">
+                {profileInitials}
+              </span>
+              <span className="max-w-[110px] truncate">{profileName}</span>
+              <ChevronDown className={`h-4 w-4 text-zinc-400 transition ${profileMenuOpen ? "rotate-180" : ""}`} />
+            </button>
+
+            {profileMenuOpen ? (
+              <div className="absolute right-0 top-[calc(100%+0.7rem)] z-50 w-[220px] rounded-[1.15rem] border border-white/10 bg-[#171b42] p-2 shadow-[0_24px_50px_rgba(0,0,0,0.36)]">
+                <div className="rounded-[0.95rem] bg-white/[0.04] px-3 py-3">
+                  <div className="text-sm font-semibold text-white">{profileName}</div>
+                  <div className="mt-1 truncate text-xs text-zinc-400">{session?.user?.email || ""}</div>
+                </div>
+                <Link
+                  href="/profile"
+                  onClick={() => setProfileMenuOpen(false)}
+                  className="mt-2 inline-flex w-full items-center gap-2 rounded-[0.9rem] px-3 py-2.5 text-sm font-medium text-zinc-200 transition hover:bg-white/[0.06]"
+                >
+                  <UserRound className="h-4 w-4" />
+                  Profile
+                </Link>
+                <button
+                  type="button"
+                  onClick={() => signOut({ callbackUrl: "/" })}
+                  className="mt-1 inline-flex w-full items-center gap-2 rounded-[0.9rem] px-3 py-2.5 text-sm font-medium text-zinc-200 transition hover:bg-white/[0.06]"
+                >
+                  <LogOut className="h-4 w-4" />
+                  Log out
+                </button>
+              </div>
+            ) : null}
+          </div>
+          <button className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/[0.06] text-zinc-200">
+            <X className="h-4 w-4" />
+          </button>
+        </div>
       </div>
 
-      <div className="mx-auto flex w-full max-w-5xl items-center gap-1.5">
-        <div className="flex h-8 min-w-8 items-center justify-center rounded-full bg-emerald-500/25 px-2 text-xs font-semibold text-emerald-100">
-          {streak}
+      <div className="flex items-center gap-1.5">
+        <div className="flex h-8 min-w-8 items-center justify-center rounded-full bg-[#c76a28] px-2 text-xs font-semibold text-white">
+          {score}
         </div>
         {Array.from({ length: 6 }).map((_, segmentIndex) => {
-          const progress = Math.min(1, Math.max(0, ((index + (revealed ? 1 : 0)) / Math.max(queue.length, 1)) * 6 - segmentIndex));
+          const progress = Math.min(1, Math.max(0, (((index + (submitted ? 1 : 0)) / Math.max(questions.length, 1)) * 6) - segmentIndex));
           return (
-            <div key={segmentIndex} className="h-3 flex-1 overflow-hidden rounded-full bg-white/10">
+            <div key={segmentIndex} className="h-3 flex-1 overflow-hidden rounded-full bg-white/12">
               <div className="h-full rounded-full bg-[#7583b5] transition-all" style={{ width: `${Math.max(0, Math.min(100, progress * 100))}%` }} />
             </div>
           );
         })}
         <div className="flex h-8 min-w-10 items-center justify-center rounded-full bg-white/10 px-2 text-xs font-semibold text-zinc-200">
-          {queue.length}
+          {questions.length}
         </div>
       </div>
 
-      <div className="mx-auto w-full max-w-3xl rounded-[1.6rem] border border-[#515b84] bg-[#394264] p-6 shadow-[0_24px_70px_rgba(0,0,0,0.22)] sm:p-7">
+      <div className="mx-auto w-full max-w-[980px] rounded-[1.6rem] border border-[#515b84] bg-[#394264] p-6 shadow-[0_24px_70px_rgba(0,0,0,0.22)] sm:p-7">
         <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-2 text-xs font-semibold text-zinc-300">
             <span>Term</span>
             <Volume2 className="h-3.5 w-3.5" />
           </div>
-          <div className="text-xs text-zinc-400">{index + 1} of {queue.length}</div>
+          <div className="text-xs text-zinc-400">{index + 1} of {questions.length}</div>
         </div>
 
         <div className="mt-8 min-h-[110px] text-[2rem] leading-[1.2] font-medium tracking-[-0.03em] text-white">
-          {card.front}
+          {stripQuestionPrompt(question.prompt)}
         </div>
 
-        <div className="mt-10 text-sm font-medium text-zinc-200">
-          {revealed ? "Answer" : "Choose an action"}
-        </div>
-
-        <div className="mt-4 rounded-[1.25rem] border border-white/10 bg-[#3f496f] p-5 text-center">
-          {revealed ? (
-            <div>
-              <div className="text-xl text-white sm:text-2xl">{card.back}</div>
-              {card.hint ? <div className="mt-3 text-sm leading-7 text-zinc-300">{card.hint}</div> : null}
-            </div>
-          ) : (
-            <div className="text-sm leading-7 text-zinc-300">Think of the answer first, then reveal it when you’re ready.</div>
-          )}
-        </div>
+        {submitted ? (
+          <div className={`mt-8 text-sm font-semibold ${selectedIsCorrect ? "text-emerald-300" : "text-amber-300"}`}>
+            {selectedIsCorrect ? "Nice, you got it!" : "No sweat, you&apos;re still learning!"}
+          </div>
+        ) : null}
 
         <div className="mt-5 grid gap-3 sm:grid-cols-2">
-          {!revealed ? (
-            <>
-              <button onClick={() => setRevealed(true)} {...magneticHoverProps} className="study-premium-button rounded-[0.95rem] border border-white/12 bg-[#394264] px-4 py-4 text-left text-sm font-medium text-zinc-100">
-                Reveal answer
+          {choices.map((choice, choiceIndex) => {
+            const normalizedChoice = question.type === "true_false" ? choice.toLowerCase() : choice;
+            const isSelected = selectedChoice === choice;
+            const isCorrect = normalizedChoice === String(question.correctAnswer);
+            const tone = submitted
+              ? isCorrect
+                ? "border-emerald-400/70 bg-emerald-500/10 text-emerald-100"
+                : isSelected
+                  ? "border-amber-400/70 bg-amber-500/10 text-amber-100"
+                  : "border-white/10 bg-[#3f496f] text-zinc-300"
+              : "border-white/10 bg-[#3f496f] text-zinc-200 hover:bg-[#465178]";
+            return (
+              <button
+                key={choice}
+                onClick={() => submitChoice(choice)}
+                className={`rounded-[0.95rem] border px-4 py-4 text-left text-sm font-medium transition ${tone}`}
+              >
+                <span className="mr-3 inline-flex min-w-5 text-zinc-400">{choiceIndex + 1}</span>
+                {choice}
               </button>
-              <button onClick={() => nextCard("missed")} {...magneticHoverProps} className="study-premium-button rounded-[0.95rem] border border-white/12 bg-[#394264] px-4 py-4 text-left text-sm font-medium text-zinc-300">
-                Skip for now
+            );
+          })}
+        </div>
+
+        <div className="mt-5 flex items-center justify-between gap-4">
+          <button className="text-xs font-medium text-zinc-400">
+            Don&apos;t know?
+          </button>
+          {submitted ? (
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setShowExplanation((current) => !current)}
+                className="rounded-full bg-white/[0.12] px-5 py-3 text-sm font-semibold text-zinc-100"
+              >
+                Explain this
               </button>
-            </>
+              <button
+                onClick={continueLearn}
+                className="rounded-full bg-[#5561ff] px-5 py-3 text-sm font-semibold text-white"
+              >
+                Continue
+              </button>
+            </div>
           ) : (
-            <>
-              <button onClick={() => nextCard("missed")} {...magneticHoverProps} className="study-premium-button rounded-[0.95rem] border border-white/12 bg-[#394264] px-4 py-4 text-left text-sm font-medium text-zinc-100">
-                Didn’t know it
-              </button>
-              <button onClick={() => nextCard("knew")} {...magneticHoverProps} className="study-premium-button rounded-[0.95rem] border border-white/12 bg-[#394264] px-4 py-4 text-left text-sm font-medium text-zinc-100">
-                Knew it
-              </button>
-            </>
+            <div className="text-xs font-medium text-zinc-400">Choose the correct answer</div>
           )}
         </div>
 
-        <div className="relative mt-5 flex h-7 items-center justify-end">
-          {rewardPopId > 0 ? (
-            <div
-              key={rewardPopId}
-              className="study-reward-pop absolute left-0 inline-flex items-center gap-2 rounded-full border border-emerald-400/25 bg-emerald-500/12 px-3 py-1 text-xs font-semibold text-emerald-100"
-            >
-              <CheckCircle2 className="h-3.5 w-3.5" />
-              Nice, you got it
-            </div>
-          ) : null}
-          <div className="text-xs font-medium text-indigo-200">{revealed ? "Continue" : "Don’t know?"}</div>
+        {showExplanation ? (
+          <div className="mt-4 rounded-[1rem] border border-white/10 bg-[#313858] px-4 py-3 text-sm leading-6 text-zinc-200">
+            {question.explanation}
+          </div>
+        ) : null}
+      </div>
+
+      <div className="mx-auto flex w-full max-w-[980px] items-center justify-between px-2 text-sm text-zinc-300">
+        <div>Click the correct answer or press any key to continue</div>
+        <div className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-xs font-semibold text-zinc-300">
+          {Math.round((score / Math.max(index + Number(submitted), 1)) * 100) || 0}% correct
         </div>
       </div>
     </div>
@@ -3701,8 +5114,8 @@ function AssessmentMode({
   }
 
   return (
-    <div className="study-appear space-y-5">
-      <div className="mx-auto flex w-full max-w-5xl items-center justify-between gap-4 text-zinc-200">
+      <div className="study-appear space-y-5">
+      <div className="mx-auto flex w-full max-w-[1240px] items-center justify-between gap-4 text-zinc-200">
         <div className="flex items-center gap-3">
           <button
             onClick={onBack}
@@ -3732,8 +5145,8 @@ function AssessmentMode({
         </div>
       </div>
 
-      <div className="mx-auto w-full max-w-3xl space-y-6">
-        <div className="rounded-[1.6rem] border border-[#515b84] bg-[#394264] p-6 shadow-[0_24px_70px_rgba(0,0,0,0.22)] sm:p-7">
+      <div className="mx-auto w-full max-w-[1240px] space-y-6">
+        <div className="mx-auto w-full max-w-[980px] rounded-[1.6rem] border border-[#515b84] bg-[#394264] p-6 shadow-[0_24px_70px_rgba(0,0,0,0.22)] sm:p-7">
           <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-2 text-xs font-semibold text-zinc-300">
               <span>{question.topic || "Term"}</span>
@@ -4378,6 +5791,32 @@ function formatMatchTime(totalMs: number) {
   const seconds = totalSeconds % 60;
   const tenths = Math.floor((totalMs % 1000) / 100);
   return `${minutes}:${seconds.toString().padStart(2, "0")}.${tenths}`;
+}
+
+function groupSetsByPeriod(sets: StudySet[]) {
+  const now = new Date();
+  const today = now.toDateString();
+  const currentMonth = now.getMonth();
+  const currentYear = now.getFullYear();
+
+  const groups = new Map<string, StudySet[]>();
+
+  for (const set of [...sets].sort((left, right) => new Date(right.updatedAt).getTime() - new Date(left.updatedAt).getTime())) {
+    const updatedAt = new Date(set.updatedAt);
+    let label = `In ${updatedAt.toLocaleString("en-US", { month: "long", year: "numeric" }).toUpperCase()}`;
+
+    if (updatedAt.toDateString() === today) {
+      label = "Today";
+    } else if (updatedAt.getMonth() === currentMonth && updatedAt.getFullYear() === currentYear) {
+      label = "This month";
+    }
+
+    const existing = groups.get(label) ?? [];
+    existing.push(set);
+    groups.set(label, existing);
+  }
+
+  return Array.from(groups.entries()).map(([label, items]) => ({ label, items }));
 }
 
 function existsInLibrary(library: StudyLibraryState, setId: string) {

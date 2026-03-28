@@ -51,7 +51,7 @@ export default function CourseHeader({ course }: CourseHeaderProps) {
   const totalRegs = course.totalRegsAllTime ?? 0;
 
   return (
-    <section className="rounded-3xl border border-zinc-200 bg-white/70 p-6 shadow-lg backdrop-blur dark:border-white/10 dark:bg-zinc-950/40 dark:shadow-xl">
+    <section className="rounded-3xl border border-zinc-200 bg-white/70 p-4 shadow-lg backdrop-blur dark:border-white/10 dark:bg-zinc-950/40 dark:shadow-xl sm:p-6">
       <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
         <div>
           <div className="flex flex-wrap items-center gap-3">
@@ -72,7 +72,7 @@ export default function CourseHeader({ course }: CourseHeaderProps) {
             ) : null}
           </div>
 
-          <h1 className="mt-4 text-4xl font-semibold tracking-[-0.02em] text-zinc-900 dark:text-zinc-100">
+          <h1 className="mt-4 text-[1.9rem] font-semibold tracking-[-0.03em] text-zinc-900 dark:text-zinc-100 sm:text-4xl">
             {course.title || `${course.subject} ${course.number}`}
           </h1>
 

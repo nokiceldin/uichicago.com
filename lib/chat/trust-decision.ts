@@ -298,6 +298,8 @@ function assessFreshness(chunks: ChunkSignal[]): "fresh" | "stale" | "unknown" {
 function classifyQuery(query: QuerySignal): QueryClass {
   const lower = query.rawQuery.toLowerCase();
 
+  if (/\bappeal\b/.test(lower) && /\bgrade\b/.test(lower)) return "ambiguous";
+
   if (matchesAny(lower, PERSONAL_DATA_PATTERNS))  return "personal_data";
   if (matchesAny(lower, LIVE_STATUS_PATTERNS))     return "live_status";
   if (matchesAny(lower, OUT_OF_SCOPE_PATTERNS))    return "out_of_scope";

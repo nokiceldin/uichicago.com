@@ -27,7 +27,43 @@ export default function CourseGpaByProfessor({ professors = [], courseLabel }: {
         </h2>
         <p className="mt-1 text-sm text-zinc-500">Ranked highest to lowest GPA — using A, B, C, D, and F outcomes only</p>
       </div>
-      <div className="overflow-x-auto">
+      <div className="space-y-3 px-4 py-4 sm:hidden">
+        {professors.map((row, idx) => {
+          const gc = gpaConfig(row.avgGpa);
+          return (
+            <div key={`${row.instructorName}-${idx}`} className="rounded-2xl bg-zinc-50 p-4 ring-1 ring-zinc-200 dark:bg-white/[0.04] dark:ring-white/8">
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <div className="text-[11px] font-bold uppercase tracking-widest text-zinc-400 dark:text-zinc-600">#{idx + 1}</div>
+                  <div className="mt-1 text-base font-semibold text-zinc-900 dark:text-zinc-100">
+                    {row.slug ? (
+                      <Link href={`/professors/${row.slug}`} className="transition-colors hover:text-emerald-600 hover:underline dark:hover:text-emerald-400">
+                        {row.instructorName}
+                      </Link>
+                    ) : row.instructorName}
+                  </div>
+                </div>
+                <span className={`inline-flex items-center rounded-lg px-2.5 py-1 text-xs font-bold tabular-nums ring-1 ${gc.bg} ${gc.text} ${gc.ring}`}>
+                  {row.avgGpa == null ? "N/A" : row.avgGpa.toFixed(2)}
+                </span>
+              </div>
+              <div className="mt-4 grid grid-cols-2 gap-2 text-sm">
+                <div className="rounded-xl bg-white px-3 py-2.5 ring-1 ring-zinc-200 dark:bg-zinc-900/50 dark:ring-white/8">
+                  <div className="text-[10px] font-bold uppercase tracking-widest text-zinc-400 dark:text-zinc-600">Graded</div>
+                  <div className="mt-1 font-semibold text-zinc-900 dark:text-zinc-100">{nf.format(row.gradedCount)}</div>
+                </div>
+                <div className="rounded-xl bg-white px-3 py-2.5 ring-1 ring-zinc-200 dark:bg-zinc-900/50 dark:ring-white/8">
+                  <div className="text-[10px] font-bold uppercase tracking-widest text-zinc-400 dark:text-zinc-600">Total regs</div>
+                  <div className="mt-1 font-semibold text-zinc-900 dark:text-zinc-100">{nf.format(row.totalRegs)}</div>
+                </div>
+              </div>
+            </div>
+          );
+        })}
+        {professors.length === 0 && <div className="px-2 py-8 text-center text-sm text-zinc-400 dark:text-zinc-600">No professor GPA data available for this course.</div>}
+      </div>
+
+      <div className="hidden overflow-x-auto sm:block">
         <div className="min-w-[580px]">
           <div className="grid grid-cols-12 bg-zinc-50 dark:bg-zinc-950/50 px-5 sm:px-6 py-3 text-[10px] font-bold uppercase tracking-widest text-zinc-500 dark:text-zinc-600">
             <div className="col-span-1">#</div>

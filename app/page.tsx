@@ -2,6 +2,7 @@ import Link from "next/link";
 import HeroSearchBar from "./components/HeroSearchBar";
 import DeepPageShowcase from "./components/DeepPageShowcase";
 import SparkyShowcase from "./components/SparkyShowcase";
+import SiteFooter from "./components/SiteFooter";
 
 const productPillars = [
   {
@@ -32,10 +33,10 @@ const productPillars = [
     border: "hover:border-red-400/50",
   },
   {
-    eyebrow: "Study Mode",
-    title: "Enter a dedicated workspace for flashcards, quizzes, and exam practice",
+    eyebrow: "My School",
+    title: "Open your personal student space for planning, flashcards, quizzes, and exam practice",
     description:
-      "Switch into a more focused study space with decks, notes, practice modes, and progress tracking built in.",
+      "Move into a more personal student space with degree planning, decks, notes, practice modes, and progress tracking built in.",
     href: "/study",
     accent: "from-indigo-500/25 via-indigo-500/10 to-transparent",
     border: "hover:border-indigo-400/50",
@@ -74,11 +75,11 @@ const launchTiles = [
     bullets: ["Course and professor Q&A", "Campus-life questions", "Schedule and planning help"],
   },
   {
-    title: "Study Mode",
+    title: "My School",
     meta: "Live now",
     href: "/study",
     summary:
-      "Step into a dedicated study workspace for flashcards, learn mode, timed practice, notes, and AI-generated material.",
+      "Step into your student workspace for semester planning, flashcards, learn mode, timed practice, notes, and AI-generated material.",
     bullets: ["Flashcards + Learn mode", "Test + exam practice", "AI generation + progress tracking"],
   },
 ];
@@ -94,133 +95,130 @@ function getLaunchBadgeClasses(meta: string): string {
 export default function Home() {
   return (
     <main className="min-h-screen bg-white text-zinc-950 dark:bg-black dark:text-white">
-      <section className="relative overflow-hidden border-b border-zinc-200/80 bg-[radial-gradient(circle_at_top,rgba(239,68,68,0.18),transparent_26%),radial-gradient(circle_at_80%_20%,rgba(56,189,248,0.12),transparent_22%),linear-gradient(180deg,#0d0d10_0%,#120809_52%,#09090b_100%)] px-6 pb-20 pt-20 text-white dark:border-white/10">
-        <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.04)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.04)_1px,transparent_1px)] bg-[size:42px_42px] opacity-[0.07]" />
+      <section className="relative overflow-hidden border-b border-zinc-200/80 bg-[radial-gradient(circle_at_top,rgba(239,68,68,0.14),transparent_28%),radial-gradient(circle_at_80%_18%,rgba(56,189,248,0.10),transparent_24%),linear-gradient(180deg,#fff7f7_0%,#fff5f2_50%,#ffffff_100%)] px-4 pb-16 pt-14 text-zinc-950 dark:border-white/10 dark:bg-[radial-gradient(circle_at_top,rgba(239,68,68,0.18),transparent_26%),radial-gradient(circle_at_80%_20%,rgba(56,189,248,0.12),transparent_22%),linear-gradient(180deg,#0d0d10_0%,#120809_52%,#09090b_100%)] dark:text-white sm:px-6 sm:pb-20 sm:pt-20">
+        <div className="absolute inset-0 bg-[linear-gradient(rgba(15,23,42,0.04)_1px,transparent_1px),linear-gradient(90deg,rgba(15,23,42,0.04)_1px,transparent_1px)] bg-[size:42px_42px] opacity-[0.28] dark:bg-[linear-gradient(rgba(255,255,255,0.04)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.04)_1px,transparent_1px)] dark:opacity-[0.07]" />
         <div className="relative mx-auto max-w-6xl">
-          <div className="grid items-center gap-14 lg:grid-cols-[1.2fr_0.8fr]">
+          <div className="grid items-center gap-10 sm:gap-14 lg:grid-cols-[1.2fr_0.8fr]">
             <div>
-              <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-red-500/30 bg-red-500/10 px-4 py-1.5 text-xs font-bold uppercase tracking-[0.24em] text-red-200">
+              <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-red-500/20 bg-white/70 px-4 py-1.5 text-xs font-bold uppercase tracking-[0.24em] text-red-600 shadow-sm dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-200">
                 UIChicago
                 <span className="h-1.5 w-1.5 rounded-full bg-red-400" />
                 Student platform
               </div>
 
-              <h1 className="max-w-4xl text-5xl font-black tracking-[-0.05em] text-white md:text-7xl">
+              <h1 className="max-w-4xl text-4xl font-black tracking-[-0.05em] text-zinc-950 dark:text-white sm:text-5xl md:text-7xl">
                 The map for figuring out
-                <span className="block bg-gradient-to-r from-white via-red-200 to-red-500 bg-clip-text text-transparent">
+                <span className="block bg-gradient-to-r from-zinc-950 via-red-600 to-red-500 bg-clip-text text-transparent dark:from-white dark:via-red-200 dark:to-red-500">
                   all of UIC.
                 </span>
               </h1>
 
-              <p className="mt-6 max-w-2xl text-lg leading-8 text-zinc-300 md:text-xl">
-                Explore courses, compare professors, ask Sparky for guidance, and switch into a dedicated study mode when it is time to prepare.
-                <span className="text-zinc-100"> UIChicago is the platform. Sparky is the AI inside it.</span>
+              <p className="mt-5 max-w-2xl text-base leading-7 text-zinc-600 dark:text-zinc-300 sm:mt-6 sm:text-lg sm:leading-8 md:text-xl">
+                Explore courses, compare professors, and ask OpenSparky AI when you want answers fast.
               </p>
 
               <div className="mt-10">
                 <HeroSearchBar />
               </div>
 
-              <div className="mt-8 flex flex-wrap gap-3 text-sm">
+              <div className="mt-8 grid grid-cols-1 gap-3 text-sm sm:max-w-[34rem] sm:grid-cols-2">
                 <Link
                   href="/courses"
-                  className="premium-button group inline-flex items-center gap-2 rounded-full border border-emerald-400/20 bg-[linear-gradient(180deg,rgba(255,255,255,0.08),rgba(255,255,255,0.03))] px-5 py-3 font-semibold text-zinc-50 shadow-[0_10px_28px_rgba(0,0,0,0.16)] transition hover:border-emerald-400/45 hover:bg-[linear-gradient(180deg,rgba(16,185,129,0.16),rgba(255,255,255,0.06))] hover:shadow-[0_16px_38px_rgba(16,185,129,0.12)]"
+                  className="premium-button group inline-flex w-full items-center justify-between gap-2 rounded-full border border-emerald-300/50 bg-white/80 px-5 py-3 font-semibold text-zinc-900 shadow-[0_10px_28px_rgba(0,0,0,0.08)] transition hover:border-emerald-400/60 hover:bg-emerald-50 hover:shadow-[0_16px_38px_rgba(16,185,129,0.12)] dark:border-emerald-400/25 dark:bg-[linear-gradient(180deg,rgba(20,24,29,0.96),rgba(10,13,17,0.94))] dark:text-zinc-100 dark:shadow-[0_10px_28px_rgba(0,0,0,0.28)] dark:hover:border-emerald-400/45 dark:hover:bg-[linear-gradient(180deg,rgba(16,33,27,0.98),rgba(10,18,15,0.96))]"
                 >
-                  <span className="inline-flex h-2.5 w-2.5 rounded-full bg-emerald-400 shadow-[0_0_16px_rgba(52,211,153,0.55)]" />
-                  Browse courses
-                  <span className="text-zinc-400 transition group-hover:translate-x-0.5 group-hover:text-zinc-100">→</span>
+                  <span className="inline-flex items-center gap-2">
+                    <span className="inline-flex h-2.5 w-2.5 rounded-full bg-emerald-400 shadow-[0_0_16px_rgba(52,211,153,0.55)]" />
+                    Browse courses
+                  </span>
+                  <span className="text-zinc-500 transition group-hover:translate-x-0.5 group-hover:text-zinc-900 dark:text-zinc-400 dark:group-hover:text-zinc-100">→</span>
                 </Link>
                 <Link
                   href="/professors"
-                  className="premium-button group inline-flex items-center gap-2 rounded-full border border-sky-400/20 bg-[linear-gradient(180deg,rgba(255,255,255,0.08),rgba(255,255,255,0.03))] px-5 py-3 font-semibold text-zinc-50 shadow-[0_10px_28px_rgba(0,0,0,0.16)] transition hover:border-sky-400/45 hover:bg-[linear-gradient(180deg,rgba(56,189,248,0.16),rgba(255,255,255,0.06))] hover:shadow-[0_16px_38px_rgba(56,189,248,0.12)]"
+                  className="premium-button group inline-flex w-full items-center justify-between gap-2 rounded-full border border-sky-300/50 bg-white/80 px-5 py-3 font-semibold text-zinc-900 shadow-[0_10px_28px_rgba(0,0,0,0.08)] transition hover:border-sky-400/60 hover:bg-sky-50 hover:shadow-[0_16px_38px_rgba(56,189,248,0.12)] dark:border-sky-400/25 dark:bg-[linear-gradient(180deg,rgba(19,24,31,0.96),rgba(10,13,18,0.94))] dark:text-zinc-100 dark:shadow-[0_10px_28px_rgba(0,0,0,0.28)] dark:hover:border-sky-400/45 dark:hover:bg-[linear-gradient(180deg,rgba(16,30,40,0.98),rgba(10,18,24,0.96))]"
                 >
-                  <span className="inline-flex h-2.5 w-2.5 rounded-full bg-sky-400 shadow-[0_0_16px_rgba(56,189,248,0.55)]" />
-                  Explore professors
-                  <span className="text-zinc-400 transition group-hover:translate-x-0.5 group-hover:text-zinc-100">→</span>
+                  <span className="inline-flex items-center gap-2">
+                    <span className="inline-flex h-2.5 w-2.5 rounded-full bg-sky-400 shadow-[0_0_16px_rgba(56,189,248,0.55)]" />
+                    Explore professors
+                  </span>
+                  <span className="text-zinc-500 transition group-hover:translate-x-0.5 group-hover:text-zinc-900 dark:text-zinc-400 dark:group-hover:text-zinc-100">→</span>
                 </Link>
                 <Link
                   href="/chat"
-                  className="premium-button group inline-flex items-center gap-2 rounded-full border border-red-400/40 bg-[linear-gradient(180deg,rgba(239,68,68,0.22),rgba(127,29,29,0.18))] px-5 py-3 font-semibold text-red-50 shadow-[0_12px_32px_rgba(239,68,68,0.16)] transition hover:border-red-300/60 hover:bg-[linear-gradient(180deg,rgba(239,68,68,0.32),rgba(127,29,29,0.22))] hover:shadow-[0_18px_40px_rgba(239,68,68,0.2)]"
+                  className="premium-button group inline-flex w-full items-center justify-between gap-2 rounded-full border border-red-400/40 bg-[linear-gradient(180deg,rgba(239,68,68,0.22),rgba(127,29,29,0.18))] px-5 py-3 font-semibold text-red-50 shadow-[0_12px_32px_rgba(239,68,68,0.16)] transition hover:border-red-300/60 hover:bg-[linear-gradient(180deg,rgba(239,68,68,0.32),rgba(127,29,29,0.22))] hover:shadow-[0_18px_40px_rgba(239,68,68,0.2)]"
                 >
-                  <span className="inline-flex h-2.5 w-2.5 rounded-full bg-red-400 shadow-[0_0_16px_rgba(248,113,113,0.58)]" />
-                  Open Sparky
+                  <span className="inline-flex items-center gap-2">
+                    <span className="inline-flex h-2.5 w-2.5 rounded-full bg-red-400 shadow-[0_0_16px_rgba(248,113,113,0.58)]" />
+                    OpenSparky AI
+                  </span>
                   <span className="text-red-200 transition group-hover:translate-x-0.5 group-hover:text-white">→</span>
+                </Link>
+                <Link
+                  href="/study"
+                  className="premium-button group inline-flex w-full items-center justify-between gap-2 rounded-full border border-violet-300/50 bg-white/80 px-5 py-3 font-semibold text-zinc-900 shadow-[0_10px_28px_rgba(0,0,0,0.08)] transition hover:border-violet-400/60 hover:bg-violet-50 hover:shadow-[0_16px_38px_rgba(139,92,246,0.14)] dark:border-violet-400/25 dark:bg-[linear-gradient(180deg,rgba(31,24,40,0.96),rgba(18,12,27,0.94))] dark:text-zinc-100 dark:shadow-[0_10px_28px_rgba(0,0,0,0.28)] dark:hover:border-violet-400/45 dark:hover:bg-[linear-gradient(180deg,rgba(43,28,59,0.98),rgba(28,18,40,0.96))]"
+                >
+                  <span className="inline-flex items-center gap-2">
+                    <span className="inline-flex h-2.5 w-2.5 rounded-full bg-violet-400 shadow-[0_0_16px_rgba(167,139,250,0.58)]" />
+                    My School
+                  </span>
+                  <span className="text-zinc-500 transition group-hover:translate-x-0.5 group-hover:text-zinc-900 dark:text-violet-200/80 dark:group-hover:text-violet-100">→</span>
                 </Link>
               </div>
             </div>
 
             <div className="relative lg:-mr-4">
               <div className="absolute -inset-6 rounded-[2rem] bg-gradient-to-br from-red-500/20 via-transparent to-sky-500/10 blur-3xl" />
-              <div className="relative overflow-hidden rounded-[2rem] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.08),rgba(255,255,255,0.04))] p-6 shadow-2xl shadow-black/30 backdrop-blur-xl lg:p-7">
-                <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(239,68,68,0.12),transparent_32%),radial-gradient(circle_at_100%_0%,rgba(56,189,248,0.08),transparent_26%)]" />
+              <div className="relative overflow-hidden rounded-[2rem] border border-zinc-200 bg-white/85 p-4 shadow-2xl shadow-black/10 backdrop-blur-xl dark:border-white/10 dark:bg-[linear-gradient(180deg,rgba(17,19,27,0.98),rgba(9,10,15,0.95))] dark:shadow-[0_30px_80px_rgba(0,0,0,0.38)] sm:p-6 lg:p-7">
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(239,68,68,0.08),transparent_32%),radial-gradient(circle_at_100%_0%,rgba(56,189,248,0.06),transparent_26%)] dark:bg-[radial-gradient(circle_at_top_left,rgba(239,68,68,0.18),transparent_30%),radial-gradient(circle_at_100%_0%,rgba(56,189,248,0.14),transparent_24%),linear-gradient(180deg,rgba(255,255,255,0.02),transparent_45%)]" />
 
                 <div className="relative">
-                  <div className="flex items-start justify-between gap-6">
+                  <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between sm:gap-6">
                     <div className="min-w-0">
-                      <div className="text-xs font-bold uppercase tracking-[0.24em] text-zinc-400">UIC Snapshot</div>
-                      <div className="mt-3 max-w-[11ch] text-[2.35rem] font-black leading-[0.98] tracking-[-0.055em] text-white">
-                        What students actually need
+                      <div className="text-xs font-bold uppercase tracking-[0.24em] text-zinc-500 dark:text-zinc-400">UIC Snapshot</div>
+                      <div className="mt-3 max-w-[12ch] text-[2rem] font-black leading-[0.98] tracking-[-0.055em] text-zinc-950 dark:text-white sm:text-[2.35rem]">
+                        Search, compare, ask AI.
                       </div>
+                      <p className="mt-3 max-w-sm text-sm leading-6 text-zinc-600 dark:text-zinc-400">
+                        Three fast ways to figure out UIC.
+                      </p>
                     </div>
 
-                    <div className="min-w-[15rem] rounded-[1.6rem] border border-red-400/25 bg-[linear-gradient(180deg,rgba(239,68,68,0.16),rgba(127,29,29,0.10))] p-4 shadow-[0_14px_34px_rgba(239,68,68,0.14)]">
-                      <div className="text-right text-[10px] font-bold uppercase tracking-[0.24em] text-red-300">Live layer</div>
+                    <div className="rounded-[1.6rem] border border-red-300/35 bg-[linear-gradient(180deg,rgba(254,242,242,0.96),rgba(255,255,255,0.9))] p-4 shadow-[0_14px_34px_rgba(239,68,68,0.08)] dark:border-red-400/25 dark:bg-[linear-gradient(180deg,rgba(57,21,25,0.88),rgba(24,13,18,0.82))] dark:shadow-[0_14px_34px_rgba(239,68,68,0.16)] sm:min-w-[16rem]">
+                      <div className="text-right text-[10px] font-bold uppercase tracking-[0.24em] text-red-600 dark:text-red-300">Live layer</div>
                       <div className="mt-3 grid grid-cols-2 gap-2">
-                        <span className="rounded-full border border-white/10 bg-white/[0.06] px-3 py-2 text-center text-sm font-semibold text-white">
+                        <span className="rounded-full border border-red-100 bg-white px-2.5 py-2 text-center text-[13px] font-semibold text-zinc-900 dark:border-white/10 dark:bg-white/[0.05] dark:text-zinc-100">
                           Courses
                         </span>
-                        <span className="rounded-full border border-white/10 bg-white/[0.06] px-3 py-2 text-center text-sm font-semibold text-white">
+                        <span className="rounded-full border border-red-100 bg-white px-2.5 py-2 text-center text-[13px] font-semibold text-zinc-900 dark:border-white/10 dark:bg-white/[0.05] dark:text-zinc-100">
                           Professors
                         </span>
-                        <span className="rounded-full border border-white/10 bg-white/[0.06] px-3 py-2 text-center text-sm font-semibold text-white">
-                          Study Mode
+                        <span className="rounded-full border border-red-100 bg-white px-2.5 py-2 text-center text-[13px] font-semibold text-zinc-900 dark:border-white/10 dark:bg-white/[0.05] dark:text-zinc-100">
+                          My School
                         </span>
-                        <span className="rounded-full border border-white/10 bg-white/[0.06] px-3 py-2 text-center text-sm font-semibold text-white">
-                          Sparky
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="mt-6 h-px w-full bg-gradient-to-r from-white/15 via-white/10 to-transparent" />
-
-                  <div className="mt-6 grid gap-4 lg:grid-cols-[0.82fr_1.18fr]">
-                    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
-                      {[
-                        ["Search fast", "Browse structured data first"],
-                        ["Ask Sparky", "Get quick synthesis when needed"],
-                      ].map(([title, body]) => (
-                        <div
-                          key={title}
-                          className="rounded-[1.35rem] border border-white/10 bg-white/[0.03] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]"
-                        >
-                          <div className="text-sm font-semibold text-white">{title}</div>
-                          <div className="mt-1.5 text-sm leading-6 text-zinc-400">{body}</div>
-                        </div>
-                      ))}
-                    </div>
-
-                    <div className="rounded-[1.5rem] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.02))] p-5">
-                      <p className="text-lg leading-8 text-zinc-200">
-                        UIChicago brings course data, professor rankings, a dedicated study mode, and campus answers into one place.
-                      </p>
-
-                      <div className="mt-4 flex flex-wrap gap-2.5">
-                        <span className="rounded-full border border-emerald-400/20 bg-emerald-500/10 px-3 py-1.5 text-xs font-semibold text-emerald-200">
-                          Course data
-                        </span>
-                        <span className="rounded-full border border-sky-400/20 bg-sky-500/10 px-3 py-1.5 text-xs font-semibold text-sky-200">
-                          Professor rankings
-                        </span>
-                        <span className="rounded-full border border-indigo-400/20 bg-indigo-500/10 px-3 py-1.5 text-xs font-semibold text-indigo-200">
-                          Study mode
-                        </span>
-                        <span className="rounded-full border border-red-400/20 bg-red-500/10 px-3 py-1.5 text-xs font-semibold text-red-200">
-                          Sparky AI
+                        <span className="rounded-full border border-red-100 bg-white px-2 py-2 text-center text-[12px] font-semibold leading-tight text-zinc-900 dark:border-white/10 dark:bg-white/[0.05] dark:text-zinc-100">
+                          OpenSparky AI
                         </span>
                       </div>
                     </div>
                   </div>
+
+                  <div className="mt-6 h-px w-full bg-gradient-to-r from-zinc-300 via-zinc-200 to-transparent dark:from-white/15 dark:via-white/10" />
+
+                  <div className="mt-6 grid gap-3 sm:grid-cols-3">
+                    {[
+                      ["Search courses", "Structured data"],
+                      ["Compare professors", "Rankings and history"],
+                      ["Ask OpenSparky AI", "Instant answers"],
+                    ].map(([title, body]) => (
+                      <div
+                        key={title}
+                        className="rounded-[1.35rem] border border-zinc-200 bg-white/85 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.35)] dark:border-white/10 dark:!bg-[linear-gradient(180deg,rgba(28,32,40,0.96),rgba(18,21,29,0.94))] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]"
+                      >
+                        <div className="text-sm font-semibold text-zinc-950 dark:text-white">{title}</div>
+                        <div className="mt-1.5 text-sm leading-6 text-zinc-600 dark:text-zinc-400">{body}</div>
+                      </div>
+                    ))}
+                  </div>
+
                 </div>
               </div>
             </div>
@@ -228,7 +226,7 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="border-b border-zinc-200 bg-white px-6 py-7 dark:border-white/10 dark:bg-zinc-950">
+      <section className="border-b border-zinc-200 bg-white px-4 py-7 dark:border-white/10 dark:bg-zinc-950 sm:px-6">
         <div className="mx-auto grid max-w-5xl grid-cols-1 gap-y-5 md:grid-cols-3">
           {proofStats.map((stat) => (
             <div key={stat.label} className="text-center">
@@ -365,25 +363,7 @@ export default function Home() {
         <SparkyShowcase />
       </section>
 
-      <footer className="border-t border-zinc-200 px-6 py-8 text-sm dark:border-white/10">
-        <div className="mx-auto flex max-w-6xl flex-col gap-4 text-zinc-500 md:flex-row md:items-center md:justify-between">
-          <div className="text-sm text-zinc-500">
-            <span className="font-medium text-zinc-800 dark:text-zinc-200">UIChicago</span> by Sparky Labs
-          </div>
-          <div className="text-sm text-zinc-500 md:text-center">
-            Powered by real course, professor, and campus data
-          </div>
-          <div className="flex flex-col items-center gap-1 text-center md:items-end md:text-right">
-            <a
-              href="mailto:uicratings@gmail.com"
-              className="text-sm font-medium text-zinc-600 transition hover:text-red-500 dark:text-zinc-300 dark:hover:text-red-300"
-            >
-              uicratings@gmail.com
-            </a>
-            <div className="text-[11px] tracking-[0.12em] text-zinc-500/90">Unofficial and not affiliated with UIC</div>
-          </div>
-        </div>
-      </footer>
+      <SiteFooter />
     </main>
   );
 }

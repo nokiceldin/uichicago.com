@@ -17,14 +17,14 @@ export default async function SignInPage({
   }
 
   return (
-    <main className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(239,68,68,0.18),transparent_25%),linear-gradient(180deg,#0d0d10_0%,#120809_55%,#09090b_100%)] px-6 py-16 text-white">
+    <main className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(239,68,68,0.18),transparent_25%),linear-gradient(180deg,#0d0d10_0%,#120809_55%,#09090b_100%)] px-4 py-10 text-white sm:px-6 sm:py-16">
       <div className="mx-auto flex min-h-[78vh] max-w-5xl items-center">
-        <div className="grid w-full gap-10 overflow-hidden rounded-[2rem] border border-white/10 bg-white/[0.04] p-8 shadow-[0_30px_90px_rgba(0,0,0,0.32)] backdrop-blur-xl lg:grid-cols-[1.1fr_0.9fr] lg:p-10">
+        <div className="grid w-full gap-8 overflow-hidden rounded-[2rem] border border-white/10 bg-white/[0.04] p-5 shadow-[0_30px_90px_rgba(0,0,0,0.32)] backdrop-blur-xl sm:p-8 lg:grid-cols-[1.1fr_0.9fr] lg:p-10">
           <div>
             <div className="inline-flex items-center gap-2 rounded-full border border-red-400/20 bg-red-500/10 px-4 py-1.5 text-xs font-bold uppercase tracking-[0.24em] text-red-200">
               UIChicago
             </div>
-            <h1 className="mt-6 max-w-[12ch] text-4xl font-black tracking-[-0.05em] text-white md:text-5xl">
+            <h1 className="mt-5 max-w-[12ch] text-3xl font-black tracking-[-0.05em] text-white sm:mt-6 md:text-5xl">
               Sign in once.
               <span className="block bg-gradient-to-r from-white via-red-200 to-red-400 bg-clip-text text-transparent">
                 Stay known everywhere.
@@ -35,7 +35,7 @@ export default async function SignInPage({
             </p>
           </div>
 
-          <div className="rounded-[1.75rem] border border-white/10 bg-black/20 p-6">
+          <div className="rounded-[1.75rem] border border-white/10 bg-black/20 p-5 sm:p-6">
             <div className="text-sm font-semibold uppercase tracking-[0.24em] text-zinc-400">Continue</div>
             <div className="mt-3 text-2xl font-bold tracking-[-0.04em] text-white">Fast, clean Google sign in</div>
             <div className="mt-6">

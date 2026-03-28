@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import fs from "fs";
 import path from "path";
 import Link from "next/link";
+import SiteFooter from "@/app/components/SiteFooter";
 
 type ProfCoursesMap = Record<string, string[]>;
 
@@ -118,13 +119,13 @@ console.log("peers found:", peers?.length);  // add this after the findMany too
     <main className="relative min-h-screen bg-zinc-50 text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100">
   <div className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-72 bg-gradient-to-b from-sky-50/60 to-transparent dark:from-sky-950/30 dark:to-transparent" />
 
-  <div className="mx-auto max-w-3xl px-4 py-10 sm:px-6 sm:py-16">
+  <div className="mx-auto max-w-3xl px-4 py-6 sm:px-6 sm:py-16">
     {/* Profile card */}
         <div className="overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-lg dark:border-white/8 dark:bg-zinc-900/50 dark:shadow-black/40">
           <div className={`h-1 w-full ${bg}`} />
           <div className="p-6 sm:p-8">
-            <div className="flex items-start gap-6">
-              <div className={`flex-shrink-0 flex h-20 w-20 sm:h-24 sm:w-24 items-center justify-center rounded-2xl text-3xl sm:text-4xl font-black text-white shadow-lg ${bg}`}>
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:gap-6">
+              <div className={`flex h-20 w-20 items-center justify-center rounded-2xl text-3xl font-black text-white shadow-lg sm:h-24 sm:w-24 sm:text-4xl ${bg}`}>
                 {Number(professor.quality || 0).toFixed(1)}
               </div>
               <div className="min-w-0 flex-1">
@@ -192,42 +193,65 @@ console.log("peers found:", peers?.length);  // add this after the findMany too
             <div className="px-6 py-12 text-center text-sm text-zinc-400 dark:text-zinc-600">No course data found for this professor.</div>
           ) : (
             <>
-              <div className="grid grid-cols-12 bg-zinc-50 dark:bg-zinc-950/50 px-5 sm:px-6 py-3 text-[10px] font-bold uppercase tracking-widest text-zinc-500 dark:text-zinc-600">
-                <div className="col-span-3">Course</div>
-                <div className="col-span-6">Title</div>
-                <div className="col-span-3 text-right">Rank</div>
-              </div>
-              <ul className="divide-y divide-zinc-100 dark:divide-white/[0.04]">
+              <div className="space-y-3 px-4 py-4 sm:hidden">
                 {courseRanks.map((r) => (
-                  <li key={r.courseLabel} className="grid grid-cols-12 items-center px-5 sm:px-6 py-4 text-sm hover:bg-zinc-50 dark:hover:bg-white/[0.03] transition-colors">
-  <div className="col-span-3 font-bold text-zinc-900 dark:text-zinc-100">
-    <Link
-      href={`/courses/${r.courseLabel.split(" ")[0].toLowerCase()}/${r.courseLabel.split(" ")[1]?.toLowerCase()}`}
-      className="transition-colors hover:text-sky-600 hover:underline dark:hover:text-sky-400"
-    >
-      {r.courseLabel}
-    </Link>
-  </div>
-  <div className="col-span-6 text-zinc-400 dark:text-zinc-500 text-xs pr-4">{r.courseTitle || "Untitled"}</div>
-  <div className="col-span-3 flex justify-end">
-    {r.profRank ? (
-      <span className={`inline-flex items-center rounded-lg px-2.5 py-1 text-xs font-bold ring-1 ${rankBadgeClass(r.profRank, r.totalInCourse)}`}>
-        #{r.profRank} of {r.totalInCourse}
-      </span>
-    ) : <span className="text-xs text-zinc-300 dark:text-zinc-700">No data</span>}
-  </div>
-</li>
+                  <div key={r.courseLabel} className="rounded-2xl bg-zinc-50 p-4 ring-1 ring-zinc-200 dark:bg-white/[0.03] dark:ring-white/8">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <Link
+                          href={`/courses/${r.courseLabel.split(" ")[0].toLowerCase()}/${r.courseLabel.split(" ")[1]?.toLowerCase()}`}
+                          className="text-base font-bold text-zinc-900 transition-colors hover:text-sky-600 hover:underline dark:text-zinc-100 dark:hover:text-sky-400"
+                        >
+                          {r.courseLabel}
+                        </Link>
+                        <div className="mt-1 text-sm leading-6 text-zinc-500 dark:text-zinc-400">{r.courseTitle || "Untitled"}</div>
+                      </div>
+                      {r.profRank ? (
+                        <span className={`inline-flex shrink-0 items-center rounded-lg px-2.5 py-1 text-xs font-bold ring-1 ${rankBadgeClass(r.profRank, r.totalInCourse)}`}>
+                          #{r.profRank}
+                        </span>
+                      ) : <span className="text-xs text-zinc-300 dark:text-zinc-700">No data</span>}
+                    </div>
+                    {r.profRank ? <div className="mt-3 text-xs text-zinc-500 dark:text-zinc-400">Ranked #{r.profRank} of {r.totalInCourse} professors in this course.</div> : null}
+                  </div>
                 ))}
-              </ul>
+              </div>
+              <div className="hidden sm:block">
+                <div className="grid grid-cols-12 bg-zinc-50 dark:bg-zinc-950/50 px-5 sm:px-6 py-3 text-[10px] font-bold uppercase tracking-widest text-zinc-500 dark:text-zinc-600">
+                  <div className="col-span-3">Course</div>
+                  <div className="col-span-6">Title</div>
+                  <div className="col-span-3 text-right">Rank</div>
+                </div>
+                <ul className="divide-y divide-zinc-100 dark:divide-white/[0.04]">
+                  {courseRanks.map((r) => (
+                    <li key={r.courseLabel} className="grid grid-cols-12 items-center px-5 sm:px-6 py-4 text-sm hover:bg-zinc-50 dark:hover:bg-white/[0.03] transition-colors">
+                      <div className="col-span-3 font-bold text-zinc-900 dark:text-zinc-100">
+                        <Link
+                          href={`/courses/${r.courseLabel.split(" ")[0].toLowerCase()}/${r.courseLabel.split(" ")[1]?.toLowerCase()}`}
+                          className="transition-colors hover:text-sky-600 hover:underline dark:hover:text-sky-400"
+                        >
+                          {r.courseLabel}
+                        </Link>
+                      </div>
+                      <div className="col-span-6 pr-4 text-xs text-zinc-400 dark:text-zinc-500">{r.courseTitle || "Untitled"}</div>
+                      <div className="col-span-3 flex justify-end">
+                        {r.profRank ? (
+                          <span className={`inline-flex items-center rounded-lg px-2.5 py-1 text-xs font-bold ring-1 ${rankBadgeClass(r.profRank, r.totalInCourse)}`}>
+                            #{r.profRank} of {r.totalInCourse}
+                          </span>
+                        ) : <span className="text-xs text-zinc-300 dark:text-zinc-700">No data</span>}
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              </div>
             </>
           )}
         </div>
 
-        <footer className="mt-12 border-t border-zinc-100 dark:border-white/8 pt-8 text-center text-sm text-zinc-400 dark:text-zinc-600">
-          <p>Contact: <a href="mailto:uicratings@gmail.com" className="transition-colors hover:text-sky-500 dark:hover:text-sky-400">uicratings@gmail.com</a></p>
-          <p className="mt-1">Not affiliated with UIC or RMP.</p>
-        </footer>
       </div>
+
+      <SiteFooter className="mt-12" />
     </main>
   );
 }

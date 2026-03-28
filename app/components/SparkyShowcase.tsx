@@ -122,13 +122,13 @@ export default function SparkyShowcase() {
         <p className="mt-4 max-w-xl text-lg leading-8 text-zinc-600 dark:text-zinc-400">
           Use chat for recommendations, plans, and quick answers when the data pages alone are not enough.
         </p>
-        <div className="mt-8 overflow-hidden rounded-[1.7rem] border border-zinc-200 bg-zinc-50 shadow-[0_20px_50px_rgba(0,0,0,0.08)] dark:border-white/10 dark:bg-[linear-gradient(180deg,rgba(15,17,22,0.92),rgba(11,13,18,0.9))] dark:shadow-[0_24px_60px_rgba(0,0,0,0.3)]">
+        <div className="mt-8 overflow-hidden rounded-[1.7rem] border border-zinc-300 bg-white shadow-[0_22px_54px_rgba(15,23,42,0.10)] dark:border-white/10 dark:bg-[linear-gradient(180deg,rgba(15,17,22,0.92),rgba(11,13,18,0.9))] dark:shadow-[0_24px_60px_rgba(0,0,0,0.3)]">
           <div className="flex items-center justify-between border-b border-zinc-200/80 px-5 py-4 dark:border-white/8">
             <div>
               <div className="text-[11px] font-bold uppercase tracking-[0.22em] text-red-500">Live example</div>
               <div className="mt-1 text-sm font-semibold text-zinc-900 dark:text-white">Real student questions</div>
             </div>
-            <div className="rounded-full border border-red-500/20 bg-red-500/10 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-red-400">
+            <div className="rounded-full border border-red-300/45 bg-red-50 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-red-600 dark:border-red-500/20 dark:bg-red-500/10 dark:text-red-400">
               Sparky AI
             </div>
           </div>
@@ -141,7 +141,7 @@ export default function SparkyShowcase() {
             <div className="flex items-start gap-3">
               <img src="/sparky-icon.png" alt="Sparky" className="mt-1 h-7 w-7 shrink-0 object-contain" />
               <div className="max-w-[92%]">
-                <div className="min-h-[10.5rem] text-sm leading-7 text-zinc-700 transition-all duration-300 dark:text-zinc-300">
+                <div className="min-h-[10.5rem] text-sm leading-7 text-zinc-800 transition-all duration-300 dark:text-zinc-300">
                   {activeExample.answer}
                 </div>
                 <div className="mt-4 flex min-h-[2rem] flex-wrap gap-2">
@@ -150,10 +150,10 @@ export default function SparkyShowcase() {
                       key={chip}
                       className={`rounded-full px-3 py-1 text-[11px] font-semibold ${
                         index === 0
-                          ? "border border-emerald-500/20 bg-emerald-500/10 text-emerald-300"
+                          ? "border border-emerald-300 bg-emerald-50 text-emerald-700 dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-300"
                           : index === 1
-                          ? "border border-sky-500/20 bg-sky-500/10 text-sky-300"
-                          : "border border-red-500/20 bg-red-500/10 text-red-300"
+                          ? "border border-sky-300 bg-sky-50 text-sky-700 dark:border-sky-500/20 dark:bg-sky-500/10 dark:text-sky-300"
+                          : "border border-red-300 bg-red-50 text-red-700 dark:border-red-500/20 dark:bg-red-500/10 dark:text-red-300"
                       }`}
                     >
                       {chip}
@@ -184,15 +184,15 @@ export default function SparkyShowcase() {
               key={item.tag}
               href={`/chat?q=${encodeURIComponent(item.question)}`}
               style={{ animationDelay: `${45 * (visiblePrompts.indexOf(item) + 1)}ms` }}
-              className="premium-card premium-fade-up rounded-[1.2rem] border border-zinc-200 bg-zinc-50 p-4 transition hover:border-red-400/40 hover:bg-white hover:shadow-lg dark:border-white/10 dark:bg-[rgba(15,17,22,0.75)] dark:hover:bg-[rgba(19,22,28,0.92)]"
+              className="premium-card premium-fade-up rounded-[1.2rem] border border-zinc-300 bg-white p-4 shadow-[0_10px_28px_rgba(15,23,42,0.05)] transition hover:border-red-400/40 hover:bg-white hover:shadow-lg dark:border-white/10 dark:bg-[rgba(15,17,22,0.75)] dark:hover:bg-[rgba(19,22,28,0.92)]"
             >
-              <div className="inline-flex items-center gap-2 rounded-full border border-red-400/35 bg-red-400/14 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-red-300 dark:border-red-400/30 dark:bg-red-400/16 dark:text-red-200">
+              <div className="inline-flex items-center gap-2 rounded-full border border-red-300/50 bg-red-50 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-red-600 dark:border-red-400/30 dark:bg-red-400/16 dark:text-red-200">
                 <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-white/10 text-[13px] not-italic leading-none">
                   {item.emoji}
                 </span>
                 {item.tag}
               </div>
-              <p className="mt-3 min-h-[3.5rem] text-sm leading-7 text-zinc-700 dark:text-zinc-300">
+              <p className="mt-3 min-h-[3.5rem] text-sm leading-7 text-zinc-800 dark:text-zinc-300">
                 {item.question}
               </p>
             </Link>

@@ -1,6 +1,7 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { buildExam, buildQuestionBank, materializeGeneratedStudySet } from "./engine";
 import { examGenerationPrompt, explanationPrompt, flashcardGenerationPrompt, noteActionPrompt, quizGenerationPrompt, structuredNotesPrompt, studyPlanPrompt } from "./ai-prompts";
+import { estimateFlashcardCountFromText, parseExplicitFlashcardsFromText } from "./flashcard-parser";
 import { validateGeneratedExam, validateGeneratedFlashcards, validateGeneratedQuiz, validateNoteAction, validateStructuredLectureNotes, validateStudyPlan } from "./validation";
 import type { GeneratedExamPayload, GeneratedFlashcardPayload, GeneratedQuizPayload, NoteActionPayload, StructuredLectureNotesPayload, StudyPlanPayload, StudySet } from "./types";
 
@@ -42,8 +43,29 @@ export async function generateFlashcardsFromText(input: {
     throw new Error("Source material is required.");
   }
 
+  const parsedCards = parseExplicitFlashcardsFromText(trimmed);
+  if (parsedCards.length) {
+    return validateGeneratedFlashcards({
+      setTitle: input.topic || input.course || "",
+      cards: parsedCards.map((card, index) => ({
+        front: card.front,
+        back: card.back,
+        hint: "",
+        difficulty: index % 3 === 0 ? "easy" : index % 3 === 1 ? "medium" : "hard",
+        tags: input.topic ? [input.topic] : [],
+      })),
+    });
+  }
+
+  const desiredCount = Math.max(12, input.desiredCount ?? estimateFlashcardCountFromText(trimmed));
+
   if (anthropic) {
-    const raw = await requestJson(flashcardGenerationPrompt(input));
+    const raw = await requestJson(
+      flashcardGenerationPrompt({
+        ...input,
+        desiredCount,
+      }),
+    );
     return validateGeneratedFlashcards(raw);
   }
 
@@ -51,16 +73,16 @@ export async function generateFlashcardsFromText(input: {
     .split(/\n+/)
     .map((line) => line.trim())
     .filter(Boolean)
-    .slice(0, input.desiredCount ?? 12);
+    .slice(0, desiredCount);
 
   return validateGeneratedFlashcards({
-    setTitle: input.topic || input.course || "Generated study set",
+    setTitle: input.topic || input.course || "",
     cards: lines.map((line, index) => {
       const [front, ...rest] = line.split(/[:\-–]/);
       return {
         front: front.trim(),
         back: rest.join(" ").trim() || `Explain ${front.trim()} in your own words.`,
-        hint: `Card ${index + 1} generated from your notes.`,
+        hint: "",
         difficulty: index % 3 === 0 ? "easy" : index % 3 === 1 ? "medium" : "hard",
         tags: input.topic ? [input.topic] : [],
       };

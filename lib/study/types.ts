@@ -41,6 +41,7 @@ export interface StudySet {
   id: string;
   title: string;
   description: string;
+  folder?: string;
   course: string;
   subject: string;
   tags: string[];
@@ -68,6 +69,7 @@ export interface StructuredLectureNotes {
 export interface StudyNote {
   id: string;
   title: string;
+  folder?: string;
   course: string;
   noteDate: string;
   subject: string;

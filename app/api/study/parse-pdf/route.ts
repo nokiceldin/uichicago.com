@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { extractReadableTextFromUploadedFile } from "@/lib/chat/attachments";
 
 export async function POST(request: Request) {
   try {
@@ -9,19 +10,13 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Missing file." }, { status: 400 });
     }
 
-    const arrayBuffer = await file.arrayBuffer();
-    let text = "";
-
-    if (file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf")) {
-      const pdfModule = await import("pdf-parse");
-      const pdfParse = ("default" in pdfModule ? pdfModule.default : pdfModule) as (buf: Buffer) => Promise<{ text: string }>;
-      const payload = await pdfParse(Buffer.from(arrayBuffer));
-      text = payload.text || "";
-    } else {
-      text = Buffer.from(arrayBuffer).toString("utf-8");
-    }
-
-    const cleaned = text.replace(/\s+\n/g, "\n").replace(/\n{3,}/g, "\n\n").trim();
+    const data = Buffer.from(await file.arrayBuffer()).toString("base64");
+    const cleaned = await extractReadableTextFromUploadedFile({
+      name: file.name,
+      mimeType: file.type || "application/octet-stream",
+      data,
+      fileType: file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf") ? "pdf" : "text",
+    });
 
     if (!cleaned) {
       return NextResponse.json({ error: "No readable text was found in that file." }, { status: 400 });

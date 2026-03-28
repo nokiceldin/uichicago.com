@@ -1,8 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
-
-const STORAGE_KEY = "uicprof_theme";
+import { DEFAULT_THEME_MODE, DEFAULT_THEME_SCHEDULE, THEME_STORAGE_KEY, resolveEffectiveTheme } from "@/lib/site-settings";
+import type { SiteSettingsPayload } from "@/lib/study/profile";
 
 type Theme = "light" | "dark";
 
@@ -14,29 +13,29 @@ function applyTheme(theme: Theme) {
 
 export function getSavedTheme(): Theme | null {
   if (typeof window === "undefined") return null;
-  const v = window.localStorage.getItem(STORAGE_KEY);
-  if (v === "dark" || v === "light") return v;
-  return null;
+  try {
+    const raw = window.localStorage.getItem(THEME_STORAGE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as SiteSettingsPayload;
+    return resolveEffectiveTheme(parsed);
+  } catch {
+    return null;
+  }
 }
 
 export function saveTheme(theme: Theme) {
-  window.localStorage.setItem(STORAGE_KEY, theme);
+  window.localStorage.setItem(
+    THEME_STORAGE_KEY,
+    JSON.stringify({
+      themeMode: theme,
+      themeSchedule: DEFAULT_THEME_SCHEDULE,
+    }),
+  );
   applyTheme(theme);
 }
 
 export default function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [ready, setReady] = useState(false);
-
-  useEffect(() => {
-    const saved = getSavedTheme();
-    const theme: Theme =
-      saved ?? (window.matchMedia?.("(prefers-color-scheme: dark)").matches ? "dark" : "light");
-
-    applyTheme(theme);
-    setReady(true);
-  }, []);
-
-  if (!ready) return <>{children}</>;
-
+  const theme: Theme = getSavedTheme() ?? (DEFAULT_THEME_MODE === "dark" ? "dark" : "light");
+  applyTheme(theme);
   return <>{children}</>;
 }

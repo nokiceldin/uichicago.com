@@ -1,6 +1,22 @@
 import { prisma } from "@/lib/prisma";
 import { calcGpa, normName, mapKeyToDbName, courseLabel, courseTitle, getProfCourseMap } from "./utils";
 
+function isReliableRankingCourse(course: {
+  number?: string | null;
+  title?: string | null;
+  totalRegsAllTime?: number | null;
+}) {
+  const num = parseInt(course.number?.match(/\d+/)?.[0] ?? "0", 10);
+  const title = (course.title ?? "").toLowerCase();
+  const totalRegs = course.totalRegsAllTime ?? 0;
+
+  if (!Number.isFinite(num) || num <= 0 || num >= 500) return false;
+  if (totalRegs < 50) return false;
+  if (/special topics|spec topics|\bspec\b|independent study|ind study|thesis|seminar|research|advanced topics|wksp|workshop/.test(title)) return false;
+  if (/in the context of|freshman seminar|orientation|practicum for|teaching methods/.test(title)) return false;
+  return true;
+}
+
 // ─── Course detail ────────────────────────────────────────────────────────────
 
 export async function fetchCourseDetail(subject: string, number: string) {
@@ -129,12 +145,14 @@ export async function fetchCoursesBySubjectOrDept(
 
   const dir = easiestFirst ? "DESC" : "ASC";
   params.push(limit);
-  return prisma.$queryRawUnsafe(
+  const rows = await prisma.$queryRawUnsafe<any[]>(
     `SELECT subject, number, title, "avgGpa", "difficultyScore", "totalRegsAllTime", "deptName", "isGenEd", "genEdCategory"
      FROM "Course" WHERE ${conditions.join(" AND ")}
      ORDER BY "difficultyScore" ${dir} NULLS LAST, "avgGpa" ${dir} NULLS LAST LIMIT $${params.length}`,
     ...params
-  ) as Promise<any[]>;
+  );
+
+  return rows.filter(isReliableRankingCourse).slice(0, limit);
 }
 
 // ─── Gen Ed courses ───────────────────────────────────────────────────────────
@@ -144,15 +162,23 @@ export async function fetchGenEdCourses(category?: string | null, limit = 30) {
     ? { isGenEd: true, avgGpa: { not: null }, genEdCategory: { contains: category, mode: "insensitive" as const } }
     : { isGenEd: true, avgGpa: { not: null } };
 
-  return prisma.course.findMany({
+  const courses = await prisma.course.findMany({
     where,
     orderBy: [{ difficultyScore: "desc" }, { avgGpa: "desc" }],
-    take: limit,
+    take: limit * 3,
     select: {
       subject: true, number: true, title: true, avgGpa: true,
       difficultyScore: true, genEdCategory: true, totalRegsAllTime: true,
     },
   });
+
+  return courses
+    .filter((course) => {
+      if (!isReliableRankingCourse(course)) return false;
+      const num = parseInt(course.number?.match(/\d+/)?.[0] ?? "0", 10);
+      return Number.isFinite(num) && num > 0 && num < 300;
+    })
+    .slice(0, limit);
 }
 
 // ─── Professors by department ─────────────────────────────────────────────────
@@ -320,8 +346,8 @@ export async function fetchCourseGpaRanking(
     orderBy: easiestFirst
       ? [{ difficultyScore: "desc" }, { avgGpa: "desc" }]
       : [{ difficultyScore: "asc" }, { avgGpa: "asc" }],
-    take: limit,
+    take: limit * 4,
   });
 
-  return courses;
+  return courses.filter(isReliableRankingCourse).slice(0, limit);
 }

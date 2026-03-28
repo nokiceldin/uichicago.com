@@ -17,6 +17,7 @@ model User {
   accounts      Account[]
   sessions      Session[]
   studyProfile  StudyUser?
+  chatConversations ChatConversation[]
 
   @@map("auth_users")
 }
@@ -365,6 +366,21 @@ model QueryLog {
   @@index([answerMode])
 }
 
+model ChatConversation {
+  id            String   @id @default(cuid())
+  userId        String
+  title         String
+  messagesJson  String   @db.Text @default("[]")
+  messageCount  Int      @default(0)
+  lastMessageAt DateTime @default(now())
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, lastMessageAt(sort: Desc)])
+  @@map("chat_conversations")
+}
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // SPARKY V2 — DATA MODEL
 // All tables below are new. No V1 table is dropped or destructively altered.
@@ -607,6 +623,7 @@ model StudySet {
   owner       StudyUser?         @relation(fields: [ownerId], references: [id], onDelete: SetNull)
   title       String
   description String?            @db.Text
+  folder      String?
   course      String?
   subject     String?
   tags        String[]           @default([])
@@ -624,6 +641,7 @@ model StudySet {
   studyGroups   StudyGroupSet[]
 
   @@index([ownerId])
+  @@index([folder])
   @@index([course])
   @@index([subject])
   @@index([visibility])

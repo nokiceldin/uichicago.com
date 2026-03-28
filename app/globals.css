@@ -52,6 +52,15 @@ html {
   scrollbar-color: rgba(128,128,128,0.18) transparent;
 }
 
+.hide-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.hide-scroll {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
 /* Page transitions */
 @view-transition {
   navigation: auto;
@@ -156,6 +165,28 @@ select {
   }
 }
 
+@keyframes studyCardEnterNextFull {
+  from {
+    opacity: 0.72;
+    transform: translateX(14px) scale(0.992);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+@keyframes studyCardEnterPrevFull {
+  from {
+    opacity: 0.72;
+    transform: translateX(-14px) scale(0.992);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
 @keyframes studyRewardPop {
   0% {
     opacity: 0;
@@ -189,6 +220,18 @@ select {
   }
 }
 
+@keyframes featureTourPulse {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.01);
+    opacity: 0.92;
+  }
+}
+
 .study-appear {
   animation: studyFadeUp 220ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
@@ -201,12 +244,24 @@ select {
   animation: studyCardEnterPrev 280ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
+.study-card-enter-next-full {
+  animation: studyCardEnterNextFull 460ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.study-card-enter-prev-full {
+  animation: studyCardEnterPrevFull 460ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
 .study-reward-pop {
   animation: studyRewardPop 950ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 .study-confetti-piece {
   animation: studyConfettiBurst 1200ms cubic-bezier(0.18, 0.84, 0.32, 1) forwards;
+}
+
+.feature-tour-pulse {
+  animation: featureTourPulse 2.2s ease-in-out infinite;
 }
 
 .study-flashcards-fullscreen {
@@ -351,7 +406,8 @@ select {
   .study-toast,
   .study-premium-button,
   .study-premium-card,
-  .study-premium-panel {
+  .study-premium-panel,
+  .feature-tour-pulse {
     animation: none !important;
     transition-duration: 1ms !important;
   }

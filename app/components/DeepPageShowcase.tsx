@@ -111,7 +111,7 @@ export default function DeepPageShowcase() {
     <div className="grid gap-5 lg:grid-cols-2">
       <Link
         href={activeCourse.slug}
-        className="premium-card premium-fade-up group relative overflow-hidden rounded-[1.75rem] border border-zinc-200 bg-zinc-50 p-5 transition duration-300 hover:border-emerald-400/35 hover:shadow-xl dark:border-white/10 dark:bg-zinc-950"
+        className="premium-card premium-fade-up group relative overflow-hidden rounded-[1.75rem] border border-zinc-300 bg-white p-5 shadow-[0_18px_42px_rgba(15,23,42,0.08)] transition duration-300 hover:border-emerald-400/35 hover:shadow-xl dark:border-white/10 dark:bg-zinc-950"
       >
         <div className={`absolute inset-x-0 top-0 h-24 ${
           activeCourse.accent === "emerald"
@@ -152,14 +152,14 @@ export default function DeepPageShowcase() {
                 {activeCourse.department}
               </div>
             </div>
-            <div className="rounded-2xl border border-zinc-200 bg-white/85 px-3 py-2 dark:border-white/8 dark:bg-white/[0.04]">
+            <div className="rounded-2xl border border-zinc-300 bg-white px-3 py-2 shadow-sm dark:border-white/8 dark:bg-white/[0.04]">
               <div className="text-[10px] font-bold uppercase tracking-[0.18em] text-zinc-500">Avg GPA</div>
               <div className="mt-1 text-xl font-bold text-zinc-950 dark:text-white">{activeCourse.avgGpa}</div>
             </div>
           </div>
 
           <div className="mt-5 flex items-center gap-5">
-            <div className="relative h-32 w-32 shrink-0 rounded-full border border-zinc-200 bg-white/80 dark:border-white/8 dark:bg-white/[0.03]">
+            <div className="relative h-32 w-32 shrink-0 rounded-full border border-zinc-300 bg-white dark:border-white/8 dark:bg-white/[0.03]">
               <div className={`absolute inset-3 rounded-full ${activeCourse.ring}`} />
               <div className="absolute inset-[1.95rem] flex items-center justify-center rounded-full bg-zinc-50 text-center dark:bg-zinc-950">
                 <div className="px-1">
@@ -171,21 +171,21 @@ export default function DeepPageShowcase() {
 
             <div className="min-w-0 flex-1 space-y-3">
               <div className="grid gap-2 sm:grid-cols-2">
-                <div className="rounded-2xl border border-zinc-200 bg-white/85 px-3 py-3 dark:border-white/8 dark:bg-white/[0.04]">
+                <div className="rounded-2xl border border-zinc-300 bg-white px-3 py-3 shadow-sm dark:border-white/8 dark:bg-white/[0.04]">
                   <div className="text-[10px] font-bold uppercase tracking-[0.18em] text-zinc-500">Snapshot</div>
                   <div className="mt-2 text-sm font-semibold text-zinc-900 dark:text-zinc-100">Grade distribution</div>
                 </div>
-                <div className="rounded-2xl border border-zinc-200 bg-white/85 px-3 py-3 dark:border-white/8 dark:bg-white/[0.04]">
+                <div className="rounded-2xl border border-zinc-300 bg-white px-3 py-3 shadow-sm dark:border-white/8 dark:bg-white/[0.04]">
                   <div className="text-[10px] font-bold uppercase tracking-[0.18em] text-zinc-500">By instructor</div>
                   <div className="mt-2 text-sm font-semibold text-zinc-900 dark:text-zinc-100">Professor outcomes</div>
                 </div>
               </div>
 
               <div className="flex flex-wrap gap-2">
-                <span className="rounded-full border border-zinc-200 bg-white/85 px-3 py-1.5 text-xs font-medium text-zinc-700 dark:border-white/8 dark:bg-white/[0.04] dark:text-zinc-200">
+                <span className="rounded-full border border-zinc-300 bg-zinc-50 px-3 py-1.5 text-xs font-medium text-zinc-800 dark:border-white/8 dark:bg-white/[0.04] dark:text-zinc-200">
                   {activeCourse.easiness}
                 </span>
-                <span className="rounded-full border border-zinc-200 bg-white/85 px-3 py-1.5 text-xs font-medium text-zinc-700 dark:border-white/8 dark:bg-white/[0.04] dark:text-zinc-200">
+                <span className="rounded-full border border-zinc-300 bg-zinc-50 px-3 py-1.5 text-xs font-medium text-zinc-800 dark:border-white/8 dark:bg-white/[0.04] dark:text-zinc-200">
                   {activeCourse.graded}
                 </span>
               </div>
@@ -203,7 +203,7 @@ export default function DeepPageShowcase() {
 
       <Link
         href={activeProfessor.slug}
-        className="premium-card premium-fade-up group relative overflow-hidden rounded-[1.75rem] border border-zinc-200 bg-zinc-50 p-5 transition duration-300 hover:border-sky-400/35 hover:shadow-xl dark:border-white/10 dark:bg-zinc-950"
+        className="premium-card premium-fade-up group relative overflow-hidden rounded-[1.75rem] border border-zinc-300 bg-white p-5 shadow-[0_18px_42px_rgba(15,23,42,0.08)] transition duration-300 hover:border-sky-400/35 hover:shadow-xl dark:border-white/10 dark:bg-zinc-950"
       >
         <div className="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-sky-500/18 via-sky-500/7 to-transparent" />
         <div className="relative">
@@ -219,7 +219,7 @@ export default function DeepPageShowcase() {
             </div>
           </div>
 
-          <div className="mt-4 rounded-[1.4rem] border border-zinc-200 bg-white/85 p-4 shadow-[0_16px_40px_rgba(0,0,0,0.05)] transition duration-300 dark:border-white/8 dark:bg-white/[0.04] dark:shadow-none">
+          <div className="mt-4 rounded-[1.4rem] border border-zinc-300 bg-white p-4 shadow-[0_16px_40px_rgba(15,23,42,0.07)] transition duration-300 dark:border-white/8 dark:bg-white/[0.04] dark:shadow-none">
             <div className="flex items-start gap-4">
               <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-400 text-2xl font-bold text-emerald-950">
                 {activeProfessor.rating}
@@ -236,7 +236,7 @@ export default function DeepPageShowcase() {
               {activeProfessor.meta.map((item) => (
                 <span
                   key={item}
-                  className="rounded-full border border-zinc-200 px-3 py-1 text-xs font-medium text-zinc-700 dark:border-white/8 dark:text-zinc-300"
+                  className="rounded-full border border-zinc-300 bg-zinc-50 px-3 py-1 text-xs font-medium text-zinc-800 dark:border-white/8 dark:bg-transparent dark:text-zinc-300"
                 >
                   {item}
                 </span>

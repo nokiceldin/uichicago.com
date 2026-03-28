@@ -2,29 +2,42 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import { DEFAULT_THEME_SCHEDULE, THEME_STORAGE_KEY } from "@/lib/site-settings";
 
 type Theme = "light" | "dark"
 
 function applyTheme(next: Theme) {
   if (next === "dark") document.documentElement.classList.add("dark")
   else document.documentElement.classList.remove("dark")
-  localStorage.setItem("theme", next)
+  localStorage.setItem(
+    THEME_STORAGE_KEY,
+    JSON.stringify({
+      themeMode: next,
+      themeSchedule: DEFAULT_THEME_SCHEDULE,
+    }),
+  )
+  window.dispatchEvent(new Event("uichicago-theme-change"))
 }
 
 export default function ThemeToggle() {
-  const [theme, setTheme] = useState<Theme>("light")
+  const [theme, setTheme] = useState<Theme>(() => {
+    if (typeof window === "undefined") {
+      return "light"
+    }
 
-  useEffect(() => {
-    const saved = (localStorage.getItem("theme") as Theme | null) ?? null
+    const raw = localStorage.getItem(THEME_STORAGE_KEY)
+    const saved = raw ? JSON.parse(raw)?.themeMode : null
     if (saved === "dark" || saved === "light") {
-      setTheme(saved)
-      applyTheme(saved)
-      return
+      return saved
     }
 
     const isDark = document.documentElement.classList.contains("dark")
-    setTheme(isDark ? "dark" : "light")
-  }, [])
+    return isDark ? "dark" : "light"
+  })
+
+  useEffect(() => {
+    applyTheme(theme)
+  }, [theme])
 
   function toggle() {
     const next: Theme = theme === "dark" ? "light" : "dark"

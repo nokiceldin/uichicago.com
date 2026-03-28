@@ -9,7 +9,9 @@ import { classifyIntent } from "@/lib/chat/classify";
 import { vectorSearch, rerankChunks } from "@/lib/chat/vectors";
 import { getSessionState, updateSessionState, extractEntitiesFromQuery } from "@/lib/chat/session-state";
 import { getCurrentStudyUser } from "@/lib/auth/session";
-import { getMemory, updateMemory, formatMemoryForPrompt } from "@/lib/chat/memory";
+import { getCurrentSession } from "@/lib/auth/session";
+import { getMemory, learnMemoryFromMessages, persistMemory, formatMemoryForPrompt } from "@/lib/chat/memory";
+import { buildUploadedFileSupport, type UploadedFile } from "@/lib/chat/attachments";
 import { prisma } from "@/lib/prisma";
 import { diffLabel } from "@/lib/chat/utils";
 import housingDiningData from "@/public/data/uic-knowledge/housing-dining.json";
@@ -161,10 +163,36 @@ type EntityVerification = {
 // informal shorthand don't confuse domain/intent detection.
 // Claude itself handles imperfect text natively — normalization only helps regex.
 function normalizeQuery(raw: string): string {
-  let s = raw.toLowerCase().trim();
+  let s = raw
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .trim();
+
+  // Treat punctuation spam and stretched separators like normal word breaks.
+  s = s.replace(/[_.,!?;:()[\]{}+/\\|]+/g, " ");
+  s = s.replace(/['"`~]+/g, "");
+
+  const protectedTokens: Array<[RegExp, string]> = [
+    [/\bu-pass\b/g, "__u_pass__"],
+    [/\bmrh\b/g, "__mrh__"],
+    [/\btbh\b/g, "__tbh__"],
+    [/\bjst\b/g, "__jst__"],
+    [/\barc\b/g, "__arc__"],
+    [/\bcmn\b/g, "__cmn__"],
+    [/\bcmw\b/g, "__cmw__"],
+    [/\bcms\b/g, "__cms__"],
+    [/\bssr\b/g, "__ssr__"],
+    [/\bpsr\b/g, "__psr__"],
+  ];
+  for (const [pattern, replacement] of protectedTokens) {
+    s = s.replace(pattern, replacement);
+  }
 
   // Collapse 3+ repeated characters to 1 (helooo→helo, heyyyy→hey, whaaat→what)
   s = s.replace(/(.)\1{2,}/g, "$1");
+  // Also collapse dotted/spaced repetition like "he..yy.." or "sooo???" after punctuation cleanup.
+  s = s.replace(/\s+/g, " ");
 
   // Common informal shorthand → full words
   const abbrevs: [RegExp, string][] = [
@@ -244,8 +272,31 @@ function normalizeQuery(raw: string): string {
     [/\bclases\b/g, "classes"],
     [/\bexam\b|\bexam\b/g, "exam"],
     [/\bsyllabus\b|\bsyllbus\b|\bsylabus\b/g, "syllabus"],
+    [/\bfrist\b|\bfirts\b/g, "first"],
+    [/\bsemster\b|\bsemeser\b|\bsemetser\b/g, "semester"],
+    [/\bdefinately\b|\bdefinetely\b/g, "definitely"],
+    [/\brecieve\b/g, "receive"],
+    [/\bavailble\b|\bavaiable\b/g, "available"],
+    [/\bwich\b/g, "which"],
+    [/\bwut\b|\bwat\b/g, "what"],
   ];
   for (const [pattern, replacement] of fixes) {
+    s = s.replace(pattern, replacement);
+  }
+
+  const restoreTokens: Array<[RegExp, string]> = [
+    [/__u_pass__/g, "u-pass"],
+    [/__mrh__/g, "mrh"],
+    [/__tbh__/g, "tbh"],
+    [/__jst__/g, "jst"],
+    [/__arc__/g, "arc"],
+    [/__cmn__/g, "cmn"],
+    [/__cmw__/g, "cmw"],
+    [/__cms__/g, "cms"],
+    [/__ssr__/g, "ssr"],
+    [/__psr__/g, "psr"],
+  ];
+  for (const [pattern, replacement] of restoreTokens) {
     s = s.replace(pattern, replacement);
   }
 
@@ -343,6 +394,9 @@ function analyzeQuery(msg: string, conversationHistory: ChatMessage[]): QueryAna
     domainConfidence["calendar"] = 0.8;
     domainConfidence["academic_policy"] = 0.7;
   }
+  if (lower.match(/\b(appeal|grade replacement|incomplete|overload|credit limit|too many credits|max credits|maximum credits)\b/)) {
+    domainConfidence["academic_policy"] = Math.max(domainConfidence["academic_policy"] ?? 0, 0.82);
+  }
 
   // Other services
   if (words.some(w => ["admit","apply","application","acceptance","transfer","incoming","aspire"].includes(w))) domainConfidence["admissions"] = 0.85;
@@ -382,6 +436,12 @@ function analyzeQuery(msg: string, conversationHistory: ChatMessage[]): QueryAna
   // ── U-Pass / Ventra ───────────────────────────────────────────────────
   if (lower.match(/\bu.?pass\b|transit pass|ventra/i)) {
     domainConfidence["transportation"] = Math.max(domainConfidence["transportation"] ?? 0, 0.92);
+  }
+  if (lower.match(/\b(food|eat|restaurant|dining hall|meal plan|meal|snack)\b/i)) {
+    domainConfidence["dining"] = Math.max(domainConfidence["dining"] ?? 0, 0.82);
+  }
+  if (lower.match(/\b(arc|jst|cmn|cmw|cms|cty|mrh|tbh|ssr|psr)\b/i)) {
+    domainConfidence["housing"] = Math.max(domainConfidence["housing"] ?? 0, 0.82);
   }
   // ── Query decomposition ───────────────────────────────────────────────────
   const subIntents = decomposeQuery(lower, domainConfidence, constraints, answerMode);
@@ -721,6 +781,14 @@ function isMajorRequirementsLookupQuery(lower: string): boolean {
   );
 }
 
+function isTechnicalElectivesLookupQuery(lower: string): boolean {
+  return /\btechnical electives?\b/.test(lower);
+}
+
+function isScienceElectivesLookupQuery(lower: string): boolean {
+  return /\bscience electives?\b/.test(lower) || /\bscience courses?.{0,20}count\b/.test(lower);
+}
+
 // ── Follow-up query detector ──────────────────────────────────────────────────
 // Detects vague continuation messages that carry no retrieval signal on their own.
 // Used ONLY to trigger entity injection into the retrieval step — never as a fast path.
@@ -941,7 +1009,8 @@ function decomposeQuery(
 // STAGE 2: SESSION RESOLUTION
 // ═══════════════════════════════════════════════════════════════════════════════
 
-function resolveSession(req: Request) {
+function resolveSession(req: Request, preferredSessionId?: string | null) {
+  if (preferredSessionId) return { sessionId: preferredSessionId, isNew: false };
   const cookieHeader = req.headers.get("cookie") ?? "";
   const match = cookieHeader.match(/sparky_session=([^;]+)/);
   if (match?.[1]) return { sessionId: match[1], isNew: false };
@@ -1190,11 +1259,15 @@ async function retrieveGenEd(query: QueryAnalysis): Promise<RetrievedChunk[]> {
     const geneds = await fetchGenEdCourses(matched, 45);
 
     // Smart filtering: if constraints say engineering/CS major, surface relevant gen eds
-    const engineeringMajor = query.constraints.find(c => c.type === "major" && c.value.includes("engineer"));
+  const engineeringMajor = query.constraints.find(c => c.type === "major" && c.value.includes("engineer"));
+    const honorsQuery = /honors/i.test(lower);
     let filtered = geneds;
     if (engineeringMajor && query.answerMode === "recommendation") {
       // For engineers, prioritize high-GPA gen eds outside hard sciences
       filtered = geneds.filter((c: any) => !["PHYS","CHEM","BIOS","MATH"].includes(c.subject));
+    }
+    if (!honorsQuery) {
+      filtered = filtered.filter((c: any) => c.subject !== "HON");
     }
 
     const content = `=== GEN ED COURSES${matched ? ` — ${matched}` : " (all categories)"} ===\n` +
@@ -1301,9 +1374,10 @@ const ELECTIVE_LABELS: Record<string, string> = {
 
 function semYearNumber(yearStr: string): number {
   const s = (yearStr ?? "").toLowerCase();
-  if (s.includes("first") || s.includes("1st")) return 1;
-  if (s.includes("second") || s.includes("2nd")) return 2;
-  if (s.includes("third") || s.includes("3rd")) return 3;
+  if (s.includes("freshman") || s.includes("first") || s.includes("1st")) return 1;
+  if (s.includes("sophomore") || s.includes("second") || s.includes("2nd")) return 2;
+  if (s.includes("junior") || s.includes("third") || s.includes("3rd")) return 3;
+  if (s.includes("senior") || s.includes("fourth") || s.includes("4th")) return 4;
   return 4; // fourth, fifth, etc.
 }
 
@@ -1312,10 +1386,10 @@ function semYearNumber(yearStr: string): number {
 // Used to personalise the planning scaffold before handing to Claude.
 function extractStudentProgress(rawQuery: string): { completedCourses: string[]; yearStanding: number } {
   let yearStanding = 0;
-  if (/\b(i'?m\s+a?\s*)?(freshman|first[- ]?year)\b/i.test(rawQuery)) yearStanding = 1;
-  else if (/\b(i'?m\s+a?\s*)?(sophomore|second[- ]?year)\b/i.test(rawQuery)) yearStanding = 2;
-  else if (/\b(i'?m\s+a?\s*)?(junior|third[- ]?year)\b/i.test(rawQuery)) yearStanding = 3;
-  else if (/\b(i'?m\s+a?\s*)?(senior|fourth[- ]?year)\b/i.test(rawQuery)) yearStanding = 4;
+  if (/\b(i'?m\s+)?(already\s+)?a?\s*(freshman|first[- ]?year)\b/i.test(rawQuery)) yearStanding = 1;
+  else if (/\b(i'?m\s+)?(already\s+)?a?\s*(sophomore|second[- ]?year)\b/i.test(rawQuery)) yearStanding = 2;
+  else if (/\b(i'?m\s+)?(already\s+)?a?\s*(junior|third[- ]?year)\b/i.test(rawQuery)) yearStanding = 3;
+  else if (/\b(i'?m\s+)?(already\s+)?a?\s*(senior|fourth[- ]?year)\b/i.test(rawQuery)) yearStanding = 4;
 
   const completedCourses: string[] = [];
   // Match completion phrases, then extract course codes from the trailing segment
@@ -1676,7 +1750,8 @@ function formatSampleSchedule(
   majorMatch: any,
   electiveMap: Record<string, { code: string; title: string }[]> = {},
   maxYears = 4,
-  startYear = 1
+  startYear = 1,
+  fillElectives = true
 ): string {
   const lines: string[] = [];
   // Clone queues so we can shift() without mutating the original
@@ -1708,7 +1783,7 @@ function formatSampleSchedule(
           }
         }
         const label = ELECTIVE_LABELS[c.electiveType ?? ""] ?? c.title ?? "Elective";
-        if (fill) {
+        if (fillElectives && fill) {
           usedCodes.add(fill.code);
           lines.push(`- **${fill.code}** — ${fill.title} (${hrs} cr) *(${label})*`);
         } else {
@@ -1837,12 +1912,65 @@ Available majors in data (suggest they check if their major appears under a diff
 ${list}`, 0.7, query)];
     }
  
+    const progress = extractStudentProgress(query.rawQuery);
+    const completedCourses = progress.completedCourses;
+
     // ── REQUIRED COURSES — with credit hours from source data ──────────────
     // Support both new structure (requiredEngineering.courses) and legacy (requiredCourses)
     const allRequiredCourses: any[] = majorMatch.requiredEngineering?.courses ?? majorMatch.requiredCourses ?? [];
     const required = allRequiredCourses.slice(0, 90).map((c: any) =>
       `${c.code}: ${c.title} — ${c.hours ?? "?"} credit hours`
     ).join("\n");
+    const fixedNonEngineering = majorMatch.nonEngineeringRequirements?.fixedCourses ?? [];
+    if (isTechnicalElectivesLookupQuery(lower) && majorMatch.technicalElectives?.options?.length) {
+      const technicalText = [
+        `=== DETERMINISTIC FACT ===`,
+        `For **${majorMatch.name}**, you need **${majorMatch.technicalElectives.totalHours ?? 18} hours of technical electives**.`,
+        `${majorMatch.technicalElectives.description ?? ""}`.trim(),
+        ``,
+        `Approved options in the current major data include:`,
+        ...(majorMatch.technicalElectives.options as any[]).map((c: any) => `- **${c.code}** — ${c.title}`),
+      ].join("\n");
+      return [makeChunk("major_plan", technicalText, 0.99, query)];
+    }
+
+    if (isScienceElectivesLookupQuery(lower) && majorMatch.scienceElectives?.options?.length) {
+      const scienceText = [
+        `=== DETERMINISTIC FACT ===`,
+        `For **${majorMatch.name}**, you need **${majorMatch.scienceElectives.totalHours ?? 8} hours of science electives**.`,
+        `${majorMatch.scienceElectives.description ?? ""}`.trim(),
+        majorMatch.scienceElectives.note ? `${majorMatch.scienceElectives.note}` : "",
+        ``,
+        `Approved options in the current major data include:`,
+        ...(majorMatch.scienceElectives.options as any[]).map((c: any) => `- **${c.code}** — ${c.title}`),
+      ].filter(Boolean).join("\n");
+      return [makeChunk("major_plan", scienceText, 0.99, query)];
+    }
+
+    if (isMajorRequirementsLookupQuery(lower)) {
+      const requirementsText = [
+        `=== DETERMINISTIC REQUIREMENTS ===`,
+        `**${majorMatch.name}** requires **${majorMatch.totalHours ?? 128} total credits**.`,
+        ``,
+        `**Required CS / Engineering courses**`,
+        ...allRequiredCourses
+          .filter((c: any) => c.hours != null)
+          .map((c: any) => `- **${c.code}** — ${c.title} (${c.hours} cr)`),
+        ``,
+        `**Fixed math and writing requirements**`,
+        ...fixedNonEngineering.map((c: any) => `- **${c.code}** — ${c.title} (${c.hours} cr)`),
+        ``,
+        `**Additional category requirements**`,
+        `- UIC General Education Core: ${majorMatch.nonEngineeringRequirements?.generalEducationCore?.hours ?? "varies"} credit hours`,
+        `- Humanities / Social Sciences / Art electives: ${majorMatch.nonEngineeringRequirements?.humanitiesSocialScienceArt?.hours ?? "varies"} credit hours`,
+        `- Science electives: ${majorMatch.nonEngineeringRequirements?.scienceElectives?.hours ?? "varies"} credit hours`,
+        `- Technical electives: ${majorMatch.technicalElectives?.totalHours ?? "varies"} credit hours`,
+        `- Free electives: ${majorMatch.freeElectives?.totalHours ?? "varies"} credit hours`,
+        ``,
+        `Official catalog: ${majorMatch.url ?? "catalog.uic.edu"}`,
+      ].join("\n");
+      return [makeChunk("major_plan", requirementsText, 0.99, query)];
+    }
 
     // ── ELECTIVE RULES — 500+ filtered out, no GPA-optimization by default ──
     const slotTypeHint = (label: string) => {
@@ -2004,16 +2132,45 @@ ${list}`, 0.7, query)];
       // Global Business Perspectives (CBA requirement) — use world cultures gen eds as proxy
       fillSlots("global_biz", rankedGenEdWorldCultures.length > 0 ? rankedGenEdWorldCultures : rankedGenEd);
 
+      const explicitYearWindow = query.rawQuery.toLowerCase().match(
+        /\b(1|one|2|two|3|three|4|four)\s*[-–]?\s*year\b/i
+      );
+      const explicitRemainingPlan =
+        query.answerMode === "planning" &&
+        progress.yearStanding > 0 &&
+        explicitYearWindow &&
+        /\b(finish|finishing|remaining|left|from here|from now|already)\b/i.test(query.rawQuery);
+
+      if (explicitRemainingPlan && completedCourses.length === 0) {
+        const token = explicitYearWindow[0].toLowerCase();
+        const requestedYears =
+          /\b(1|one)\b/.test(token) ? 1 :
+          /\b(2|two)\b/.test(token) ? 2 :
+          /\b(3|three)\b/.test(token) ? 3 : 4;
+        const startYear = Math.min(progress.yearStanding + 1, 4);
+        const maxYears = Math.min(startYear + requestedYears - 1, 4);
+        const deterministicPlan = [
+          `=== DETERMINISTIC PLAN ===`,
+          `Typical remaining ${requestedYears}-year ${majorMatch.name.replace(/ - (BS|BA|BFA|BMus|MS)$/i, "").trim()} plan at UIC from your current standing:`,
+          ``,
+          formatSampleSchedule(majorMatch, electiveMap, maxYears, startYear, false),
+          `Verify this against catalog.uic.edu — your exact plan depends on completed courses and prerequisites.`,
+        ].join("\n");
+        return [makeChunk("major_plan", deterministicPlan, 0.99, query)];
+      }
+
       // ── Detect year range the student actually needs ──────────────────────
       // First, detect their current standing (if any)
-      let standing = 0; // 0 = not mentioned
-      if (/\b(i'?m\s+a\s+)?(freshman|first.year\s+student|1st.year)\b/i.test(lower)) standing = 1;
-      else if (/\b(i'?m\s+a\s+)?(sophomore|second.year\s+student|2nd.year)\b/i.test(lower)) standing = 2;
-      else if (/\b(i'?m\s+a\s+)?(junior|third.year\s+student|3rd.year)\b/i.test(lower)) standing = 3;
-      else if (/\b(i'?m\s+a\s+)?(senior|fourth.year\s+student|4th.year)\b/i.test(lower)) standing = 4;
+      let standing = progress.yearStanding; // 0 = not mentioned
+      if (standing === 0) {
+        if (/\b(i'?m\s+)?(already\s+)?a?\s*(freshman|first.year\s+student|1st.year)\b/i.test(lower)) standing = 1;
+        else if (/\b(i'?m\s+)?(already\s+)?a?\s*(sophomore|second.year\s+student|2nd.year)\b/i.test(lower)) standing = 2;
+        else if (/\b(i'?m\s+)?(already\s+)?a?\s*(junior|third.year\s+student|3rd.year)\b/i.test(lower)) standing = 3;
+        else if (/\b(i'?m\s+)?(already\s+)?a?\s*(senior|fourth.year\s+student|4th.year)\b/i.test(lower)) standing = 4;
+      }
 
       // Detect intent: "rest of my years / remaining / what I have left / from now on"
-      const wantsRemaining = /\b(rest|remaining|left|from here|from now|still have|i have left|years? left)\b/i.test(lower);
+      const wantsRemaining = /\b(rest|remaining|left|from here|from now|still have|i have left|years? left|finish|finishing|graduate in|already a)\b/i.test(lower);
 
       // Detect explicit "X-year plan" request
       const yearReqMatch = lower.match(
@@ -2031,7 +2188,10 @@ ${list}`, 0.7, query)];
         else if (/\b(3|three)\b/.test(m)) maxYears = 3;
         else maxYears = 4;
         // If they also have a standing and asked for "remaining 2 years", start from their year
-        if (standing > 0 && wantsRemaining) startYear = standing + 1;
+        if (standing > 0 && wantsRemaining) {
+          startYear = Math.min(standing + 1, 4);
+          maxYears = Math.min(startYear + maxYears - 1, 4);
+        }
       } else if (standing > 0 && wantsRemaining) {
         // "I'm a sophomore, plan for the rest of my years" → year 3 + 4
         startYear = standing + 1;
@@ -2046,7 +2206,8 @@ ${list}`, 0.7, query)];
       if (startYear > 4) startYear = 4;
       if (maxYears < startYear) maxYears = startYear;
 
-      const schedulePlan = formatSampleSchedule(majorMatch, electiveMap, maxYears, startYear);
+      const schedulePlan = formatSampleSchedule(majorMatch, electiveMap, maxYears, startYear, true);
+      const schedulePlanWithPlaceholders = formatSampleSchedule(majorMatch, electiveMap, maxYears, startYear, false);
       let majorName = majorMatch.name.replace(/ - (BS|BA|BFA|BMus|MS)$/i, "").trim();
       // When user asked generically for "business" and we matched Management BS as proxy,
       // present it as the CBA Business Administration plan (all 8 CBA majors share this schedule).
@@ -2070,9 +2231,6 @@ ${list}`, 0.7, query)];
 
       // ── Extract student progress and build planning scaffold ─────────────
       // Claude now receives structured ingredients, not a pre-written plan.
-      const progress = extractStudentProgress(query.rawQuery);
-      const completedCourses = progress.completedCourses;
-
       // Manifest = only truly required courses (those with defined credit hours),
       // not elective option pools (which have hours === null in some schemas).
       const requiredManifest = allRequiredCourses
@@ -2122,6 +2280,45 @@ ${list}`, 0.7, query)];
         `7. Do NOT use HON / honors-only courses or honors seminars as gen ed fillers unless STUDENT CONTEXT explicitly says honors college`,
       ].join("\n");
 
+      const nextSemesterQuery =
+        /\bwhat should\b.*\btake next semester\b/.test(lower) ||
+        /\bnext semester\b/.test(lower) && /\b(sophomore|junior|senior|freshman|first.year|second.year|third.year|fourth.year)\b/.test(lower);
+      if (nextSemesterQuery && standing > 0 && completedCourses.length === 0) {
+        const nextSemesterIsFall = new Date().getMonth() <= 4;
+        const targetYear = nextSemesterIsFall ? Math.min(standing + 1, 4) : standing;
+        const targetSemester = nextSemesterIsFall ? "First Semester" : "Second Semester";
+        const yearName = ["", "Freshman", "Sophomore", "Junior", "Senior"][targetYear];
+        const target = (majorMatch.sampleSchedule ?? []).find((sem: any) =>
+          sem.year?.includes(yearName) && sem.semester === targetSemester
+        );
+        if (target) {
+          const nextTermText = [
+            `=== DETERMINISTIC NEXT TERM ===`,
+            `Typical next-term courses for a **${["", "freshman", "sophomore", "junior", "senior"][standing]}** ${majorName} student:`,
+            ``,
+            ...(target.courses ?? []).map((course: any) =>
+              course.isElective
+                ? `- *${ELECTIVE_LABELS[course.electiveType ?? ""] ?? course.title}* (${course.hours ?? "?"} cr)`
+                : `- **${course.code}** — ${course.title} (${course.hours ?? "?"} cr)`
+            ),
+            ``,
+            `This is the standard catalog backbone. Your exact next term depends on completed courses and prerequisites.`,
+          ].join("\n");
+          return [makeChunk("major_plan", nextTermText, 0.99, query)];
+        }
+      }
+
+      if (query.answerMode === "planning" && completedCourses.length === 0) {
+        const deterministicPlan = [
+          `=== DETERMINISTIC PLAN ===`,
+          `Typical ${majorName} plan at UIC (${majorMatch.totalHours ?? "128"} total credits):`,
+          ``,
+          schedulePlanWithPlaceholders,
+          `Verify this against catalog.uic.edu — requirements change each year.`,
+        ].join("\n");
+        return [makeChunk("major_plan", deterministicPlan, 0.99, query)];
+      }
+
       return [makeChunk("major_plan", scaffold, 0.97, query)];
     }
 
@@ -2169,7 +2366,25 @@ Do NOT invent courses. Do NOT show any plan structure.`;
 function retrieveTuition(ci: any, query: QueryAnalysis): RetrievedChunk[] {
   const bill = billingData as any;
   const chunks: RetrievedChunk[] = [];
+  const lower = query.rawQuery.toLowerCase();
   
+  if (lower.includes("fall tuition bill due") || (lower.includes("fall") && /\b(bill due|due date|tuition due|payment due)\b/.test(lower))) {
+    chunks.push(makeChunk(
+      "tuition",
+      `FALL TUITION BILL DUE DATE: ${bill.billing?.fall_due_date}`,
+      0.99,
+      query
+    ));
+  }
+
+  if (/\b(payment plan|installment|ui pay|ui-pay|nelnet|pay over time)\b/.test(lower)) {
+    chunks.push(makeChunk(
+      "tuition",
+      `PAYMENT PLAN: ${bill.billing?.payment_plan}. Late fee: ${bill.billing?.late_fee}.`,
+      0.99,
+      query
+    ));
+  }
 
   if (ci.isAboutTuition || ci.isAboutCostComparison || ci.isAboutDebt || query.domainConfidence["tuition"]) {
     const content = `=== UIC TUITION & COSTS 2025-2026 ===\n` +
@@ -2216,6 +2431,29 @@ function retrieveHousing(ci: any, query: QueryAnalysis): RetrievedChunk[] {
   if (ci.isAboutHousing || lower.includes("dorm") || lower.includes("residence") || lower.includes("housing") || lower.includes("live on campus")) {
     try {
       const halls = (housingDiningData as any).housing.residence_halls;
+      const arcHall = halls.find((h: any) => h.abbreviation === "ARC");
+      if (
+        arcHall &&
+        /\barc\b/.test(lower) &&
+        /\b(cheapest|lowest|least expensive|most affordable)\b/.test(lower) &&
+        /\b(room|room type|option)\b/.test(lower)
+      ) {
+        const arcPrices = Object.entries(arcHall.per_semester_approx ?? {})
+          .filter(([, value]) => typeof value === "number") as Array<[string, number]>;
+        const cheapestArc = arcPrices.sort((a, b) => a[1] - b[1])[0];
+        if (cheapestArc) {
+          const label = cheapestArc[0]
+            .replace(/_/g, " ")
+            .replace(/\b\w/g, (char: string) => char.toUpperCase());
+          chunks.push(makeChunk(
+            "housing",
+            `ARC CHEAPEST ROOM TYPE: ${label} — $${cheapestArc[1].toLocaleString()}/semester.`,
+            0.99,
+            query
+          ));
+        }
+      }
+
       const costConstraint = query.constraints.find(c => c.type === "cost");
       const yearConstraint = query.constraints.find(c => c.type === "year");
       const majorConstraint = query.constraints.find(c => c.type === "major");
@@ -2233,6 +2471,27 @@ function retrieveHousing(ci: any, query: QueryAnalysis): RetrievedChunk[] {
         if (socialConstraint && (h.abbreviation === "ARC" || h.abbreviation === "JST" || h.abbreviation === "CMN")) score += 0.15;
         return { hall: h, score };
       }).sort((a: any, b: any) => b.score - a.score);
+
+      if (/\bmrh\b/.test(lower) && /\btbh\b/.test(lower) && /\b(compare|comparison|vs|versus|difference|better)\b/.test(lower)) {
+        const mrh = halls.find((h: any) => h.abbreviation === "MRH");
+        const tbh = halls.find((h: any) => h.abbreviation === "TBH");
+        if (mrh && tbh) {
+          chunks.push(makeChunk(
+            "housing",
+            [
+              "=== DETERMINISTIC FACT ===",
+              `**MRH vs TBH**`,
+              ``,
+              `**Similarities**: both are apartment-style, open to sophomores and above / transfers, have full kitchens, no required meal plan, and basically the same room prices.`,
+              `**MRH**: ${mrh.address}. Better if you want a more apartment-like feel and gender-inclusive apartments.`,
+              `**TBH**: ${tbh.address}. Better if you want extra study/lounge space and the University Village location.`,
+              `**Bottom line**: choose **MRH** for a more independent apartment feel, or **TBH** for a quieter, study-focused setup.`,
+            ].join("\n"),
+            0.99,
+            query
+          ));
+        }
+      }
 
       const hallList = scoredHalls.map(({ hall: h }: any) => {
         const cost = typeof h.per_semester_approx === "object" && "range" in h.per_semester_approx
@@ -2279,6 +2538,18 @@ function retrieveHousing(ci: any, query: QueryAnalysis): RetrievedChunk[] {
 
 function retrieveDining(ci: any, query: QueryAnalysis): RetrievedChunk[] {
   const chunks: RetrievedChunk[] = [];
+  const lower = query.rawQuery.toLowerCase();
+  if ((/\b24 ?hours?\b/.test(lower) || /\bopen all night\b/.test(lower)) && /\b(food|eat|dining|restaurant|market|snack)\b/.test(lower)) {
+    chunks.push(makeChunk("dining",
+      `=== DETERMINISTIC FACT ===\nThe main on-campus food option open **24 hours** is **Market at Halsted** in **Student Center East**. It is listed as **open 24 hours daily** in the current dining data.`,
+      0.99,
+      query));
+  }
+  if (/\bstarbucks\b/.test(lower)) {
+    chunks.push(makeChunk("dining",
+      `STARBUCKS LOCATIONS: Student Center West (SCW) — 7AM-4PM. Starbucks at ARC — Mon-Thu 7AM-7PM, Fri 7AM-5PM, Sat-Sun 9AM-3PM. I do not see a Starbucks listed inside the engineering building in the current dining data.`,
+      0.98, query));
+  }
   if (ci.isAboutDining) {
     const content = `=== DINING LOCATIONS ===\n` +
       `605 Commons (SCE): Full dining hall. Mon-Fri 7:30AM-8PM, Sat-Sun 10AM-8PM.\n` +
@@ -2308,6 +2579,22 @@ function retrieveStudentLife(query: QueryAnalysis): RetrievedChunk[] {
   const lower = query.rawQuery.toLowerCase();
   const isAboutGreek = lower.includes("greek") || lower.includes("frat") || lower.includes("soror") || lower.includes("rush");
   const sparkArtists = sl2.major_events?.spark_festival?.past_artists?.slice(0, 8).join(", ") || "Kid Cudi, Kendrick Lamar, J. Cole, Twenty One Pilots";
+
+  if (/\b(biggest|major|main|best known)\b/.test(lower) && /\bevents?\b/.test(lower)) {
+    return [makeChunk("student_life",
+      [
+        "=== DETERMINISTIC FACT ===",
+        "The biggest recurring student events in the current UIC student-life data are:",
+        "- Weeks of Welcome at the start of the semester",
+        "- Involvement Fair each semester",
+        "- Spark Festival, the annual fall concert / welcome-back event",
+        "- Homecoming in the fall",
+        "- Flames Finish Strong during finals",
+        "- Day of Service in April",
+      ].join("\n"),
+      0.99,
+      query)];
+  }
 
   let c = `=== UIC STUDENT LIFE ===\n${sl2.student_orgs?.total || "470+"} registered student orgs at connect.uic.edu.\n\n`;
 
@@ -2682,6 +2969,12 @@ function retrieveCampusMap(query: QueryAnalysis): RetrievedChunk[] {
   }
   // ── U-Pass / Ventra ───────────────────────────────────────────────────────
   if (lower.match(/\bu.?pass\b|transit pass|ventra/i)) {
+    if (lower.match(/\b(fee|cost|price|per semester|how much)\b/)) {
+      chunks.push(makeChunk("transportation",
+        `=== DETERMINISTIC FACT ===\nUIC's **U-Pass costs $163 per semester**. It is part of your semester fees for students enrolled in 6+ credit hours and covers unlimited CTA rides during the semester.`,
+        0.99,
+        query));
+    }
     chunks.push(makeChunk("transportation",
       `CTA U-PASS (UIC Ventra Transit Pass):
 All UIC students enrolled in 6+ credit hours automatically receive a U-Pass as part of their semester fees.
@@ -2818,6 +3111,45 @@ function retrieveCalendar(query: QueryAnalysis): RetrievedChunk[] {
   const isGraduationQuery = lower.match(
     /\b(how many|credit|credits|hours?|requirements?).{0,25}(graduate|graduation|degree|finish|complete)\b/
   ) || lower.match(/\bgraduation requirements?\b/);
+  const isGradeAppealQuery = /\bappeal\b/.test(lower) && /\bgrade\b/.test(lower);
+  const isCreditOverloadQuery = /\b(overload|credit limit|too many credits|max credits|maximum credits)\b/.test(lower) ||
+    (/\b21 credits\b/.test(lower));
+  const isRegistrationWaitlistQuery = /\bwaitlist\b/.test(lower) && !/\badmission|admissions|transfer|application\b/.test(lower);
+  const isWithdrawalLimitQuery = /\bhow many withdrawals\b/.test(lower) || /\bwithdrawal limit\b/.test(lower) || /\bmax .*withdrawals?\b/.test(lower);
+  const isGradeReplacementQuery = /\brepeat a class\b/.test(lower) || ((/\brepeat\b/.test(lower) || /\bretake\b/.test(lower)) && /\b(d|f)\b/.test(lower));
+
+  if (isRegistrationWaitlistQuery) {
+    return [makeChunk("calendar",
+      `=== DETERMINISTIC FACT ===\nUIC course waitlists are available for select classes only. If a seat opens, you get **24 hours** to claim it from the email notification. If you miss that window, you go back to the bottom of the waitlist.`,
+      0.99,
+      query)];
+  }
+
+  if (isWithdrawalLimitQuery) {
+    return [makeChunk("academic_policy",
+      `=== DETERMINISTIC FACT ===\nUIC allows a maximum of **4 individual course withdrawals (W notations)** during your entire degree program.`,
+      0.99,
+      query)];
+  }
+
+  if (isGradeReplacementQuery) {
+    return [makeChunk("academic_policy",
+      `=== DETERMINISTIC FACT ===\nYes. Under UIC's grade replacement policy, courses with a **D or F may be repeated once without permission**. Courses with an A or B may not be repeated, and all attempts stay on the transcript.`,
+      0.99,
+      query)];
+  }
+
+  if (isGradeAppealQuery) {
+    return [makeChunk("academic_policy",
+      `GRADE APPEAL GUIDANCE: I do not have a campus-wide deadline for grade appeals in the current dataset. UIC does list policies for incomplete grades, grade replacement, and withdrawal limits, but grade appeals are typically handled through the instructor, department, and your college office. If the grade is from 3 years ago, you should contact your college advising/dean's office as soon as possible because late appeals are usually harder to pursue.`,
+      0.9, query)];
+  }
+
+  if (isCreditOverloadQuery) {
+    return [makeChunk("academic_policy",
+      `CREDIT OVERLOAD GUIDANCE: UIC's academic policy data does not list a single campus-wide maximum credit load in my current dataset. Overload approval is handled through your college advising office, and students who want to go above the usual semester limit typically need permission from their college.`,
+      0.93, query)];
+  }
 
   if (isGraduationQuery) {
     const ha2 = healthData as any;
@@ -3235,6 +3567,9 @@ function buildSystemPrompt(
   isFinancialQuery = false
 ): string {
   const answerMode: AnswerMode = answerPack?.answerMode ?? "discovery";
+  const isMajorRequirementsAnswer =
+    answerMode !== "planning" &&
+    (answerPack?.rankedEvidence.some((e) => e.source === "major_plan") ?? false);
 
   const modeInstructions: Record<AnswerMode, string> = {
     ranking: "RANKING: Lead with the top options. Use real GPA numbers, scores, prices to justify rankings. Name a clear winner. Don't hedge — students want a decisive answer.",
@@ -3270,6 +3605,10 @@ STRICT OUTPUT RULES:
 
   const financialRule = isFinancialQuery
     ? `\nFINANCIAL VERIFICATION RULE: Before writing any dollar amount, verify it appears exactly in the retrieved data. If the exact figure is not present, say "approximately" and refer the student to bursar.uic.edu for the authoritative number.\n`
+    : "";
+
+  const majorRequirementsRule = isMajorRequirementsAnswer
+    ? `\nDEGREE DATA RULE: If the retrieved data includes degree requirements or a degree-plan backbone, use only course codes/titles explicitly present there. Do not rename courses, add easiness commentary unless the student asked for rankings, duplicate a course, or substitute missing requirements from memory. If the data only supports a typical sequence, say "typical" rather than presenting it as guaranteed.\n`
     : "";
 
   const corePrinciples = `CORE PRINCIPLES:
@@ -3320,7 +3659,7 @@ REASONING INSTRUCTION — ${answerMode.toUpperCase()}:
 ${modeInstructions[answerMode]}
 
 ${corePrinciples}
-${financialRule}${trustLine}
+${financialRule}${majorRequirementsRule}${trustLine}
 UIC: Chicago's only public Research I university. ~33,000 students. ~91% commuters. Majority-minority. Mascot: Sparky the Dragon. Navy and Flames Red. Missouri Valley Conference (MVC). Go Flames!
 ${memoryContext ? "\n" + memoryContext + "\n" : ""}
 ${answerPack ? `
@@ -3351,11 +3690,13 @@ export async function POST(req: Request) {
   // ── Input validation ──────────────────────────────────────────────────────
   let messages: ChatMessage[];
   let lastMsg: string;
-  let uploadedFile: { name: string; mimeType: string; data: string; fileType: "image" | "pdf" | "text" } | null = null;
+  let uploadedFile: UploadedFile | null = null;
+  let requestedConversationId: string | null = null;
   try {
     const body = await req.json();
     messages = body.messages;
     uploadedFile = body.file ?? null;
+    requestedConversationId = typeof body.conversationId === "string" ? body.conversationId.trim() : null;
     if (!Array.isArray(messages) || messages.length === 0) {
       return NextResponse.json({ error: "Invalid messages" }, { status: 400 });
     }
@@ -3367,21 +3708,39 @@ export async function POST(req: Request) {
   }
 
   const posthog = getPostHogClient();
+  const authSession = await getCurrentSession().catch(() => null);
+  let preferredSessionId: string | null = null;
+
+  if (authSession?.user?.id && requestedConversationId) {
+    const ownedConversation = await prisma.chatConversation.findFirst({
+      where: {
+        id: requestedConversationId,
+        userId: authSession.user.id,
+      },
+      select: { id: true },
+    });
+    if (ownedConversation) {
+      preferredSessionId = ownedConversation.id;
+    }
+  }
+
   posthog.capture({
-    distinctId: "anonymous",
+    distinctId: authSession?.user?.id ?? "anonymous",
     event: "chat_api_request",
     properties: {
       message_count: messages.length,
       last_message_length: lastMsg.length,
+      authenticated: Boolean(authSession?.user?.id),
+      conversation_id: preferredSessionId,
     },
   });
 
 // ── Session & query analysis ──────────────────────────────────────────────
 // ── Casual message fast path ──────────────────────────────────────────────
-  const { sessionId, isNew } = resolveSession(req);
+  const { sessionId, isNew } = resolveSession(req, preferredSessionId);
   // Normalize before casual check: collapse 3+ repeated chars to 2 (helooo→heloo, heyyyy→heyy)
   // and strip punctuation/emoji noise so "hey!!!" and "heyyy 😂" both match.
-  const normMsg = lastMsg.trim().toLowerCase().replace(/(.)\1{2,}/g, "$1$1").replace(/[\s!?.😂👍]+$/, "");
+  const normMsg = normalizeQuery(lastMsg).replace(/[\s!?.]+$/, "");
   const casualPatterns = /^(h+e+y+|h+i+|hel+o+|helo+|hullo|howdy|sup+|s+u+p|yo+|yoo+|wh?[ao]+t'?s+ ?up+|wh?[ao]+t'?s+ ?good|wassup|wazzup|wsg|how are (you|u|ya)|how r u|how'?s? it go+ing|thanks+|thank you|thnks?|thx+|o+k+a*y*|coo+l|nice|great|lo+l|haha+|lmao+|bruh|bro|k+|gotcha|got it|makes sense|sounds good|perfect|awesome|sure|np|no problem|good|good morning|good afternoon|good evening|morning|night|bye+|goodbye|see ya|later|wyd|wbu|idk)$/i;
 
   if (casualPatterns.test(normMsg)) {
@@ -3449,6 +3808,56 @@ export async function POST(req: Request) {
   // Claude sees the original lastMsg — it handles imperfect text natively.
   const normalizedMsg = normalizeQuery(lastMsg);
   const query = analyzeQuery(normalizedMsg, messages.slice(0, -1));
+  const normalizedLower = normalizedMsg.toLowerCase();
+
+  const makePlainTextResponse = (text: string, extraHeaders?: Record<string, string>) => {
+    const encoder = new TextEncoder();
+    const readable = new ReadableStream({
+      start(controller) {
+        controller.enqueue(encoder.encode(text));
+        controller.close();
+      },
+    });
+    const headers: Record<string, string> = {
+      "Content-Type": "text/plain; charset=utf-8",
+      "Cache-Control": "no-store",
+      ...(extraHeaders ?? {}),
+    };
+    if (isNew) {
+      headers["Set-Cookie"] = `sparky_session=${sessionId}; Path=/; Max-Age=${60 * 60 * 24 * 365}; SameSite=Lax`;
+    }
+    return new Response(readable, { headers });
+  };
+
+  if (/\bu.?pass\b/.test(normalizedLower) && /\b(fee|cost|price|how much|per semester)\b/.test(normalizedLower)) {
+    return makePlainTextResponse(
+      "UIC's U-Pass costs $163 per semester. It is part of your semester fees for students enrolled in 6+ credit hours and covers unlimited CTA rides during the semester."
+    );
+  }
+
+  if (/\bmrh\b/.test(normalizedLower) && /\btbh\b/.test(normalizedLower) && /\b(compare|comparison|vs|versus|difference|better)\b/.test(normalizedLower)) {
+    const halls = (housingDiningData as any).housing?.residence_halls ?? [];
+    const mrh = halls.find((h: any) => h.abbreviation === "MRH");
+    const tbh = halls.find((h: any) => h.abbreviation === "TBH");
+    if (mrh && tbh) {
+      return makePlainTextResponse(
+        [
+          "**MRH vs TBH**",
+          "",
+          "**Similarities**: both are apartment-style, open to sophomores and above / transfers, have full kitchens, no required meal plan, and basically the same room prices.",
+          `**MRH**: ${mrh.address}. Better if you want a more apartment-like feel and gender-inclusive apartments.`,
+          `**TBH**: ${tbh.address}. Better if you want extra study/lounge space and the University Village location.`,
+          "**Bottom line**: choose MRH for a more independent apartment feel, or TBH for a quieter, study-focused setup.",
+        ].join("\n")
+      );
+    }
+  }
+
+  if ((/\b24 ?hours?\b/.test(normalizedLower) || /\bopen all night\b/.test(normalizedLower)) && /\b(food|eat|dining|restaurant|market|snack)\b/.test(normalizedLower)) {
+    return makePlainTextResponse(
+      "The main on-campus food option open 24 hours is Market at Halsted in Student Center East. It is listed as open 24 hours daily in the current dining data."
+    );
+  }
 
 // ── Fetch memory + session in parallel, then classify ─────────────────────
 const [userMemory, sessionState, authenticatedStudyUser] = await Promise.all([
@@ -3465,6 +3874,13 @@ const [userMemory, sessionState, authenticatedStudyUser] = await Promise.all([
   getCurrentStudyUser().catch(() => null),
 ]);
 
+const numericYearToLabel: Record<number, string> = {
+  1: "freshman",
+  2: "sophomore",
+  3: "junior",
+  4: "senior",
+};
+
 if (authenticatedStudyUser) {
   if (userMemory && !userMemory.major && authenticatedStudyUser.major) {
     userMemory.major = authenticatedStudyUser.major;
@@ -3480,10 +3896,27 @@ if (authenticatedStudyUser) {
   }
 }
 
+const memoryForThisTurn = userMemory
+  ? await learnMemoryFromMessages(messages, userMemory).catch(() => userMemory)
+  : null;
+
+if (memoryForThisTurn) {
+  if (!memoryForThisTurn.major && sessionState.confirmedMajor) {
+    memoryForThisTurn.major = sessionState.confirmedMajor;
+  }
+  if (!memoryForThisTurn.year && sessionState.confirmedYear) {
+    memoryForThisTurn.year = numericYearToLabel[sessionState.confirmedYear] ?? memoryForThisTurn.year;
+  }
+}
+
+if (memoryForThisTurn !== null) {
+  persistMemory(sessionId, memoryForThisTurn).catch(() => {});
+}
+
 // Always run AI classify — it runs in parallel with memory/session so cost is low,
 // and it handles informal phrasing that regex misses.
 const [aiIntentResult, regexIntentResult, regexCiResult] = await Promise.allSettled([
-  classifyIntent(normalizedMsg, messages.slice(0, -1), userMemory),
+  classifyIntent(normalizedMsg, messages.slice(0, -1), memoryForThisTurn),
   Promise.resolve(detectIntent(normalizedMsg)),
   Promise.resolve(detectCampusIntent(normalizedMsg)),
 ]);
@@ -3672,7 +4105,11 @@ if (ci.isAboutDining)           dc["dining"]          = Math.max(dc["dining"] ??
 if (ci.isAboutTuition)          dc["tuition"]         = Math.max(dc["tuition"] ?? 0, 0.85);
 if (ci.isAboutFinancialAid)     dc["financial_aid"]   = Math.max(dc["financial_aid"] ?? 0, 0.88);
 // Admissions + international have no ci flags — detect via broader keyword patterns
-if ((dc["admissions"] ?? 0) < 0.5 && lower.match(/\b(sat|act|test.?optional|admit|accept|waitlist|defer|enroll(?:ment)?|application|apply|admission|require(?:ment)?|deadline|acceptance|incoming|first.?year|transfer student|deposit|orientation|law school|college of|school of|colleges|schools at|programs offered)\b/)) {
+if (
+  (dc["admissions"] ?? 0) < 0.5 &&
+  lower.match(/\b(sat|act|test.?optional|admit|accept|waitlist|defer|enroll(?:ment)?|application|apply|admission|require(?:ment)?|deadline|acceptance|incoming|first.?year|transfer student|deposit|orientation|law school|college of|school of|colleges|schools at|programs offered)\b/) &&
+  !(lower.includes("waitlist") && lower.match(/\b(course|class|registration|register)\b/))
+) {
   dc["admissions"] = Math.max(dc["admissions"] ?? 0, 0.82);
 }
 if ((dc["international"] ?? 0) < 0.5 && lower.match(/\bi.?20\b|opt\b|cpt\b|f.?1\b|international student|ois\b|sevis|renew.*visa|visa.*renew|study abroad/i)) {
@@ -3712,6 +4149,15 @@ if (
   if ((dc["international"] ?? 0) > 0.5) syncChunks.push(...retrieveInternational(query));
   if ((dc["safety"] ?? 0) > 0.5 || ci.isAboutSafety) syncChunks.push(...retrieveSafety(query));
   if ((dc["recreation"] ?? 0) > 0.5 && !(dc["health"] ?? 0)) syncChunks.push(...retrieveRecreation(query));
+  if (lower.match(/\bu.?pass\b|ventra|transit pass/i) && !syncChunks.some(c => c.domain === "transportation")) {
+    syncChunks.push(...retrieveCampusMap(query));
+  }
+  if (lower.match(/\b(arc|jst|cmn|cmw|cms|cty|mrh|tbh|ssr|psr)\b/i) && !syncChunks.some(c => c.domain === "housing")) {
+    syncChunks.push(...retrieveHousing(ci, query));
+  }
+  if (lower.match(/\b(food|eat|restaurant|market at halsted|24 ?hours?)\b/i) && !syncChunks.some(c => c.domain === "dining")) {
+    syncChunks.push(...retrieveDining(ci, query));
+  }
   // ── Program/major queries: force admissions + advising ───────────────
   if (
     lower.match(/\b(major|program|degree|school|college|department)\b/) &&
@@ -3927,6 +4373,66 @@ if (relevantVectors.length > 0 && !query.isFact && query.answerMode !== "plannin
   // Set to true in Phase 1 when the planner detects the requested major is not in its data.
   // Phase 2 uses this to skip manifest validation and stream a graceful fallback instead.
   let isPlannerMajorNotFound = false;
+  const deterministicPlanChunk = query.answerMode === "planning"
+    ? allChunks.find((chunk) => chunk.domain === "major_plan" && chunk.content.startsWith("=== DETERMINISTIC PLAN ==="))
+    : null;
+  const deterministicRequirementsChunk = allChunks.find((chunk) =>
+    chunk.domain === "major_plan" && chunk.content.startsWith("=== DETERMINISTIC REQUIREMENTS ===")
+  );
+  const deterministicNextTermChunk = allChunks.find((chunk) =>
+    chunk.domain === "major_plan" && chunk.content.startsWith("=== DETERMINISTIC NEXT TERM ===")
+  );
+  const deterministicFactChunk = allChunks.find((chunk) =>
+    chunk.content.startsWith("=== DETERMINISTIC FACT ===")
+  );
+
+  if (deterministicPlanChunk) {
+    const directPlan = deterministicPlanChunk.content
+      .replace(/^=== DETERMINISTIC PLAN ===\n?/, "")
+      .trim();
+    const enc = new TextEncoder();
+    const readable = new ReadableStream({
+      start(controller) {
+        controller.enqueue(enc.encode(directPlan));
+        controller.close();
+      },
+    });
+    return new Response(readable, {
+      headers: { "Content-Type": "text/plain; charset=utf-8", "Cache-Control": "no-store" },
+    });
+  }
+
+  if (deterministicRequirementsChunk || deterministicNextTermChunk) {
+    const directText = (deterministicRequirementsChunk ?? deterministicNextTermChunk)!.content
+      .replace(/^=== DETERMINISTIC (REQUIREMENTS|NEXT TERM) ===\n?/, "")
+      .trim();
+    const enc = new TextEncoder();
+    const readable = new ReadableStream({
+      start(controller) {
+        controller.enqueue(enc.encode(directText));
+        controller.close();
+      },
+    });
+    return new Response(readable, {
+      headers: { "Content-Type": "text/plain; charset=utf-8", "Cache-Control": "no-store" },
+    });
+  }
+
+  if (deterministicFactChunk) {
+    const directText = deterministicFactChunk.content
+      .replace(/^=== DETERMINISTIC FACT ===\n?/, "")
+      .trim();
+    const enc = new TextEncoder();
+    const readable = new ReadableStream({
+      start(controller) {
+        controller.enqueue(enc.encode(directText));
+        controller.close();
+      },
+    });
+    return new Response(readable, {
+      headers: { "Content-Type": "text/plain; charset=utf-8", "Cache-Control": "no-store" },
+    });
+  }
 
   // ── Planning pipeline: MANDATORY PlanningObject before answer generation ────
   // Pipeline order:
@@ -4079,12 +4585,8 @@ if (trust.decision === "abstain") {
 }
 
 const context = assembleContext(rerankedChunks, query.isFact, query.domainConfidence);
-const memoryContext = userMemory ? formatMemoryForPrompt(userMemory) : "";
+const memoryContext = memoryForThisTurn ? formatMemoryForPrompt(memoryForThisTurn) : "";
 const answerPack = buildAnswerPack(query, rerankedChunks, intent, sessionState);
-
-  if (userMemory !== null && messages.length > 2) {
-    updateMemory(sessionId, messages, userMemory).catch(() => {});
-  }
 
   // Collect entity state updates — written once per request after response completes
 const stateUpdates = extractEntitiesFromQuery(lastMsg, intent, sessionState);
@@ -4099,36 +4601,14 @@ const isFinancialQuery = (dc["tuition"] ?? 0) > 0.5 || (dc["financial_aid"] ?? 0
 
 // ── Uploaded file context ─────────────────────────────────────────────────
 let uploadedFileContext = "";
-let imageBlock: Anthropic.ImageBlockParam | null = null;
+let uploadedFileBlock: Anthropic.ImageBlockParam | Anthropic.DocumentBlockParam | null = null;
+let uploadedFileFallbackPrompt = "";
 
 if (uploadedFile) {
-  if (uploadedFile.fileType === "image") {
-    const allowedTypes = ["image/jpeg", "image/png", "image/gif", "image/webp"] as const;
-    const mediaType = allowedTypes.includes(uploadedFile.mimeType as typeof allowedTypes[number])
-      ? (uploadedFile.mimeType as typeof allowedTypes[number])
-      : "image/jpeg";
-    imageBlock = {
-      type: "image",
-      source: { type: "base64", media_type: mediaType, data: uploadedFile.data },
-    };
-    uploadedFileContext = `\n\n=== UPLOADED IMAGE ===\nThe student has uploaded an image named "${uploadedFile.name}". It is included as a vision block in the message. Look at it carefully and try to understand what is going on. If it seems UIC-related, make qualified guesses about what it likely shows and explain your confidence. If it looks like a screenshot, flyer, building, classroom, sign, schedule, course page, grade report, registration page, map, student event, or campus location, say that directly and help the student based on what you can see. Do not pretend to be certain when the image is ambiguous — use phrases like "it looks like" or "my best guess is" when needed.\n`;
-  } else if (uploadedFile.fileType === "pdf") {
-    try {
-      // eslint-disable-next-line @typescript-eslint/no-require-imports
-      const pdfParse = require("pdf-parse") as (buf: Buffer) => Promise<{ text: string }>;
-      const buffer = Buffer.from(uploadedFile.data, "base64");
-      const parsed = await pdfParse(buffer);
-      const text = parsed.text.slice(0, 8000); // cap at 8k chars
-      uploadedFileContext = `\n\n=== UPLOADED DOCUMENT: ${uploadedFile.name} ===\n${text}\n=== END DOCUMENT ===\n\nThe student has shared this document. Answer their question using the document content above. If it is a syllabus, schedule, or academic form, interpret it in the context of UIC and give specific advice. Cross-reference with UIC knowledge where relevant.\n`;
-    } catch (e) {
-      console.error("[pdf-parse error]", e);
-      uploadedFileContext = `\n\n=== UPLOADED DOCUMENT ===\nThe student uploaded "${uploadedFile.name}" but it could not be parsed. Let them know you couldn't read it and suggest copy-pasting the relevant text.\n`;
-    }
-  } else {
-    // plain text / markdown
-    const text = Buffer.from(uploadedFile.data, "base64").toString("utf-8").slice(0, 8000);
-    uploadedFileContext = `\n\n=== UPLOADED FILE: ${uploadedFile.name} ===\n${text}\n=== END FILE ===\n\nAnalyze this file in the context of the student's question.\n`;
-  }
+  const uploadedFileSupport = await buildUploadedFileSupport(uploadedFile);
+  uploadedFileContext = uploadedFileSupport.promptContext;
+  uploadedFileBlock = uploadedFileSupport.attachmentBlock;
+  uploadedFileFallbackPrompt = uploadedFileSupport.fallbackUserPrompt;
 }
 
 const systemPrompt = buildSystemPrompt(memoryContext, context, query.isFact, answerPack, trustInstruction, isFinancialQuery) + uploadedFileContext;
@@ -4143,15 +4623,15 @@ const maxTokens = uploadedFile ? 2000
   : 600; // discovery default
 
   try {
-    // Build multimodal message for last user turn when image is attached
+    // Build multimodal message for the last user turn when an attachment is attached
     const apiMessages: Anthropic.MessageParam[] = messages.map((m: ChatMessage, idx: number) => {
-      if (idx === messages.length - 1 && imageBlock) {
+      if (idx === messages.length - 1 && uploadedFileBlock) {
         const fallbackImagePrompt =
           !m.content || /^\[Attached:\s*.+\]$/.test(m.content)
-            ? "Analyze this uploaded image. Describe what it likely shows, make qualified guesses if it seems related to UIC, and help the student based on what you can see."
+            ? uploadedFileFallbackPrompt
             : m.content;
         const content: Anthropic.ContentBlockParam[] = [
-          imageBlock,
+          uploadedFileBlock,
           { type: "text", text: fallbackImagePrompt },
         ];
         return { role: "user" as const, content };

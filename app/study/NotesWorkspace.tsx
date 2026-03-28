@@ -1,12 +1,14 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   AudioLines,
   BookPlus,
   ChevronLeft,
+  Globe,
   FileText,
+  LoaderCircle,
   Mic,
   Plus,
   Pause,
@@ -31,6 +33,18 @@ type ToastTone = "default" | "error" | "reward";
 type NotesSort = "recent" | "alphabetical" | "course" | "pinned";
 type NotesFilter = "all" | "pinned" | "favorite";
 type NotesTab = "note" | "structured" | "transcript";
+type BrowserSpeechRecognitionResult = { isFinal: boolean; 0?: { transcript?: string } };
+type BrowserSpeechRecognitionEvent = { resultIndex: number; results: ArrayLike<BrowserSpeechRecognitionResult> };
+type BrowserSpeechRecognition = {
+  continuous: boolean;
+  interimResults: boolean;
+  lang: string;
+  onresult: ((event: BrowserSpeechRecognitionEvent) => void) | null;
+  onerror: (() => void) | null;
+  start: () => void;
+  stop?: () => void;
+};
+type SpeechRecognitionConstructor = new () => BrowserSpeechRecognition;
 
 type NoteActionResponse =
   | { summary?: string; rewrittenNote?: string; keyTerms?: string[]; explanation?: string; reviewSheet?: StructuredLectureNotes; flashcards?: GeneratedFlashcardPayload; quizQuestions?: Array<{ prompt: string; type: string }> }
@@ -164,18 +178,24 @@ export default function NotesWorkspace({ library, onLibraryChange, onCreateFlash
   const editorRef = useRef<HTMLTextAreaElement | null>(null);
   const recorderRef = useRef<MediaRecorder | null>(null);
   const mediaStreamRef = useRef<MediaStream | null>(null);
-  const speechRecognitionRef = useRef<any>(null);
+  const speechRecognitionRef = useRef<BrowserSpeechRecognition | null>(null);
   const timerRef = useRef<number | null>(null);
   const transcriptRef = useRef("");
+  const transcriptSegmentsRef = useRef<string[]>([]);
+  const recordingElapsedRef = useRef(0);
+  const recordingStartedAtRef = useRef<number | null>(null);
   const saveTimerRef = useRef<number | null>(null);
   const lastOpenedNoteIdRef = useRef<string | null>(null);
+  const autoCreatedRouteRef = useRef(false);
 
   const notes = library.notes;
   const requestedNoteId = searchParams.get("note");
+  const isLibraryView = searchParams.get("view") === "library";
   const isFocusedNoteView = Boolean(requestedNoteId);
 
   useEffect(() => {
     if (requestedNoteId && requestedNoteId !== "create") {
+      autoCreatedRouteRef.current = false;
       setSelectedNoteId(requestedNoteId);
       return;
     }
@@ -294,7 +314,7 @@ export default function NotesWorkspace({ library, onLibraryChange, onCreateFlash
     }));
   };
 
-  const createNote = (sourceType: StudyNote["sourceType"] = "manual") => {
+  const createNote = useCallback((sourceType: StudyNote["sourceType"] = "manual") => {
     const nextNote = createEmptyNote(sourceType);
     onLibraryChange((current) => ({ ...current, notes: [nextNote, ...current.notes] }));
     setSelectedNoteId(nextNote.id);
@@ -307,7 +327,55 @@ export default function NotesWorkspace({ library, onLibraryChange, onCreateFlash
     router.push(`/study?${params.toString()}`);
     showToast(sourceType === "audio" ? "Ready to capture a lecture." : "New note created.");
     return nextNote;
-  };
+  }, [onLibraryChange, router, searchParams, showToast]);
+
+  useEffect(() => {
+    if (requestedNoteId || isLibraryView || autoCreatedRouteRef.current) return;
+    autoCreatedRouteRef.current = true;
+    createNote("manual");
+  }, [createNote, isLibraryView, requestedNoteId]);
+
+  const startLiveTranscription = useCallback(() => {
+    const recognitionWindow = window as typeof window & {
+      SpeechRecognition?: SpeechRecognitionConstructor;
+      webkitSpeechRecognition?: SpeechRecognitionConstructor;
+    };
+    const speechCtor = recognitionWindow.SpeechRecognition || recognitionWindow.webkitSpeechRecognition;
+
+    if (!speechCtor) {
+      setRecordingError("Live transcript is not available in this browser. Recording still works, but transcript quality may be limited.");
+      return false;
+    }
+
+    const recognition = new speechCtor();
+    recognition.continuous = true;
+    recognition.interimResults = true;
+    recognition.lang = "en-US";
+    recognition.onresult = (event: BrowserSpeechRecognitionEvent) => {
+      const stableParts = [...transcriptSegmentsRef.current];
+      let interim = "";
+      for (let index = event.resultIndex; index < event.results.length; index += 1) {
+        const result = event.results[index];
+        const text = (result?.[0]?.transcript || "").trim();
+        if (!text) continue;
+        if (result.isFinal) {
+          stableParts.push(text);
+        } else {
+          interim = `${interim} ${text}`.trim();
+        }
+      }
+      transcriptSegmentsRef.current = stableParts;
+      const nextTranscript = [...stableParts, interim].filter(Boolean).join(" ").trim();
+      transcriptRef.current = nextTranscript;
+      setLiveTranscript(nextTranscript);
+    };
+    recognition.onerror = () => {
+      setRecordingError("Live transcript support was limited, but your audio recording still completed.");
+    };
+    recognition.start();
+    speechRecognitionRef.current = recognition;
+    return true;
+  }, []);
 
   const deleteNote = (noteId: string) => {
     const target = notes.find((note) => note.id === noteId);
@@ -352,26 +420,11 @@ export default function NotesWorkspace({ library, onLibraryChange, onCreateFlash
 
   const closeFocusedNote = () => {
     const params = new URLSearchParams(searchParams.toString());
-    params.set("mode", "notes");
+    params.delete("mode");
     params.set("view", "library");
+    params.set("section", "notes");
     params.delete("note");
     router.push(`/study?${params.toString()}`);
-  };
-
-  const insertMarkdown = (before: string, after = "", placeholder = "text") => {
-    if (!selectedNote || !editorRef.current) return;
-    const textarea = editorRef.current;
-    const start = textarea.selectionStart;
-    const end = textarea.selectionEnd;
-    const value = selectedNote.rawContent;
-    const selected = value.slice(start, end) || placeholder;
-    const nextValue = `${value.slice(0, start)}${before}${selected}${after}${value.slice(end)}`;
-    updateNote(selectedNote.id, { rawContent: nextValue });
-    requestAnimationFrame(() => {
-      textarea.focus();
-      const nextCursor = start + before.length + selected.length + after.length;
-      textarea.setSelectionRange(nextCursor, nextCursor);
-    });
   };
 
   const runNoteAction = async (action: string) => {
@@ -478,6 +531,9 @@ export default function NotesWorkspace({ library, onLibraryChange, onCreateFlash
     setRecordingError("");
     setLiveTranscript("");
     transcriptRef.current = "";
+    transcriptSegmentsRef.current = [];
+    recordingElapsedRef.current = 0;
+    recordingStartedAtRef.current = null;
 
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -491,7 +547,7 @@ export default function NotesWorkspace({ library, onLibraryChange, onCreateFlash
         const audioBlob = new Blob(chunks, { type: "audio/webm" });
         const audioRef = URL.createObjectURL(audioBlob);
         const sessionId = createStudyId("audio-session");
-        const durationMs = recordingMs;
+        const durationMs = recordingElapsedRef.current;
         onLibraryChange((current) => ({
           ...current,
           noteAudioSessions: [
@@ -557,31 +613,14 @@ export default function NotesWorkspace({ library, onLibraryChange, onCreateFlash
       setIsRecording(true);
       setIsPaused(false);
       setRecordingMs(0);
-      timerRef.current = window.setInterval(() => setRecordingMs((current) => current + 1000), 1000);
+      recordingStartedAtRef.current = Date.now();
+      timerRef.current = window.setInterval(() => {
+        const startedAt = recordingStartedAtRef.current;
+        const elapsed = startedAt ? recordingElapsedRef.current + (Date.now() - startedAt) : recordingElapsedRef.current;
+        setRecordingMs(elapsed);
+      }, 250);
 
-      const speechCtor =
-        (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-      if (speechCtor) {
-        const recognition = new speechCtor();
-        recognition.continuous = true;
-        recognition.interimResults = true;
-        recognition.lang = "en-US";
-        recognition.onresult = (event: any) => {
-          const transcript = Array.from(event.results)
-            .map((result: any) => result[0]?.transcript || "")
-            .join(" ")
-            .trim();
-          transcriptRef.current = transcript;
-          setLiveTranscript(transcript);
-        };
-        recognition.onerror = () => {
-          setRecordingError("Live transcript support was limited, but your audio recording still completed.");
-        };
-        recognition.start();
-        speechRecognitionRef.current = recognition;
-      } else {
-        setRecordingError("Live transcript is not available in this browser. Recording still works, but transcript quality may be limited.");
-      }
+      startLiveTranscription();
     } catch {
       setRecordingError("Microphone access was denied. You can still type or paste notes manually.");
       showToast("Microphone permission was denied.", "error");
@@ -591,33 +630,40 @@ export default function NotesWorkspace({ library, onLibraryChange, onCreateFlash
   const pauseRecording = () => {
     recorderRef.current?.pause();
     speechRecognitionRef.current?.stop?.();
+    if (recordingStartedAtRef.current) {
+      recordingElapsedRef.current += Date.now() - recordingStartedAtRef.current;
+      recordingStartedAtRef.current = null;
+    }
+    if (timerRef.current) {
+      window.clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
+    setRecordingMs(recordingElapsedRef.current);
     setIsPaused(true);
   };
 
   const resumeRecording = () => {
     recorderRef.current?.resume();
-    const speechCtor =
-      (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-    if (speechCtor) {
-      const recognition = new speechCtor();
-      recognition.continuous = true;
-      recognition.interimResults = true;
-      recognition.lang = "en-US";
-      recognition.onresult = (event: any) => {
-        const transcript = Array.from(event.results)
-          .map((result: any) => result[0]?.transcript || "")
-          .join(" ")
-          .trim();
-        transcriptRef.current = transcript;
-        setLiveTranscript(transcript);
-      };
-      recognition.start();
-      speechRecognitionRef.current = recognition;
-    }
+    startLiveTranscription();
+    recordingStartedAtRef.current = Date.now();
+    timerRef.current = window.setInterval(() => {
+      const startedAt = recordingStartedAtRef.current;
+      const elapsed = startedAt ? recordingElapsedRef.current + (Date.now() - startedAt) : recordingElapsedRef.current;
+      setRecordingMs(elapsed);
+    }, 250);
     setIsPaused(false);
   };
 
   const stopRecording = () => {
+    if (recordingStartedAtRef.current) {
+      recordingElapsedRef.current += Date.now() - recordingStartedAtRef.current;
+      recordingStartedAtRef.current = null;
+    }
+    setRecordingMs(recordingElapsedRef.current);
+    if (selectedNote) {
+      updateNote(selectedNote.id, { status: "processing", sourceType: "audio" });
+    }
+    setCaptureOpen(true);
     recorderRef.current?.stop();
     speechRecognitionRef.current?.stop?.();
     mediaStreamRef.current?.getTracks().forEach((track) => track.stop());
@@ -637,43 +683,6 @@ export default function NotesWorkspace({ library, onLibraryChange, onCreateFlash
 
   return (
     <div className="space-y-5">
-      <section className="study-premium-panel study-appear rounded-[1.2rem] border border-white/8 bg-[rgba(24,28,42,0.92)] p-5 backdrop-blur-xl">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-          <div className="max-w-2xl">
-              <h1 className="text-[1.55rem] font-semibold tracking-[-0.04em] text-white md:text-[1.8rem]">
-              {isFocusedNoteView ? "Note" : "My notes"}
-              </h1>
-              <p className="mt-1 text-sm leading-6 text-zinc-400">
-              {isFocusedNoteView
-                ? "A focused space for writing and organizing one note."
-                : "Browse your notes, or let AI turn a lecture recording into organized notes for you."}
-              </p>
-            </div>
-          <div className="flex flex-wrap gap-2">
-            <button
-              onClick={() => createNote("manual")}
-              {...magneticHoverProps}
-              className="study-premium-button inline-flex items-center gap-2 rounded-xl bg-white text-sm font-semibold text-zinc-900 px-4 py-2.5"
-            >
-              <Plus className="h-4 w-4" />
-              Start a note
-            </button>
-            <button
-              onClick={() => {
-                const active = selectedNote || createNote("audio");
-                setCaptureOpen(true);
-                void startRecording(active);
-              }}
-              {...magneticHoverProps}
-              className="study-premium-button inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.04] px-4 py-2.5 text-sm font-medium text-zinc-100"
-            >
-              <Mic className="h-4 w-4" />
-              AI lecture notes
-            </button>
-          </div>
-        </div>
-      </section>
-
       <div className={`grid gap-5 ${(focusMode || isFocusedNoteView) ? "xl:grid-cols-[minmax(0,1fr)]" : "xl:grid-cols-[270px_minmax(0,1fr)]"}`}>
         {!focusMode && !isFocusedNoteView && (
           <aside className="space-y-4 xl:sticky xl:top-24">
@@ -695,7 +704,7 @@ export default function NotesWorkspace({ library, onLibraryChange, onCreateFlash
               <input
                 value={search}
                 onChange={(event) => setSearch(event.target.value)}
-                placeholder="Search notes, course, tags..."
+                placeholder="Search notes or course..."
                 className="study-premium-input mt-3 w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white outline-none placeholder:text-zinc-500"
               />
               <div className="mt-3 grid grid-cols-2 gap-2">
@@ -819,6 +828,12 @@ export default function NotesWorkspace({ library, onLibraryChange, onCreateFlash
                         <span className="text-zinc-400">
                           {saveState === "saving" ? "Saving..." : "Saved"}
                         </span>
+                        {selectedNote.status === "processing" ? (
+                          <span className="inline-flex items-center gap-1 rounded-full border border-amber-300/15 bg-amber-400/10 px-2 py-0.5 text-[11px] font-medium text-amber-100">
+                            <LoaderCircle className="h-3 w-3 animate-spin" />
+                            Generating summary
+                          </span>
+                        ) : null}
                       </div>
                       <div className="mt-4 grid gap-3 md:grid-cols-[1.8fr_1fr_0.85fr]">
                         <input
@@ -843,11 +858,22 @@ export default function NotesWorkspace({ library, onLibraryChange, onCreateFlash
                     </div>
                     <div className="flex flex-wrap gap-2 lg:max-w-[360px] lg:justify-end">
                       <button
+                        onClick={() => updateNote(selectedNote.id, {
+                          visibility: selectedNote.visibility === "public" ? "private" : "public",
+                        })}
+                        {...magneticHoverProps}
+                        className="study-premium-button inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-3 py-2 text-xs font-medium text-zinc-200"
+                      >
+                        <Globe className="h-3.5 w-3.5" />
+                        {selectedNote.visibility === "public" ? "Public" : "Private"}
+                      </button>
+                      <button
                         onClick={() => setCaptureOpen((current) => !current)}
                         {...magneticHoverProps}
-                        className="study-premium-button rounded-full border border-white/10 bg-white/[0.04] px-3 py-2 text-xs font-medium text-zinc-200"
+                        className="study-premium-button inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-3 py-2 text-xs font-medium text-zinc-200"
                       >
-                        {captureOpen ? "Hide recorder" : "Recorder"}
+                        <Mic className="h-3.5 w-3.5" />
+                        {captureOpen ? "Hide recorder" : "Record lecture"}
                       </button>
                       <button
                         onClick={() => deleteNote(selectedNote.id)}
@@ -858,73 +884,37 @@ export default function NotesWorkspace({ library, onLibraryChange, onCreateFlash
                       </button>
                     </div>
                   </div>
-
-                  <div className="mt-4 flex flex-wrap items-center gap-2">
-                    <select
-                      value={selectedNote.visibility}
-                      onChange={(event) =>
-                        updateNote(selectedNote.id, {
-                          visibility: event.target.value as StudyNote["visibility"],
-                        })
-                      }
-                      className="study-premium-input rounded-full border border-white/10 bg-white/[0.04] px-3 py-2 text-sm text-white outline-none"
-                    >
-                      <option value="private">Private</option>
-                      <option value="public">Public</option>
-                    </select>
-                    <input
-                      value={selectedNote.tags.join(", ")}
-                      onChange={(event) =>
-                        updateNote(selectedNote.id, {
-                          tags: event.target.value
-                            .split(",")
-                            .map((tag) => tag.trim())
-                            .filter(Boolean),
-                        })
-                      }
-                      className="study-premium-input min-w-[220px] flex-1 rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-sm text-white outline-none placeholder:text-zinc-500"
-                      placeholder="Tags"
-                    />
-                  </div>
-
-                  <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-white/8 pt-4">
-                    <span className="text-xs font-medium text-zinc-500">Quick tools</span>
-                    {[
-                      { label: "H1", action: () => insertMarkdown("# ") },
-                      { label: "Bullet", action: () => insertMarkdown("- ") },
-                      { label: "Bold", action: () => insertMarkdown("**", "**", "bold text") },
-                      { label: "Checklist", action: () => insertMarkdown("- [ ] ") },
-                      { label: "Summarize", action: () => runNoteAction("summarize") },
-                      { label: "Flashcards", action: () => runNoteAction("generate_flashcards") },
-                    ].map((item) => (
-                      <button
-                        key={item.label}
-                        onClick={item.action}
-                        {...magneticHoverProps}
-                        className="study-premium-button rounded-full border border-white/10 bg-white/[0.03] px-3 py-1.5 text-xs font-medium text-zinc-200"
-                      >
-                        {item.label}
-                      </button>
-                    ))}
-                  </div>
                 </div>
               </div>
 
               {captureOpen && (
-                <div className="study-premium-panel rounded-[1.6rem] p-5">
+                <div className="study-premium-panel rounded-[1.3rem] border border-white/8 bg-[rgba(25,29,42,0.92)] p-4">
                   <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                     <div>
                       <div className="text-xs font-bold uppercase tracking-[0.22em] text-zinc-500">Lecture capture</div>
-                      <div className="mt-2 text-lg font-semibold text-white">{isRecording ? "Recording in progress" : "Ready to capture audio"}</div>
+                      <div className="mt-2 text-lg font-semibold text-white">
+                        {isRecording
+                          ? "Recording in progress"
+                          : selectedNote.status === "processing"
+                          ? "Generating summary"
+                          : "Ready to capture audio"}
+                      </div>
                       <div className="mt-1 text-sm text-zinc-400">
-                        Record, transcribe, and turn the lecture into clean study notes.
+                        {selectedNote.status === "processing"
+                          ? "Your recording was saved. AI is transcribing it and building a clean lecture summary now."
+                          : "Record, transcribe, and turn the lecture into clean study notes."}
                       </div>
                     </div>
                     <div className="flex flex-wrap items-center gap-2">
                       <div className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-2 text-sm font-semibold text-zinc-200">
                         {formatDuration(recordingMs)}
                       </div>
-                      {!isRecording ? (
+                      {selectedNote.status === "processing" ? (
+                        <div className="inline-flex items-center gap-2 rounded-2xl border border-amber-300/15 bg-amber-400/10 px-4 py-3 text-sm font-semibold text-amber-100">
+                          <LoaderCircle className="h-4 w-4 animate-spin" />
+                          Generating summary
+                        </div>
+                      ) : !isRecording ? (
                         <button
                           onClick={() => {
                             void startRecording();
@@ -933,7 +923,7 @@ export default function NotesWorkspace({ library, onLibraryChange, onCreateFlash
                           className="study-premium-button inline-flex items-center gap-2 rounded-2xl bg-gradient-to-b from-red-500 to-red-600 px-4 py-3 text-sm font-bold text-white"
                         >
                           <Mic className="h-4 w-4" />
-                          Start
+                          Record lecture
                         </button>
                       ) : (
                         <>
@@ -943,7 +933,7 @@ export default function NotesWorkspace({ library, onLibraryChange, onCreateFlash
                             className="study-premium-button inline-flex items-center gap-2 rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm font-semibold text-zinc-100"
                           >
                             {isPaused ? <Play className="h-4 w-4" /> : <Pause className="h-4 w-4" />}
-                            {isPaused ? "Resume" : "Pause"}
+                            {isPaused ? "Keep recording" : "Pause"}
                           </button>
                           <button
                             onClick={stopRecording}
@@ -958,25 +948,28 @@ export default function NotesWorkspace({ library, onLibraryChange, onCreateFlash
                     </div>
                   </div>
 
-                  <div className="mt-4 grid gap-4 lg:grid-cols-[0.9fr_1.1fr]">
-                    <div className="rounded-[1.3rem] border border-white/8 bg-white/[0.03] p-4">
+                  <div className="mt-4 grid gap-4 lg:grid-cols-[0.72fr_1.28fr]">
+                    <div className="rounded-[1.1rem] border border-white/8 bg-white/[0.03] p-3">
                       <div className="text-xs font-bold uppercase tracking-[0.18em] text-zinc-500">Live mic status</div>
-                      <div className="mt-4 flex items-end gap-1">
-                        {Array.from({ length: 18 }).map((_, index) => (
+                      <div className="mt-3 flex items-end gap-1">
+                        {Array.from({ length: 14 }).map((_, index) => (
                           <span
                             key={index}
-                            className={`w-2 rounded-full transition-all ${isRecording ? "bg-red-400/80" : "bg-white/10"}`}
+                            className={`w-1.5 rounded-full transition-all ${isRecording ? "bg-red-400/80" : selectedNote.status === "processing" ? "bg-amber-300/60" : "bg-white/10"}`}
                             style={{
-                              height: `${isRecording ? 10 + ((index + Math.floor(recordingMs / 500)) % 6) * 5 : 12}px`,
+                              height: `${isRecording ? 8 + ((index + Math.floor(recordingMs / 500)) % 5) * 4 : selectedNote.status === "processing" ? 14 : 9}px`,
                             }}
                           />
                         ))}
                       </div>
-                      <div className="mt-4 text-sm text-zinc-400">
-                        {recordingError || "When a transcript is available, AI will organize it into clean lecture notes instead of dumping raw text."}
+                      <div className="mt-3 text-xs leading-5 text-zinc-400">
+                        {recordingError
+                          || (selectedNote.status === "processing"
+                            ? "Recording stopped. Summary generation is in progress."
+                            : "Lecture capture stays lightweight here while the transcript builds on the right.")}
                       </div>
                     </div>
-                    <div className="rounded-[1.3rem] border border-white/8 bg-white/[0.03] p-4">
+                    <div className="rounded-[1.1rem] border border-white/8 bg-white/[0.03] p-3">
                       <div className="flex items-center justify-between gap-3">
                         <div className="text-xs font-bold uppercase tracking-[0.18em] text-zinc-500">Transcript preview</div>
                         <button
@@ -986,8 +979,11 @@ export default function NotesWorkspace({ library, onLibraryChange, onCreateFlash
                           Hide
                         </button>
                       </div>
-                      <div className="mt-3 max-h-40 overflow-y-auto rounded-[1rem] border border-white/8 bg-[#171c29] px-4 py-3 text-sm leading-6 text-zinc-300">
-                        {liveTranscript || "Your transcript preview will appear here while recording."}
+                      <div className="mt-3 max-h-32 overflow-y-auto rounded-[1rem] border border-white/8 bg-[#171c29] px-4 py-3 text-sm leading-6 text-zinc-300">
+                        {liveTranscript
+                          || (selectedNote.status === "processing"
+                            ? "Generating summary from your lecture recording..."
+                            : "Your transcript preview will appear here while recording.")}
                       </div>
                     </div>
                   </div>
@@ -996,11 +992,11 @@ export default function NotesWorkspace({ library, onLibraryChange, onCreateFlash
 
               <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)]">
                 <div className="study-premium-panel rounded-[1.45rem] border border-white/8 bg-[rgba(25,29,42,0.92)] p-5">
-                  <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/8 pb-4">
-                    <div className="flex flex-wrap gap-2">
-                      {[
-                        { id: "note", label: "Writing" },
-                        { id: "structured", label: "Study view" },
+                    <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/8 pb-4">
+                      <div className="flex flex-wrap gap-2">
+                        {[
+                          { id: "note", label: "Writing" },
+                          { id: "structured", label: "Study view" },
                         { id: "transcript", label: "Transcript" },
                       ].map((tab) => (
                         <button
@@ -1015,6 +1011,13 @@ export default function NotesWorkspace({ library, onLibraryChange, onCreateFlash
                           {tab.label}
                         </button>
                       ))}
+                      <button
+                        onClick={() => runNoteAction("generate_flashcards")}
+                        {...magneticHoverProps}
+                        className="study-premium-button rounded-full border border-white/10 bg-white/[0.03] px-3 py-1.5 text-sm font-semibold text-zinc-300 hover:bg-white/[0.06]"
+                      >
+                        Flashcards
+                      </button>
                     </div>
                     <div className="flex items-center gap-2 text-xs text-zinc-500">
                       <Clock3 className="h-3.5 w-3.5" />

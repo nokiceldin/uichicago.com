@@ -1,9 +1,10 @@
 "use client";
 
-import Link from "next/link";
 import { majorRequirements } from "@/lib/majorRequirements";
 import { useEffect, useMemo, useState } from "react";
 import MissingCourseButton from "@/app/components/MissingCourseButton";
+import FeatureTour from "@/app/components/onboarding/FeatureTour";
+import SiteFooter from "@/app/components/SiteFooter";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 function easinessConfig(v: number) {
@@ -88,24 +89,44 @@ export default function CoursesTable({ courses, total, page, pageSize, sort, dep
 
   return (
     <main className="relative min-h-screen bg-zinc-50 text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100">
+      <FeatureTour
+        storageKey="uichicago-tour-courses-list-v1"
+        steps={[
+          {
+            targetId: "courses-filters",
+            title: "Start with search and filters",
+            description: "Search by course code or title, then narrow the list by department, major, Gen Ed, or requirement type.",
+          },
+          {
+            targetId: "courses-sort",
+            title: "Swap the ranking direction",
+            description: "Use this toggle when you want to compare easiest-first versus hardest-first results.",
+          },
+          {
+            targetId: "courses-results",
+            title: "Open any course row",
+            description: "Each result takes you to a deeper course page with grade distributions, quick stats, and professor breakdowns.",
+          },
+        ]}
+      />
       <div className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-72 bg-gradient-to-b from-red-950/20 to-transparent dark:from-red-950/20 dark:to-transparent" />
       <div className="pointer-events-none absolute inset-0 -z-10 opacity-[0.02] dark:opacity-[0.015]" style={{ backgroundImage: "linear-gradient(rgba(0,0,0,0.4) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,0.4) 1px, transparent 1px)", backgroundSize: "48px 48px" }} />
 
-      <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-12">
+      <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-12">
         {/* Header */}
-        <div className="mb-8">
+        <div className="mb-6 sm:mb-8">
           <div className="mb-2">
             <span className="inline-flex items-center gap-1.5 rounded-full border border-zinc-300 bg-zinc-100 px-3 py-1 text-xs font-semibold uppercase tracking-widest text-zinc-600 dark:border-white/12 dark:bg-white/[0.06] dark:text-zinc-300">
               <span className="h-1.5 w-1.5 rounded-full bg-zinc-500 dark:bg-zinc-400" />
               {nf.format(total)} courses
             </span>
           </div>
-          <h1 className="text-4xl font-black tracking-tight text-zinc-900 dark:text-white sm:text-5xl">UIC Courses</h1>
+          <h1 className="text-3xl font-black tracking-tight text-zinc-900 dark:text-white sm:text-5xl">UIC Courses</h1>
           <p className="mt-2 max-w-xl text-sm text-zinc-500 sm:text-base">Find the easiest classes and best professors using real grade distributions and enrollment data.</p>
         </div>
 
         {/* Filters */}
-        <div className="mb-4 rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-white/8 dark:bg-zinc-900/60 sm:p-6">
+        <div data-tour="courses-filters" className="mb-4 rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-white/8 dark:bg-zinc-900/60 sm:p-6">
           <div className="relative mb-4">
             <svg className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z" />
@@ -164,27 +185,86 @@ export default function CoursesTable({ courses, total, page, pageSize, sort, dep
           <p className="text-sm text-zinc-500 tabular-nums">
             Showing <span className="text-zinc-700 dark:text-zinc-300 font-medium">{nf.format(start + 1)}–{nf.format(Math.min(start + pageSize, total))}</span> of <span className="text-zinc-700 dark:text-zinc-300 font-medium">{nf.format(total)}</span> courses
           </p>
-          <div className="flex items-center gap-2 flex-wrap">
-            <button onClick={() => setSort(sort === "difficultyDesc" ? "difficultyAsc" : "difficultyDesc")} className="inline-flex items-center gap-1.5 h-9 px-4 rounded-xl border border-zinc-200 bg-white text-sm font-medium text-zinc-700 hover:bg-zinc-50 transition-colors dark:border-white/10 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-white/10">
+          <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
+            <button data-tour="courses-sort" onClick={() => setSort(sort === "difficultyDesc" ? "difficultyAsc" : "difficultyDesc")} className="inline-flex h-10 items-center justify-center gap-1.5 rounded-xl border border-zinc-200 bg-white px-4 text-sm font-medium text-zinc-700 hover:bg-zinc-50 transition-colors dark:border-white/10 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-white/10">
               {sort === "difficultyDesc" ? <><span className="text-emerald-500">↓</span> Easiest first</> : <><span className="text-red-500">↑</span> Hardest first</>}
             </button>
-            <button className={navBtn} onClick={() => setPage(Math.max(1, page - 1))} disabled={page === 1}>← Prev</button>
-            <button className={pageBtn(page === 1)} onClick={() => setPage(1)}>1</button>
-            {middle.length > 0 && middle[0] > 2 && <span className="text-zinc-400 text-sm">…</span>}
-            {middle.map((n) => <button key={n} className={pageBtn(page === n)} onClick={() => setPage(n)}>{n}</button>)}
-            {totalPages > 1 && (
-              <>
-                {middle.length > 0 && middle[middle.length - 1] < totalPages - 1 && <span className="text-zinc-400 text-sm">…</span>}
-                <button className={pageBtn(page === totalPages)} onClick={() => setPage(totalPages)}>{totalPages}</button>
-              </>
-            )}
-            <button className={navBtn} onClick={() => setPage(Math.min(totalPages, page + 1))} disabled={page === totalPages}>Next →</button>
+            <div className="flex items-center gap-2 overflow-x-auto pb-1 sm:overflow-visible">
+              <button className={navBtn} onClick={() => setPage(Math.max(1, page - 1))} disabled={page === 1}>← Prev</button>
+              <button className={pageBtn(page === 1)} onClick={() => setPage(1)}>1</button>
+              {middle.length > 0 && middle[0] > 2 && <span className="text-zinc-400 text-sm">…</span>}
+              {middle.map((n) => <button key={n} className={pageBtn(page === n)} onClick={() => setPage(n)}>{n}</button>)}
+              {totalPages > 1 && (
+                <>
+                  {middle.length > 0 && middle[middle.length - 1] < totalPages - 1 && <span className="text-zinc-400 text-sm">…</span>}
+                  <button className={pageBtn(page === totalPages)} onClick={() => setPage(totalPages)}>{totalPages}</button>
+                </>
+              )}
+              <button className={navBtn} onClick={() => setPage(Math.min(totalPages, page + 1))} disabled={page === totalPages}>Next →</button>
+            </div>
           </div>
         </div>
 
-        {/* Table */}
-        <div className="overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-lg dark:border-white/8 dark:bg-zinc-900/40 dark:shadow-black/40">
-          <div className="grid grid-cols-12 border-b border-zinc-100 bg-zinc-50 px-4 sm:px-6 py-3 text-[10px] font-bold uppercase tracking-widest text-zinc-500 dark:border-white/8 dark:bg-zinc-950/60 dark:text-zinc-600">
+        <div data-tour="courses-results" className="space-y-3 sm:hidden">
+          {courses.map((c) => {
+            const href = `/courses/${encodeURIComponent(c.subject)}/${encodeURIComponent(c.number)}`;
+            const ec = c.difficultyScore != null ? easinessConfig(c.difficultyScore) : null;
+            return (
+              <button
+                key={c.id}
+                type="button"
+                onClick={() => router.push(href)}
+                className="w-full rounded-2xl border border-zinc-200 bg-white p-4 text-left shadow-sm transition hover:border-zinc-300 hover:bg-zinc-50 dark:border-white/8 dark:bg-zinc-900/40 dark:hover:bg-white/[0.04]"
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <div className="text-base font-bold text-zinc-900 dark:text-zinc-100">
+                      {c.subject} {c.number}
+                    </div>
+                    <div className="mt-1 text-sm leading-6 text-zinc-500 dark:text-zinc-400">
+                      {c.title || "Untitled"}
+                    </div>
+                  </div>
+                  {c.isGenEd ? (
+                    <span className="shrink-0 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-emerald-700 dark:border-emerald-400/20 dark:bg-emerald-400/10 dark:text-emerald-200">
+                      Gen Ed
+                    </span>
+                  ) : null}
+                </div>
+
+                <div className="mt-4 grid grid-cols-2 gap-2">
+                  <div className="rounded-xl bg-zinc-50 px-3 py-2.5 dark:bg-white/[0.04]">
+                    <div className="text-[10px] font-bold uppercase tracking-widest text-zinc-400 dark:text-zinc-600">Easiness</div>
+                    <div className={`mt-1 text-sm font-bold ${ec ? ec.text : "text-zinc-400 dark:text-zinc-500"}`}>
+                      {c.difficultyScore == null ? "No data" : c.difficultyScore.toFixed(2)}
+                    </div>
+                    {ec ? <div className="mt-1 text-[11px] text-zinc-500 dark:text-zinc-400">{ec.label}</div> : null}
+                  </div>
+                  <div className="rounded-xl bg-zinc-50 px-3 py-2.5 dark:bg-white/[0.04]">
+                    <div className="text-[10px] font-bold uppercase tracking-widest text-zinc-400 dark:text-zinc-600">Avg GPA</div>
+                    <div className="mt-1 text-sm font-bold text-zinc-900 dark:text-zinc-100">
+                      {c.avgGpa == null ? "No data" : c.avgGpa.toFixed(2)}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-zinc-500 dark:text-zinc-400">
+                  <span>{c.totalRegsAllTime == null ? "No enrollments" : `${nf.format(c.totalRegsAllTime)} enrollments`}</span>
+                  {c.genEdCategory ? <span className="rounded-full border border-zinc-200 bg-zinc-50 px-2 py-1 dark:border-white/10 dark:bg-white/[0.04]">{c.genEdCategory}</span> : null}
+                </div>
+              </button>
+            );
+          })}
+          {courses.length === 0 && (
+            <div className="rounded-2xl border border-zinc-200 bg-white px-6 py-16 text-center shadow-sm dark:border-white/8 dark:bg-zinc-900/40">
+              <p className="text-zinc-400 text-sm">No courses found.</p>
+              <button onClick={clearAll} className="mt-3 text-sm text-red-500 hover:text-red-400 dark:text-red-500 dark:hover:text-red-400 transition-colors font-medium">Clear all filters →</button>
+            </div>
+          )}
+        </div>
+
+        <div data-tour="courses-results" className="hidden overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-lg dark:border-white/8 dark:bg-zinc-900/40 dark:shadow-black/40 sm:block">
+          <div className="grid grid-cols-12 border-b border-zinc-100 bg-zinc-50 px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-zinc-500 dark:border-white/8 dark:bg-zinc-950/60 dark:text-zinc-600 sm:px-6">
             <div className="col-span-5">Course</div>
             <div className="col-span-3">Easiness</div>
             <div className="col-span-2 text-right">Avg GPA</div>
@@ -196,7 +276,7 @@ export default function CoursesTable({ courses, total, page, pageSize, sort, dep
               const ec = c.difficultyScore != null ? easinessConfig(c.difficultyScore) : null;
               return (
                 <li key={c.id} role="link" tabIndex={0} onClick={() => router.push(href)} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); router.push(href); } }}
-                  className="group grid cursor-pointer grid-cols-12 items-center px-4 sm:px-6 py-4 transition-colors hover:bg-zinc-50 focus:outline-none focus:bg-zinc-50 dark:hover:bg-white/[0.04] dark:focus:bg-white/[0.04]">
+                  className="group grid cursor-pointer grid-cols-12 items-center px-4 py-4 transition-colors hover:bg-zinc-50 focus:outline-none focus:bg-zinc-50 dark:hover:bg-white/[0.04] dark:focus:bg-white/[0.04] sm:px-6">
                   <div className="col-span-5 min-w-0 pr-4">
                     <div className="text-sm font-bold text-zinc-900 group-hover:text-zinc-700 transition-colors sm:text-base dark:text-zinc-100 dark:group-hover:text-white">
                       {c.subject} {c.number}
@@ -240,11 +320,9 @@ export default function CoursesTable({ courses, total, page, pageSize, sort, dep
           <MissingCourseButton searchQuery={q.trim()} show />
         </div>
 
-        <footer className="mt-12 border-t border-zinc-100 dark:border-white/8 pt-8 text-center text-sm text-zinc-400 dark:text-zinc-600">
-          <p>Contact: <a href="mailto:uicratings@gmail.com" className="hover:text-red-400 dark:hover:text-red-400 transition-colors">uicratings@gmail.com</a></p>
-          <p className="mt-1">Not affiliated with UIC or RMP.</p>
-        </footer>
       </div>
+
+      <SiteFooter className="mt-12" />
     </main>
   );
 }

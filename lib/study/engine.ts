@@ -40,16 +40,7 @@ export function fuzzyMatch(input: string, accepted: string | string[]): boolean 
 export function buildQuestionBank(set: StudySet): QuizQuestion[] {
   const cards = [...set.cards].sort((a, b) => a.orderIndex - b.orderIndex);
   return cards.flatMap((card, index) => {
-    const distractors = shuffleArray(
-      Array.from(
-        new Set(
-          cards
-            .filter((candidate) => candidate.id !== card.id)
-            .map((candidate) => candidate.back.trim())
-            .filter(Boolean),
-        ),
-      ),
-    ).slice(0, 3);
+    const distractors = buildDistractorsForCard(card, cards, set).slice(0, 3);
 
     const mcChoices = shuffleArray(Array.from(new Set([card.back.trim(), ...distractors].filter(Boolean)))).slice(0, 4);
     const promptBase = card.front.endsWith("?") ? card.front : `What best matches: ${card.front}?`;
@@ -103,6 +94,79 @@ export function buildQuestionBank(set: StudySet): QuizQuestion[] {
 
     return questionTypes;
   });
+}
+
+function buildDistractorsForCard(card: StudyCard, cards: StudyCard[], set: StudySet) {
+  const correctAnswer = card.back.trim();
+  const ranked = cards
+    .filter((candidate) => candidate.id !== card.id)
+    .map((candidate) => ({
+      candidate,
+      score: scoreDistractorCandidate(card, candidate, set),
+    }))
+    .sort((a, b) => b.score - a.score)
+    .map(({ candidate }) => candidate.back.trim())
+    .filter((answer) => answer && answer !== correctAnswer);
+
+  return Array.from(new Set(ranked));
+}
+
+function scoreDistractorCandidate(card: StudyCard, candidate: StudyCard, set: StudySet) {
+  const frontA = normalizeText(card.front);
+  const frontB = normalizeText(candidate.front);
+  const backA = normalizeText(card.back);
+  const backB = normalizeText(candidate.back);
+
+  const frontTokensA = tokenize(card.front);
+  const frontTokensB = tokenize(candidate.front);
+  const backTokensA = tokenize(card.back);
+  const backTokensB = tokenize(candidate.back);
+
+  const sharedFrontTokens = intersectionSize(frontTokensA, frontTokensB);
+  const sharedBackTokens = intersectionSize(backTokensA, backTokensB);
+  const commonLead = commonLeadLength(frontTokensA, frontTokensB);
+  const answerLengthGap = Math.abs(backTokensA.length - backTokensB.length);
+  const frontLengthGap = Math.abs(frontTokensA.length - frontTokensB.length);
+  const tagOverlap = intersectionSize(card.tags, candidate.tags);
+  const sameDifficulty = card.difficulty === candidate.difficulty ? 1 : 0;
+  const sameSubjectSignal = card.tags[0] && set.subject && candidate.tags[0] === card.tags[0] ? 1 : 0;
+
+  let score = 0;
+  score += commonLead * 8;
+  score += sharedFrontTokens * 5;
+  score += sharedBackTokens * 2;
+  score += tagOverlap * 6;
+  score += sameDifficulty * 2;
+  score += sameSubjectSignal * 2;
+  score -= answerLengthGap * 0.8;
+  score -= frontLengthGap * 0.5;
+
+  if (frontA.startsWith("what happens during") && frontB.startsWith("what happens during")) score += 10;
+  if (frontA.startsWith("what is the goal of") && frontB.startsWith("what is the goal of")) score += 10;
+  if (frontA.startsWith("how does") && frontB.startsWith("how does")) score += 8;
+  if (frontA.startsWith("what primers are used") && frontB.startsWith("what primers are used")) score += 8;
+  if (frontA.startsWith("direction of") && frontB.startsWith("direction of")) score += 8;
+  if (backA.includes("dna") && backB.includes("dna")) score += 4;
+
+  return score;
+}
+
+function tokenize(value: string) {
+  return normalizeText(value).split(" ").filter(Boolean);
+}
+
+function intersectionSize(a: string[], b: string[]) {
+  const bSet = new Set(b);
+  return Array.from(new Set(a)).filter((token) => bSet.has(token)).length;
+}
+
+function commonLeadLength(a: string[], b: string[]) {
+  let count = 0;
+  const length = Math.min(a.length, b.length);
+  while (count < length && a[count] === b[count]) {
+    count += 1;
+  }
+  return count;
 }
 
 export function buildExam(set: StudySet, length = 12): GeneratedExamPayload {

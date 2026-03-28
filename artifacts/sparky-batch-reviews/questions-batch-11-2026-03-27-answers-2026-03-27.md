@@ -1,0 +1,356 @@
+# Sparky Batch Review
+
+Date: 2026-03-27
+Base URL: http://127.0.0.1:3000
+Question file: artifacts/sparky-batch-reviews/questions-batch-11-2026-03-27.json
+Question count: 30
+
+## 1. What is the UIC FAFSA code again?
+
+- Status: 200
+- Abstained: false
+
+### Answer
+
+UIC's FAFSA code is **001776**.
+
+## 2. What does the President's Award at UIC cover?
+
+- Status: 200
+- Abstained: false
+
+### Answer
+
+The **President's Award** at UIC covers **$5,000 per year** for most recipients, or **full tuition + housing** specifically for Honors College scholars. The application deadline is **February 1**.
+
+This is one of UIC's merit-based scholarships, so it's awarded based on academic achievement rather than financial need. For the most current details about eligibility requirements and application process, check with the Office of Student Financial Aid at (312) 996-3126 or financialaid.uic.edu.
+
+## 3. What is the Chancellor's Fellows scholarship amount?
+
+- Status: 200
+- Abstained: false
+
+### Answer
+
+The **Chancellor's Fellows** scholarship is **$7,500 per year**. 
+
+To qualify, you need a **3.70+ GPA** and **ACT 33/SAT 1450**, with an application deadline of **November 3**.
+
+## 4. What is the FAFSA priority deadline at UIC for 2025-2026?
+
+- Status: 200
+- Abstained: false
+
+### Answer
+
+The FAFSA priority deadline at UIC for 2025-2026 is **March 15**. UIC's FAFSA code is **001776**.
+
+## 5. How much is the UIC Care emergency fund?
+
+- Status: 200
+- Abstained: false
+
+### Answer
+
+The **U&I Care Fund** provides up to approximately **$500** for enrolled students experiencing financial hardship.
+
+To get the exact current amount and apply, contact the Dean of Students Office or visit their website for verification, as emergency fund amounts can vary based on availability and individual circumstances.
+
+## 6. What is the average aid students get at UIC?
+
+- Status: 200
+- Abstained: false
+
+### Answer
+
+I don't have the specific average financial aid amount that UIC students receive in my current data. For the most accurate and up-to-date information on average aid packages, you should check with **UIC Financial Aid** directly at **312-996-3126** or visit **financialaid.uic.edu**.
+
+What I can tell you about UIC's major aid programs: The **Aspire Grant** covers **100% of tuition and mandatory fees** for Illinois families earning under $75k (apply via FAFSA by March 15). Other significant awards include the **Chancellor's Fellows** at **$7,500/year** and the **President's Award** at **$5,000/year** or full tuition+housing for Honors Scholars.
+
+For comprehensive aid statistics and average award amounts, the Financial Aid office will have the complete picture of what students typically receive.
+
+## 7. What percentage of students receive aid at UIC?
+
+- Status: 200
+- Abstained: false
+
+### Answer
+
+I don't have the exact percentage of UIC students who receive financial aid in my current data. For the most current statistics on financial aid recipients, you'll want to check with UIC's Office of Student Financial Aid at **financialaid.uic.edu** or call them at **(312) 996-3126**.
+
+What I can tell you is that UIC offers substantial aid opportunities, including the **Aspire Grant** that covers 100% of tuition and fees for Illinois families earning under **$75,000** annually. With UIC being a majority-minority institution where about 91% of students commute, financial accessibility is clearly a priority for the university.
+
+## 8. Is UIC cheaper than Loyola or DePaul?
+
+- Status: 200
+- Abstained: false
+
+### Answer
+
+**UIC is significantly cheaper than both Loyola and DePaul.**
+
+**UIC (public):**
+- In-state: **$8,157/semester** ($5,712 tuition + $2,445 fees)
+- Out-of-state: **$16,208/semester** ($13,763 tuition + $2,445 fees)
+
+**Loyola and DePaul (private):**
+Based on what I have, both are private universities with much higher tuition rates, but I don't have their exact 2025-2026 figures to give you specific comparisons.
+
+**The recommendation:** UIC will almost certainly save you tens of thousands per year compared to either private option, especially if you're an Illinois resident. The cost difference is usually $20,000-30,000+ annually.
+
+For exact Loyola and DePaul tuition numbers, check their financial aid websites directly. For UIC's complete cost breakdown and financial aid options, visit **financialaid.uic.edu** or call **(312) 996-3126**.
+
+## 9. What is the in-state undergrad tuition per semester at UIC?
+
+- Status: 200
+- Abstained: false
+
+### Answer
+
+In-state undergraduate tuition at UIC is **$5,712 per semester** plus **$2,445 in fees**, for a total of **$8,157 per semester**.
+
+If you're an Illinois family earning under $75k, you could qualify for the **Aspire Grant** which covers 100% of tuition and fees for free — just apply via FAFSA by March 15 at free.uic.edu.
+
+## 10. What is the out-of-state undergrad tuition per semester at UIC?
+
+- Status: 200
+- Abstained: false
+
+### Answer
+
+Out-of-state undergraduate tuition at UIC is **$13,763 per semester**, plus **$2,445 in fees**.
+
+That brings your total semester cost to $16,208 before housing, meals, and other expenses. UIC also offers a 4-year tuition lock, so your rate is guaranteed for your entire undergraduate program.
+
+## 11. What is the in-state tuition per credit hour at UIC?
+
+- Status: 200
+- Abstained: false
+
+### Answer
+
+The in-state tuition at UIC is **$476 per credit hour** for the 2025-2026 academic year.
+
+For context, full-time undergraduate tuition is $5,712 per semester plus $2,445 in fees. You can find the most current rates at bursar.uic.edu.
+
+## 12. How much are mandatory fees per semester at UIC?
+
+- Status: 200
+- Abstained: false
+
+### Answer
+
+Based on what I have, mandatory fees are **$2,445 per semester** at UIC for undergraduates.
+
+This may have been updated, so I'd recommend verifying the current amount at bursar.uic.edu or by calling the Bursar's Office for the most authoritative figure.
+
+## 13. What is the spring tuition due date at UIC?
+
+- Status: 200
+- Abstained: false
+
+### Answer
+
+Spring tuition bills are due **February 28** at UIC.
+
+## 14. What is the fall tuition due date at UIC?
+
+- Status: 200
+- Abstained: false
+
+### Answer
+
+The fall tuition bill is due **September 28** at UIC.
+
+## 15. What is the late fee on unpaid tuition at UIC?
+
+- Status: 200
+- Abstained: false
+
+### Answer
+
+I don't have the specific late fee amount for unpaid tuition in my current data. For the exact late fee charges and payment deadlines, you'll need to check with the **Office of the Bursar** directly:
+
+- **Website**: bursar.uic.edu
+- **Phone**: (312) 996-5885
+- **Location**: Student Services Building (SSB), Room 1200
+
+They'll have the complete fee schedule and can tell you about payment plans if you need more time to pay.
+
+## 16. How many installments does UI-Pay allow?
+
+- Status: 200
+- Abstained: false
+
+### Answer
+
+UI-Pay through Nelnet allows **6 installments** for fall and spring semesters. There's a late fee of 1.5% or $1 per month, whichever is greater.
+
+## 17. Can independent students qualify for in-state tuition in Illinois after a year?
+
+- Status: 200
+- Abstained: false
+
+### Answer
+
+Based on the tuition data I have, **in-state undergrad tuition is $5,712/semester** while **out-of-state is $13,763/semester** — a significant difference of over $8,000 per semester.
+
+However, I don't have the specific residency requirements for independent students in my data. Illinois residency rules for tuition purposes can be complex and involve factors like physical presence, financial independence, voter registration, and intent to remain in the state.
+
+For the authoritative answer on independent student residency requirements and timeline, contact **UIC's Office of Admissions at (312) 996-4350** or check with the **Registrar's Office** directly. They can walk you through the exact criteria and documentation needed to establish Illinois residency for tuition purposes.
+
+## 18. Can F-1 students qualify for in-state residency at UIC?
+
+- Status: 200
+- Abstained: false
+
+### Answer
+
+Based on what I have, F-1 students typically cannot establish Illinois residency for tuition purposes due to their temporary visa status. However, residency rules can be complex and have specific exceptions.
+
+You'll need to check directly with **UIC Admissions** or the **Office of International Services (OIS)** in **SSB 2160** at **(312) 996-3121** or **ois@uic.edu** for the most current residency classification policies. They can review your specific situation and any potential pathways to residency status.
+
+The UIC Student Accounts office would also have the official residency requirements that apply to tuition classification.
+
+## 19. What is the annual cost of CampusCare?
+
+- Status: 200
+- Abstained: false
+
+### Answer
+
+_No response body returned._
+
+## 20. When is the CampusCare spring waiver deadline?
+
+- Status: 200
+- Abstained: false
+
+### Answer
+
+The CampusCare spring waiver deadline is **February 7, 2026**.
+
+## 21. How much is the international student fee per semester?
+
+- Status: 200
+- Abstained: false
+
+### Answer
+
+I don't see a specific international student fee listed in the data I have access to. The tuition for out-of-state undergraduates (which includes international students) is **$13,763/semester + $2,445 fees**, but I don't have the breakdown of what specific fees apply to international students.
+
+For the exact international student fee amount, contact the **Office of International Services** at **(312) 996-3121** or **ois@uic.edu** — they'll have the precise fee structure.
+
+## 22. Can international students waive CampusCare?
+
+- Status: 200
+- Abstained: false
+
+### Answer
+
+Yes, international students can waive CampusCare if they have qualifying outside insurance. You'd save about **$697 per year** if eligible to waive.
+
+The waiver deadlines are **September 12, 2025** for Fall and **February 7, 2026** for Spring. Since you're automatically enrolled in CampusCare (costs ~$1,394/year), you'll need to submit the waiver by those dates if your outside insurance meets UIC's requirements.
+
+For specific waiver requirements and the application process, contact the health services office or check the CampusCare portal on myUIC.
+
+## 23. What does OPT mean for international students?
+
+- Status: 200
+- Abstained: false
+
+### Answer
+
+Based on what I have, **OPT** (Optional Practical Training) is a work authorization program for international F-1 students, but I don't have the specific details about how it works at UIC or the application process.
+
+What I can tell you is that UIC's **Office of International Services (OIS)** handles all work authorization matters for international students, including OPT. They're located in **SSB 2160**, open Monday-Friday 8:30AM-5PM, and you can reach them at **(312) 996-3121** or **ois@uic.edu**.
+
+For accurate details about OPT eligibility, timing, duration, and application procedures, I'd recommend contacting OIS directly since this may have been updated and the specifics are crucial for your immigration status.
+
+## 24. What is STEM OPT?
+
+- Status: 200
+- Abstained: false
+
+### Answer
+
+**STEM OPT** is a 24-month extension of regular OPT (Optional Practical Training) available to F-1 international students who graduate with degrees in Science, Technology, Engineering, or Mathematics fields.
+
+Here's how it works: After completing your initial 12 months of post-completion OPT, you can apply for an additional 24 months if your degree is in a STEM field designated by the Department of Homeland Security. This gives you a total of **36 months** of work authorization in the U.S. after graduation.
+
+To be eligible, you must be employed by an E-Verify employer and follow specific reporting requirements. Your employer must also complete Form I-983 (Training Plan) showing how the position provides practical training related to your degree.
+
+For specific guidance on applying for STEM OPT at UIC, contact the **Office of International Services** at SSB 2160, call **(312) 996-3121**, or email **ois@uic.edu**. They're open Monday-Friday 8:30AM-5PM and handle all OPT applications and work authorization questions for international students.
+
+## 25. Can J-1 students work on campus without sponsor approval?
+
+- Status: 200
+- Abstained: false
+
+### Answer
+
+As a J-1 visa student, you can work on campus at UIC without prior sponsor approval, but there are specific rules you need to follow.
+
+J-1 students are generally allowed to work on campus part-time (up to 20 hours per week during the academic year) without getting permission from your program sponsor first. However, you still need proper work authorization from UIC and must maintain your full-time student status.
+
+Since immigration regulations can be complex and change, I'd strongly recommend verifying the current requirements with UIC's Office of International Services. They can confirm the exact process for getting work authorization and ensure you're following all J-1 visa requirements. You can reach them at (312) 996-3121 or visit their office for the most up-to-date guidance on your specific situation.
+
+## 26. Do new international students have to check in with OIS?
+
+- Status: 200
+- Abstained: false
+
+### Answer
+
+Yes, **immigration check-in with OIS is required** for all new international students. For **F-1 students**, this removes your SEVIS hold. For **J-1 students**, you must validate within 30 days of arrival.
+
+Visit OIS at **SSB 2160**, call **(312) 996-3121**, or email **ois@uic.edu**. They're open **Monday-Friday 8:30AM-5PM**.
+
+## 27. What happens to the SEVIS hold after F-1 check-in?
+
+- Status: 200
+- Abstained: false
+
+### Answer
+
+When you complete your F-1 immigration check-in with OIS, they remove the SEVIS hold from your account. This check-in is required for all F-1 students and is one of your first important tasks when you arrive at UIC.
+
+You'll need to visit OIS in **SSB 2160** during their hours (Mon-Fri 8:30AM-5PM) to complete this process. You can reach them at **(312) 996-3121** or **ois@uic.edu** if you have questions about the check-in requirements.
+
+## 28. What is a reduced course load at UIC for international students?
+
+- Status: 200
+- Abstained: false
+
+### Answer
+
+Based on what I have, international students at UIC need to maintain full-time enrollment to stay in status, but specific reduced course load policies aren't detailed in my current data.
+
+For F-1 and J-1 students, reduced course loads typically require prior authorization from the Office of International Services (OIS) and are usually only approved for specific circumstances like academic difficulties, medical issues, or final semester situations. This is a critical immigration matter that affects your visa status.
+
+You'll need to contact **OIS directly** at **SSB 2160**, **(312) 996-3121**, or **ois@uic.edu** (Mon-Fri 8:30AM-5PM) before reducing your course load. They can explain the exact credit hour requirements, approval process, and any impact on your SEVIS record or future immigration benefits like CPT/OPT eligibility.
+
+## 29. How do I request a travel signature at UIC?
+
+- Status: 200
+- Abstained: false
+
+### Answer
+
+I don't have specific information about travel signature procedures in my current data. This type of administrative process would typically be handled through your department or college office, but the exact steps and requirements aren't covered in what I have available.
+
+For accurate information about requesting travel signatures, contact the **Office of Business and Financial Services** at **(312) 996-4955** or check the UIC administrative services website at uic.edu. Your department's business office may also handle travel approvals directly.
+
+## 30. How long can a travel signature be valid for re-entry?
+
+- Status: 200
+- Abstained: false
+
+### Answer
+
+Based on what I have in the data, I don't see specific information about travel signature validity periods for re-entry. This sounds like it could be related to international student travel authorization or F-1/J-1 visa travel signatures, which typically have specific timeframes.
+
+For the most accurate and up-to-date information about travel signature validity, I'd recommend contacting the **Office of International Services** at UIC directly at **(312) 996-3121** or visiting their office. They handle all international student travel documentation and can give you the exact validity period and current requirements for your specific situation.
+
+You can also check the UIC International Services website for current travel policies and forms.
+

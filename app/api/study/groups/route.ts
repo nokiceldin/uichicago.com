@@ -8,7 +8,6 @@ export async function POST(request: Request) {
     const studyUser = await requireCurrentStudyUser();
     const body = await request.json();
     const inviteCode = String(body.inviteCode || Math.random().toString(36).slice(2, 8).toUpperCase()).trim().toUpperCase();
-    const selectedSetId = String(body.selectedSetId || "").trim();
 
     if (!String(body.name || "").trim()) {
       return NextResponse.json({ error: "Group name is required." }, { status: 400 });
@@ -36,22 +35,6 @@ export async function POST(request: Request) {
           linkedSets: true,
         },
       });
-
-      if (selectedSetId) {
-        const set = await tx.studySet.findUnique({
-          where: { id: selectedSetId },
-        });
-
-        if (set?.ownerId === studyUser.id) {
-          await tx.studyGroupSet.create({
-            data: {
-              groupId: group.id,
-              setId: selectedSetId,
-              addedById: studyUser.id,
-            },
-          });
-        }
-      }
 
       return tx.studyGroup.findUniqueOrThrow({
         where: { id: group.id },

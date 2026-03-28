@@ -5,22 +5,21 @@ const client = new Anthropic();
 
 export interface UserMemory {
   major?: string;
-  year?: string; // freshman, sophomore, junior, senior, grad
+  year?: string;
   interests?: string[];
   struggles?: string[];
   goals?: string[];
   knownCourses?: string[];
-  knownPrefs?: string[]; // e.g. "prefers easy graders", "pre-med"
+  knownPrefs?: string[];
   lastTopics?: string[];
 }
 
-// Extract facts about the user from their messages
 async function extractMemoryUpdate(
   messages: { role: string; content: string }[],
   existingMemory: UserMemory
 ): Promise<UserMemory | null> {
   try {
-    const recentMessages = messages.slice(-6).map(m => `${m.role}: ${m.content}`).join("\n");
+    const recentMessages = messages.slice(-6).map((m) => `${m.role}: ${m.content}`).join("\n");
 
     const response = await client.messages.create({
       model: "claude-haiku-4-5-20251001",
@@ -58,7 +57,6 @@ If nothing new to add, return the existing memory unchanged. Return valid JSON o
   }
 }
 
-// Get or create session memory
 export async function getMemory(sessionId: string): Promise<UserMemory> {
   try {
     const session = await prisma.conversationSession.findUnique({
@@ -71,13 +69,11 @@ export async function getMemory(sessionId: string): Promise<UserMemory> {
   }
 }
 
-// Update memory after each conversation turn
 export async function updateMemory(
   sessionId: string,
   messages: { role: string; content: string }[],
   currentMemory: UserMemory
 ): Promise<UserMemory> {
-  // Only update memory every 3 messages to save cost
   const session = await prisma.conversationSession.findUnique({
     where: { sessionId },
     select: { messageCount: true },
@@ -93,7 +89,6 @@ export async function updateMemory(
     if (extracted) newMemory = extracted;
   }
 
-  // Upsert session
   await prisma.conversationSession.upsert({
     where: { sessionId },
     create: {
@@ -112,7 +107,36 @@ export async function updateMemory(
   return newMemory;
 }
 
-// Format memory into a context string for the system prompt
+export async function learnMemoryFromMessages(
+  messages: { role: string; content: string }[],
+  existingMemory: UserMemory
+): Promise<UserMemory> {
+  const extracted = await extractMemoryUpdate(messages, existingMemory);
+  return extracted ?? existingMemory;
+}
+
+export async function persistMemory(
+  sessionId: string,
+  memory: UserMemory
+): Promise<UserMemory> {
+  await prisma.conversationSession.upsert({
+    where: { sessionId },
+    create: {
+      sessionId,
+      memory: JSON.stringify(memory),
+      messageCount: 1,
+      lastSeenAt: new Date(),
+    },
+    update: {
+      memory: JSON.stringify(memory),
+      messageCount: { increment: 1 },
+      lastSeenAt: new Date(),
+    },
+  });
+
+  return memory;
+}
+
 export function formatMemoryForPrompt(memory: UserMemory): string {
   if (!memory || Object.keys(memory).length === 0) return "";
 
@@ -127,5 +151,5 @@ export function formatMemoryForPrompt(memory: UserMemory): string {
 
   if (parts.length === 0) return "";
 
-  return `=== WHAT I KNOW ABOUT THIS STUDENT ===\n${parts.join("\n")}\n(Use this to personalize your response — don't repeat these facts back robotically, just factor them in naturally)`;
+  return `=== WHAT I KNOW ABOUT THIS STUDENT ===\n${parts.join("\n")}\n(Use this to personalize your response naturally.)`;
 }

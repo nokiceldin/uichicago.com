@@ -26,6 +26,7 @@ Rules:
 - Be concise and exam useful.
 - Avoid duplicates and filler.
 - Prefer terms, processes, definitions, and causal relationships students actually get tested on.
+- If the source already contains explicit flashcard-style question and answer pairs, preserve them as one card per pair instead of merging them into summary cards.
 - Generate ${input.desiredCount ?? 12} cards.
 
 Context:

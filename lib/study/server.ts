@@ -38,6 +38,7 @@ export function serializeStudySet(set: StudySetRecord): StudySet {
     id: set.id,
     title: set.title,
     description: set.description ?? "",
+    folder: set.folder ?? "",
     course: set.course ?? "",
     subject: set.subject ?? "",
     tags: set.tags,

@@ -3,8 +3,10 @@
 import { useEffect, useMemo, useState } from "react";
 import { useProfCoursesMap } from "@/app/hooks/useProfCoursesMap";
 import { ClassesCell } from "@/app/components/ClassesCell";
+import FeatureTour from "@/app/components/onboarding/FeatureTour";
 import Link from "next/link";
 import MissingProfessorButton from "@/app/components/MissingProfessorButton";
+import SiteFooter from "@/app/components/SiteFooter";
 
 type Prof = { name: string; department: string; school: string; quality: number; ratingsCount: number; wouldTakeAgain: number | null; difficulty: number; url: string; slug: string; };
 
@@ -73,22 +75,42 @@ export default function Page() {
 
   return (
     <main className="relative min-h-screen bg-zinc-50 text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100">
+      <FeatureTour
+        storageKey="uichicago-tour-professors-list-v1"
+        steps={[
+          {
+            targetId: "professors-filters",
+            title: "Start by narrowing the list",
+            description: "Search by professor name and filter by department, rating, reviews, or sort order.",
+          },
+          {
+            targetId: "professors-open-profile",
+            title: "Open a professor profile",
+            description: "Click a professor name to view their rankings, course-specific performance, and AI summary.",
+          },
+          {
+            targetId: "professors-classes",
+            title: "Use classes as a shortcut",
+            description: "The classes column helps you jump from a professor into the courses they are associated with.",
+          },
+        ]}
+      />
       <div className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-72 bg-gradient-to-b from-red-950/20 to-transparent" />
       <div className="pointer-events-none absolute inset-0 -z-10 opacity-[0.02]" style={{ backgroundImage: "linear-gradient(rgba(0,0,0,0.4) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,0.4) 1px, transparent 1px)", backgroundSize: "48px 48px" }} />
 
-      <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-12">
-        <div className="mb-8">
+      <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-12">
+        <div className="mb-6 sm:mb-8">
           <div className="mb-2">
             <span className="inline-flex items-center gap-1.5 rounded-full border border-zinc-300 bg-zinc-100 px-3 py-1 text-xs font-semibold uppercase tracking-widest text-zinc-600 dark:border-white/12 dark:bg-white/[0.06] dark:text-zinc-300">
               <span className="h-1.5 w-1.5 rounded-full bg-zinc-500 dark:bg-zinc-400" />
               {new Intl.NumberFormat("en-US").format(total)} professors
             </span>
           </div>
-          <h1 className="text-4xl font-black tracking-tight text-zinc-900 dark:text-white sm:text-5xl">UIC Professors</h1>
+          <h1 className="text-3xl font-black tracking-tight text-zinc-900 dark:text-white sm:text-5xl">UIC Professors</h1>
           <p className="mt-2 max-w-xl text-sm text-zinc-500 sm:text-base">Find the best professors by department, rating, and student review count.</p>
         </div>
 
-        <div className="mb-4 rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-white/8 dark:bg-zinc-900/60 sm:p-6">
+        <div data-tour="professors-filters" className="mb-4 rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-white/8 dark:bg-zinc-900/60 sm:p-6">
           <div className="relative mb-4">
             <svg className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z" /></svg>
             <input className={inputBase + " pl-10"} placeholder="Search professor name..." value={query} onChange={(e) => { setQuery(e.target.value); setPage(1); }} />
@@ -139,7 +161,7 @@ export default function Page() {
             Showing <span className="text-zinc-700 dark:text-zinc-300 font-medium">{start + 1}–{Math.min(start + pageSize, total)}</span> of <span className="text-zinc-700 dark:text-zinc-300 font-medium">{total.toLocaleString()}</span>
             {loading && <span className="ml-2 text-zinc-400">Loading…</span>}
           </p>
-          <div className="flex items-center gap-2 flex-wrap">
+          <div className="flex items-center gap-2 overflow-x-auto pb-1 sm:flex-wrap sm:overflow-visible">
             <button className={navBtn} onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1 || loading}>← Prev</button>
             <button className={pageBtn(page === 1)} onClick={() => setPage(1)}>1</button>
             {middle.length > 0 && middle[0] > 2 && <span className="text-zinc-400 text-sm">…</span>}
@@ -152,7 +174,53 @@ export default function Page() {
           </div>
         </div>
 
-        <div className="overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-lg dark:border-white/8 dark:bg-zinc-900/40 dark:shadow-black/40">
+        <div className="space-y-3 sm:hidden">
+          {data.map((p, idx) => {
+            const rc = ratingConfig(Number(p.quality) || 0);
+            return (
+              <div key={p.slug} className="rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-white/8 dark:bg-zinc-900/40">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <div data-tour={idx === 0 ? "professors-open-profile" : undefined} className="text-base font-bold text-zinc-900 dark:text-zinc-100">
+                      <span className="mr-1.5 text-zinc-400 dark:text-zinc-600">{start + idx + 1}.</span>
+                      <Link href={`/professors/${p.slug}`} className="hover:text-red-500 dark:hover:text-white transition-colors hover:underline">{p.name}</Link>
+                    </div>
+                    <div className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">{p.school}</div>
+                  </div>
+                  <span className={`inline-flex flex-col items-center rounded-lg px-2.5 py-1.5 text-xs font-black tabular-nums ring-1 ${rc.bg} ${rc.text} ${rc.ring}`}>
+                    <span className="text-sm">{(Number(p.quality) || 0).toFixed(1)}</span>
+                    <span className="text-[9px] font-medium opacity-60">({Number(p.ratingsCount) || 0})</span>
+                  </span>
+                </div>
+
+                <div className="mt-4 flex flex-wrap items-center gap-2">
+                  <span className="inline-flex items-center rounded-lg bg-zinc-100 dark:bg-white/5 px-2.5 py-1 text-xs font-medium text-zinc-600 dark:text-zinc-400 ring-1 ring-zinc-200 dark:ring-white/8">{p.department}</span>
+                </div>
+
+                <div data-tour={idx === 0 ? "professors-classes" : undefined} className="mt-4">
+                  <div className="mb-1 text-[10px] font-bold uppercase tracking-widest text-zinc-400 dark:text-zinc-600">Classes</div>
+                  <ClassesCell profName={p.name} map={courseMap} />
+                </div>
+
+                <div className="mt-4 flex items-center justify-between">
+                  <div className="text-xs text-zinc-500 dark:text-zinc-400">
+                    {Number(p.ratingsCount) || 0} reviews
+                  </div>
+                  <a href={p.url} target="_blank" rel="noreferrer" className="inline-flex items-center justify-center rounded-lg border border-zinc-200 bg-white px-3 py-2 text-xs font-semibold text-zinc-700 transition hover:bg-zinc-50 dark:border-white/10 dark:bg-white/5 dark:text-zinc-300 dark:hover:bg-white/10 dark:hover:text-white">Open RMP</a>
+                </div>
+              </div>
+            );
+          })}
+          {!loading && data.length === 0 && (
+            <div className="rounded-2xl border border-zinc-200 bg-white px-6 py-16 text-center shadow-sm dark:border-white/8 dark:bg-zinc-900/40">
+              <p className="text-zinc-400 text-sm">No professors found.</p>
+              <button onClick={clearAll} className="mt-3 text-sm text-red-500 hover:text-red-400 transition-colors font-medium">Clear all filters →</button>
+              <div className="mt-4 flex justify-center"><MissingProfessorButton page="professors" searchQuery={query.trim()} show /></div>
+            </div>
+          )}
+        </div>
+
+        <div className="hidden overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-lg dark:border-white/8 dark:bg-zinc-900/40 dark:shadow-black/40 sm:block">
           <div className="min-w-[640px] grid grid-cols-12 border-b border-zinc-100 bg-zinc-50 px-4 sm:px-6 py-3 text-[10px] font-bold uppercase tracking-widest text-zinc-500 dark:border-white/8 dark:bg-zinc-950/60 dark:text-zinc-600">
             <div className="col-span-4">Professor</div>
             <div className="col-span-3">Department</div>
@@ -168,7 +236,7 @@ export default function Page() {
                   return (
                     <li key={p.slug} className="grid grid-cols-12 items-center px-4 sm:px-6 py-4 transition-colors hover:bg-zinc-50 dark:hover:bg-white/[0.04]">
                       <div className="col-span-4 min-w-0 pr-3">
-                        <div className="text-sm font-bold text-zinc-900 dark:text-zinc-100 sm:text-base">
+                        <div data-tour={idx === 0 ? "professors-open-profile" : undefined} className="text-sm font-bold text-zinc-900 dark:text-zinc-100 sm:text-base">
                           <span className="text-zinc-400 dark:text-zinc-600 tabular-nums mr-1.5">{start + idx + 1}.</span>
                           <Link href={`/professors/${p.slug}`} className="hover:text-red-500 dark:hover:text-white transition-colors hover:underline">{p.name}</Link>
                         </div>
@@ -177,7 +245,7 @@ export default function Page() {
                       <div className="col-span-3 pr-3">
                         <span className="inline-flex items-center rounded-lg bg-zinc-100 dark:bg-white/5 px-2.5 py-1 text-xs font-medium text-zinc-600 dark:text-zinc-400 ring-1 ring-zinc-200 dark:ring-white/8">{p.department}</span>
                       </div>
-                      <div className="col-span-3 pr-3"><ClassesCell profName={p.name} map={courseMap} /></div>
+                      <div data-tour={idx === 0 ? "professors-classes" : undefined} className="col-span-3 pr-3"><ClassesCell profName={p.name} map={courseMap} /></div>
                       <div className="col-span-1 flex justify-end">
                         <span className={`inline-flex flex-col items-center rounded-lg px-2.5 py-1.5 text-xs font-black tabular-nums ring-1 ${rc.bg} ${rc.text} ${rc.ring}`}>
                           <span className="text-sm">{(Number(p.quality) || 0).toFixed(1)}</span>
@@ -202,11 +270,9 @@ export default function Page() {
           </div>
         </div>
 
-        <footer className="mt-12 border-t border-zinc-100 dark:border-white/8 pt-8 text-center text-sm text-zinc-400 dark:text-zinc-600">
-          <p>Contact: <a href="mailto:uicratings@gmail.com" className="hover:text-red-400 transition-colors">uicratings@gmail.com</a></p>
-          <p className="mt-1">Not affiliated with UIC or RMP.</p>
-        </footer>
       </div>
+
+      <SiteFooter className="mt-12" />
     </main>
   );
 }

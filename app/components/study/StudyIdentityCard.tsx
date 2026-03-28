@@ -39,10 +39,10 @@ export default function StudyIdentityCard({
     return (
       <section className="rounded-[1.6rem] border border-indigo-400/20 bg-[linear-gradient(135deg,rgba(79,70,229,0.18),rgba(15,23,42,0.82))] p-6 shadow-[0_24px_60px_rgba(15,23,42,0.3)]">
         <div className="max-w-2xl">
-          <div className="text-[11px] font-bold uppercase tracking-[0.22em] text-indigo-200">Study identity</div>
-          <h2 className="mt-3 text-2xl font-bold tracking-[-0.04em] text-white">Sign in to keep your library, sessions, and study groups attached to a real account.</h2>
+          <div className="text-[11px] font-bold uppercase tracking-[0.22em] text-indigo-200">My School profile</div>
+          <h2 className="mt-3 text-2xl font-bold tracking-[-0.04em] text-white">Sign in to keep your courses, plans, library, and study groups attached to a real account.</h2>
           <p className="mt-3 text-sm leading-6 text-indigo-50/85">
-            Google sign in unlocks verified study group membership, saved academic context for Sparky, and cross-session persistence for your study sets and history.
+            Google sign in unlocks saved school context for Sparky, verified study groups, and persistence for your study sets, notes, and planning preferences.
           </p>
           <button
             type="button"
@@ -67,10 +67,10 @@ export default function StudyIdentityCard({
       <section className="rounded-[1.2rem] border border-white/8 bg-white/[0.03] px-5 py-4">
         <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div className="min-w-0">
-            <div className="text-[11px] font-bold uppercase tracking-[0.22em] text-zinc-500">Academic context</div>
-            <div className="mt-1 text-sm font-medium text-white">{displayName || "Your study profile"}</div>
+            <div className="text-[11px] font-bold uppercase tracking-[0.22em] text-zinc-500">My School profile</div>
+            <div className="mt-1 text-sm font-medium text-white">{displayName || "Your school profile"}</div>
             <div className="mt-1 truncate text-sm text-zinc-400">
-              {summaryParts.length ? summaryParts.join(" • ") : "Optional study preferences for more personalized help."}
+              {summaryParts.length ? summaryParts.join(" • ") : "Optional school context for more personalized planning and study help."}
             </div>
           </div>
           <button
@@ -89,8 +89,8 @@ export default function StudyIdentityCard({
     <section className="rounded-[1.6rem] border border-white/10 bg-white/[0.04] p-6">
       <div className="flex flex-col gap-2 lg:flex-row lg:items-end lg:justify-between">
         <div>
-          <div className="text-[11px] font-bold uppercase tracking-[0.22em] text-zinc-500">Academic context</div>
-          <h2 className="mt-2 text-2xl font-bold tracking-[-0.04em] text-white">{displayName || "Your study profile"}</h2>
+          <div className="text-[11px] font-bold uppercase tracking-[0.22em] text-zinc-500">My School profile</div>
+          <h2 className="mt-2 text-2xl font-bold tracking-[-0.04em] text-white">{displayName || "Your school profile"}</h2>
           <p className="mt-2 text-sm text-zinc-400">{email || "Signed in account"}</p>
         </div>
         <button
@@ -99,7 +99,7 @@ export default function StudyIdentityCard({
           disabled={isSaving}
           className="inline-flex items-center justify-center rounded-full bg-[#4f46e5] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#5b54ef] disabled:cursor-not-allowed disabled:opacity-70"
         >
-          {isSaving ? "Saving..." : "Save context"}
+          {isSaving ? "Saving..." : "Save profile"}
         </button>
       </div>
 

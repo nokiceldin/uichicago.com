@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
+import { Suspense, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
 function getTargetMeta(nextPath: string) {
@@ -27,7 +27,7 @@ function getTargetMeta(nextPath: string) {
   };
 }
 
-export default function UnlockPage() {
+function UnlockForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const inputRef = useRef<HTMLInputElement>(null);
@@ -127,5 +127,13 @@ export default function UnlockPage() {
         </button>
       </div>
     </main>
+  );
+}
+
+export default function UnlockPage() {
+  return (
+    <Suspense>
+      <UnlockForm />
+    </Suspense>
   );
 }

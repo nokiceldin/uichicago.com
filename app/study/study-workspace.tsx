@@ -22,18 +22,17 @@ import {
   FolderPlus,
   FolderOpen,
   Globe,
-  Grid2x2,
   GripVertical,
   ImageIcon,
   Layers3,
   Maximize2,
+  Minimize2,
   MoreHorizontal,
   Plus,
   Pencil,
   Play,
   Pause,
   RotateCcw,
-  Rocket,
   Search,
   Share2,
   Shuffle,
@@ -44,11 +43,9 @@ import {
   Trophy,
   Users,
   UserPlus,
-  UserRound,
   Volume2,
   WandSparkles,
   X,
-  LogOut,
 } from "lucide-react";
 import { buildQuestionBank, buildStudySession, computeStudyDashboard, createStudyId, fuzzyMatch, getDefaultProgress, getRecommendedCards, reorderCards, updateProgressForReview } from "@/lib/study/engine";
 import { DEFAULT_STUDY_LIBRARY } from "@/lib/study/sample-data";
@@ -60,6 +57,47 @@ import { estimateFlashcardCountFromText, parseExplicitFlashcardsFromText } from 
 const STORAGE_KEY = "uic-atlas-study-library-v1";
 const MATCH_BESTS_KEY = "uic-atlas-study-match-bests-v1";
 const CUSTOM_FOLDERS_KEY = "uic-atlas-study-custom-folders-v1";
+
+/**
+ * Speak `text` using a natural English voice.
+ *
+ * Chrome loads voices asynchronously, so `getVoices()` often returns [] on the
+ * first call.  We listen for `voiceschanged` as a fallback so the correct
+ * voice is always used regardless of when the button is clicked.
+ *
+ * Voice priority (descending):
+ *   1. en-US + "Google" / "Natural" / "Premium" / "Enhanced" in the name
+ *   2. Any en-US voice
+ *   3. Any English voice (en-*)
+ *   4. Browser default (lang tag only, no voice override)
+ */
+function speakEnglish(text: string): void {
+  if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
+  window.speechSynthesis.cancel();
+
+  const utt = new SpeechSynthesisUtterance(text);
+  utt.lang = "en-US";
+
+  const pickVoiceAndSpeak = () => {
+    const voices = window.speechSynthesis.getVoices();
+    const enUsNatural = voices.find(
+      (v) => v.lang === "en-US" && /google|natural|premium|enhanced|samantha|alex/i.test(v.name),
+    );
+    const enUs = voices.find((v) => v.lang === "en-US");
+    const enAny = voices.find((v) => v.lang.startsWith("en"));
+    const chosen = enUsNatural ?? enUs ?? enAny ?? null;
+    if (chosen) utt.voice = chosen;
+    window.speechSynthesis.speak(utt);
+  };
+
+  const voices = window.speechSynthesis.getVoices();
+  if (voices.length > 0) {
+    pickVoiceAndSpeak();
+  } else {
+    // Voices not ready yet — wait for the browser to finish loading them
+    window.speechSynthesis.addEventListener("voiceschanged", pickVoiceAndSpeak, { once: true } as EventListenerOptions);
+  }
+}
 
 type Screen = "dashboard" | "groups" | "create" | "overview" | "flashcards" | "learn" | "test" | "match";
 type StudyFilter = "all" | "starred" | "difficult" | "missed" | "unseen";
@@ -176,11 +214,11 @@ function isFolderOrDescendant(path: string, candidate: string) {
 }
 
 function resolveSetFolder(set: StudySet) {
-  return normalizeFolderPath(set.folder || set.course || set.subject || "");
+  return normalizeFolderPath(set.folder || "");
 }
 
 function resolveNoteFolder(note: StudyNote) {
-  return normalizeFolderPath(note.folder || note.course || note.subject || "");
+  return normalizeFolderPath(note.folder || "");
 }
 
 const emptyDraftCard = (index: number): StudyCard => ({
@@ -257,6 +295,7 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
   const [search, setSearch] = useState("");
   const [subjectFilter, setSubjectFilter] = useState("all");
   const [difficultyFilter, setDifficultyFilter] = useState("all");
+  const [savedFilter, setSavedFilter] = useState(false);
   const [librarySection, setLibrarySection] = useState<LibrarySection>("flashcards");
   const [customFolders, setCustomFolders] = useState<string[]>([]);
   const [draftSet, setDraftSet] = useState<StudySet>(emptyDraftSet());
@@ -420,6 +459,22 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
       setImportText("");
     }
   }, [isCreateRoute, isGuideCreateRoute, library.sets, searchParams]);
+
+  // Scroll to a specific card in edit mode when ?card=CARDID is in the URL
+  const editScrollCardId = isCreateRoute ? searchParams.get("card") : null;
+  useEffect(() => {
+    if (!editScrollCardId) return;
+    const scroll = () => {
+      const el = document.getElementById(`edit-card-${editScrollCardId}`);
+      if (el) {
+        el.scrollIntoView({ behavior: "smooth", block: "center" });
+        el.classList.add("ring-2", "ring-indigo-400/60");
+        setTimeout(() => el.classList.remove("ring-2", "ring-indigo-400/60"), 2500);
+      }
+    };
+    const timer = window.setTimeout(scroll, 350);
+    return () => window.clearTimeout(timer);
+  }, [editScrollCardId]);
 
   useEffect(() => {
     if (!hydrated) return;
@@ -650,9 +705,10 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
       const matchesFolder = !folderFilter || folderLabel === folderFilter;
       const matchesSubject = subjectFilter === "all" || set.subject === subjectFilter;
       const matchesDifficulty = difficultyFilter === "all" || set.difficulty === difficultyFilter;
-      return matchesSearch && matchesSubject && matchesDifficulty && matchesFolder;
+      const matchesSaved = !savedFilter || set.saved === true;
+      return matchesSearch && matchesSubject && matchesDifficulty && matchesFolder && matchesSaved;
     });
-  }, [difficultyFilter, folderFilter, library.sets, search, subjectFilter]);
+  }, [difficultyFilter, folderFilter, library.sets, savedFilter, search, subjectFilter]);
 
   const matchingNotes = useMemo(() => {
     const normalizedSearch = search.toLowerCase().trim();
@@ -990,6 +1046,28 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
       openStudyScreen(remaining.length ? "overview" : "dashboard", remaining[0]?.id);
     }
     showToast("Study set deleted.");
+  };
+
+  const toggleSaveSet = (setId: string) => {
+    let nextSet: StudySet | null = null;
+    setLibrary((current) => {
+      const sets = current.sets.map((set) => {
+        if (set.id !== setId) return set;
+        nextSet = { ...set, saved: !set.saved, updatedAt: new Date().toISOString() };
+        return nextSet;
+      });
+      return { ...current, sets };
+    });
+    if (!nextSet) return;
+    const isSaved = (nextSet as StudySet).saved;
+    showToast(isSaved ? "Set saved to your library." : "Set removed from saved.");
+    if (isSignedIn) {
+      fetch("/api/study/sets", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ set: nextSet }),
+      }).catch(() => undefined);
+    }
   };
 
   const moveSetToFolder = (setId: string, folder: string) => {
@@ -1497,6 +1575,7 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
         onToggleFlag={(cardId, patch) =>
           updateCardProgress(selectedSet.id, cardId, (current) => ({ ...current, ...patch }))
         }
+        onToggleSaved={() => toggleSaveSet(selectedSet.id)}
         onSessionSave={saveSession}
         onCelebrate={(message) => showToast(message, "reward")}
       />
@@ -1652,6 +1731,10 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
                 onEdit={() => {
                   router.push(`/study/create?edit=${encodeURIComponent(selectedSet.id)}`);
                 }}
+                onToggleFlag={(cardId, patch) =>
+                  updateCardProgress(selectedSet.id, cardId, (current) => ({ ...current, ...patch }))
+                }
+                onToggleSaved={() => toggleSaveSet(selectedSet.id)}
               />
             )}
             {screen !== "overview" && focusedModeContent}
@@ -1765,20 +1848,35 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
                     (librarySection === "notes" && matchingNotes.length > 0) ||
                     (librarySection === "groups" && matchingGroups.length > 0) ||
                     (librarySection === "guides" && matchingGuides.length > 0) ? (
-                      <select
-                        value={difficultyFilter}
-                        onChange={(event) => setDifficultyFilter(event.target.value)}
-                        className="h-10 w-full rounded-full border border-white/10 bg-white/[0.06] px-4 text-sm text-zinc-200 outline-none lg:min-w-[140px] lg:w-auto"
-                      >
-                        <option value="all">Recent</option>
-                        {librarySection === "flashcards" ? (
-                          <>
-                            <option value="easy">Easy sets</option>
-                            <option value="medium">Medium sets</option>
-                            <option value="hard">Hard sets</option>
-                          </>
-                        ) : null}
-                      </select>
+                      <>
+                        <select
+                          value={difficultyFilter}
+                          onChange={(event) => setDifficultyFilter(event.target.value)}
+                          className="h-10 w-full rounded-full border border-white/10 bg-white/[0.06] px-4 text-sm text-zinc-200 outline-none lg:min-w-[140px] lg:w-auto"
+                        >
+                          <option value="all">Recent</option>
+                          {librarySection === "flashcards" ? (
+                            <>
+                              <option value="easy">Easy sets</option>
+                              <option value="medium">Medium sets</option>
+                              <option value="hard">Hard sets</option>
+                            </>
+                          ) : null}
+                        </select>
+                        {librarySection === "flashcards" && (
+                          <button
+                            onClick={() => setSavedFilter((prev) => !prev)}
+                            className={`inline-flex h-10 items-center gap-2 rounded-full border px-4 text-sm font-medium transition ${
+                              savedFilter
+                                ? "border-[#6a63f6] bg-[#2a255a] text-white"
+                                : "border-white/10 bg-white/[0.06] text-zinc-300 hover:border-white/20 hover:text-white"
+                            }`}
+                          >
+                            <Bookmark className={`h-3.5 w-3.5 ${savedFilter ? "fill-current" : ""}`} />
+                            Saved
+                          </button>
+                        )}
+                      </>
                     ) : (
                       <div className="text-sm text-zinc-500">
                         {librarySection === "flashcards" && "No flashcard sets yet"}
@@ -2535,6 +2633,10 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
                 onEdit={() => {
                   router.push(`/study/create?edit=${encodeURIComponent(selectedSet.id)}`);
                 }}
+                onToggleFlag={(cardId, patch) =>
+                  updateCardProgress(selectedSet.id, cardId, (current) => ({ ...current, ...patch }))
+                }
+                onToggleSaved={() => toggleSaveSet(selectedSet.id)}
               />
             )}
 
@@ -3452,6 +3554,7 @@ function CreateView({
             {visibleCards.map((card, index) => (
               <div
                 key={card.id}
+                id={`edit-card-${card.id}`}
                 draggable
                 onDragStart={() => onDragStart(card.id)}
                 onDragEnd={onDragEnd}
@@ -3964,6 +4067,8 @@ function OverviewView({
   onDuplicate,
   onDelete,
   onEdit,
+  onToggleFlag,
+  onToggleSaved,
 }: {
   set: StudySet;
   progressMap: Record<string, CardProgress>;
@@ -3973,6 +4078,8 @@ function OverviewView({
   onDuplicate: () => void;
   onDelete: () => void;
   onEdit: () => void;
+  onToggleFlag: (cardId: string, patch: Partial<CardProgress>) => void;
+  onToggleSaved: () => void;
 }) {
   const mastery = set.cards.length
     ? Math.round(set.cards.reduce((sum, card) => sum + (progressMap[card.id]?.masteryScore || 0), 0) / set.cards.length)
@@ -3981,14 +4088,50 @@ function OverviewView({
   const difficult = set.cards.filter((card) => progressMap[card.id]?.markedDifficult).length;
   const [previewIndex, setPreviewIndex] = useState(0);
   const [previewFlipped, setPreviewFlipped] = useState(false);
+  const [previewMotion, setPreviewMotion] = useState<"idle" | "next" | "prev">("idle");
+  const previewMotionTimeoutRef = useRef<number | null>(null);
   const [trackPreviewProgress, setTrackPreviewProgress] = useState(false);
   const previewCard = set.cards[previewIndex] ?? set.cards[0];
+  const previewCardProgress = progressMap[previewCard?.id ?? ""] ?? getDefaultProgress(previewCard?.id ?? "");
+  const missedCardCount = set.cards.filter((card) => progressMap[card.id]?.missedRecently).length;
+
+  // Share modal state
+  const [shareOpen, setShareOpen] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const shareUrl = typeof window !== "undefined" ? window.location.href : "";
+
+  const handleCopyLink = () => {
+    navigator.clipboard.writeText(shareUrl).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }).catch(() => {});
+  };
+
+  const handleNativeShare = () => {
+    if (navigator.share) {
+      navigator.share({ title: set.title, url: shareUrl }).catch(() => {});
+    }
+  };
+
+  // Three-dots menu state
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!menuOpen) return;
+    const handler = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setMenuOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [menuOpen]);
+
   const modeTiles = [
     { label: "Flashcards", icon: <Copy className="h-4 w-4" />, active: true, onClick: () => onModeChange("flashcards") },
     { label: "Learn", icon: <Brain className="h-4 w-4" />, active: false, onClick: () => onModeChange("learn") },
     { label: "Test", icon: <Target className="h-4 w-4" />, active: false, onClick: () => onModeChange("test") },
-    { label: "Blocks", icon: <Grid2x2 className="h-4 w-4" />, active: false, onClick: () => onModeChange("flashcards") },
-    { label: "Blast", icon: <Rocket className="h-4 w-4" />, active: false, onClick: () => onModeChange("learn") },
     { label: "Match", icon: <Shuffle className="h-4 w-4" />, active: false, onClick: () => onModeChange("match") },
   ];
 
@@ -3997,11 +4140,82 @@ function OverviewView({
     setPreviewFlipped(false);
   }, [set.id]);
 
+  const triggerPreviewMotion = (direction: "next" | "prev") => {
+    if (previewMotionTimeoutRef.current) window.clearTimeout(previewMotionTimeoutRef.current);
+    setPreviewMotion(direction);
+    previewMotionTimeoutRef.current = window.setTimeout(() => {
+      setPreviewMotion("idle");
+      previewMotionTimeoutRef.current = null;
+    }, 420);
+  };
+
   if (!previewCard) {
     return <EmptyModeState title="No cards in this set yet." onBack={() => onModeChange("flashcards")} />;
   }
 
   return (
+    <>
+      {/* Share Modal */}
+      {shareOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm" onClick={() => setShareOpen(false)}>
+          <div className="w-full max-w-md rounded-2xl border border-white/10 bg-[#2a2f52] p-6 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+            <div className="mb-4 flex items-center justify-between">
+              <h2 className="text-lg font-bold text-white">Share this set</h2>
+              <button onClick={() => setShareOpen(false)} className="rounded-full p-1 text-zinc-400 transition hover:text-white">
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            <p className="mb-4 text-sm text-zinc-300">{set.title} · {set.cards.length} cards</p>
+            <div className="mb-4 flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3 py-2">
+              <span className="flex-1 truncate text-sm text-zinc-300">{shareUrl}</span>
+              <button
+                onClick={handleCopyLink}
+                className="inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-indigo-500"
+              >
+                {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+                {copied ? "Copied!" : "Copy"}
+              </button>
+            </div>
+            <div className="flex flex-col gap-2">
+              <a
+                href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(`Check out this study set: ${set.title}`)}&url=${encodeURIComponent(shareUrl)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-3 rounded-xl bg-white/5 px-4 py-3 text-sm font-medium text-zinc-200 transition hover:bg-white/10"
+              >
+                <Globe className="h-4 w-4 text-sky-400" />
+                Share on X / Twitter
+              </a>
+              <a
+                href={`https://wa.me/?text=${encodeURIComponent(`${set.title} — ${shareUrl}`)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-3 rounded-xl bg-white/5 px-4 py-3 text-sm font-medium text-zinc-200 transition hover:bg-white/10"
+              >
+                <Users className="h-4 w-4 text-green-400" />
+                Share via WhatsApp
+              </a>
+              <a
+                href={`mailto:?subject=${encodeURIComponent(set.title)}&body=${encodeURIComponent(`Here's a study set I thought you'd find useful:\n${shareUrl}`)}`}
+                className="flex items-center gap-3 rounded-xl bg-white/5 px-4 py-3 text-sm font-medium text-zinc-200 transition hover:bg-white/10"
+              >
+                <Share2 className="h-4 w-4 text-zinc-400" />
+                Share via Email
+              </a>
+              {typeof navigator !== "undefined" && "share" in navigator && (
+                <button
+                  onClick={handleNativeShare}
+                  className="flex items-center gap-3 rounded-xl bg-white/5 px-4 py-3 text-sm font-medium text-zinc-200 transition hover:bg-white/10"
+                >
+                  <Share2 className="h-4 w-4 text-indigo-400" />
+                  More options…
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
     <div className="mx-auto max-w-[860px] space-y-6">
       <div className="study-appear">
         <div className="flex flex-col gap-5">
@@ -4016,38 +4230,108 @@ function OverviewView({
               </h1>
             </div>
             <div className="flex flex-wrap items-center gap-2">
-              <button className="inline-flex items-center gap-2 rounded-full border border-[#6a63f6] bg-[#2a255a] px-4 py-2 text-sm font-semibold text-white">
-                <Bookmark className="h-4 w-4 fill-current" />
-                Saved
+              <button
+                onClick={onToggleSaved}
+                title={set.saved ? "Remove from saved" : "Save this set"}
+                className={`inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-semibold transition ${
+                  set.saved
+                    ? "border-[#6a63f6] bg-[#2a255a] text-white hover:bg-[#231f52]"
+                    : "border-white/20 bg-white/[0.06] text-zinc-300 hover:border-[#6a63f6]/60 hover:bg-[#1e1b45] hover:text-white"
+                }`}
+              >
+                <Bookmark className={`h-4 w-4 ${set.saved ? "fill-current" : ""}`} />
+                {set.saved ? "Saved" : "Save"}
               </button>
               <button className="inline-flex items-center gap-2 rounded-full bg-white/[0.08] px-4 py-2 text-sm font-semibold text-zinc-200">
                 <Users className="h-4 w-4" />
                 Groups
               </button>
-              <button className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/[0.08] text-zinc-200">
+              <button
+                onClick={() => setShareOpen(true)}
+                className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/[0.08] text-zinc-200 transition hover:bg-white/[0.14] hover:text-white"
+                aria-label="Share set"
+              >
                 <Share2 className="h-4 w-4" />
               </button>
-              <button className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/[0.08] text-zinc-200">
-                <MoreHorizontal className="h-4 w-4" />
-              </button>
+              <div className="relative" ref={menuRef}>
+                <button
+                  onClick={() => setMenuOpen((o) => !o)}
+                  className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/[0.08] text-zinc-200 transition hover:bg-white/[0.14] hover:text-white"
+                  aria-label="More options"
+                >
+                  <MoreHorizontal className="h-4 w-4" />
+                </button>
+                {menuOpen && (
+                  <div className="absolute right-0 top-12 z-40 w-52 rounded-2xl border border-white/10 bg-[#2a2f52] py-1.5 shadow-2xl">
+                    <button
+                      onClick={() => { setMenuOpen(false); onEdit(); }}
+                      className="flex w-full items-center gap-3 px-4 py-2.5 text-sm text-zinc-200 transition hover:bg-white/5 hover:text-white"
+                    >
+                      <Pencil className="h-4 w-4 text-zinc-400" />
+                      Edit set
+                    </button>
+                    <button
+                      onClick={() => { setMenuOpen(false); onDuplicate(); }}
+                      className="flex w-full items-center gap-3 px-4 py-2.5 text-sm text-zinc-200 transition hover:bg-white/5 hover:text-white"
+                    >
+                      <Copy className="h-4 w-4 text-zinc-400" />
+                      Duplicate set
+                    </button>
+                    {availableFolders.length > 0 && (
+                      <div className="border-t border-white/5 pt-1">
+                        <p className="px-4 pb-1 pt-1.5 text-xs font-medium text-zinc-500">Move to folder</p>
+                        {availableFolders.slice(0, 5).map((folder) => (
+                          <button
+                            key={folder}
+                            onClick={() => { setMenuOpen(false); onMoveToFolder(folder); }}
+                            className="flex w-full items-center gap-3 px-4 py-2 text-sm text-zinc-300 transition hover:bg-white/5 hover:text-white"
+                          >
+                            <Folder className="h-3.5 w-3.5 text-zinc-400" />
+                            {folderLabelFromPath(folder)}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                    <div className="border-t border-white/5 pt-1">
+                      <button
+                        onClick={() => {
+                          setMenuOpen(false);
+                          if (window.confirm(`Delete "${set.title}"? This cannot be undone.`)) onDelete();
+                        }}
+                        className="flex w-full items-center gap-3 px-4 py-2.5 text-sm text-rose-400 transition hover:bg-rose-500/10 hover:text-rose-300"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                        Delete set
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid grid-cols-2 gap-3">
             {modeTiles.map((tile) => (
               <button
                 key={tile.label}
                 onClick={tile.onClick}
-                className={`flex items-center gap-3 rounded-xl px-5 py-4 text-left text-sm font-semibold transition ${
-                  tile.active
-                    ? "bg-[#3b4568] text-white"
-                    : "bg-[#3b4568] text-zinc-100 hover:bg-[#455178]"
-                }`}
+                className="flex items-center gap-3 rounded-xl bg-[#3b4568] px-5 py-4 text-left text-sm font-semibold text-zinc-100 transition hover:bg-[#455178]"
               >
                 <span className="text-[#70a7ff]">{tile.icon}</span>
                 {tile.label}
               </button>
             ))}
+            {missedCardCount > 0 ? (
+              <div className="col-span-2 flex justify-start">
+                <button
+                  onClick={() => onModeChange("learn")}
+                  className="inline-flex items-center gap-2 rounded-full border border-rose-400/20 bg-rose-500/10 px-3.5 py-1.5 text-xs font-semibold text-rose-300 transition hover:bg-rose-500/18 hover:text-rose-200"
+                >
+                  <Target className="h-3 w-3 text-rose-400" />
+                  Practice {missedCardCount} mistake{missedCardCount !== 1 ? "s" : ""}
+                </button>
+              </div>
+            ) : null}
           </div>
 
           <div className="rounded-[1.7rem] border border-white/10 bg-[#444d74] p-6 shadow-[0_24px_60px_rgba(0,0,0,0.24)]">
@@ -4056,19 +4340,67 @@ function OverviewView({
                 <Sparkles className="h-3.5 w-3.5" />
                 Get a hint
               </div>
-              <div className="flex items-center gap-4 text-zinc-100">
-                <button onClick={onEdit} className="transition hover:text-white">Edit</button>
-                <button className="transition hover:text-white">Audio</button>
-                <button className="transition hover:text-white">Star</button>
+              <div className="flex items-center gap-1">
+                <button
+                  aria-label="Edit this card"
+                  title="Edit this card"
+                  onClick={() => {
+                    if (!previewCard) return;
+                    window.location.href = `/study/create?edit=${encodeURIComponent(set.id)}&card=${encodeURIComponent(previewCard.id)}`;
+                  }}
+                  className="inline-flex h-9 w-9 items-center justify-center rounded-full text-zinc-400 transition hover:bg-white/10 hover:text-white"
+                >
+                  <Pencil className="h-4 w-4" />
+                </button>
+                <button
+                  aria-label="Read aloud"
+                  title="Read aloud"
+                  onClick={() => {
+                    if (!previewCard) return;
+                    speakEnglish(previewFlipped ? previewCard.back : previewCard.front);
+                  }}
+                  className="inline-flex h-9 w-9 items-center justify-center rounded-full text-zinc-400 transition hover:bg-white/10 hover:text-white"
+                >
+                  <Volume2 className="h-4 w-4" />
+                </button>
+                <button
+                  aria-label={previewCardProgress.starred ? "Unstar card" : "Star card"}
+                  title={previewCardProgress.starred ? "Unstar card" : "Star card"}
+                  onClick={() => previewCard && onToggleFlag(previewCard.id, { starred: !previewCardProgress.starred })}
+                  className={`inline-flex h-9 w-9 items-center justify-center rounded-full transition hover:bg-white/10 ${previewCardProgress.starred ? "text-yellow-400 hover:text-yellow-300" : "text-zinc-400 hover:text-white"}`}
+                >
+                  <Star className={`h-4 w-4 ${previewCardProgress.starred ? "fill-current" : ""}`} />
+                </button>
               </div>
             </div>
 
             <button
               type="button"
               onClick={() => setPreviewFlipped((current) => !current)}
-              className="mt-5 flex h-[290px] w-full items-center justify-center rounded-[1.5rem] text-center text-[2.05rem] font-medium tracking-[-0.03em] text-white"
+              className="relative mt-5 h-[290px] w-full cursor-pointer select-none rounded-[1.5rem] [perspective:1400px] outline-none focus:outline-none"
             >
-              {previewFlipped ? previewCard.back : previewCard.front}
+              <div
+                key={`${previewCard.id}-${previewIndex}`}
+                className={`relative h-full w-full transform-gpu rounded-[1.5rem] transition-transform duration-[420ms] ease-[cubic-bezier(0.22,1,0.36,1)] will-change-transform ${previewMotion === "next" ? "study-card-enter-next" : previewMotion === "prev" ? "study-card-enter-prev" : ""}`}
+                style={{
+                  transformStyle: "preserve-3d",
+                  WebkitTransformStyle: "preserve-3d",
+                  transform: previewFlipped ? "rotateX(180deg)" : "rotateX(0deg)",
+                }}
+              >
+                <div
+                  className="absolute inset-0 flex h-full w-full transform-gpu items-center justify-center rounded-[1.5rem] p-6 text-center"
+                  style={{ backfaceVisibility: "hidden", WebkitBackfaceVisibility: "hidden", transform: "rotateX(0deg)" }}
+                >
+                  <div className="text-[1.9rem] font-medium tracking-[-0.03em] text-white">{previewCard.front}</div>
+                </div>
+                <div
+                  className="absolute inset-0 flex h-full w-full transform-gpu items-center justify-center rounded-[1.5rem] p-6 text-center"
+                  style={{ backfaceVisibility: "hidden", WebkitBackfaceVisibility: "hidden", transform: "rotateX(180deg)" }}
+                >
+                  <div className="text-[1.75rem] font-medium tracking-[-0.03em] text-white">{previewCard.back}</div>
+                </div>
+              </div>
             </button>
           </div>
 
@@ -4085,6 +4417,8 @@ function OverviewView({
             <div className="flex items-center gap-3">
               <button
                 onClick={() => {
+                  if (previewIndex <= 0) return;
+                  triggerPreviewMotion("prev");
                   setPreviewIndex((current) => Math.max(0, current - 1));
                   setPreviewFlipped(false);
                 }}
@@ -4097,6 +4431,8 @@ function OverviewView({
               </div>
               <button
                 onClick={() => {
+                  if (previewIndex >= set.cards.length - 1) return;
+                  triggerPreviewMotion("next");
                   setPreviewIndex((current) => Math.min(set.cards.length - 1, current + 1));
                   setPreviewFlipped(false);
                 }}
@@ -4116,6 +4452,14 @@ function OverviewView({
                 <Maximize2 className="h-4 w-4" />
               </button>
             </div>
+          </div>
+
+          {/* Narrow progress bar below nav */}
+          <div className="mt-4 h-[3px] w-full overflow-hidden rounded-full bg-white/10">
+            <div
+              className="h-full rounded-full bg-white/50"
+              style={{ width: `${set.cards.length > 1 ? ((previewIndex + 1) / set.cards.length) * 100 : 100}%` }}
+            />
           </div>
 
           <div className="border-t border-white/10 pt-5">
@@ -4150,6 +4494,7 @@ function OverviewView({
         </div>
       </div>
     </div>
+    </>
   );
 }
 
@@ -4160,6 +4505,7 @@ function FlashcardsMode({
   onModeChange,
   onProgress,
   onToggleFlag,
+  onToggleSaved,
   onSessionSave,
   onCelebrate,
 }: {
@@ -4169,6 +4515,7 @@ function FlashcardsMode({
   onModeChange: (screen: Screen) => void;
   onProgress: (cardId: string, result: "knew" | "missed") => void;
   onToggleFlag: (cardId: string, patch: Partial<CardProgress>) => void;
+  onToggleSaved: () => void;
   onSessionSave: (session: ReturnType<typeof buildStudySession>) => void;
   onCelebrate: (message: string) => void;
 }) {
@@ -4182,7 +4529,12 @@ function FlashcardsMode({
   const [recentFeedback, setRecentFeedback] = useState<"knew" | "missed" | null>(null);
   const [optimisticProgress, setOptimisticProgress] = useState<Record<string, CardProgress>>({});
   const [shuffledCardIds, setShuffledCardIds] = useState<string[] | null>(null);
+  const [showHint, setShowHint] = useState(false);
+  const [aiHints, setAiHints] = useState<Record<string, string>>({});
+  const [loadingHintId, setLoadingHintId] = useState<string | null>(null);
   const [startedAt] = useState(() => new Date().toISOString());
+  const [fcShareOpen, setFcShareOpen] = useState(false);
+  const [fcCopied, setFcCopied] = useState(false);
   const panelRef = useRef<HTMLDivElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const touchStartX = useRef<number | null>(null);
@@ -4211,6 +4563,50 @@ function FlashcardsMode({
     setIndex(0);
   }, [filter, set.id]);
 
+  // Reset hint whenever the card changes
+  useEffect(() => {
+    setShowHint(false);
+  }, [index]);
+
+  const isRealHint = (hint: string | undefined): boolean => {
+    if (!hint || hint.trim().length < 8) return false;
+    const lower = hint.toLowerCase();
+    if (lower.startsWith("card ") && lower.includes("generated")) return false;
+    if (lower.includes("pasted study text")) return false;
+    if (lower.includes("flashcard") && lower.includes("generated from")) return false;
+    return true;
+  };
+
+  const handleGetHint = async () => {
+    if (!card) return;
+    // If a real hint already exists on the card, just toggle
+    if (isRealHint(card.hint)) {
+      setShowHint((h) => !h);
+      return;
+    }
+    // If we already fetched an AI hint for this card, just toggle
+    if (aiHints[card.id]) {
+      setShowHint((h) => !h);
+      return;
+    }
+    // Fetch a new AI hint
+    setLoadingHintId(card.id);
+    setShowHint(true);
+    try {
+      const response = await fetch("/api/study/generate-hint", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ front: card.front, back: card.back }),
+      });
+      const payload = await response.json() as { hint?: string };
+      setAiHints((prev) => ({ ...prev, [card.id]: payload.hint || `Think about the key concept behind "${card.front}".` }));
+    } catch {
+      setAiHints((prev) => ({ ...prev, [card.id]: `Think about the key concept behind "${card.front}".` }));
+    } finally {
+      setLoadingHintId(null);
+    }
+  };
+
   const triggerCardMotion = (direction: "next" | "prev") => {
     if (motionTimeoutRef.current) {
       window.clearTimeout(motionTimeoutRef.current);
@@ -4236,20 +4632,36 @@ function FlashcardsMode({
   };
 
   useEffect(() => {
-    if (!autoplay || !card) return;
+    if (!autoplay) return;
+    // Phase 1: show front for FRONT_MS
+    // Phase 2: flip to back for BACK_MS
+    // Phase 3: advance to next card (shows front), repeat
+    const FRONT_MS = 2800;
+    const BACK_MS = 2200;
+    const TOTAL_MS = FRONT_MS + BACK_MS;
+
+    setFlipped(false); // always start from front
+
+    let flipTimer: number;
+    const scheduleFlip = () => {
+      flipTimer = window.setTimeout(() => setFlipped(true), FRONT_MS);
+    };
+    scheduleFlip();
+
     const interval = window.setInterval(() => {
-      setFlipped((current) => !current);
-      setTimeout(() => {
-        setIndex((current) => {
-          const nextIndex = (current + 1) % cards.length;
-          return nextIndex;
-        });
-        setFlipped(false);
-        triggerCardMotion("next");
-      }, 700);
-    }, 3600);
-    return () => window.clearInterval(interval);
-  }, [autoplay, card, cards.length]);
+      window.clearTimeout(flipTimer);
+      setFlipped(false);
+      triggerCardMotion("next");
+      setIndex((current) => (current + 1) % cards.length);
+      scheduleFlip();
+    }, TOTAL_MS);
+
+    return () => {
+      window.clearInterval(interval);
+      window.clearTimeout(flipTimer);
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoplay, cards.length]);
 
   useEffect(() => {
     return () => {
@@ -4343,7 +4755,66 @@ function FlashcardsMode({
     }
   };
 
+  const fcShareUrl = typeof window !== "undefined" ? window.location.href : "";
+  const handleFcCopyLink = () => {
+    navigator.clipboard.writeText(fcShareUrl).then(() => {
+      setFcCopied(true);
+      setTimeout(() => setFcCopied(false), 2000);
+    }).catch(() => {});
+  };
+
   return (
+    <>
+      {fcShareOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm" onClick={() => setFcShareOpen(false)}>
+          <div className="w-full max-w-md rounded-2xl border border-white/10 bg-[#2a2f52] p-6 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+            <div className="mb-4 flex items-center justify-between">
+              <h2 className="text-lg font-bold text-white">Share this set</h2>
+              <button onClick={() => setFcShareOpen(false)} className="rounded-full p-1 text-zinc-400 transition hover:text-white">
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            <p className="mb-4 text-sm text-zinc-300">{set.title} · {set.cards.length} cards</p>
+            <div className="mb-4 flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3 py-2">
+              <span className="flex-1 truncate text-sm text-zinc-300">{fcShareUrl}</span>
+              <button
+                onClick={handleFcCopyLink}
+                className="inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-indigo-500"
+              >
+                {fcCopied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+                {fcCopied ? "Copied!" : "Copy"}
+              </button>
+            </div>
+            <div className="flex flex-col gap-2">
+              <a
+                href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(`Check out this study set: ${set.title}`)}&url=${encodeURIComponent(fcShareUrl)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-3 rounded-xl bg-white/5 px-4 py-3 text-sm font-medium text-zinc-200 transition hover:bg-white/10"
+              >
+                <Globe className="h-4 w-4 text-sky-400" />
+                Share on X / Twitter
+              </a>
+              <a
+                href={`https://wa.me/?text=${encodeURIComponent(`${set.title} — ${fcShareUrl}`)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-3 rounded-xl bg-white/5 px-4 py-3 text-sm font-medium text-zinc-200 transition hover:bg-white/10"
+              >
+                <Users className="h-4 w-4 text-green-400" />
+                Share via WhatsApp
+              </a>
+              <a
+                href={`mailto:?subject=${encodeURIComponent(set.title)}&body=${encodeURIComponent(`Here's a study set I thought you'd find useful:\n${fcShareUrl}`)}`}
+                className="flex items-center gap-3 rounded-xl bg-white/5 px-4 py-3 text-sm font-medium text-zinc-200 transition hover:bg-white/10"
+              >
+                <Share2 className="h-4 w-4 text-zinc-400" />
+                Share via Email
+              </a>
+            </div>
+          </div>
+        </div>
+      )}
     <div className="mx-auto max-w-[860px] space-y-5">
       <div className="study-appear">
         <div className="flex flex-col gap-5">
@@ -4359,30 +4830,45 @@ function FlashcardsMode({
               <h1 className="text-[2.2rem] font-bold tracking-[-0.04em] text-white">{set.title}</h1>
             </div>
             <div className="flex flex-wrap items-center gap-2">
-              <button className="inline-flex items-center gap-2 rounded-full border border-[#6a63f6] bg-[#2a255a] px-4 py-2 text-sm font-semibold text-white">
-                <Bookmark className="h-4 w-4 fill-current" />
-                Saved
+              <button
+                onClick={onToggleSaved}
+                title={set.saved ? "Remove from saved" : "Save this set"}
+                className={`inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-semibold transition ${
+                  set.saved
+                    ? "border-[#6a63f6] bg-[#2a255a] text-white hover:bg-[#231f52]"
+                    : "border-white/20 bg-white/[0.06] text-zinc-300 hover:border-[#6a63f6]/60 hover:bg-[#1e1b45] hover:text-white"
+                }`}
+              >
+                <Bookmark className={`h-4 w-4 ${set.saved ? "fill-current" : ""}`} />
+                {set.saved ? "Saved" : "Save"}
               </button>
               <button className="inline-flex items-center gap-2 rounded-full bg-white/[0.08] px-4 py-2 text-sm font-semibold text-zinc-200">
                 <Users className="h-4 w-4" />
                 Groups
               </button>
-              <button className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/[0.08] text-zinc-200">
+              <button
+                onClick={() => setFcShareOpen(true)}
+                className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/[0.08] text-zinc-200 transition hover:bg-white/[0.14] hover:text-white"
+                aria-label="Share set"
+              >
                 <Share2 className="h-4 w-4" />
               </button>
-              <button className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/[0.08] text-zinc-200">
+              <button
+                onClick={onBack}
+                className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/[0.08] text-zinc-200 transition hover:bg-white/[0.14] hover:text-white"
+                aria-label="Back to set overview"
+                title="Back to set overview"
+              >
                 <MoreHorizontal className="h-4 w-4" />
               </button>
             </div>
           </div>
 
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid grid-cols-2 gap-3">
             {[
               { screen: "flashcards" as Screen, label: "Flashcards", icon: <Copy className="h-4 w-4" /> },
               { screen: "learn" as Screen, label: "Learn", icon: <Brain className="h-4 w-4" /> },
               { screen: "test" as Screen, label: "Test", icon: <Target className="h-4 w-4" /> },
-              { screen: "flashcards" as Screen, label: "Blocks", icon: <Grid2x2 className="h-4 w-4" /> },
-              { screen: "learn" as Screen, label: "Blast", icon: <Rocket className="h-4 w-4" /> },
               { screen: "match" as Screen, label: "Match", icon: <Shuffle className="h-4 w-4" /> },
             ].map((mode) => (
               <button
@@ -4400,23 +4886,67 @@ function FlashcardsMode({
 
       <div ref={panelRef} className={`study-premium-panel study-appear rounded-[1.85rem] p-5 backdrop-blur-xl ${isFullscreen ? "study-flashcards-fullscreen h-full min-h-screen overflow-auto p-8" : ""}`}>
         <div className="flex flex-wrap items-center justify-between gap-4">
-          <div className="flex items-center gap-2 text-sm text-zinc-200">
-            <Sparkles className="h-3.5 w-3.5" />
-            {card.hint || "Get a hint"}
-          </div>
-          <div className="flex items-center gap-3">
-            <button onClick={onBack} className="text-zinc-100 transition hover:text-white">Edit</button>
-            <button className="text-zinc-100 transition hover:text-white">Audio</button>
+          <div className="flex flex-col gap-1">
             <button
-              onClick={() => onToggleFlag(card.id, { starred: !currentProgress.starred })}
-              className="text-zinc-100 transition hover:text-white"
+              type="button"
+              onClick={() => void handleGetHint()}
+              disabled={loadingHintId === card.id}
+              className="inline-flex items-center gap-2 text-sm transition cursor-pointer text-indigo-300 hover:text-indigo-200 disabled:cursor-default disabled:opacity-60"
             >
-              Star
+              <Sparkles className="h-3.5 w-3.5" />
+              {loadingHintId === card.id
+                ? "Generating hint…"
+                : showHint
+                  ? "Hide hint"
+                  : "Get a hint"}
+            </button>
+            {showHint && (
+              <div className="mt-1 rounded-xl border border-indigo-400/20 bg-indigo-500/10 px-3 py-2 text-sm text-indigo-200">
+                {loadingHintId === card.id
+                  ? "Thinking…"
+                  : aiHints[card.id] ?? (isRealHint(card.hint) ? card.hint : "Generating…")}
+              </div>
+            )}
+          </div>
+          <div className="flex items-center gap-1">
+            <button
+              aria-label="Edit this card"
+              title="Edit this card"
+              onClick={() => {
+                window.location.href = `/study/create?edit=${encodeURIComponent(set.id)}&card=${encodeURIComponent(card.id)}`;
+              }}
+              className="inline-flex h-9 w-9 items-center justify-center rounded-full text-zinc-400 transition hover:bg-white/10 hover:text-white"
+            >
+              <Pencil className="h-4 w-4" />
+            </button>
+            <button
+              aria-label="Read aloud"
+              title="Read aloud"
+              onClick={() => speakEnglish(flipped ? card.back : card.front)}
+              className="inline-flex h-9 w-9 items-center justify-center rounded-full text-zinc-400 transition hover:bg-white/10 hover:text-white"
+            >
+              <Volume2 className="h-4 w-4" />
+            </button>
+            <button
+              aria-label={currentProgress.starred ? "Unstar card" : "Star card"}
+              title={currentProgress.starred ? "Unstar card" : "Star card"}
+              onClick={() => onToggleFlag(card.id, { starred: !currentProgress.starred })}
+              className={`inline-flex h-9 w-9 items-center justify-center rounded-full transition hover:bg-white/10 ${currentProgress.starred ? "text-yellow-400 hover:text-yellow-300" : "text-zinc-400 hover:text-white"}`}
+            >
+              <Star className={`h-4 w-4 ${currentProgress.starred ? "fill-current" : ""}`} />
             </button>
           </div>
         </div>
 
-        <div ref={containerRef} className={`mt-6 ${isFullscreen ? "mx-auto w-full max-w-6xl" : ""}`}>
+        {/* Narrow progress bar */}
+        <div className="mt-5 h-[3px] w-full overflow-hidden rounded-full bg-white/10">
+          <div
+            className="h-full rounded-full bg-white/50"
+            style={{ width: `${cards.length > 1 ? ((index + 1) / cards.length) * 100 : 100}%` }}
+          />
+        </div>
+
+        <div ref={containerRef} className={`mt-4 ${isFullscreen ? "mx-auto w-full max-w-6xl" : ""}`}>
           <button
             type="button"
             onClick={() => setFlipped((current) => !current)}
@@ -4456,7 +4986,7 @@ function FlashcardsMode({
                 style={{
                   transformStyle: "preserve-3d",
                   WebkitTransformStyle: "preserve-3d",
-                  transform: flipped ? "rotateY(180deg)" : "rotateY(0deg)",
+                  transform: flipped ? "rotateX(180deg)" : "rotateX(0deg)",
                 }}
               >
                 <div
@@ -4464,7 +4994,7 @@ function FlashcardsMode({
                   style={{
                     backfaceVisibility: "hidden",
                     WebkitBackfaceVisibility: "hidden",
-                    transform: "rotateY(0deg)",
+                    transform: "rotateX(0deg)",
                   }}
                 >
                   <div>
@@ -4476,7 +5006,7 @@ function FlashcardsMode({
                   style={{
                     backfaceVisibility: "hidden",
                     WebkitBackfaceVisibility: "hidden",
-                    transform: "rotateY(180deg)",
+                    transform: "rotateX(180deg)",
                   }}
                 >
                   <div className="max-w-3xl">
@@ -4554,6 +5084,7 @@ function FlashcardsMode({
         </div>
       </div>
     </div>
+    </>
   );
 }
 
@@ -4572,100 +5103,266 @@ function LearnMode({
   onSessionSave: (session: ReturnType<typeof buildStudySession>) => void;
   onCelebrate: (message: string) => void;
 }) {
-  const { data: session } = useSession();
+  const [practiceOnlyCardFronts, setPracticeOnlyCardFronts] = useState<string[] | null>(null);
   const questions = useMemo(() => {
     const bank = buildQuestionBank(set).filter((question) => question.type === "multiple_choice" && (question.choices?.length || 0) >= 4);
-    return bank.length ? bank : buildQuestionBank(set).filter((question) => question.type === "true_false");
-  }, [set]);
+    const full = bank.length ? bank : buildQuestionBank(set).filter((question) => question.type === "true_false");
+    if (practiceOnlyCardFronts && practiceOnlyCardFronts.length > 0) {
+      const filtered = full.filter((q) =>
+        practiceOnlyCardFronts.some(
+          (front) => stripQuestionPrompt(q.prompt) === front || q.prompt.includes(front),
+        ),
+      );
+      return filtered.length > 0 ? filtered : full;
+    }
+    return full;
+  }, [set, practiceOnlyCardFronts]);
   const [index, setIndex] = useState(0);
   const [startedAt] = useState(() => new Date().toISOString());
   const [score, setScore] = useState(0);
   const [selectedChoice, setSelectedChoice] = useState<string | null>(null);
   const [submitted, setSubmitted] = useState(false);
   const [showExplanation, setShowExplanation] = useState(false);
-  const [profileMenuOpen, setProfileMenuOpen] = useState(false);
-  const profileMenuRef = useRef<HTMLDivElement | null>(null);
+  const [completed, setCompleted] = useState(false);
+  const [finalStats, setFinalStats] = useState<{ correct: number; total: number; durationMs: number } | null>(null);
+  const [wrongQuestions, setWrongQuestions] = useState<Array<{ prompt: string; correctAnswerText: string; userAnswer: string | null; cardFront: string }>>([]);
+  const [showMistakes, setShowMistakes] = useState(false);
+  const [aiExplanation, setAiExplanation] = useState<string | null>(null);
+  const [loadingExplanation, setLoadingExplanation] = useState(false);
+  const [enhancedChoices, setEnhancedChoices] = useState<Record<string, string[]>>({});
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const sessionStartMs = useRef(Date.now());
+  const panelRef = useRef<HTMLDivElement | null>(null);
   const question = questions[index];
 
-  const profileName = session?.user?.name?.trim() || "Profile";
-  const profileInitials = profileName
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part[0]?.toUpperCase() || "")
-    .join("") || "P";
-
-  useEffect(() => {
-    const handler = (event: KeyboardEvent) => {
-      if (!submitted) return;
-      if (event.key.length === 1 || event.key === "Enter" || event.key === " ") {
-        event.preventDefault();
-        setShowExplanation(false);
-        setSelectedChoice(null);
-        setSubmitted(false);
-        setIndex((current) => {
-          if (current >= questions.length - 1) return current;
-          return current + 1;
-        });
-      }
-    };
-    window.addEventListener("keydown", handler);
-    return () => window.removeEventListener("keydown", handler);
-  }, [questions.length, submitted]);
-
-  useEffect(() => {
-    if (!profileMenuOpen) return;
-
-    const handlePointerDown = (event: MouseEvent) => {
-      if (!profileMenuRef.current?.contains(event.target as Node)) {
-        setProfileMenuOpen(false);
-      }
-    };
-
-    window.addEventListener("pointerdown", handlePointerDown);
-    return () => window.removeEventListener("pointerdown", handlePointerDown);
-  }, [profileMenuOpen]);
-
-  if (!question) {
-    return <EmptyModeState title="No cards available to learn right now." onBack={onBack} />;
-  }
-
-  const correctAnswer = Array.isArray(question.correctAnswer) ? question.correctAnswer[0] : String(question.correctAnswer);
-  const choices =
-    question.type === "true_false"
-      ? ["True", "False"]
-      : (question.choices ?? []);
+  // Compute selectedIsCorrect early (null-safe) so it can be used in effects and continueLearn
   const selectedIsCorrect =
     submitted &&
     selectedChoice != null &&
+    question != null &&
     ((question.type === "true_false" ? selectedChoice.toLowerCase() : selectedChoice) === String(question.correctAnswer));
-  const currentCard =
-    set.cards.find((card) => stripQuestionPrompt(question.prompt).includes(card.front) || question.prompt.includes(card.front)) ??
-    set.cards[index];
+
+  const resetSession = () => {
+    setCompleted(false);
+    setFinalStats(null);
+    setWrongQuestions([]);
+    setShowMistakes(false);
+    setAiExplanation(null);
+    setLoadingExplanation(false);
+    setIndex(0);
+    setScore(0);
+    setSelectedChoice(null);
+    setSubmitted(false);
+    setShowExplanation(false);
+    sessionStartMs.current = Date.now();
+  };
+
+  const restartLearn = () => {
+    setPracticeOnlyCardFronts(null);
+    resetSession();
+  };
+
+  const restartWithMistakes = () => {
+    const fronts = [...new Set(wrongQuestions.map((wq) => wq.cardFront).filter(Boolean))];
+    setPracticeOnlyCardFronts(fronts);
+    resetSession();
+  };
 
   const continueLearn = () => {
     if (index === questions.length - 1) {
+      // score state is already updated by submitChoice/handleDontKnow before this runs
+      const finalCorrect = score;
+      const finalTotal = questions.length;
       onSessionSave(
         buildStudySession(
           set.id,
           "learn",
           startedAt,
-          questions.length,
-          Math.round(((score + (selectedIsCorrect ? 1 : 0)) / Math.max(questions.length, 1)) * 100),
+          finalTotal,
+          Math.round((finalCorrect / Math.max(finalTotal, 1)) * 100),
         ),
       );
-      if (selectedIsCorrect) onCelebrate("Learn session complete. Nice finish.");
-      setIndex(0);
-      setScore(0);
-      setSelectedChoice(null);
-      setSubmitted(false);
-      setShowExplanation(false);
+      setFinalStats({ correct: finalCorrect, total: finalTotal, durationMs: Date.now() - sessionStartMs.current });
+      setCompleted(true);
       return;
     }
     setIndex((current) => current + 1);
     setSelectedChoice(null);
     setSubmitted(false);
     setShowExplanation(false);
+    setAiExplanation(null);
+    setLoadingExplanation(false);
+  };
+
+  useEffect(() => {
+    const handler = (event: KeyboardEvent) => {
+      if (completed) return;
+      if (submitted) {
+        // After answering: Enter or Space continues to next question
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          continueLearn();
+        }
+      } else {
+        // Before answering: 1–4 selects and immediately submits that choice
+        const num = parseInt(event.key, 10);
+        if (num >= 1 && num <= 4) {
+          const q = questions[index];
+          if (!q) return;
+          const ch = q.type === "true_false"
+            ? ["True", "False"]
+            : (enhancedChoices[q.id] ?? q.choices ?? []);
+          if (num <= ch.length) {
+            event.preventDefault();
+            submitChoice(ch[num - 1]);
+          }
+        }
+      }
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [questions.length, submitted, completed, index, selectedIsCorrect, score, enhancedChoices]);
+
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(document.fullscreenElement === panelRef.current);
+    };
+    document.addEventListener("fullscreenchange", handleFullscreenChange);
+    return () => document.removeEventListener("fullscreenchange", handleFullscreenChange);
+  }, []);
+
+  useEffect(() => {
+    const mcQuestions = questions.filter((mq) => mq.type === "multiple_choice");
+    if (mcQuestions.length === 0) return;
+    fetch("/api/study/generate-distractors", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        questions: mcQuestions.map((mq) => ({
+          id: mq.id,
+          prompt: stripQuestionPrompt(mq.prompt),
+          correctAnswer: String(mq.correctAnswer),
+          topic: mq.topic || "",
+        })),
+      }),
+    })
+      .then((r) => r.json())
+      .then((payload) => {
+        if (!Array.isArray(payload.distractors)) return;
+        const map: Record<string, string[]> = {};
+        for (const item of payload.distractors) {
+          if (item.id && Array.isArray(item.choices)) {
+            const src = mcQuestions.find((mq) => mq.id === item.id);
+            if (!src) continue;
+            const all = [String(src.correctAnswer), ...item.choices.slice(0, 3)];
+            for (let i = all.length - 1; i > 0; i--) {
+              const j = Math.floor(Math.random() * (i + 1));
+              [all[i], all[j]] = [all[j], all[i]];
+            }
+            map[item.id] = all;
+          }
+        }
+        setEnhancedChoices(map);
+      })
+      .catch(() => {});
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [set.id]);
+
+  const toggleFullscreen = async () => {
+    if (!panelRef.current) return;
+    if (document.fullscreenElement === panelRef.current) {
+      await document.exitFullscreen?.();
+      return;
+    }
+    await panelRef.current.requestFullscreen?.();
+  };
+
+  if (!question && !completed) {
+    return <EmptyModeState title="No cards available to learn right now." onBack={onBack} />;
+  }
+
+  // Active question helpers (only valid when not completed)
+  const q = question ?? questions[0]!;
+  const choices = q
+    ? (q.type === "true_false" ? ["True", "False"] : (enhancedChoices[q.id] ?? q.choices ?? []))
+    : [];
+  const currentCard = q
+    ? (set.cards.find((card) => stripQuestionPrompt(q.prompt).includes(card.front) || q.prompt.includes(card.front)) ?? set.cards[index])
+    : undefined;
+
+  // Pre-fetch explanation in the background as soon as the answer is submitted
+  // so clicking "Explain this" shows the result instantly.
+  useEffect(() => {
+    if (!submitted) return;
+    const currentQ = questions[index];
+    if (!currentQ) return;
+    let cancelled = false;
+    setLoadingExplanation(true);
+    fetch("/api/study/explain-answer", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        question: stripQuestionPrompt(currentQ.prompt),
+        correctAnswer: String(currentQ.correctAnswer),
+        userAnswer: selectedChoice || "",
+        topic: currentQ.topic,
+      }),
+    })
+      .then((r) => r.json())
+      .then((payload) => {
+        if (!cancelled) setAiExplanation(payload.explanation || currentQ.explanation || "");
+      })
+      .catch(() => {
+        if (!cancelled) setAiExplanation(currentQ.explanation || "Could not load explanation.");
+      })
+      .finally(() => {
+        if (!cancelled) setLoadingExplanation(false);
+      });
+    return () => { cancelled = true; };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [submitted, index]);
+
+  const handleExplainThis = () => {
+    setShowExplanation((prev) => !prev);
+  };
+
+  const handleDontKnow = () => {
+    if (submitted) return;
+    setSubmitted(true);
+    setSelectedChoice(null);
+    if (currentCard) onProgress(currentCard.id, "missed");
+    setWrongQuestions((prev) => [
+      ...prev,
+      { prompt: stripQuestionPrompt(q.prompt), correctAnswerText: String(q.correctAnswer), userAnswer: null, cardFront: currentCard?.front ?? stripQuestionPrompt(q.prompt) },
+    ]);
+  };
+
+  const playCorrectSound = () => {
+    try {
+      type AnyWindow = typeof window & { webkitAudioContext?: typeof AudioContext };
+      const AudioCtx = window.AudioContext || (window as AnyWindow).webkitAudioContext;
+      if (!AudioCtx) return;
+      const ctx = new AudioCtx();
+      // Two-note ascending bling: E5 → B5
+      const notes = [659.25, 987.77];
+      notes.forEach((freq, i) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.type = "sine";
+        osc.frequency.value = freq;
+        const t = ctx.currentTime + i * 0.11;
+        gain.gain.setValueAtTime(0, t);
+        gain.gain.linearRampToValueAtTime(0.16, t + 0.012);
+        gain.gain.exponentialRampToValueAtTime(0.001, t + 0.22);
+        osc.start(t);
+        osc.stop(t + 0.22);
+      });
+    } catch {
+      // AudioContext not available — silent fail
+    }
   };
 
   const submitChoice = (choice: string) => {
@@ -4673,20 +5370,30 @@ function LearnMode({
     setSelectedChoice(choice);
     setSubmitted(true);
 
-    const normalizedChoice = question.type === "true_false" ? choice.toLowerCase() : choice;
-    const isCorrect = normalizedChoice === String(question.correctAnswer);
+    const normalizedChoice = q.type === "true_false" ? choice.toLowerCase() : choice;
+    const isCorrect = normalizedChoice === String(q.correctAnswer);
     if (currentCard) {
       onProgress(currentCard.id, isCorrect ? "knew" : "missed");
     }
     if (isCorrect) {
+      playCorrectSound();
       setScore((current) => current + 1);
       onCelebrate("Nice. Keep going.");
+    } else {
+      setWrongQuestions((prev) => [
+        ...prev,
+        { prompt: stripQuestionPrompt(q.prompt), correctAnswerText: String(q.correctAnswer), userAnswer: choice, cardFront: currentCard?.front ?? stripQuestionPrompt(q.prompt) },
+      ]);
     }
   };
 
   return (
-    <div className="study-appear mx-auto max-w-[1240px] space-y-6">
-      <div className="flex items-center justify-between gap-4">
+    <div
+      ref={panelRef}
+      className={`study-appear mx-auto max-w-[1240px] ${isFullscreen ? "study-flashcards-fullscreen min-h-screen overflow-auto p-8" : ""}`}
+    >
+      {/* Shared header — always visible */}
+      <div className={`flex items-center justify-between gap-4 ${isFullscreen && !completed ? "pt-[8vh]" : ""}`}>
         <div className="flex items-center gap-4">
           <button
             onClick={onBack}
@@ -4694,153 +5401,241 @@ function LearnMode({
           >
             <ChevronLeft className="h-4 w-4" />
           </button>
-          <div className="text-sm font-semibold text-white">Learn</div>
+          <div className="text-sm font-semibold text-white">
+            {practiceOnlyCardFronts ? "Practice Mistakes" : "Learn"}
+          </div>
         </div>
         <div className="flex items-center gap-3">
-          <div ref={profileMenuRef} className="relative">
-            <button
-              type="button"
-              onClick={() => setProfileMenuOpen((current) => !current)}
-              className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.06] pl-2 pr-3 py-2 text-sm font-semibold text-zinc-100 transition hover:bg-white/[0.1]"
-              aria-label="Open profile menu"
-              aria-expanded={profileMenuOpen}
-            >
-              <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-[#6e4cff] text-[11px] font-bold text-white">
-                {profileInitials}
-              </span>
-              <span className="max-w-[110px] truncate">{profileName}</span>
-              <ChevronDown className={`h-4 w-4 text-zinc-400 transition ${profileMenuOpen ? "rotate-180" : ""}`} />
-            </button>
-
-            {profileMenuOpen ? (
-              <div className="absolute right-0 top-[calc(100%+0.7rem)] z-50 w-[220px] rounded-[1.15rem] border border-white/10 bg-[#171b42] p-2 shadow-[0_24px_50px_rgba(0,0,0,0.36)]">
-                <div className="rounded-[0.95rem] bg-white/[0.04] px-3 py-3">
-                  <div className="text-sm font-semibold text-white">{profileName}</div>
-                  <div className="mt-1 truncate text-xs text-zinc-400">{session?.user?.email || ""}</div>
-                </div>
-                <Link
-                  href="/profile"
-                  onClick={() => setProfileMenuOpen(false)}
-                  className="mt-2 inline-flex w-full items-center gap-2 rounded-[0.9rem] px-3 py-2.5 text-sm font-medium text-zinc-200 transition hover:bg-white/[0.06]"
-                >
-                  <UserRound className="h-4 w-4" />
-                  Profile
-                </Link>
-                <button
-                  type="button"
-                  onClick={() => signOut({ callbackUrl: "/" })}
-                  className="mt-1 inline-flex w-full items-center gap-2 rounded-[0.9rem] px-3 py-2.5 text-sm font-medium text-zinc-200 transition hover:bg-white/[0.06]"
-                >
-                  <LogOut className="h-4 w-4" />
-                  Log out
-                </button>
-              </div>
-            ) : null}
-          </div>
-          <button className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/[0.06] text-zinc-200">
+          <button
+            onClick={toggleFullscreen}
+            aria-label={isFullscreen ? "Exit full screen" : "Full screen"}
+            className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/[0.06] text-zinc-200 transition hover:bg-white/[0.12]"
+          >
+            {isFullscreen ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
+          </button>
+          <button onClick={onBack} className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/[0.06] text-zinc-200">
             <X className="h-4 w-4" />
           </button>
         </div>
       </div>
 
-      <div className="flex items-center gap-1.5">
-        <div className="flex h-8 min-w-8 items-center justify-center rounded-full bg-[#c76a28] px-2 text-xs font-semibold text-white">
-          {score}
-        </div>
-        {Array.from({ length: 6 }).map((_, segmentIndex) => {
-          const progress = Math.min(1, Math.max(0, (((index + (submitted ? 1 : 0)) / Math.max(questions.length, 1)) * 6) - segmentIndex));
+      {completed && finalStats ? (
+        /* ── COMPLETION SUMMARY ── */
+        (() => {
+          const pct = Math.round((finalStats.correct / Math.max(finalStats.total, 1)) * 100);
+          const wrong = finalStats.total - finalStats.correct;
+          const mins = Math.floor(finalStats.durationMs / 60000);
+          const secs = Math.floor((finalStats.durationMs % 60000) / 1000);
+          const timeLabel = mins > 0 ? `${mins}m ${secs}s` : `${secs}s`;
+          const grade = pct >= 90 ? { label: "Excellent!", color: "text-emerald-300", ring: "ring-emerald-400/40", bg: "bg-emerald-500/10" }
+            : pct >= 70 ? { label: "Good job!", color: "text-sky-300", ring: "ring-sky-400/40", bg: "bg-sky-500/10" }
+            : pct >= 50 ? { label: "Keep it up!", color: "text-amber-300", ring: "ring-amber-400/40", bg: "bg-amber-500/10" }
+            : { label: "Keep practicing!", color: "text-rose-300", ring: "ring-rose-400/40", bg: "bg-rose-500/10" };
           return (
-            <div key={segmentIndex} className="h-3 flex-1 overflow-hidden rounded-full bg-white/12">
-              <div className="h-full rounded-full bg-[#7583b5] transition-all" style={{ width: `${Math.max(0, Math.min(100, progress * 100))}%` }} />
+            <div className="mx-auto mt-8 flex max-w-[680px] flex-col items-center gap-8 px-4 pb-12">
+              <div className={`flex h-20 w-20 items-center justify-center rounded-full ring-4 ${grade.ring} ${grade.bg}`}>
+                <span className="text-4xl">{pct >= 90 ? "🏆" : pct >= 70 ? "⭐" : pct >= 50 ? "💪" : "📖"}</span>
+              </div>
+              <div className="text-center">
+                <div className={`text-2xl font-bold tracking-tight ${grade.color}`}>{grade.label}</div>
+                <div className="mt-1 text-sm text-zinc-400">
+                  {practiceOnlyCardFronts
+                    ? `Practiced ${finalStats.total} mistake${finalStats.total !== 1 ? "s" : ""} from `
+                    : "You finished learning "}
+                  <span className="font-semibold text-zinc-200">{set.title}</span>
+                </div>
+              </div>
+              <div className="relative flex h-36 w-36 items-center justify-center">
+                <svg className="absolute inset-0 h-full w-full -rotate-90" viewBox="0 0 120 120">
+                  <circle cx="60" cy="60" r="52" fill="none" stroke="rgba(255,255,255,0.07)" strokeWidth="10" />
+                  <circle cx="60" cy="60" r="52" fill="none"
+                    stroke={pct >= 70 ? "#34d399" : pct >= 50 ? "#fbbf24" : "#f87171"}
+                    strokeWidth="10" strokeDasharray={`${(pct / 100) * 326.7} 326.7`} strokeLinecap="round"
+                  />
+                </svg>
+                <div className="text-center">
+                  <div className="text-4xl font-bold text-white">{pct}%</div>
+                  <div className="text-xs text-zinc-400">accuracy</div>
+                </div>
+              </div>
+              <div className="flex w-full gap-4">
+                {[
+                  { value: finalStats.correct, label: "Correct", color: "text-emerald-300" },
+                  { value: wrong, label: "Incorrect", color: "text-rose-300" },
+                  { value: finalStats.total, label: "Total", color: "text-zinc-100" },
+                  { value: timeLabel, label: "Time", color: "text-zinc-100" },
+                ].map((stat) => (
+                  <div key={stat.label} className="flex flex-1 flex-col items-center gap-1 rounded-[1.1rem] border border-white/10 bg-white/[0.04] px-4 py-4">
+                    <div className={`text-2xl font-bold ${stat.color}`}>{stat.value}</div>
+                    <div className="text-xs font-medium text-zinc-400">{stat.label}</div>
+                  </div>
+                ))}
+              </div>
+              {wrongQuestions.length > 0 ? (
+                <div className="w-full">
+                  <button
+                    onClick={() => setShowMistakes((prev) => !prev)}
+                    className="flex w-full items-center justify-between rounded-[1.1rem] border border-rose-400/20 bg-rose-500/10 px-4 py-3 text-sm font-semibold text-rose-300 transition hover:bg-rose-500/15"
+                  >
+                    <span>{wrongQuestions.length} mistake{wrongQuestions.length !== 1 ? "s" : ""} — review them</span>
+                    <ChevronDown className={`h-4 w-4 transition-transform ${showMistakes ? "rotate-180" : ""}`} />
+                  </button>
+                  {showMistakes ? (
+                    <div className="mt-2 space-y-2">
+                      {wrongQuestions.map((item, i) => (
+                        <div key={i} className="rounded-[1rem] border border-white/10 bg-white/[0.03] px-4 py-3">
+                          <div className="text-sm font-medium text-zinc-200">{item.prompt}</div>
+                          {item.userAnswer
+                            ? <div className="mt-1 text-xs text-rose-400">Your answer: {item.userAnswer}</div>
+                            : <div className="mt-1 text-xs text-zinc-500">You skipped this one</div>}
+                          <div className="mt-1 text-xs text-emerald-400">Correct: {item.correctAnswerText}</div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : null}
+                </div>
+              ) : (
+                practiceOnlyCardFronts ? (
+                  <div className="w-full rounded-[1.1rem] border border-emerald-400/20 bg-emerald-500/10 px-4 py-3 text-center text-sm font-semibold text-emerald-300">
+                    All mistakes cleared! 🎉
+                  </div>
+                ) : null
+              )}
+              <div className="flex w-full flex-col gap-3">
+                {wrongQuestions.length > 0 ? (
+                  <button
+                    onClick={restartWithMistakes}
+                    className="w-full rounded-full bg-rose-500 py-3.5 text-sm font-semibold text-white transition hover:bg-rose-600"
+                  >
+                    Practice {wrongQuestions.length} mistake{wrongQuestions.length !== 1 ? "s" : ""}
+                  </button>
+                ) : null}
+                <button
+                  onClick={restartLearn}
+                  className="w-full rounded-full bg-[#5561ff] py-3.5 text-sm font-semibold text-white transition hover:bg-[#4450ee]"
+                >
+                  Study all again
+                </button>
+                <button
+                  onClick={onBack}
+                  className="w-full rounded-full border border-white/10 bg-white/[0.06] py-3.5 text-sm font-semibold text-zinc-200 transition hover:bg-white/[0.1]"
+                >
+                  Back to set
+                </button>
+              </div>
             </div>
           );
-        })}
-        <div className="flex h-8 min-w-10 items-center justify-center rounded-full bg-white/10 px-2 text-xs font-semibold text-zinc-200">
-          {questions.length}
-        </div>
-      </div>
-
-      <div className="mx-auto w-full max-w-[980px] rounded-[1.6rem] border border-[#515b84] bg-[#394264] p-6 shadow-[0_24px_70px_rgba(0,0,0,0.22)] sm:p-7">
-        <div className="flex items-center justify-between gap-4">
-          <div className="flex items-center gap-2 text-xs font-semibold text-zinc-300">
-            <span>Term</span>
-            <Volume2 className="h-3.5 w-3.5" />
-          </div>
-          <div className="text-xs text-zinc-400">{index + 1} of {questions.length}</div>
-        </div>
-
-        <div className="mt-8 min-h-[110px] text-[2rem] leading-[1.2] font-medium tracking-[-0.03em] text-white">
-          {stripQuestionPrompt(question.prompt)}
-        </div>
-
-        {submitted ? (
-          <div className={`mt-8 text-sm font-semibold ${selectedIsCorrect ? "text-emerald-300" : "text-amber-300"}`}>
-            {selectedIsCorrect ? "Nice, you got it!" : "No sweat, you&apos;re still learning!"}
-          </div>
-        ) : null}
-
-        <div className="mt-5 grid gap-3 sm:grid-cols-2">
-          {choices.map((choice, choiceIndex) => {
-            const normalizedChoice = question.type === "true_false" ? choice.toLowerCase() : choice;
-            const isSelected = selectedChoice === choice;
-            const isCorrect = normalizedChoice === String(question.correctAnswer);
-            const tone = submitted
-              ? isCorrect
-                ? "border-emerald-400/70 bg-emerald-500/10 text-emerald-100"
-                : isSelected
-                  ? "border-amber-400/70 bg-amber-500/10 text-amber-100"
-                  : "border-white/10 bg-[#3f496f] text-zinc-300"
-              : "border-white/10 bg-[#3f496f] text-zinc-200 hover:bg-[#465178]";
+        })()
+      ) : q ? (
+        /* ── ACTIVE QUESTION ── */
+        <div className={`mt-6 space-y-6 ${isFullscreen ? "pt-[4vh]" : ""}`}>
+          {(() => {
+            const progressT = Math.min(1, (index + (submitted ? 1 : 0)) / Math.max(questions.length, 1));
+            const cr = Math.round(85 + (16 - 85) * progressT);
+            const cg = Math.round(97 + (185 - 97) * progressT);
+            const cb = Math.round(255 + (129 - 255) * progressT);
+            const progressColor = `rgb(${cr},${cg},${cb})`;
             return (
-              <button
-                key={choice}
-                onClick={() => submitChoice(choice)}
-                className={`rounded-[0.95rem] border px-4 py-4 text-left text-sm font-medium transition ${tone}`}
-              >
-                <span className="mr-3 inline-flex min-w-5 text-zinc-400">{choiceIndex + 1}</span>
-                {choice}
-              </button>
+              <div className="flex items-center gap-1.5">
+                <div className="flex h-8 min-w-8 items-center justify-center rounded-full px-2 text-xs font-semibold text-white transition-all duration-500" style={{ backgroundColor: progressColor }}>
+                  {score}
+                </div>
+                {Array.from({ length: 6 }).map((_, segmentIndex) => {
+                  const fill = Math.min(1, Math.max(0, (progressT * 6) - segmentIndex));
+                  return (
+                    <div key={segmentIndex} className="h-3 flex-1 overflow-hidden rounded-full bg-white/12">
+                      <div className="h-full rounded-full transition-all duration-500" style={{ width: `${fill * 100}%`, backgroundColor: progressColor }} />
+                    </div>
+                  );
+                })}
+                <div className="flex h-8 min-w-10 items-center justify-center rounded-full bg-white/10 px-2 text-xs font-semibold text-zinc-200">
+                  {questions.length}
+                </div>
+              </div>
             );
-          })}
-        </div>
+          })()}
 
-        <div className="mt-5 flex items-center justify-between gap-4">
-          <button className="text-xs font-medium text-zinc-400">
-            Don&apos;t know?
-          </button>
-          {submitted ? (
-            <div className="flex items-center gap-3">
-              <button
-                onClick={() => setShowExplanation((current) => !current)}
-                className="rounded-full bg-white/[0.12] px-5 py-3 text-sm font-semibold text-zinc-100"
-              >
-                Explain this
-              </button>
-              <button
-                onClick={continueLearn}
-                className="rounded-full bg-[#5561ff] px-5 py-3 text-sm font-semibold text-white"
-              >
-                Continue
-              </button>
+          <div className="mx-auto w-full max-w-[980px] rounded-[1.6rem] border border-[#515b84] bg-[#394264] p-6 shadow-[0_24px_70px_rgba(0,0,0,0.22)] sm:p-7">
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex items-center gap-2 text-xs font-semibold text-zinc-300">
+                <span>Term</span>
+                <button
+                  type="button"
+                  aria-label="Read question aloud"
+                  onClick={() => speakEnglish(stripQuestionPrompt(q.prompt))}
+                  className="rounded-full p-0.5 text-zinc-400 transition hover:text-zinc-100"
+                >
+                  <Volume2 className="h-3.5 w-3.5" />
+                </button>
+              </div>
+              <div className="text-xs text-zinc-400">{index + 1} of {questions.length}</div>
             </div>
-          ) : (
-            <div className="text-xs font-medium text-zinc-400">Choose the correct answer</div>
-          )}
-        </div>
-
-        {showExplanation ? (
-          <div className="mt-4 rounded-[1rem] border border-white/10 bg-[#313858] px-4 py-3 text-sm leading-6 text-zinc-200">
-            {question.explanation}
+            <div className="mt-8 min-h-[110px] text-[2rem] leading-[1.2] font-medium tracking-[-0.03em] text-white">
+              {stripQuestionPrompt(q.prompt)}
+            </div>
+            {submitted ? (
+              <div className={`mt-8 text-sm font-semibold ${selectedIsCorrect ? "text-emerald-300" : "text-amber-300"}`}>
+                {selectedIsCorrect
+                  ? (["Nice, you got it!", "Correct! Keep it up.", "That's the one!", "Nailed it.", "Right on."] as const)[index % 5]
+                  : (["Not quite — check the answer below.", "Keep going, you're building it.", "Almost! Review it and move on.", "That one's tricky — it'll stick next time.", "Wrong this time, but you'll get it."] as const)[index % 5]}
+              </div>
+            ) : null}
+            <div className="mt-5 grid gap-3 sm:grid-cols-2">
+              {choices.map((choice, choiceIndex) => {
+                const normalizedChoice = q.type === "true_false" ? choice.toLowerCase() : choice;
+                const isSelected = selectedChoice === choice;
+                const isCorrect = normalizedChoice === String(q.correctAnswer);
+                const tone = submitted
+                  ? isCorrect ? "border-emerald-400/70 bg-emerald-500/10 text-emerald-100"
+                    : isSelected ? "border-amber-400/70 bg-amber-500/10 text-amber-100"
+                    : "border-white/10 bg-[#3f496f] text-zinc-300"
+                  : "border-white/10 bg-[#3f496f] text-zinc-200 hover:bg-[#465178]";
+                return (
+                  <button key={choice} onClick={() => submitChoice(choice)} className={`flex items-start gap-3 rounded-[0.95rem] border px-4 py-4 text-left text-sm font-medium transition ${tone}`}>
+                    <span className="mt-0.5 w-4 shrink-0 text-zinc-400">{choiceIndex + 1}</span>
+                    <span>{choice}</span>
+                  </button>
+                );
+              })}
+            </div>
+            <div className="mt-5 flex items-center justify-between gap-4">
+              <button onClick={handleDontKnow} disabled={submitted} className={`text-xs font-medium transition ${submitted ? "cursor-default text-zinc-600" : "text-zinc-400 hover:text-zinc-200"}`}>
+                Don't know?
+              </button>
+              {submitted ? (
+                <div className="flex items-center gap-3">
+                  <button onClick={handleExplainThis} className="rounded-full bg-white/[0.12] px-5 py-3 text-sm font-semibold text-zinc-100 transition hover:bg-white/[0.18]">
+                    {showExplanation ? "Hide" : loadingExplanation ? "Preparing…" : "Explain this"}
+                  </button>
+                  <button onClick={continueLearn} className="rounded-full bg-[#5561ff] px-5 py-3 text-sm font-semibold text-white">
+                    Continue
+                  </button>
+                </div>
+              ) : (
+                <div className="text-xs font-medium text-zinc-400">Choose the correct answer</div>
+              )}
+            </div>
+            {showExplanation ? (
+              <div className="mt-4 rounded-[1rem] border border-white/10 bg-[#313858] px-4 py-3 text-sm leading-6 text-zinc-200">
+                {loadingExplanation ? <span className="text-zinc-400">Getting explanation from AI…</span> : (aiExplanation || q.explanation)}
+              </div>
+            ) : null}
           </div>
-        ) : null}
-      </div>
 
-      <div className="mx-auto flex w-full max-w-[980px] items-center justify-between px-2 text-sm text-zinc-300">
-        <div>Click the correct answer or press any key to continue</div>
-        <div className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-xs font-semibold text-zinc-300">
-          {Math.round((score / Math.max(index + Number(submitted), 1)) * 100) || 0}% correct
+          {(() => {
+            const liveAccuracy = Math.round((score / Math.max(index + Number(submitted), 1)) * 100) || 0;
+            const accColor = liveAccuracy >= 80 ? "#4ade80" : liveAccuracy >= 60 ? "#fbbf24" : liveAccuracy >= 40 ? "#fb923c" : "#f87171";
+            return (
+              <div className="mx-auto flex w-full max-w-[980px] items-center justify-between px-2 text-sm text-zinc-300">
+                <div>Click the correct answer or press any key to continue</div>
+                <div className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-xs font-semibold transition-colors" style={{ color: accColor }}>
+                  {liveAccuracy}% correct
+                </div>
+              </div>
+            );
+          })()}
         </div>
-      </div>
+      ) : null}
     </div>
   );
 }
@@ -4865,14 +5660,18 @@ function AssessmentMode({
   onCelebrate: (message: string) => void;
 }) {
   const [startedAt] = useState(() => new Date().toISOString());
-  const [currentIndex, setCurrentIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [submitted, setSubmitted] = useState(false);
   const [explanation, setExplanation] = useState<string>("");
   const [perfectBurst, setPerfectBurst] = useState(false);
   const [setupOpen, setSetupOpen] = useState(true);
-  const [questionCount, setQuestionCount] = useState(12);
+  const [questionCount, setQuestionCount] = useState(() => Math.max(1, set.cards.length));
   const [answerWith, setAnswerWith] = useState<"term" | "definition" | "both">("both");
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [showTestMistakes, setShowTestMistakes] = useState(false);
+  const [enhancedChoices, setEnhancedChoices] = useState<Record<string, string[]>>({});
+  const testPanelRef = useRef<HTMLDivElement | null>(null);
+  const questionCardRefs = useRef<(HTMLDivElement | null)[]>([]);
   const [enabledTypes, setEnabledTypes] = useState({
     trueFalse: true,
     multipleChoice: true,
@@ -4895,8 +5694,7 @@ function AssessmentMode({
     return pool.slice(0, Math.min(questionCount, pool.length));
   }, [enabledTypes, questionCount, set]);
 
-  const question = questions[currentIndex];
-  if (!question) {
+  if (!questions.length) {
     return <EmptyModeState title="Not enough material to generate this assessment yet." onBack={onBack} />;
   }
 
@@ -4905,6 +5703,70 @@ function AssessmentMode({
       const next = { ...current, [key]: !current[key] };
       return Object.values(next).some(Boolean) ? next : current;
     });
+  };
+
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(document.fullscreenElement === testPanelRef.current);
+    };
+    document.addEventListener("fullscreenchange", handleFullscreenChange);
+    return () => document.removeEventListener("fullscreenchange", handleFullscreenChange);
+  }, []);
+
+  useEffect(() => {
+    const mcQuestions = questions.filter((mq) => mq.type === "multiple_choice");
+    if (mcQuestions.length === 0) return;
+    fetch("/api/study/generate-distractors", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        questions: mcQuestions.map((mq) => ({
+          id: mq.id,
+          prompt: stripQuestionPrompt(mq.prompt),
+          correctAnswer: String(mq.correctAnswer),
+          topic: mq.topic || "",
+        })),
+      }),
+    })
+      .then((r) => r.json())
+      .then((payload) => {
+        if (!Array.isArray(payload.distractors)) return;
+        const map: Record<string, string[]> = {};
+        for (const item of payload.distractors) {
+          if (item.id && Array.isArray(item.choices)) {
+            const src = mcQuestions.find((mq) => mq.id === item.id);
+            if (!src) continue;
+            const all = [String(src.correctAnswer), ...item.choices.slice(0, 3)];
+            for (let i = all.length - 1; i > 0; i--) {
+              const j = Math.floor(Math.random() * (i + 1));
+              [all[i], all[j]] = [all[j], all[i]];
+            }
+            map[item.id] = all;
+          }
+        }
+        setEnhancedChoices(map);
+      })
+      .catch(() => {});
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [set.id]);
+
+  const toggleTestFullscreen = async () => {
+    if (!testPanelRef.current) return;
+    if (document.fullscreenElement === testPanelRef.current) {
+      await document.exitFullscreen?.();
+      return;
+    }
+    await testPanelRef.current.requestFullscreen?.();
+  };
+
+  // Auto-scroll to next question after picking an MC/TF answer
+  const handleSelectAnswer = (questionId: string, value: string, questionIndex: number) => {
+    setAnswers((current) => ({ ...current, [questionId]: value }));
+    if (questionIndex < questions.length - 1) {
+      window.setTimeout(() => {
+        questionCardRefs.current[questionIndex + 1]?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      }, 160);
+    }
   };
 
   const gradeQuestion = (quizQuestion: QuizQuestion) => {
@@ -5033,7 +5895,6 @@ function AssessmentMode({
               <div className="mt-6 flex flex-wrap gap-3">
                 <button
                   onClick={() => {
-                    setCurrentIndex(0);
                     setAnswers({});
                     setSubmitted(false);
                     setExplanation("");
@@ -5086,26 +5947,59 @@ function AssessmentMode({
                 ) : null}
               </div>
             </div>
-            <div className="study-premium-card rounded-[1.5rem] p-6">
-              <div className="text-xs font-bold uppercase tracking-[0.22em] text-zinc-500">Topic breakdown</div>
-              <div className="mt-5 space-y-4">
-                {Array.from(new Set(questions.map((quizQuestion) => quizQuestion.topic))).map((topic) => {
-                  const items = questions.filter((quizQuestion) => quizQuestion.topic === topic);
-                  const correct = items.filter((quizQuestion) => gradeQuestion(quizQuestion)).length;
-                  const accuracy = Math.round((correct / items.length) * 100);
-                  return (
-                    <div key={topic}>
-                      <div className="flex items-center justify-between text-sm">
-                        <span className="font-medium text-white">{topic}</span>
-                        <span className="text-zinc-400">{accuracy}%</span>
+            <div className="space-y-4">
+              <div className="study-premium-card rounded-[1.5rem] p-6">
+                <div className="text-xs font-bold uppercase tracking-[0.22em] text-zinc-500">Topic breakdown</div>
+                <div className="mt-5 space-y-4">
+                  {Array.from(new Set(questions.map((quizQuestion) => quizQuestion.topic))).map((topic) => {
+                    const items = questions.filter((quizQuestion) => quizQuestion.topic === topic);
+                    const correct = items.filter((quizQuestion) => gradeQuestion(quizQuestion)).length;
+                    const accuracy = Math.round((correct / items.length) * 100);
+                    return (
+                      <div key={topic}>
+                        <div className="flex items-center justify-between text-sm">
+                          <span className="font-medium text-white">{topic}</span>
+                          <span className="text-zinc-400">{accuracy}%</span>
+                        </div>
+                        <div className="mt-2 h-2 rounded-full bg-white/6">
+                          <div className="h-2 rounded-full bg-gradient-to-r from-red-500 via-amber-400 to-emerald-400" style={{ width: `${accuracy}%` }} />
+                        </div>
                       </div>
-                      <div className="mt-2 h-2 rounded-full bg-white/6">
-                        <div className="h-2 rounded-full bg-gradient-to-r from-red-500 via-amber-400 to-emerald-400" style={{ width: `${accuracy}%` }} />
-                      </div>
-                    </div>
-                  );
-                })}
+                    );
+                  })}
+                </div>
               </div>
+
+              {incorrectQuestions.length > 0 ? (
+                <div className="study-premium-card rounded-[1.5rem] p-6">
+                  <button
+                    onClick={() => setShowTestMistakes((prev) => !prev)}
+                    className="flex w-full items-center justify-between"
+                  >
+                    <div className="text-xs font-bold uppercase tracking-[0.22em] text-zinc-500">
+                      {incorrectQuestions.length} mistake{incorrectQuestions.length !== 1 ? "s" : ""}
+                    </div>
+                    <ChevronDown className={`h-4 w-4 text-zinc-500 transition-transform ${showTestMistakes ? "rotate-180" : ""}`} />
+                  </button>
+                  {showTestMistakes ? (
+                    <div className="mt-4 space-y-3">
+                      {incorrectQuestions.map((quizQuestion) => (
+                        <div key={quizQuestion.id} className="rounded-[0.9rem] border border-white/10 bg-white/[0.04] px-4 py-3">
+                          <div className="text-sm font-medium text-zinc-200">{stripQuestionPrompt(quizQuestion.prompt)}</div>
+                          {answers[quizQuestion.id] ? (
+                            <div className="mt-1 text-xs text-rose-400">Your answer: {answers[quizQuestion.id]}</div>
+                          ) : (
+                            <div className="mt-1 text-xs text-zinc-500">No answer given</div>
+                          )}
+                          <div className="mt-1 text-xs text-emerald-400">
+                            Correct: {Array.isArray(quizQuestion.correctAnswer) ? quizQuestion.correctAnswer.join(", ") : String(quizQuestion.correctAnswer)}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : null}
+                </div>
+              ) : null}
             </div>
           </div>
         </div>
@@ -5113,8 +6007,10 @@ function AssessmentMode({
     );
   }
 
+  const answeredCount = Object.values(answers).filter(Boolean).length;
+
   return (
-      <div className="study-appear space-y-5">
+      <div ref={testPanelRef} className={`study-appear space-y-5 ${isFullscreen ? "study-flashcards-fullscreen min-h-screen overflow-auto p-8" : ""}`}>
       <div className="mx-auto flex w-full max-w-[1240px] items-center justify-between gap-4 text-zinc-200">
         <div className="flex items-center gap-3">
           <button
@@ -5128,7 +6024,7 @@ function AssessmentMode({
           <div className="text-sm font-semibold text-white">{title}</div>
         </div>
         <div className="text-center">
-          <div className="text-sm font-semibold text-white">{Object.values(answers).filter(Boolean).length} / {questions.length}</div>
+          <div className="text-sm font-semibold text-white">{answeredCount} / {questions.length} answered</div>
           <div className="text-xs text-zinc-500">{set.title}</div>
         </div>
         <div className="flex items-center gap-2">
@@ -5139,100 +6035,119 @@ function AssessmentMode({
           >
             Options
           </button>
+          <button
+            onClick={toggleTestFullscreen}
+            aria-label={isFullscreen ? "Exit full screen" : "Full screen"}
+            {...magneticHoverProps}
+            className="study-premium-button inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-white/[0.04]"
+          >
+            {isFullscreen ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
+          </button>
           <Link href="/study" {...magneticHoverProps} className="study-premium-button inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-white/[0.04]">
             <Layers3 className="h-4.5 w-4.5" />
           </Link>
         </div>
       </div>
 
-      <div className="mx-auto w-full max-w-[1240px] space-y-6">
-        <div className="mx-auto w-full max-w-[980px] rounded-[1.6rem] border border-[#515b84] bg-[#394264] p-6 shadow-[0_24px_70px_rgba(0,0,0,0.22)] sm:p-7">
-          <div className="flex items-center justify-between gap-4">
-            <div className="flex items-center gap-2 text-xs font-semibold text-zinc-300">
-              <span>{question.topic || "Term"}</span>
-              <Volume2 className="h-3.5 w-3.5" />
-            </div>
-            <div className="text-xs text-zinc-400">{currentIndex + 1} of {questions.length}</div>
-          </div>
+      <div className="mx-auto w-full max-w-[980px] space-y-5">
+        {questions.map((q, qIndex) => {
+          const isMC = q.type === "multiple_choice" || q.type === "true_false";
+          const isWritten = q.type === "short_answer" || q.type === "fill_blank" || q.type === "written";
+          const choices = q.type === "true_false" ? ["True", "False"] : (enhancedChoices[q.id] ?? q.choices ?? []);
+          const selectedValue = answers[q.id];
 
-          <div className="mt-8 min-h-[96px] text-[1.95rem] leading-[1.15] font-medium tracking-[-0.04em] text-white">
-            {question.prompt}
-          </div>
-
-          <div className="mt-10 text-sm font-medium text-zinc-200">Choose an answer</div>
-
-          <div className="mt-4">
-            {(question.type === "multiple_choice" || question.type === "true_false") && (
-              <div className="grid gap-3 md:grid-cols-2">
-                {(question.choices || (question.type === "true_false" ? ["True", "False"] : [])).map((choice, choiceIndex) => (
+          return (
+            <div
+              key={q.id}
+              ref={(el) => { questionCardRefs.current[qIndex] = el; }}
+              className="rounded-[1.6rem] border border-[#515b84] bg-[#394264] p-6 shadow-[0_24px_70px_rgba(0,0,0,0.22)] sm:p-7"
+            >
+              {/* Question header */}
+              <div className="flex items-center justify-between gap-4">
+                <div className="flex items-center gap-2 text-xs font-semibold text-zinc-300">
+                  <span>{q.topic || "Term"}</span>
                   <button
-                    key={choice}
-                    onClick={() =>
-                      setAnswers((current) => ({
-                        ...current,
-                        [question.id]: question.type === "true_false" ? choice.toLowerCase() : choice,
-                      }))
-                    }
-                    {...magneticHoverProps}
-                    className={`study-premium-button rounded-[0.95rem] border px-4 py-4 text-left text-sm transition ${
-                      answers[question.id] === (question.type === "true_false" ? choice.toLowerCase() : choice)
-                        ? "border-indigo-200 bg-[#8e98bb] text-white"
-                        : "border-white/10 bg-[#394264] text-zinc-200 hover:bg-[#434d74]"
-                    }`}
+                    type="button"
+                    aria-label="Read question aloud"
+                    onClick={() => speakEnglish(stripQuestionPrompt(q.prompt))}
+                    className="rounded-full p-0.5 text-zinc-400 transition hover:text-zinc-100"
                   >
-                    <span className="mr-3 inline-flex min-w-5 text-zinc-400">{question.type === "multiple_choice" ? choiceIndex + 1 : ""}</span>
-                    {choice}
+                    <Volume2 className="h-3.5 w-3.5" />
                   </button>
-                ))}
+                </div>
+                <div className="text-xs text-zinc-400">{qIndex + 1} of {questions.length}</div>
               </div>
-            )}
 
-            {(question.type === "short_answer" || question.type === "fill_blank" || question.type === "written") && (
-              <textarea
-                value={answers[question.id] || ""}
-                onChange={(event) => setAnswers((current) => ({ ...current, [question.id]: event.target.value }))}
-                rows={question.type === "written" ? 6 : 4}
-                placeholder={question.type === "written" ? "Write your answer..." : "Type your answer..."}
-                className="study-premium-input w-full rounded-[0.95rem] border border-white/10 bg-[#394264] px-4 py-3 text-base leading-7 text-white outline-none placeholder:text-zinc-500"
-              />
-            )}
-          </div>
+              {/* Question prompt */}
+              <div className="mt-7 text-[1.75rem] leading-[1.18] font-medium tracking-[-0.04em] text-white">
+                {q.prompt}
+              </div>
 
-          <div className="mt-5 flex items-center justify-between gap-4 text-xs font-medium text-indigo-200">
-            <span>
-              {answers[question.id]
-                ? "Answer saved"
-                : question.type === "written" || question.type === "short_answer" || question.type === "fill_blank"
-                ? "Write your best answer"
-                : "Don’t know?"}
-            </span>
-            <div className="flex flex-wrap gap-2">
-              <button
-                onClick={() => setCurrentIndex((current) => Math.max(0, current - 1))}
-                {...magneticHoverProps}
-                className="study-premium-button rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-xs font-semibold text-zinc-100"
-              >
-                Prev
-              </button>
-              {currentIndex < questions.length - 1 ? (
-                <button
-                  onClick={() => setCurrentIndex((current) => Math.min(questions.length - 1, current + 1))}
-                  {...magneticHoverProps}
-                  className="study-premium-button rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-xs font-semibold text-zinc-100"
-                >
-                  Next
-                </button>
-              ) : (
-                <button
-                  onClick={finishAssessment}
-                  {...magneticHoverProps}
-                  className="study-premium-button rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-xs font-semibold text-zinc-100"
-                >
-                  Finish
-                </button>
-              )}
+              {/* Answer section */}
+              <div className="mt-8">
+                {isMC && (
+                  <div className="grid gap-3 md:grid-cols-2">
+                    {choices.map((choice, choiceIndex) => {
+                      const normalizedChoice = q.type === "true_false" ? choice.toLowerCase() : choice;
+                      const isSelected = selectedValue === normalizedChoice;
+                      return (
+                        <button
+                          key={choice}
+                          onClick={() => handleSelectAnswer(q.id, normalizedChoice, qIndex)}
+                          {...magneticHoverProps}
+                          className={`study-premium-button flex items-start gap-3 rounded-[0.95rem] border px-4 py-4 text-left text-sm transition ${
+                            isSelected
+                              ? "border-indigo-300/60 bg-indigo-500/20 text-white"
+                              : "border-white/10 bg-[#394264] text-zinc-200 hover:bg-[#434d74]"
+                          }`}
+                        >
+                          <span className={`mt-0.5 w-4 shrink-0 text-sm ${isSelected ? "text-indigo-300" : "text-zinc-500"}`}>
+                            {q.type === "multiple_choice" ? choiceIndex + 1 : ""}
+                          </span>
+                          <span>{choice}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+
+                {isWritten && (
+                  <textarea
+                    value={answers[q.id] || ""}
+                    onChange={(event) => setAnswers((current) => ({ ...current, [q.id]: event.target.value }))}
+                    rows={q.type === "written" ? 6 : 4}
+                    placeholder={q.type === "written" ? "Write your answer…" : "Type your answer…"}
+                    className="study-premium-input w-full rounded-[0.95rem] border border-white/10 bg-[#394264] px-4 py-3 text-base leading-7 text-white outline-none placeholder:text-zinc-500"
+                  />
+                )}
+              </div>
+
+              {/* Answered indicator */}
+              <div className="mt-4 text-xs font-medium text-zinc-500">
+                {selectedValue
+                  ? <span className="text-indigo-300">Answer saved ✓</span>
+                  : isWritten
+                    ? "Write your best answer"
+                    : "Pick the best option"}
+              </div>
             </div>
+          );
+        })}
+
+        {/* Submit button */}
+        <div className="flex items-center justify-between rounded-[1.4rem] border border-white/8 bg-white/[0.03] px-6 py-5">
+          <div className="text-sm text-zinc-400">
+            {answeredCount < questions.length
+              ? `${questions.length - answeredCount} question${questions.length - answeredCount !== 1 ? "s" : ""} unanswered`
+              : "All questions answered — ready to submit!"}
           </div>
+          <button
+            onClick={() => void finishAssessment()}
+            {...magneticHoverProps}
+            className="study-premium-button rounded-2xl bg-indigo-500 px-6 py-3 text-sm font-semibold text-white transition hover:bg-indigo-400"
+          >
+            Submit test
+          </button>
         </div>
       </div>
 
@@ -5259,12 +6174,11 @@ function AssessmentMode({
                 <input
                   type="number"
                   min={1}
-                  max={Math.max(1, buildQuestionBank(set).length)}
+                  max={Math.max(1, set.cards.length)}
                   value={questionCount}
                   onChange={(event) => {
                     const nextValue = Number(event.target.value);
-                    setQuestionCount(Math.max(1, Math.min(Math.max(1, buildQuestionBank(set).length), Number.isFinite(nextValue) ? nextValue : 12)));
-                    setCurrentIndex(0);
+                    setQuestionCount(Math.max(1, Math.min(Math.max(1, set.cards.length), Number.isFinite(nextValue) ? nextValue : set.cards.length)));
                     setAnswers({});
                   }}
                   className="study-premium-input w-20 rounded-xl border border-white/10 bg-white/[0.06] px-3 py-2 text-sm text-white outline-none"
@@ -5356,6 +6270,7 @@ function MatchMode({
   const [elapsedMs, setElapsedMs] = useState(0);
   const [bestMs, setBestMs] = useState<number | null>(null);
   const [completedMs, setCompletedMs] = useState<number | null>(null);
+  const [isNewBest, setIsNewBest] = useState(false);
   const isComplete = matched.length === items.length && items.length > 0;
 
   useEffect(() => {
@@ -5378,7 +6293,12 @@ function MatchMode({
 
   const handlePick = (id: string) => {
     if (isComplete) return;
-    if (matched.includes(id) || selected.includes(id)) return;
+    if (matched.includes(id)) return;
+    // If already selected, clicking again deselects it
+    if (selected.includes(id)) {
+      setSelected((prev) => prev.filter((s) => s !== id));
+      return;
+    }
     if (!startedAt) {
       setStartedAt(new Date().toISOString());
     }
@@ -5405,23 +6325,26 @@ function MatchMode({
   };
 
   useEffect(() => {
-    if (startedAt && isComplete) {
-      const finalMs = new Date().getTime() - new Date(startedAt).getTime();
-      setCompletedMs(finalMs);
-      onSessionSave(buildStudySession(set.id, "match", startedAt, sourceCards.length, 100));
-      if (bestMs == null || finalMs < bestMs) {
-        setBestMs(finalMs);
-        try {
-          const raw = window.localStorage.getItem(MATCH_BESTS_KEY);
-          const parsed = raw ? (JSON.parse(raw) as Record<string, number>) : {};
-          window.localStorage.setItem(MATCH_BESTS_KEY, JSON.stringify({ ...parsed, [set.id]: finalMs }));
-        } catch {
-          // Ignore localStorage write issues and keep the in-memory best.
-        }
-        onCelebrate("New best time. Nice speed.");
+    // Guard: only process completion once (completedMs === null means not yet processed)
+    if (!startedAt || !isComplete || completedMs !== null) return;
+    const finalMs = new Date().getTime() - new Date(startedAt).getTime();
+    setCompletedMs(finalMs);
+    onSessionSave(buildStudySession(set.id, "match", startedAt, sourceCards.length, 100));
+    const newBest = bestMs == null || finalMs < bestMs;
+    if (newBest) {
+      setIsNewBest(true);
+      setBestMs(finalMs);
+      try {
+        const raw = window.localStorage.getItem(MATCH_BESTS_KEY);
+        const parsed = raw ? (JSON.parse(raw) as Record<string, number>) : {};
+        window.localStorage.setItem(MATCH_BESTS_KEY, JSON.stringify({ ...parsed, [set.id]: finalMs }));
+      } catch {
+        // Ignore localStorage write issues and keep the in-memory best.
       }
+      onCelebrate("New best time. Nice speed.");
     }
-  }, [bestMs, isComplete, onCelebrate, onSessionSave, set.id, sourceCards.length, startedAt]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [completedMs, isComplete, startedAt]);
 
   const restartMatch = () => {
     setItems(shuffleForMatch(sourceCards));
@@ -5430,6 +6353,7 @@ function MatchMode({
     setStartedAt(null);
     setElapsedMs(0);
     setCompletedMs(null);
+    setIsNewBest(false);
   };
 
   return (
@@ -5492,31 +6416,77 @@ function MatchMode({
       </div>
 
       <div className="rounded-[1.85rem] border border-white/8 bg-[linear-gradient(180deg,rgba(10,13,27,0.96),rgba(9,12,24,0.94))] p-4 shadow-[0_24px_70px_rgba(0,0,0,0.22)] md:p-5">
-        <div className="grid gap-3 md:grid-cols-3 xl:grid-cols-4">
-          {items.map((item) => {
-            const active = selected.includes(item.id);
-            const solved = matched.includes(item.id);
-            return (
+        {isComplete && completedMs !== null ? (
+          <div className="flex flex-col items-center gap-6 px-4 py-12 text-center">
+            <div className="flex h-16 w-16 items-center justify-center rounded-full border border-emerald-400/30 bg-emerald-500/15">
+              <CheckCircle2 className="h-8 w-8 text-emerald-300" />
+            </div>
+            <div>
+              <div className="text-2xl font-bold tracking-[-0.03em] text-white">All matched!</div>
+              <div className="mt-1 text-sm text-zinc-400">{sourceCards.length} pairs · {set.title}</div>
+            </div>
+            <div className="flex flex-wrap items-center justify-center gap-4">
+              <div className="rounded-2xl border border-white/10 bg-white/[0.05] px-6 py-4 text-center">
+                <div className="text-xs font-semibold uppercase tracking-[0.14em] text-zinc-500">Your time</div>
+                <div className="mt-1 text-3xl font-bold tracking-[-0.04em] text-white">{formatMatchTime(completedMs)}</div>
+              </div>
+              <div className={`rounded-2xl border px-6 py-4 text-center ${isNewBest ? "border-amber-400/30 bg-amber-500/10" : "border-white/10 bg-white/[0.05]"}`}>
+                <div className={`text-xs font-semibold uppercase tracking-[0.14em] ${isNewBest ? "text-amber-400" : "text-zinc-500"}`}>
+                  {isNewBest ? "🏆 New best!" : "Best time"}
+                </div>
+                <div className={`mt-1 text-3xl font-bold tracking-[-0.04em] ${isNewBest ? "text-amber-200" : "text-white"}`}>
+                  {formatMatchTime(bestMs ?? completedMs)}
+                </div>
+              </div>
+            </div>
+            {!isNewBest && bestMs !== null && bestMs < completedMs && (
+              <div className="text-sm text-zinc-400">
+                Best is <span className="font-semibold text-zinc-200">{formatMatchTime(bestMs)}</span> — you were <span className="font-semibold text-zinc-200">{formatMatchTime(completedMs - bestMs)}</span> off
+              </div>
+            )}
+            <div className="flex items-center gap-3">
               <button
-                key={item.id}
-                onClick={() => handlePick(item.id)}
-                disabled={isComplete || solved}
+                onClick={restartMatch}
                 {...magneticHoverProps}
-                className={`study-premium-button min-h-[176px] rounded-[1.15rem] border p-6 text-center text-[1.05rem] font-medium leading-8 transition disabled:cursor-default ${
-                  solved
-                    ? "border-emerald-400/35 bg-emerald-500/16 text-emerald-50"
-                    : active
-                    ? "border-indigo-200 bg-[#8f98bc] text-white shadow-[0_16px_36px_rgba(148,163,184,0.18)]"
-                    : isComplete
-                    ? "border-[#5b648c] bg-[#394264] text-zinc-100"
-                    : "border-[#50597e] bg-[#394264] text-zinc-100 hover:bg-[#434d74]"
-                }`}
+                className="study-premium-button inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.06] px-6 py-3 text-sm font-semibold text-zinc-100 transition hover:bg-white/[0.10]"
               >
-                {item.label}
+                <RotateCcw className="h-4 w-4" />
+                Play again
               </button>
-            );
-          })}
-        </div>
+              <button
+                onClick={onBack}
+                {...magneticHoverProps}
+                className="study-premium-button inline-flex items-center gap-2 rounded-full bg-[#5561ff] px-6 py-3 text-sm font-semibold text-white transition hover:bg-[#4a55f0]"
+              >
+                Back to set
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div className="grid gap-3 md:grid-cols-3 xl:grid-cols-4">
+            {items.map((item) => {
+              const active = selected.includes(item.id);
+              const solved = matched.includes(item.id);
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => handlePick(item.id)}
+                  disabled={isComplete || solved}
+                  {...magneticHoverProps}
+                  className={`study-premium-button min-h-[176px] rounded-[1.15rem] border p-6 text-center text-[1.05rem] font-medium leading-8 transition disabled:cursor-default ${
+                    solved
+                      ? "border-emerald-400/35 bg-emerald-500/16 text-emerald-50"
+                      : active
+                      ? "border-indigo-400/80 bg-[#4f46e5] text-white shadow-[0_16px_40px_rgba(99,102,241,0.40)] scale-[1.02]"
+                      : "border-[#50597e] bg-[#394264] text-zinc-100 hover:bg-[#434d74]"
+                  }`}
+                >
+                  {item.label}
+                </button>
+              );
+            })}
+          </div>
+        )}
       </div>
     </div>
   );

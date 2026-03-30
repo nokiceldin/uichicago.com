@@ -3,7 +3,7 @@ import type { AvatarSelectionPayload, SiteSettingsPayload, ThemeMode, ThemeSched
 export const THEME_STORAGE_KEY = "uichicago_theme_settings";
 export const SETTINGS_STORAGE_KEY = "uichicago_site_settings";
 
-export const DEFAULT_THEME_MODE: ThemeMode = "auto";
+export const DEFAULT_THEME_MODE: ThemeMode = "dark";
 
 export const DEFAULT_THEME_SCHEDULE: Required<ThemeSchedulePayload> = {
   darkStartHour: 19,

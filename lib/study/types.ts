@@ -50,6 +50,7 @@ export interface StudySet {
   createdAt: string;
   updatedAt: string;
   cards: StudyCard[];
+  saved?: boolean;
 }
 
 export interface StructuredNoteSection {

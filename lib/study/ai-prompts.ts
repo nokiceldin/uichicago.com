@@ -120,7 +120,7 @@ export function explanationPrompt(input: {
   userAnswer: string;
   topic?: string;
 }) {
-  return `Explain why the correct answer is right and why the student's answer is wrong.
+  return `Give a short, simple explanation of why the correct answer is right. 2-3 sentences max. No fluff, no mention of the student or their answer — just a clear, direct explanation of the concept.
 
 Return JSON only:
 {
@@ -130,8 +130,29 @@ Return JSON only:
 
 Question: ${input.question}
 Correct answer: ${input.correctAnswer}
-Student answer: ${input.userAnswer}
 Topic: ${input.topic || "General"}`;
+}
+
+export function distractorGenerationPrompt(questions: Array<{ id: string; prompt: string; correctAnswer: string; topic: string }>) {
+  const list = questions.map((q, i) => `${i + 1}. id="${q.id}" topic="${q.topic}" question="${q.prompt}" correct="${q.correctAnswer}"`).join("\n");
+  return `You are creating multiple-choice study questions. For each question below, generate exactly 3 plausible but INCORRECT answer choices (distractors).
+
+Rules:
+- Distractors must be the same TYPE and FORMAT as the correct answer (numbers near numbers, terms near terms, dates near dates, names near names)
+- Distractors should be plausible to someone who hasn't studied, but clearly wrong to someone who has
+- Keep distractors short — similar length and style to the correct answer
+- Do NOT repeat the correct answer
+- Do NOT invent answers from unrelated topics
+
+Return JSON only:
+{
+  "distractors": [
+    { "id": "<question id>", "choices": ["wrong1", "wrong2", "wrong3"] }
+  ]
+}
+
+Questions:
+${list}`;
 }
 
 export function studyPlanPrompt(input: {
@@ -302,4 +323,13 @@ Context:
 
 Source note:
 ${input.content}`;
+}
+
+export function cardHintPrompt(input: { front: string; back: string }) {
+  return `Generate a short study hint for this flashcard. The hint should be a 1–2 sentence memory cue that helps recall the answer without giving it away — think mnemonic, partial clue, or analogy.
+
+Return JSON only: { "hint": "" }
+
+Card front: ${input.front}
+Card back: ${input.back}`;
 }

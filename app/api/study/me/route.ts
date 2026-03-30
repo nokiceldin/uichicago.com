@@ -4,6 +4,8 @@ import { getStudyWorkspacePayload } from "@/lib/study/server";
 import { parseStoredPreferences, serializeStoredPreferences, type PlannerProfilePayload, type SiteSettingsPayload } from "@/lib/study/profile";
 import { resolveAvatarUrl } from "@/lib/site-settings";
 
+export const dynamic = "force-dynamic";
+
 export async function GET() {
   try {
     const studyUser = await requireCurrentStudyUser();

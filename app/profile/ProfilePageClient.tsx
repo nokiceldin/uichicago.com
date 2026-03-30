@@ -3,8 +3,16 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { signIn, useSession } from "next-auth/react";
-import { CheckCircle2, ChevronDown, ChevronRight, Plus, Search, UserRound, X } from "lucide-react";
+import { CheckCircle2, ChevronDown, ChevronRight, ImageIcon, Plus, Search, Upload, UserRound, X } from "lucide-react";
 import { parseCommaSeparated } from "@/lib/study/profile";
+import type { SiteSettingsPayload } from "@/lib/study/profile";
+import {
+  PRESET_AVATARS,
+  getPresetAvatarUrl,
+  readLocalSiteSettings,
+  resolveAvatarUrl,
+  writeLocalSiteSettings,
+} from "@/lib/site-settings";
 
 type ProfileFormState = {
   school: string;
@@ -75,6 +83,113 @@ export default function ProfilePageClient() {
   const [majorPickerOpen, setMajorPickerOpen] = useState(false);
   const majorPickerRef = useRef<HTMLDivElement | null>(null);
 
+  // --- Avatar state ---
+  type AvatarPayload = NonNullable<SiteSettingsPayload["avatar"]>;
+  const [avatar, setAvatar] = useState<AvatarPayload>(() => {
+    // Read from localStorage immediately so the profile page shows the right
+    // picture before the API response arrives (fixes the "wrong picture" flash).
+    if (typeof window !== "undefined") {
+      try {
+        const localSettings = readLocalSiteSettings();
+        if (localSettings.avatar?.type === "upload" && (localSettings.avatar as { type: "upload"; value?: string }).value) {
+          return localSettings.avatar as AvatarPayload;
+        }
+        if (localSettings.avatar?.type === "preset" && (localSettings.avatar as { type: "preset"; value?: string }).value) {
+          return localSettings.avatar as AvatarPayload;
+        }
+        if (localSettings.avatar?.type === "google") {
+          return localSettings.avatar as AvatarPayload;
+        }
+      } catch {
+        // ignore
+      }
+    }
+    return { type: "google" };
+  });
+  const [fallbackAvatar, setFallbackAvatar] = useState<string | null>(null);
+  const [avatarPickerOpen, setAvatarPickerOpen] = useState(false);
+  const [isAvatarSaving, setIsAvatarSaving] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+  const previewAvatarUrl = useMemo(
+    () => resolveAvatarUrl(avatar, fallbackAvatar) ?? getPresetAvatarUrl("night-owl") ?? "",
+    [avatar, fallbackAvatar],
+  );
+
+  const saveAvatarImmediately = async (newAvatar: AvatarPayload) => {
+    // Always persist to localStorage immediately
+    const localSettings = readLocalSiteSettings();
+    writeLocalSiteSettings({ ...localSettings, avatar: newAvatar });
+    window.dispatchEvent(new CustomEvent("uichicago-avatar-change", {
+      detail: { avatarUrl: resolveAvatarUrl(newAvatar, fallbackAvatar) },
+    }));
+    window.dispatchEvent(new Event("uichicago-settings-change"));
+
+    if (status !== "authenticated") return;
+
+    try {
+      setIsAvatarSaving(true);
+      const response = await fetch("/api/study/me", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          settings: { ...localSettings, avatar: newAvatar },
+        }),
+      });
+      const payload = await response.json().catch(() => null);
+      if (response.ok) {
+        const nextUrl = payload?.user?.avatarUrl ?? resolveAvatarUrl(newAvatar, fallbackAvatar) ?? null;
+        setFallbackAvatar(nextUrl);
+        window.dispatchEvent(new CustomEvent("uichicago-avatar-change", { detail: { avatarUrl: nextUrl } }));
+      }
+    } catch {
+      // silent
+    } finally {
+      setIsAvatarSaving(false);
+    }
+  };
+
+  const handleAvatarFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file) return;
+    if (!file.type.startsWith("image/")) { setMessage("Please choose an image file."); return; }
+    if (file.size > 8 * 1024 * 1024) { setMessage("Please keep uploads under 8 MB."); return; }
+
+    try {
+      const imageBitmap = await createImageBitmap(file);
+      const size = 256;
+      const canvas = document.createElement("canvas");
+      canvas.width = size; canvas.height = size;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) return;
+      const ratio = Math.max(size / imageBitmap.width, size / imageBitmap.height);
+      const dw = imageBitmap.width * ratio;
+      const dh = imageBitmap.height * ratio;
+      ctx.fillStyle = "#101114";
+      ctx.fillRect(0, 0, size, size);
+      ctx.drawImage(imageBitmap, (size - dw) / 2, (size - dh) / 2, dw, dh);
+      const dataUrl = canvas.toDataURL("image/jpeg", 0.86);
+      const newAvatar: AvatarPayload = { type: "upload", value: dataUrl };
+      setAvatar(newAvatar);
+      void saveAvatarImmediately(newAvatar);
+    } catch {
+      setMessage("Could not process that image.");
+    }
+  };
+
+  const handlePresetSelect = (presetId: string) => {
+    const newAvatar: AvatarPayload = { type: "preset", value: presetId };
+    setAvatar(newAvatar);
+    void saveAvatarImmediately(newAvatar);
+  };
+
+  const handleUseGooglePhoto = () => {
+    const newAvatar: AvatarPayload = { type: "google" };
+    setAvatar(newAvatar);
+    void saveAvatarImmediately(newAvatar);
+  };
+
   useEffect(() => {
     let cancelled = false;
 
@@ -136,6 +251,26 @@ export default function ProfilePageClient() {
         };
         setForm(nextForm);
         setSavedSnapshot(serializeProfileForm(nextForm));
+
+        // Load avatar: prefer DB value, fall back to localStorage
+        const dbAvatar = payload.profile?.settings?.avatar;
+        const localSettings = readLocalSiteSettings();
+        const resolvedAvatar: AvatarPayload = (dbAvatar?.type === "upload" && dbAvatar.value)
+          ? dbAvatar
+          : (dbAvatar?.type === "preset" && dbAvatar.value)
+          ? dbAvatar
+          : (dbAvatar?.type === "google")
+          ? dbAvatar
+          : (localSettings.avatar?.type === "upload" && localSettings.avatar.value)
+          ? localSettings.avatar
+          : (localSettings.avatar?.type === "preset" && localSettings.avatar.value)
+          ? localSettings.avatar
+          : { type: "google" };
+        const nextFallbackAvatar = payload.user?.avatarUrl ?? payload.user?.image ?? session?.user?.image ?? null;
+        setAvatar(resolvedAvatar as AvatarPayload);
+        setFallbackAvatar(nextFallbackAvatar);
+        // Keep localStorage in sync with DB value
+        writeLocalSiteSettings({ ...localSettings, avatar: resolvedAvatar as AvatarPayload });
       } catch {
         if (!cancelled) {
           setMessage("Could not load your profile.");
@@ -301,6 +436,8 @@ export default function ProfilePageClient() {
 
     try {
       setIsSaving(true);
+      // Include the current avatar in settings so it's never lost on save
+      const localSettings = readLocalSiteSettings();
       const response = await fetch("/api/study/me", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
@@ -310,6 +447,7 @@ export default function ProfilePageClient() {
           currentCourses: parseCommaSeparated(form.currentCourses),
           interests: parseCommaSeparated(form.interests),
           studyPreferences: form.studyPreferences,
+          settings: { ...localSettings, avatar },
           plannerProfile: {
             majorSlug: form.majorSlug,
             currentSemesterNumber: Number(form.currentSemesterNumber || "0"),
@@ -325,7 +463,30 @@ export default function ProfilePageClient() {
         throw new Error(payload?.error || "Could not save your profile.");
       }
 
-      setSavedSnapshot(serializeProfileForm(form));
+      // Update form from server response so UI exactly reflects what was persisted
+      const savedForm: ProfileFormState = {
+        school: payload.profile?.school || form.school,
+        major: payload.profile?.major || form.major,
+        majorSlug: payload.profile?.plannerProfile?.majorSlug || form.majorSlug,
+        currentCourses: Array.isArray(payload.profile?.currentCourses)
+          ? payload.profile.currentCourses.join(", ")
+          : form.currentCourses,
+        completedCourses: Array.isArray(payload.profile?.plannerProfile?.completedCourses)
+          ? payload.profile.plannerProfile.completedCourses.join(", ")
+          : form.completedCourses,
+        interests: Array.isArray(payload.profile?.interests)
+          ? payload.profile.interests.join(", ")
+          : form.interests,
+        studyPreferences: payload.profile?.studyPreferences ?? form.studyPreferences,
+        currentSemesterNumber: String(Number(payload.profile?.plannerProfile?.currentSemesterNumber ?? form.currentSemesterNumber)),
+        honorsStudent: Boolean(payload.profile?.plannerProfile?.honorsStudent ?? form.honorsStudent),
+      };
+      setForm(savedForm);
+      setSavedSnapshot(serializeProfileForm(savedForm));
+      // Sync avatar from server if returned
+      if (payload.user?.avatarUrl) {
+        setFallbackAvatar(payload.user.avatarUrl);
+      }
       setMessage("Profile saved.");
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Could not save your profile.");
@@ -416,6 +577,91 @@ export default function ProfilePageClient() {
                 {isSaving ? "Saving..." : "Save profile"}
               </button>
             </div>
+          </div>
+        </section>
+
+        {/* Profile picture section */}
+        <section className="rounded-[1.8rem] border border-zinc-200 bg-white shadow-[0_24px_70px_rgba(15,23,42,0.08)] dark:border-white/10 dark:bg-[linear-gradient(180deg,rgba(28,28,33,0.96),rgba(16,16,21,0.98))] dark:shadow-[0_30px_80px_rgba(0,0,0,0.28)]">
+          <div className="border-b border-zinc-200 px-6 py-5 dark:border-white/10">
+            <div className="text-sm font-semibold text-zinc-950 dark:text-white">
+              Profile picture
+              {isAvatarSaving && <span className="ml-2 text-xs font-normal text-zinc-400">Saving…</span>}
+            </div>
+          </div>
+          <div className="p-6">
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/png,image/jpeg,image/webp,image/gif,image/avif"
+              className="hidden"
+              onChange={handleAvatarFileChange}
+            />
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+              <div className="h-24 w-24 shrink-0 overflow-hidden rounded-full border border-zinc-200 bg-zinc-100 shadow-[0_10px_30px_rgba(15,23,42,0.12)] dark:border-white/10 dark:bg-white/[0.06]">
+                <img src={previewAvatarUrl} alt="Your profile picture" className="h-full w-full object-cover" />
+              </div>
+              <div className="flex flex-1 flex-wrap gap-3">
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="inline-flex h-11 items-center gap-2 rounded-full border border-zinc-200 bg-zinc-50 px-4 text-sm font-semibold text-zinc-800 transition hover:border-zinc-400 hover:bg-zinc-100 dark:border-white/10 dark:bg-white/[0.04] dark:text-white dark:hover:border-white/25 dark:hover:bg-white/[0.07]"
+                >
+                  <Upload className="h-4 w-4" />
+                  Upload photo
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setAvatarPickerOpen((o) => !o)}
+                  className="inline-flex h-11 items-center gap-2 rounded-full border border-zinc-200 bg-zinc-50 px-4 text-sm font-semibold text-zinc-800 transition hover:border-zinc-400 hover:bg-zinc-100 dark:border-white/10 dark:bg-white/[0.04] dark:text-white dark:hover:border-white/25 dark:hover:bg-white/[0.07]"
+                >
+                  <ImageIcon className="h-4 w-4" />
+                  Funny avatars
+                </button>
+                {session?.user?.image ? (
+                  <button
+                    type="button"
+                    onClick={handleUseGooglePhoto}
+                    className="inline-flex h-11 items-center rounded-full border border-zinc-200 bg-white px-4 text-sm font-semibold text-zinc-600 transition hover:border-zinc-400 hover:text-zinc-900 dark:border-white/10 dark:bg-white/[0.02] dark:text-zinc-300 dark:hover:border-white/25 dark:hover:text-white"
+                  >
+                    Use Google photo
+                  </button>
+                ) : null}
+              </div>
+            </div>
+
+            {avatarPickerOpen ? (
+              <div className="mt-6 rounded-[1.4rem] border border-zinc-200 bg-zinc-50/70 p-4 dark:border-white/10 dark:bg-black/20">
+                <div className="mb-4 flex items-center justify-between gap-3">
+                  <div>
+                    <div className="text-sm font-semibold text-zinc-950 dark:text-white">Choose an avatar</div>
+                    <div className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">Click to apply immediately.</div>
+                  </div>
+                  <div className="text-xs font-medium text-zinc-500 dark:text-zinc-400">{PRESET_AVATARS.length} options</div>
+                </div>
+                <div className="grid grid-cols-5 gap-3 sm:grid-cols-7 md:grid-cols-8 lg:grid-cols-10">
+                  {PRESET_AVATARS.map((preset) => {
+                    const url = getPresetAvatarUrl(preset.id);
+                    const active = avatar.type === "preset" && avatar.value === preset.id;
+                    return (
+                      <button
+                        key={preset.id}
+                        type="button"
+                        onClick={() => handlePresetSelect(preset.id)}
+                        className={`relative h-14 w-14 overflow-hidden rounded-full border transition ${
+                          active
+                            ? "border-zinc-900 ring-2 ring-zinc-300 dark:border-white dark:ring-white/25"
+                            : "border-zinc-200 hover:-translate-y-0.5 hover:border-zinc-400 dark:border-white/10 dark:hover:border-white/30"
+                        }`}
+                        aria-label={`Choose ${preset.label}`}
+                        title={preset.label}
+                      >
+                        {url ? <img src={url} alt={preset.label} className="h-full w-full object-cover" /> : null}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            ) : null}
           </div>
         </section>
 

@@ -1,6 +1,6 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { buildExam, buildQuestionBank, materializeGeneratedStudySet } from "./engine";
-import { examGenerationPrompt, explanationPrompt, flashcardGenerationPrompt, noteActionPrompt, quizGenerationPrompt, structuredNotesPrompt, studyPlanPrompt } from "./ai-prompts";
+import { cardHintPrompt, distractorGenerationPrompt, examGenerationPrompt, explanationPrompt, flashcardGenerationPrompt, noteActionPrompt, quizGenerationPrompt, structuredNotesPrompt, studyPlanPrompt } from "./ai-prompts";
 import { estimateFlashcardCountFromText, parseExplicitFlashcardsFromText } from "./flashcard-parser";
 import { validateGeneratedExam, validateGeneratedFlashcards, validateGeneratedQuiz, validateNoteAction, validateStructuredLectureNotes, validateStudyPlan } from "./validation";
 import type { GeneratedExamPayload, GeneratedFlashcardPayload, GeneratedQuizPayload, NoteActionPayload, StructuredLectureNotesPayload, StudyPlanPayload, StudySet } from "./types";
@@ -124,6 +124,24 @@ export async function generateExamFromSet(set: StudySet, desiredCount = 15): Pro
   }
 
   return buildExam(set, desiredCount);
+}
+
+export async function generateDistractors(
+  questions: Array<{ id: string; prompt: string; correctAnswer: string; topic: string }>,
+): Promise<Array<{ id: string; choices: string[] }>> {
+  if (!anthropic || questions.length === 0) return [];
+  try {
+    const raw = await requestJson(distractorGenerationPrompt(questions));
+    if (!Array.isArray(raw?.distractors)) return [];
+    return raw.distractors.filter(
+      (item: unknown) =>
+        item != null &&
+        typeof (item as Record<string, unknown>).id === "string" &&
+        Array.isArray((item as Record<string, unknown>).choices),
+    );
+  } catch {
+    return [];
+  }
 }
 
 export async function generateAnswerExplanation(input: {
@@ -342,6 +360,16 @@ export async function runNoteAction(input: {
       .slice(0, 4)
       .join(" "),
   });
+}
+
+export async function generateCardHint(input: { front: string; back: string }): Promise<{ hint: string }> {
+  if (anthropic) {
+    const raw = await requestJson(cardHintPrompt(input));
+    return {
+      hint: typeof raw?.hint === "string" ? raw.hint : `Think about the relationship between "${input.front}" and its key concept.`,
+    };
+  }
+  return { hint: `Think about the relationship between "${input.front}" and its key concept.` };
 }
 
 export function toStudySetFromGenerated(payload: GeneratedFlashcardPayload, input: {

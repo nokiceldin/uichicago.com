@@ -146,7 +146,7 @@ select {
 @keyframes studyCardEnterNext {
   from {
     opacity: 0;
-    transform: translateX(28px) scale(0.985);
+    transform: translateX(52px) scale(0.97);
   }
   to {
     opacity: 1;
@@ -157,7 +157,7 @@ select {
 @keyframes studyCardEnterPrev {
   from {
     opacity: 0;
-    transform: translateX(-28px) scale(0.985);
+    transform: translateX(-52px) scale(0.97);
   }
   to {
     opacity: 1;
@@ -167,8 +167,8 @@ select {
 
 @keyframes studyCardEnterNextFull {
   from {
-    opacity: 0.72;
-    transform: translateX(14px) scale(0.992);
+    opacity: 0.6;
+    transform: translateX(32px) scale(0.985);
   }
   to {
     opacity: 1;
@@ -178,8 +178,8 @@ select {
 
 @keyframes studyCardEnterPrevFull {
   from {
-    opacity: 0.72;
-    transform: translateX(-14px) scale(0.992);
+    opacity: 0.6;
+    transform: translateX(-32px) scale(0.985);
   }
   to {
     opacity: 1;
@@ -237,19 +237,19 @@ select {
 }
 
 .study-card-enter-next {
-  animation: studyCardEnterNext 280ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: studyCardEnterNext 400ms cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 .study-card-enter-prev {
-  animation: studyCardEnterPrev 280ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: studyCardEnterPrev 400ms cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 .study-card-enter-next-full {
-  animation: studyCardEnterNextFull 460ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: studyCardEnterNextFull 520ms cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 .study-card-enter-prev-full {
-  animation: studyCardEnterPrevFull 460ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: studyCardEnterPrevFull 520ms cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 .study-reward-pop {

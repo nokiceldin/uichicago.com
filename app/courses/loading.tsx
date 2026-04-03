@@ -23,7 +23,7 @@ export default function CoursesLoading() {
           </div>
 
           {/* Rows */}
-          <div className="divide-y divide-zinc-100 dark:divide-white/[0.04]">
+          <div className="divide-y divide-zinc-100 dark:divide-white/4">
             {[...Array(15)].map((_, i) => (
               <div key={i} className="grid grid-cols-12 items-center px-5 py-4 gap-4">
                 <div className="col-span-2 h-4 rounded bg-zinc-200 dark:bg-zinc-800 animate-pulse" />

@@ -84,13 +84,13 @@ function UnlockForm() {
         .unlock-shake { animation: unlockShake 0.45s ease; }
       `}</style>
 
-      <div className="w-full max-w-md rounded-[2rem] border border-white/60 bg-white/85 p-7 shadow-[0_32px_120px_rgba(15,23,42,0.16)] backdrop-blur-xl dark:border-white/10 dark:bg-[rgba(8,10,20,0.82)] dark:shadow-[0_32px_120px_rgba(0,0,0,0.42)]">
-        <div className="unlock-float mx-auto flex h-20 w-20 items-center justify-center rounded-[1.75rem] border border-white/50 bg-white/80 shadow-lg dark:border-white/10 dark:bg-white/[0.06]">
+      <div className="w-full max-w-md rounded-4xl border border-white/60 bg-white/85 p-7 shadow-[0_32px_120px_rgba(15,23,42,0.16)] backdrop-blur-xl dark:border-white/10 dark:bg-[rgba(8,10,20,0.82)] dark:shadow-[0_32px_120px_rgba(0,0,0,0.42)]">
+        <div className="unlock-float mx-auto flex h-20 w-20 items-center justify-center rounded-[1.75rem] border border-white/50 bg-white/80 shadow-lg dark:border-white/10 dark:bg-white/6">
           <div className={`h-4 w-4 rounded-full ${meta.dot} shadow-[0_0_24px_currentColor]`} />
         </div>
 
         <div className="mt-6 text-center">
-          <div className="inline-flex items-center gap-2 rounded-full border border-zinc-200/80 bg-white px-3 py-1 text-[11px] font-bold uppercase tracking-[0.22em] text-zinc-500 dark:border-white/10 dark:bg-white/[0.05] dark:text-zinc-400">
+          <div className="inline-flex items-center gap-2 rounded-full border border-zinc-200/80 bg-white px-3 py-1 text-[11px] font-bold uppercase tracking-[0.22em] text-zinc-500 dark:border-white/10 dark:bg-white/5 dark:text-zinc-400">
             <span className={`h-2 w-2 rounded-full ${meta.dot}`} />
             {meta.badge}
           </div>
@@ -113,7 +113,7 @@ function UnlockForm() {
               }
             }}
             placeholder="Enter password"
-            className="w-full rounded-2xl border border-zinc-200 bg-white px-4 py-3 text-[16px] text-zinc-950 outline-none transition focus:border-zinc-400 dark:border-white/10 dark:bg-white/[0.05] dark:text-white dark:focus:border-white/25"
+            className="w-full rounded-2xl border border-zinc-200 bg-white px-4 py-3 text-[16px] text-zinc-950 outline-none transition focus:border-zinc-400 dark:border-white/10 dark:bg-white/5 dark:text-white dark:focus:border-white/25"
           />
           {error ? <p className="mt-2 text-xs text-red-500 dark:text-red-300">{error}</p> : null}
         </div>
@@ -121,7 +121,7 @@ function UnlockForm() {
         <button
           onClick={() => void submit()}
           disabled={!password.trim() || submitting}
-          className={`mt-5 inline-flex w-full items-center justify-center rounded-2xl bg-gradient-to-b ${meta.accent} px-4 py-3 text-sm font-bold text-white shadow-xl transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-55 ${meta.glow}`}
+          className={`mt-5 inline-flex w-full items-center justify-center rounded-2xl bg-linear-to-b ${meta.accent} px-4 py-3 text-sm font-bold text-white shadow-xl transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-55 ${meta.glow}`}
         >
           {submitting ? "Checking..." : meta.button}
         </button>

@@ -9,7 +9,6 @@ export type DegreePlannerRequest = {
   majorSlug?: string;
   currentSemesterNumber?: number;
   planLength?: "one_semester" | "one_year" | "two_years" | "three_years" | "remaining" | "full";
-  completedCourses?: string[];
   currentCourses?: string[];
   honorsStudent?: boolean;
 };
@@ -48,7 +47,6 @@ export type DegreePlannerResult = {
   catalogUrl: string | null;
   planLengthLabel: string;
   inferredCompletedCourses: string[];
-  completedCourses: string[];
   currentCourses: string[];
   semesters: DegreePlannerSemester[];
 };
@@ -422,18 +420,16 @@ export async function generateDegreePlan(request: DegreePlannerRequest): Promise
   });
 
   const currentSemesterNumber = Math.max(0, Math.min(request.currentSemesterNumber ?? 0, fullSchedule.length));
-  const explicitCompleted = normalizeCourseCodeList(request.completedCourses);
+  const explicitSavedCourses = normalizeCourseCodeList(request.currentCourses);
   const inferredCompletedCourses =
-    explicitCompleted.length === 0 && currentSemesterNumber > 1
+    explicitSavedCourses.length === 0 && currentSemesterNumber > 1
       ? fullSchedule
           .slice(0, currentSemesterNumber - 1)
           .flatMap((semester) => semester.courses.map((course) => course.code))
       : [];
-  const completedCourses = Array.from(new Set([...explicitCompleted, ...inferredCompletedCourses]));
-  const currentCourses = normalizeCourseCodeList(request.currentCourses);
+  const currentCourses = Array.from(new Set([...explicitSavedCourses, ...inferredCompletedCourses]));
 
   const statusForCode = (code: string): DegreePlannerCourse["status"] => {
-    if (completedCourses.includes(code)) return "completed";
     if (currentCourses.includes(code)) return "in_progress";
     return "planned";
   };
@@ -455,7 +451,6 @@ export async function generateDegreePlan(request: DegreePlannerRequest): Promise
     catalogUrl: major.url ?? matchedMajor.url ?? null,
     planLengthLabel: planLengthLabel(request.planLength ?? "remaining", semesters.length),
     inferredCompletedCourses,
-    completedCourses,
     currentCourses,
     semesters,
   };

@@ -11,6 +11,18 @@ export async function GET() {
     const studyUser = await requireCurrentStudyUser();
     const library = await getStudyWorkspacePayload(studyUser.id);
     const preferences = parseStoredPreferences(studyUser.studyPreferences);
+    const unifiedSavedCourses = Array.from(
+      new Set([
+        ...(studyUser.currentCourses ?? []),
+        ...(preferences.plannerProfile.currentCourses ?? []),
+        ...(preferences.plannerProfile.completedCourses ?? []),
+      ]),
+    );
+    const plannerProfile = {
+      ...preferences.plannerProfile,
+      currentCourses: unifiedSavedCourses,
+      completedCourses: [],
+    };
 
     return NextResponse.json({
       user: {
@@ -23,10 +35,10 @@ export async function GET() {
       profile: {
         school: studyUser.school ?? "UIC",
         major: studyUser.major ?? "",
-        currentCourses: studyUser.currentCourses ?? [],
+        currentCourses: unifiedSavedCourses,
         interests: studyUser.interests ?? [],
         studyPreferences: preferences.notes,
-        plannerProfile: preferences.plannerProfile,
+        plannerProfile,
         settings: preferences.settings,
       },
       library,
@@ -35,6 +47,7 @@ export async function GET() {
     if (error instanceof Error && error.message === "UNAUTHORIZED") {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+    console.error("[GET /api/study/me]", error);
     return NextResponse.json({ error: "Failed to load study profile." }, { status: 500 });
   }
 }
@@ -44,6 +57,32 @@ export async function PATCH(request: Request) {
     const studyUser = await requireCurrentStudyUser();
     const body = await request.json();
     const existingPreferences = parseStoredPreferences(studyUser.studyPreferences);
+    const existingUnifiedCourses = Array.from(
+      new Set([
+        ...(studyUser.currentCourses ?? []),
+        ...(existingPreferences.plannerProfile.currentCourses ?? []),
+        ...(existingPreferences.plannerProfile.completedCourses ?? []),
+      ]),
+    );
+    const normalizedTopLevelCurrentCourses = Array.isArray(body.currentCourses)
+      ? body.currentCourses.map((course: unknown) => String(course).trim()).filter(Boolean)
+      : null;
+    const normalizedPlannerCurrentCourses = Array.isArray(body.plannerProfile?.currentCourses)
+      ? body.plannerProfile.currentCourses.map((course: unknown) => String(course).trim()).filter(Boolean)
+      : null;
+    const nextUnifiedCourses = Array.from(
+      new Set(
+        (normalizedTopLevelCurrentCourses
+          ?? normalizedPlannerCurrentCourses
+          ?? existingUnifiedCourses)
+          .map((course) => String(course).trim())
+          .filter(Boolean),
+      ),
+    );
+    const nextStudyNotes =
+      typeof body.studyPreferences === "string"
+        ? body.studyPreferences.trim()
+        : existingPreferences.notes;
     const nextPlannerProfile: PlannerProfilePayload = {
       majorSlug: String(body.plannerProfile?.majorSlug || existingPreferences.plannerProfile.majorSlug || "").trim() || undefined,
       currentSemesterNumber: Number.isFinite(Number(body.plannerProfile?.currentSemesterNumber))
@@ -53,12 +92,10 @@ export async function PATCH(request: Request) {
         typeof body.plannerProfile?.honorsStudent === "boolean"
           ? body.plannerProfile.honorsStudent
           : Boolean(existingPreferences.plannerProfile.honorsStudent),
-      currentCourses: Array.isArray(body.plannerProfile?.currentCourses)
-        ? body.plannerProfile.currentCourses.map((course: unknown) => String(course).trim()).filter(Boolean)
-        : existingPreferences.plannerProfile.currentCourses ?? [],
-      completedCourses: Array.isArray(body.plannerProfile?.completedCourses)
-        ? body.plannerProfile.completedCourses.map((course: unknown) => String(course).trim()).filter(Boolean)
-        : existingPreferences.plannerProfile.completedCourses ?? [],
+      currentCourses: normalizedPlannerCurrentCourses
+        ?? normalizedTopLevelCurrentCourses
+        ?? existingUnifiedCourses,
+      completedCourses: [],
     };
     const nextSettings: SiteSettingsPayload = {
       ...existingPreferences.settings,
@@ -77,18 +114,19 @@ export async function PATCH(request: Request) {
       prisma.studyUser.update({
         where: { id: studyUser.id },
         data: {
-          school: String(body.school || "UIC").trim() || "UIC",
+          school:
+            typeof body.school === "string"
+              ? String(body.school).trim() || "UIC"
+              : studyUser.school ?? "UIC",
           major:
             typeof body.major === "string"
               ? String(body.major).trim() || null
               : studyUser.major,
-          currentCourses: Array.isArray(body.currentCourses)
-            ? body.currentCourses.map((course: unknown) => String(course).trim()).filter(Boolean)
-            : studyUser.currentCourses ?? [],
+          currentCourses: nextUnifiedCourses,
           interests: Array.isArray(body.interests)
             ? body.interests.map((interest: unknown) => String(interest).trim()).filter(Boolean)
             : studyUser.interests ?? [],
-          studyPreferences: serializeStoredPreferences(String(body.studyPreferences || "").trim(), nextPlannerProfile, nextSettings),
+          studyPreferences: serializeStoredPreferences(nextStudyNotes, nextPlannerProfile, nextSettings),
         },
       }),
     );
@@ -103,7 +141,11 @@ export async function PATCH(request: Request) {
         currentCourses: updated.currentCourses,
         interests: updated.interests,
         studyPreferences: updatedPreferences.notes,
-        plannerProfile: updatedPreferences.plannerProfile,
+        plannerProfile: {
+          ...updatedPreferences.plannerProfile,
+          currentCourses: updatedPreferences.plannerProfile.currentCourses ?? updated.currentCourses,
+          completedCourses: [],
+        },
         settings: updatedPreferences.settings,
       },
       user: {
@@ -115,6 +157,7 @@ export async function PATCH(request: Request) {
     if (error instanceof Error && error.message === "UNAUTHORIZED") {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+    console.error("[PATCH /api/study/me]", error);
     return NextResponse.json({ error: "Failed to update profile." }, { status: 500 });
   }
 }

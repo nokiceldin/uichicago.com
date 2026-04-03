@@ -48,7 +48,7 @@ export default function GradeDistributionCard({ avgGpa, distribution, visualTota
             {distribution.map((item) => {
               const pct = visualTotal > 0 ? ((item.value / visualTotal) * 100).toFixed(1) : "0.0";
               return (
-                <div key={item.label} className="flex items-center justify-between rounded-xl bg-zinc-50 dark:bg-white/[0.04] px-3 py-2.5 ring-1 ring-zinc-200 dark:ring-white/8">
+                <div key={item.label} className="flex items-center justify-between rounded-xl bg-zinc-50 dark:bg-white/4 px-3 py-2.5 ring-1 ring-zinc-200 dark:ring-white/8">
                   <div className="flex items-center gap-2">
                     <span className="h-2.5 w-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: item.color }} />
                     <span className="text-sm font-bold text-zinc-900 dark:text-zinc-300">{item.label}</span>
@@ -67,7 +67,7 @@ export default function GradeDistributionCard({ avgGpa, distribution, visualTota
               { label: "Other", value: nf.format(other) },
               { label: "Total regs", value: nf.format(totalRegs) },
             ].map((s) => (
-              <div key={s.label} className="rounded-xl bg-zinc-50 dark:bg-white/[0.04] px-3 py-3 ring-1 ring-zinc-200 dark:ring-white/8 text-center">
+              <div key={s.label} className="rounded-xl bg-zinc-50 dark:bg-white/4 px-3 py-3 ring-1 ring-zinc-200 dark:ring-white/8 text-center">
                 <div className="text-[9px] font-bold uppercase tracking-widest text-zinc-400 dark:text-zinc-600">{s.label}</div>
                 <div className="mt-1 text-base font-black text-zinc-900 dark:text-zinc-300 tabular-nums">{s.value}</div>
               </div>

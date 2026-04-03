@@ -64,7 +64,7 @@ export default function StudyIdentityCard({
 
   if (collapsed) {
     return (
-      <section className="rounded-[1.2rem] border border-white/8 bg-white/[0.03] px-5 py-4">
+      <section className="rounded-[1.2rem] border border-white/8 bg-white/3 px-5 py-4">
         <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div className="min-w-0">
             <div className="text-[11px] font-bold uppercase tracking-[0.22em] text-zinc-500">My School profile</div>
@@ -76,7 +76,7 @@ export default function StudyIdentityCard({
           <button
             type="button"
             onClick={() => onToggleCollapsed(false)}
-            className="inline-flex items-center justify-center rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-sm font-medium text-zinc-100 transition hover:bg-white/[0.08]"
+            className="inline-flex items-center justify-center rounded-full border border-white/10 bg-white/4 px-4 py-2 text-sm font-medium text-zinc-100 transition hover:bg-white/8"
           >
             Edit
           </button>
@@ -86,7 +86,7 @@ export default function StudyIdentityCard({
   }
 
   return (
-    <section className="rounded-[1.6rem] border border-white/10 bg-white/[0.04] p-6">
+    <section className="rounded-[1.6rem] border border-white/10 bg-white/4 p-6">
       <div className="flex flex-col gap-2 lg:flex-row lg:items-end lg:justify-between">
         <div>
           <div className="text-[11px] font-bold uppercase tracking-[0.22em] text-zinc-500">My School profile</div>
@@ -109,7 +109,7 @@ export default function StudyIdentityCard({
           <input
             value={profile.school}
             onChange={(event) => onProfileChange((current) => ({ ...current, school: event.target.value }))}
-            className="h-11 w-full rounded-xl border border-white/10 bg-white/[0.05] px-4 text-sm text-white outline-none"
+            className="h-11 w-full rounded-xl border border-white/10 bg-white/5 px-4 text-sm text-white outline-none"
           />
         </label>
         <label className="block">
@@ -118,7 +118,7 @@ export default function StudyIdentityCard({
             value={profile.major}
             onChange={(event) => onProfileChange((current) => ({ ...current, major: event.target.value }))}
             placeholder="Computer Science"
-            className="h-11 w-full rounded-xl border border-white/10 bg-white/[0.05] px-4 text-sm text-white outline-none placeholder:text-zinc-500"
+            className="h-11 w-full rounded-xl border border-white/10 bg-white/5 px-4 text-sm text-white outline-none placeholder:text-zinc-500"
           />
         </label>
         <label className="block">
@@ -127,7 +127,7 @@ export default function StudyIdentityCard({
             value={profile.currentCourses}
             onChange={(event) => onProfileChange((current) => ({ ...current, currentCourses: event.target.value }))}
             placeholder="CS 251, MATH 210"
-            className="h-11 w-full rounded-xl border border-white/10 bg-white/[0.05] px-4 text-sm text-white outline-none placeholder:text-zinc-500"
+            className="h-11 w-full rounded-xl border border-white/10 bg-white/5 px-4 text-sm text-white outline-none placeholder:text-zinc-500"
           />
         </label>
         <label className="block">
@@ -136,7 +136,7 @@ export default function StudyIdentityCard({
             value={profile.interests}
             onChange={(event) => onProfileChange((current) => ({ ...current, interests: event.target.value }))}
             placeholder="Algorithms, exam prep, group study"
-            className="h-11 w-full rounded-xl border border-white/10 bg-white/[0.05] px-4 text-sm text-white outline-none placeholder:text-zinc-500"
+            className="h-11 w-full rounded-xl border border-white/10 bg-white/5 px-4 text-sm text-white outline-none placeholder:text-zinc-500"
           />
         </label>
       </div>
@@ -148,7 +148,7 @@ export default function StudyIdentityCard({
           onChange={(event) => onProfileChange((current) => ({ ...current, studyPreferences: event.target.value }))}
           rows={3}
           placeholder="Examples: likes spaced repetition, prefers concise explanations, wants quiz-heavy practice"
-          className="w-full rounded-2xl border border-white/10 bg-white/[0.05] px-4 py-3 text-sm text-white outline-none placeholder:text-zinc-500"
+          className="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white outline-none placeholder:text-zinc-500"
         />
       </label>
 

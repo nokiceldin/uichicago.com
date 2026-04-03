@@ -9,7 +9,8 @@ export interface UserMemory {
   interests?: string[];
   struggles?: string[];
   goals?: string[];
-  knownCourses?: string[];
+  knownCourses?: string[];       // courses currently taking or mentioned
+  completedCourses?: string[];   // courses already completed (from profile)
   knownPrefs?: string[];
   lastTopics?: string[];
 }
@@ -40,7 +41,8 @@ Return updated JSON with only these fields (omit if unknown):
   "interests": ["array of academic/career interests"],
   "struggles": ["courses or topics they're struggling with"],
   "goals": ["career goals, transfer plans, etc"],
-  "knownCourses": ["courses they've mentioned taking or planning"],
+  "knownCourses": ["courses they are currently taking or planning"],
+  "completedCourses": ["courses they have already finished/completed"],
   "knownPrefs": ["preferences like pre-med, wants easy grades, commuter, etc"],
   "lastTopics": ["last 3 topics discussed"]
 }
@@ -146,7 +148,8 @@ export function formatMemoryForPrompt(memory: UserMemory): string {
   if (memory.interests?.length) parts.push(`Interests: ${memory.interests.join(", ")}`);
   if (memory.struggles?.length) parts.push(`Struggling with: ${memory.struggles.join(", ")}`);
   if (memory.goals?.length) parts.push(`Goals: ${memory.goals.join(", ")}`);
-  if (memory.knownCourses?.length) parts.push(`Courses mentioned: ${memory.knownCourses.join(", ")}`);
+  if (memory.knownCourses?.length) parts.push(`Current/mentioned courses: ${memory.knownCourses.join(", ")}`);
+  if (memory.completedCourses?.length) parts.push(`Completed courses: ${memory.completedCourses.join(", ")}`);
   if (memory.knownPrefs?.length) parts.push(`Preferences: ${memory.knownPrefs.join(", ")}`);
 
   if (parts.length === 0) return "";

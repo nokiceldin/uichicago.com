@@ -109,14 +109,14 @@ export default function CoursesTable({ courses, total, page, pageSize, sort, dep
           },
         ]}
       />
-      <div className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-72 bg-gradient-to-b from-red-950/20 to-transparent dark:from-red-950/20 dark:to-transparent" />
+      <div className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-72 bg-linear-to-b from-red-950/20 to-transparent dark:from-red-950/20 dark:to-transparent" />
       <div className="pointer-events-none absolute inset-0 -z-10 opacity-[0.02] dark:opacity-[0.015]" style={{ backgroundImage: "linear-gradient(rgba(0,0,0,0.4) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,0.4) 1px, transparent 1px)", backgroundSize: "48px 48px" }} />
 
       <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-12">
         {/* Header */}
         <div className="mb-6 sm:mb-8">
           <div className="mb-2">
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-zinc-300 bg-zinc-100 px-3 py-1 text-xs font-semibold uppercase tracking-widest text-zinc-600 dark:border-white/12 dark:bg-white/[0.06] dark:text-zinc-300">
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-zinc-300 bg-zinc-100 px-3 py-1 text-xs font-semibold uppercase tracking-widest text-zinc-600 dark:border-white/12 dark:bg-white/6 dark:text-zinc-300">
               <span className="h-1.5 w-1.5 rounded-full bg-zinc-500 dark:bg-zinc-400" />
               {nf.format(total)} courses
             </span>
@@ -214,7 +214,7 @@ export default function CoursesTable({ courses, total, page, pageSize, sort, dep
                 key={c.id}
                 type="button"
                 onClick={() => router.push(href)}
-                className="w-full rounded-2xl border border-zinc-200 bg-white p-4 text-left shadow-sm transition hover:border-zinc-300 hover:bg-zinc-50 dark:border-white/8 dark:bg-zinc-900/40 dark:hover:bg-white/[0.04]"
+                className="w-full rounded-2xl border border-zinc-200 bg-white p-4 text-left shadow-sm transition hover:border-zinc-300 hover:bg-zinc-50 dark:border-white/8 dark:bg-zinc-900/40 dark:hover:bg-white/4"
               >
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
@@ -233,14 +233,14 @@ export default function CoursesTable({ courses, total, page, pageSize, sort, dep
                 </div>
 
                 <div className="mt-4 grid grid-cols-2 gap-2">
-                  <div className="rounded-xl bg-zinc-50 px-3 py-2.5 dark:bg-white/[0.04]">
+                  <div className="rounded-xl bg-zinc-50 px-3 py-2.5 dark:bg-white/4">
                     <div className="text-[10px] font-bold uppercase tracking-widest text-zinc-400 dark:text-zinc-600">Easiness</div>
                     <div className={`mt-1 text-sm font-bold ${ec ? ec.text : "text-zinc-400 dark:text-zinc-500"}`}>
                       {c.difficultyScore == null ? "No data" : c.difficultyScore.toFixed(2)}
                     </div>
                     {ec ? <div className="mt-1 text-[11px] text-zinc-500 dark:text-zinc-400">{ec.label}</div> : null}
                   </div>
-                  <div className="rounded-xl bg-zinc-50 px-3 py-2.5 dark:bg-white/[0.04]">
+                  <div className="rounded-xl bg-zinc-50 px-3 py-2.5 dark:bg-white/4">
                     <div className="text-[10px] font-bold uppercase tracking-widest text-zinc-400 dark:text-zinc-600">Avg GPA</div>
                     <div className="mt-1 text-sm font-bold text-zinc-900 dark:text-zinc-100">
                       {c.avgGpa == null ? "No data" : c.avgGpa.toFixed(2)}
@@ -250,7 +250,7 @@ export default function CoursesTable({ courses, total, page, pageSize, sort, dep
 
                 <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-zinc-500 dark:text-zinc-400">
                   <span>{c.totalRegsAllTime == null ? "No enrollments" : `${nf.format(c.totalRegsAllTime)} enrollments`}</span>
-                  {c.genEdCategory ? <span className="rounded-full border border-zinc-200 bg-zinc-50 px-2 py-1 dark:border-white/10 dark:bg-white/[0.04]">{c.genEdCategory}</span> : null}
+                  {c.genEdCategory ? <span className="rounded-full border border-zinc-200 bg-zinc-50 px-2 py-1 dark:border-white/10 dark:bg-white/4">{c.genEdCategory}</span> : null}
                 </div>
               </button>
             );
@@ -270,13 +270,13 @@ export default function CoursesTable({ courses, total, page, pageSize, sort, dep
             <div className="col-span-2 text-right">Avg GPA</div>
             <div className="col-span-2 text-right">Enrollments</div>
           </div>
-          <ul className="divide-y divide-zinc-100 dark:divide-white/[0.04]">
+          <ul className="divide-y divide-zinc-100 dark:divide-white/4">
             {courses.map((c) => {
               const href = `/courses/${encodeURIComponent(c.subject)}/${encodeURIComponent(c.number)}`;
               const ec = c.difficultyScore != null ? easinessConfig(c.difficultyScore) : null;
               return (
                 <li key={c.id} role="link" tabIndex={0} onClick={() => router.push(href)} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); router.push(href); } }}
-                  className="group grid cursor-pointer grid-cols-12 items-center px-4 py-4 transition-colors hover:bg-zinc-50 focus:outline-none focus:bg-zinc-50 dark:hover:bg-white/[0.04] dark:focus:bg-white/[0.04] sm:px-6">
+                  className="group grid cursor-pointer grid-cols-12 items-center px-4 py-4 transition-colors hover:bg-zinc-50 focus:outline-none focus:bg-zinc-50 dark:hover:bg-white/4 dark:focus:bg-white/4 sm:px-6">
                   <div className="col-span-5 min-w-0 pr-4">
                     <div className="text-sm font-bold text-zinc-900 group-hover:text-zinc-700 transition-colors sm:text-base dark:text-zinc-100 dark:group-hover:text-white">
                       {c.subject} {c.number}

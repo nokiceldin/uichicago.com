@@ -100,7 +100,7 @@ export default function SyllabusSubmissionCard({ courseCode, courseTitle, depart
           <button
             type="button"
             onClick={() => setOpen(false)}
-            className="rounded-xl border border-white/10 bg-white/[0.04] px-3 py-1.5 text-sm text-zinc-300 transition hover:bg-white/[0.08] hover:text-white"
+            className="rounded-xl border border-white/10 bg-white/4 px-3 py-1.5 text-sm text-zinc-300 transition hover:bg-white/8 hover:text-white"
           >
             Close
           </button>
@@ -112,7 +112,7 @@ export default function SyllabusSubmissionCard({ courseCode, courseTitle, depart
             <input
               value={`${courseCode} - ${courseTitle}`}
               readOnly
-              className="mt-1 w-full rounded-xl border border-white/10 bg-white/[0.04] px-3 py-2.5 text-sm text-white outline-none"
+              className="mt-1 w-full rounded-xl border border-white/10 bg-white/4 px-3 py-2.5 text-sm text-white outline-none"
             />
           </div>
           <div>
@@ -121,7 +121,7 @@ export default function SyllabusSubmissionCard({ courseCode, courseTitle, depart
               value={term}
               onChange={(event) => setTerm(event.target.value)}
               placeholder="Fall 2026"
-              className="mt-1 w-full rounded-xl border border-white/10 bg-white/[0.04] px-3 py-2.5 text-sm text-white outline-none placeholder:text-zinc-500"
+              className="mt-1 w-full rounded-xl border border-white/10 bg-white/4 px-3 py-2.5 text-sm text-white outline-none placeholder:text-zinc-500"
             />
           </div>
           <div className="sm:col-span-2">
@@ -130,7 +130,7 @@ export default function SyllabusSubmissionCard({ courseCode, courseTitle, depart
               value={instructor}
               onChange={(event) => setInstructor(event.target.value)}
               placeholder="Professor name if you know it"
-              className="mt-1 w-full rounded-xl border border-white/10 bg-white/[0.04] px-3 py-2.5 text-sm text-white outline-none placeholder:text-zinc-500"
+              className="mt-1 w-full rounded-xl border border-white/10 bg-white/4 px-3 py-2.5 text-sm text-white outline-none placeholder:text-zinc-500"
             />
           </div>
           <div className="sm:col-span-2">
@@ -140,7 +140,7 @@ export default function SyllabusSubmissionCard({ courseCode, courseTitle, depart
               onChange={(event) => setNotes(event.target.value)}
               placeholder="Anything helpful, like section, semester, or whether it is the latest version"
               rows={4}
-              className="mt-1 w-full rounded-xl border border-white/10 bg-white/[0.04] px-3 py-2.5 text-sm text-white outline-none placeholder:text-zinc-500"
+              className="mt-1 w-full rounded-xl border border-white/10 bg-white/4 px-3 py-2.5 text-sm text-white outline-none placeholder:text-zinc-500"
             />
           </div>
           <div className="sm:col-span-2">
@@ -153,7 +153,7 @@ export default function SyllabusSubmissionCard({ courseCode, courseTitle, depart
                 setStatus("idle");
                 setErrorMessage("");
               }}
-              className="mt-1 block w-full rounded-xl border border-white/10 bg-white/[0.04] px-3 py-2.5 text-sm text-white file:mr-3 file:rounded-lg file:border-0 file:bg-white/10 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-zinc-200"
+              className="mt-1 block w-full rounded-xl border border-white/10 bg-white/4 px-3 py-2.5 text-sm text-white file:mr-3 file:rounded-lg file:border-0 file:bg-white/10 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-zinc-200"
             />
             <p className="mt-1 text-xs text-zinc-500">
               PDF is best, but screenshots and common document files also work.
@@ -176,7 +176,7 @@ export default function SyllabusSubmissionCard({ courseCode, courseTitle, depart
             {status === "sending" ? "Sending..." : "Submit syllabus"}
           </button>
           <span
-            className="inline-flex items-center rounded-xl border border-white/10 bg-white/[0.04] px-4 py-2.5 text-sm font-semibold text-zinc-200"
+            className="inline-flex items-center rounded-xl border border-white/10 bg-white/4 px-4 py-2.5 text-sm font-semibold text-zinc-200"
           >
             uicratings@gmail.com
           </span>

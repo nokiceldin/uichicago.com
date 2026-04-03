@@ -109,7 +109,7 @@ export default async function CourseDetailPage({
 
   return (
     <main className="relative min-h-screen bg-zinc-50 text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100">
-      <div className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-72 bg-gradient-to-b from-emerald-50/50 to-transparent dark:from-emerald-950/20 dark:to-transparent" />
+      <div className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-72 bg-linear-to-b from-emerald-50/50 to-transparent dark:from-emerald-950/20 dark:to-transparent" />
       <div className="mx-auto max-w-6xl px-4 py-6 sm:px-5 sm:py-10">
   <CourseHeader course={course} />
 

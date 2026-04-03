@@ -146,7 +146,7 @@ select {
 @keyframes studyCardEnterNext {
   from {
     opacity: 0;
-    transform: translateX(52px) scale(0.97);
+    transform: translateX(140px) scale(0.88);
   }
   to {
     opacity: 1;
@@ -157,7 +157,7 @@ select {
 @keyframes studyCardEnterPrev {
   from {
     opacity: 0;
-    transform: translateX(-52px) scale(0.97);
+    transform: translateX(-140px) scale(0.88);
   }
   to {
     opacity: 1;
@@ -167,8 +167,8 @@ select {
 
 @keyframes studyCardEnterNextFull {
   from {
-    opacity: 0.6;
-    transform: translateX(32px) scale(0.985);
+    opacity: 0;
+    transform: translateX(120px) scale(0.90);
   }
   to {
     opacity: 1;
@@ -178,8 +178,8 @@ select {
 
 @keyframes studyCardEnterPrevFull {
   from {
-    opacity: 0.6;
-    transform: translateX(-32px) scale(0.985);
+    opacity: 0;
+    transform: translateX(-120px) scale(0.90);
   }
   to {
     opacity: 1;
@@ -237,19 +237,19 @@ select {
 }
 
 .study-card-enter-next {
-  animation: studyCardEnterNext 400ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: studyCardEnterNext 480ms cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 .study-card-enter-prev {
-  animation: studyCardEnterPrev 400ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: studyCardEnterPrev 480ms cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 .study-card-enter-next-full {
-  animation: studyCardEnterNextFull 520ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: studyCardEnterNextFull 600ms cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 .study-card-enter-prev-full {
-  animation: studyCardEnterPrevFull 520ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: studyCardEnterPrevFull 600ms cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 .study-reward-pop {
@@ -395,6 +395,306 @@ select {
   100% {
     transform: translateX(100%);
   }
+}
+
+/* ── Atlas Design System ─────────────────────────────── */
+.atlas-hero-card {
+  background: linear-gradient(155deg, #111827 0%, #0f1520 100%);
+  border: 1px solid rgba(148, 163, 184, 0.09);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4), 0 20px 40px rgba(0, 0, 0, 0.22);
+  transition:
+    border-color 200ms ease,
+    box-shadow 200ms ease;
+}
+
+.atlas-hero-card:hover {
+  border-color: rgba(148, 163, 184, 0.16);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4), 0 24px 48px rgba(0, 0, 0, 0.28);
+}
+
+.atlas-cta-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: 10px;
+  background: #4f46e5;
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #ffffff;
+  transition:
+    background 140ms ease,
+    transform 100ms ease,
+    box-shadow 140ms ease;
+  box-shadow: 0 1px 3px rgba(79, 70, 229, 0.35), 0 4px 12px rgba(79, 70, 229, 0.18);
+}
+
+.atlas-cta-btn:hover {
+  background: #4338ca;
+  box-shadow: 0 1px 3px rgba(79, 70, 229, 0.4), 0 6px 16px rgba(79, 70, 229, 0.25);
+}
+
+.atlas-cta-btn:active {
+  transform: scale(0.97);
+}
+
+.atlas-mode-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  border: 1px solid rgba(148, 163, 184, 0.12);
+  border-radius: 999px;
+  background: rgba(30, 41, 59, 0.6);
+  padding: 4px 12px;
+  font-size: 12px;
+  font-weight: 500;
+  color: rgb(148, 163, 184);
+  transition:
+    border-color 140ms ease,
+    background 140ms ease,
+    color 140ms ease;
+}
+
+.atlas-mode-pill:hover {
+  border-color: rgba(99, 102, 241, 0.4);
+  background: rgba(99, 102, 241, 0.09);
+  color: rgb(165, 180, 252);
+}
+
+.atlas-set-card {
+  background: rgba(15, 20, 32, 0.8);
+  border: 1px solid rgba(148, 163, 184, 0.08);
+  transition:
+    border-color 140ms ease,
+    background 140ms ease;
+}
+
+.atlas-set-card:hover {
+  border-color: rgba(148, 163, 184, 0.16);
+  background: rgba(20, 28, 46, 0.9);
+}
+
+.atlas-set-card-new {
+  background: transparent;
+  border: 1px dashed rgba(148, 163, 184, 0.1);
+  transition:
+    border-color 140ms ease,
+    background 140ms ease;
+}
+
+.atlas-set-card-new:hover {
+  border-color: rgba(99, 102, 241, 0.3);
+  background: rgba(99, 102, 241, 0.05);
+}
+
+.atlas-panel {
+  background: rgba(13, 18, 30, 0.8);
+  border: 1px solid rgba(148, 163, 184, 0.08);
+}
+
+.atlas-cta-card {
+  background: rgba(13, 18, 30, 0.7);
+  border: 1px solid rgba(148, 163, 184, 0.08);
+  transition:
+    border-color 140ms ease,
+    background 140ms ease;
+}
+
+.atlas-cta-card:hover {
+  border-color: rgba(148, 163, 184, 0.15);
+  background: rgba(15, 22, 36, 0.85);
+}
+
+/* ── Command Hero ─────────────────────────────────────── */
+.atlas-command-hero {
+  background: linear-gradient(148deg, #111827 0%, #0d1322 100%);
+  border: 1px solid rgba(148, 163, 184, 0.09);
+  box-shadow:
+    0 2px 4px rgba(0, 0, 0, 0.38),
+    0 14px 32px rgba(0, 0, 0, 0.2);
+}
+
+.atlas-continue-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  border-radius: 9px;
+  background: #4f46e5;
+  padding: 7px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #fff;
+  box-shadow:
+    0 1px 3px rgba(79, 70, 229, 0.4),
+    0 4px 14px rgba(79, 70, 229, 0.22);
+  transition:
+    background 110ms ease,
+    transform 80ms ease,
+    box-shadow 110ms ease;
+}
+
+.atlas-continue-btn:hover {
+  background: #4338ca;
+  box-shadow:
+    0 1px 3px rgba(79, 70, 229, 0.5),
+    0 6px 18px rgba(79, 70, 229, 0.3);
+}
+
+.atlas-continue-btn:active {
+  transform: scale(0.962);
+  box-shadow:
+    0 1px 2px rgba(79, 70, 229, 0.35),
+    0 2px 6px rgba(79, 70, 229, 0.15);
+}
+
+.atlas-stat-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 500;
+  color: rgb(100, 116, 139);
+}
+
+.atlas-ring-fill {
+  transition: stroke-dashoffset 1000ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* ── Set rail ─────────────────────────────────────────── */
+.atlas-set-rail-card {
+  width: 138px;
+  flex-shrink: 0;
+  background: rgba(15, 20, 32, 0.72);
+  border: 1px solid rgba(148, 163, 184, 0.07);
+  border-radius: 12px;
+  padding: 10px 12px 12px;
+  text-align: left;
+  transition:
+    border-color 130ms ease,
+    background 130ms ease,
+    transform 90ms ease;
+}
+
+.atlas-set-rail-card:hover {
+  border-color: rgba(148, 163, 184, 0.14);
+  background: rgba(20, 28, 46, 0.88);
+}
+
+.atlas-set-rail-card:active {
+  transform: scale(0.975);
+}
+
+.atlas-set-rail-card--active {
+  border-color: rgba(99, 102, 241, 0.28) !important;
+  background: rgba(99, 102, 241, 0.06) !important;
+}
+
+.atlas-set-rail-new {
+  width: 76px;
+  flex-shrink: 0;
+  border: 1px dashed rgba(148, 163, 184, 0.09);
+  border-radius: 12px;
+  padding: 10px 10px 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  transition:
+    border-color 130ms ease,
+    background 130ms ease;
+}
+
+.atlas-set-rail-new:hover {
+  border-color: rgba(99, 102, 241, 0.28);
+  background: rgba(99, 102, 241, 0.04);
+}
+
+/* ── Quick-fire trivia ────────────────────────────────── */
+.atlas-quickfire-card {
+  background: rgba(11, 16, 28, 0.9);
+  border: 1px solid rgba(148, 163, 184, 0.08);
+  border-radius: 14px;
+  padding: 16px;
+}
+
+.atlas-trivia-choice {
+  border-radius: 10px;
+  border-width: 1px;
+  border-style: solid;
+  padding: 9px 10px;
+  text-align: left;
+  font-size: 13px;
+  font-weight: 500;
+  transition:
+    border-color 110ms ease,
+    background 110ms ease,
+    color 110ms ease,
+    transform 70ms ease;
+}
+
+.atlas-trivia-choice:not(:disabled):active {
+  transform: scale(0.965);
+}
+
+/* ── Library list rows ────────────────────────────────── */
+.atlas-lib-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  padding: 8px 10px;
+  transition:
+    background 110ms ease,
+    border-color 110ms ease;
+}
+
+.atlas-lib-row:hover {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.06);
+}
+
+.atlas-lib-row:active {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.atlas-lib-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  border: 1px dashed rgba(148, 163, 184, 0.1);
+  border-radius: 14px;
+  padding: 36px 20px;
+  text-align: center;
+  font-size: 13px;
+  color: rgb(71, 85, 105);
+}
+
+/* ── Action strip ─────────────────────────────────────── */
+.atlas-action-strip-btn {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(11, 16, 28, 0.75);
+  border: 1px solid rgba(148, 163, 184, 0.07);
+  border-radius: 14px;
+  padding: 13px 14px;
+  text-align: left;
+  transition:
+    border-color 130ms ease,
+    background 130ms ease,
+    transform 90ms ease;
+}
+
+.atlas-action-strip-btn:hover {
+  border-color: rgba(148, 163, 184, 0.14);
+  background: rgba(15, 22, 36, 0.88);
+}
+
+.atlas-action-strip-btn:active {
+  transform: scale(0.982);
 }
 
 @media (prefers-reduced-motion: reduce) {

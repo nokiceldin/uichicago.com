@@ -9,6 +9,7 @@ import { classifyIntent } from "@/lib/chat/classify";
 import { vectorSearch, rerankChunks } from "@/lib/chat/vectors";
 import { getSessionState, updateSessionState, extractEntitiesFromQuery } from "@/lib/chat/session-state";
 import { getCurrentStudyUser } from "@/lib/auth/session";
+import { parseStoredPreferences } from "@/lib/study/profile";
 import { getCurrentSession } from "@/lib/auth/session";
 import { getMemory, learnMemoryFromMessages, persistMemory, formatMemoryForPrompt } from "@/lib/chat/memory";
 import { buildUploadedFileSupport, type UploadedFile } from "@/lib/chat/attachments";
@@ -3882,16 +3883,41 @@ const numericYearToLabel: Record<number, string> = {
 };
 
 if (authenticatedStudyUser) {
-  if (userMemory && !userMemory.major && authenticatedStudyUser.major) {
+  // Parse the user's saved plannerProfile (completedCourses, majorSlug, etc.)
+  const userPlannerPrefs = parseStoredPreferences(authenticatedStudyUser.studyPreferences);
+  const profileCompletedCourses: string[] = userPlannerPrefs.plannerProfile.completedCourses ?? [];
+  const profileCurrentCourses: string[] = authenticatedStudyUser.currentCourses ?? [];
+
+  // Profile data is the authoritative source (explicit user input).
+  // Always override stale memory with the profile values so Sparky stays in sync
+  // with what the user saved on their profile page.
+  if (userMemory && authenticatedStudyUser.major) {
     userMemory.major = authenticatedStudyUser.major;
   }
-  if (userMemory && (!userMemory.interests || userMemory.interests.length === 0) && authenticatedStudyUser.interests.length) {
+  if (userMemory && authenticatedStudyUser.interests.length) {
     userMemory.interests = authenticatedStudyUser.interests;
   }
-  if (userMemory && (!userMemory.knownCourses || userMemory.knownCourses.length === 0) && authenticatedStudyUser.currentCourses.length) {
-    userMemory.knownCourses = authenticatedStudyUser.currentCourses;
+  // Always sync current courses from profile into memory
+  if (userMemory && profileCurrentCourses.length) {
+    userMemory.knownCourses = [
+      ...profileCurrentCourses,
+      // Preserve any extra courses inferred from conversation that aren't in the profile
+      ...(userMemory.knownCourses ?? []).filter(c => !profileCurrentCourses.includes(c)),
+    ];
+  } else if (userMemory && !userMemory.knownCourses?.length) {
+    // no profile courses yet, keep whatever was inferred from chat
   }
-  if (!sessionState.confirmedMajor && authenticatedStudyUser.major) {
+  // Always sync completed courses from plannerProfile into memory
+  if (userMemory && profileCompletedCourses.length) {
+    userMemory.completedCourses = [
+      ...profileCompletedCourses,
+      ...(userMemory.completedCourses ?? []).filter(c => !profileCompletedCourses.includes(c)),
+    ];
+  } else if (userMemory && !userMemory.completedCourses?.length) {
+    // no profile completed courses yet, keep whatever was inferred from chat
+  }
+  // Always populate confirmedMajor from profile for this session
+  if (authenticatedStudyUser.major) {
     sessionState.confirmedMajor = authenticatedStudyUser.major;
   }
 }
@@ -4445,6 +4471,41 @@ if (relevantVectors.length > 0 && !query.isFact && query.answerMode !== "plannin
     const scaffoldChunk = allChunks.find(c => c.domain === "major_plan");
     if (scaffoldChunk) {
       const studentCtx = extractStudentContext(lastMsg, messages.slice(0, -1));
+
+      // Merge in profile data so the planner automatically knows the student's
+      // major, completed courses, and current courses without them having to
+      // re-state everything in the chat.
+      if (authenticatedStudyUser) {
+        const profilePrefs = parseStoredPreferences(authenticatedStudyUser.studyPreferences);
+        const profileCompleted = profilePrefs.plannerProfile.completedCourses ?? [];
+        const profileCurrent = authenticatedStudyUser.currentCourses ?? [];
+        const profileMajor = authenticatedStudyUser.major ?? null;
+        // Use profile major if not explicitly stated in chat
+        if (!studentCtx.major && profileMajor) {
+          studentCtx.major = profileMajor;
+        }
+        // Merge profile completed courses (deduplicated)
+        if (profileCompleted.length) {
+          const existingCompleted = new Set(studentCtx.completed_courses);
+          for (const c of profileCompleted) {
+            existingCompleted.add(c);
+          }
+          studentCtx.completed_courses = Array.from(existingCompleted);
+        }
+        // Merge profile current courses
+        if (profileCurrent.length) {
+          const existingCurrent = new Set(studentCtx.in_progress_courses);
+          for (const c of profileCurrent) {
+            existingCurrent.add(c);
+          }
+          studentCtx.in_progress_courses = Array.from(existingCurrent);
+        }
+        // Add honors constraint if set in profile
+        const isHonors = profilePrefs.plannerProfile.honorsStudent;
+        if (isHonors && !studentCtx.constraints.includes("honors college")) {
+          studentCtx.constraints.push("honors college");
+        }
+      }
       let planningObj: PlanningObject;
       try {
         planningObj = await buildPlanningObject(

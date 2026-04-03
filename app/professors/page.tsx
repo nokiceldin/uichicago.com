@@ -95,13 +95,13 @@ export default function Page() {
           },
         ]}
       />
-      <div className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-72 bg-gradient-to-b from-red-950/20 to-transparent" />
+      <div className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-72 bg-linear-to-b from-red-950/20 to-transparent" />
       <div className="pointer-events-none absolute inset-0 -z-10 opacity-[0.02]" style={{ backgroundImage: "linear-gradient(rgba(0,0,0,0.4) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,0.4) 1px, transparent 1px)", backgroundSize: "48px 48px" }} />
 
       <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-12">
         <div className="mb-6 sm:mb-8">
           <div className="mb-2">
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-zinc-300 bg-zinc-100 px-3 py-1 text-xs font-semibold uppercase tracking-widest text-zinc-600 dark:border-white/12 dark:bg-white/[0.06] dark:text-zinc-300">
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-zinc-300 bg-zinc-100 px-3 py-1 text-xs font-semibold uppercase tracking-widest text-zinc-600 dark:border-white/12 dark:bg-white/6 dark:text-zinc-300">
               <span className="h-1.5 w-1.5 rounded-full bg-zinc-500 dark:bg-zinc-400" />
               {new Intl.NumberFormat("en-US").format(total)} professors
             </span>
@@ -230,11 +230,11 @@ export default function Page() {
           </div>
           <div className="max-h-[75vh] overflow-auto">
             <div className="min-w-[640px]">
-              <ul className="divide-y divide-zinc-100 dark:divide-white/[0.04]">
+              <ul className="divide-y divide-zinc-100 dark:divide-white/4">
                 {data.map((p, idx) => {
                   const rc = ratingConfig(Number(p.quality) || 0);
                   return (
-                    <li key={p.slug} className="grid grid-cols-12 items-center px-4 sm:px-6 py-4 transition-colors hover:bg-zinc-50 dark:hover:bg-white/[0.04]">
+                    <li key={p.slug} className="grid grid-cols-12 items-center px-4 sm:px-6 py-4 transition-colors hover:bg-zinc-50 dark:hover:bg-white/4">
                       <div className="col-span-4 min-w-0 pr-3">
                         <div data-tour={idx === 0 ? "professors-open-profile" : undefined} className="text-sm font-bold text-zinc-900 dark:text-zinc-100 sm:text-base">
                           <span className="text-zinc-400 dark:text-zinc-600 tabular-nums mr-1.5">{start + idx + 1}.</span>

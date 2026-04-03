@@ -1,5 +1,141 @@
 import { prisma } from "@/lib/prisma";
 import { calcGpa, normName, mapKeyToDbName, courseLabel, courseTitle, getProfCourseMap } from "./utils";
+import fs from "node:fs";
+import path from "node:path";
+
+type LocalCatalogCourse = {
+  subject: string;
+  number: string;
+  title: string;
+  deptName?: string | null;
+  totalRegsAllTime: number;
+};
+
+let localCatalogCache: LocalCatalogCourse[] | null = null;
+
+function normalizeCourseCode(subject: string, number: string) {
+  return `${subject} ${number}`.replace(/\s+/g, " ").trim().toUpperCase();
+}
+
+function loadLocalCatalogCourses() {
+  if (localCatalogCache) return localCatalogCache;
+
+  const catalogPath = path.join(process.cwd(), "scripts", "catalog-scraped.json");
+  const rawCatalog = JSON.parse(fs.readFileSync(catalogPath, "utf8")) as Array<{
+    subject?: string;
+    number?: string;
+    title?: string;
+    deptName?: string;
+  }>;
+
+  const popularityByCode = new Map<string, number>();
+  const dataDir = path.join(process.cwd(), "public", "data");
+  const csvFiles = fs.readdirSync(dataDir).filter((file) => file.endsWith(".csv"));
+
+  for (const file of csvFiles) {
+    const csv = fs.readFileSync(path.join(dataDir, file), "utf8");
+    const lines = csv.split(/\r?\n/).filter(Boolean);
+    if (lines.length < 2) continue;
+
+    const header = lines[0].replace(/^\uFEFF/, "");
+    const subjectIndex = header.split(",").findIndex((cell) => cell.includes('"CRS SUBJ CD"'));
+    const numberIndex = header.split(",").findIndex((cell) => cell.includes('"CRS NBR"'));
+    const regsIndex = header.split(",").findIndex((cell) => cell.includes('"Grade Regs"'));
+    if (subjectIndex < 0 || numberIndex < 0 || regsIndex < 0) continue;
+
+    for (const line of lines.slice(1)) {
+      const columns = line.match(/(".*?"|[^",\s][^,]*|)(?=\s*,|\s*$)/g) ?? [];
+      const subject = (columns[subjectIndex] ?? "").replace(/^"|"$/g, "").trim().toUpperCase();
+      const number = (columns[numberIndex] ?? "").replace(/^"|"$/g, "").trim().toUpperCase();
+      const regs = Number((columns[regsIndex] ?? "").replace(/^"|"$/g, "").trim()) || 0;
+      if (!subject || !number || regs <= 0) continue;
+      const key = normalizeCourseCode(subject, number);
+      popularityByCode.set(key, (popularityByCode.get(key) ?? 0) + regs);
+    }
+  }
+
+  localCatalogCache = rawCatalog
+    .map((course) => {
+      const subject = String(course.subject ?? "").trim().toUpperCase();
+      const number = String(course.number ?? "").trim().toUpperCase();
+      const title = String(course.title ?? "").trim();
+      if (!subject || !number || !title) return null;
+      return {
+        subject,
+        number,
+        title,
+        deptName: course.deptName ?? null,
+        totalRegsAllTime: popularityByCode.get(normalizeCourseCode(subject, number)) ?? 0,
+      };
+    })
+    .filter((course): course is LocalCatalogCourse => course !== null);
+
+  return localCatalogCache;
+}
+
+function isGoodFallbackElective(course: LocalCatalogCourse) {
+  const num = parseInt(course.number.match(/\d+/)?.[0] ?? "0", 10);
+  const title = course.title.toLowerCase();
+  if (!Number.isFinite(num) || num <= 0 || num >= 500) return false;
+  if (/special topics|seminar|thesis|research|workshop|independent study|practicum/.test(title)) return false;
+  return true;
+}
+
+function fallbackRankCoursesByCodes(courseCodes: string[]) {
+  const wanted = new Set(courseCodes.map((code) => normalizeCourseCode(...code.trim().split(/\s+/, 2) as [string, string])));
+  return loadLocalCatalogCourses()
+    .filter((course) => wanted.has(normalizeCourseCode(course.subject, course.number)))
+    .filter(isGoodFallbackElective)
+    .sort((a, b) =>
+      (b.totalRegsAllTime ?? 0) - (a.totalRegsAllTime ?? 0) ||
+      a.subject.localeCompare(b.subject) ||
+      a.number.localeCompare(b.number)
+    )
+    .map((course) => ({
+      subject: course.subject,
+      number: course.number,
+      title: course.title,
+      totalRegsAllTime: course.totalRegsAllTime,
+      deptName: course.deptName ?? null,
+      avgGpa: null,
+      difficultyScore: null,
+      isGenEd: null,
+      genEdCategory: null,
+    }));
+}
+
+function fallbackGenEdCourses(category?: string | null, limit = 30) {
+  const preferredSubjects = category?.toLowerCase().includes("world")
+    ? new Set(["SPAN", "FREN", "GER", "ITAL", "CL", "HIST"])
+    : category?.toLowerCase().includes("past")
+    ? new Set(["HIST", "CL", "AH", "PPOL"])
+    : category?.toLowerCase().includes("society")
+    ? new Set(["PSCH", "SOC", "ANTH", "CLJ", "POLS", "ECON"])
+    : new Set(["PSCH", "SOC", "ANTH", "HIST", "COMM", "ENGL", "MUS", "AH", "CLJ", "POLS"]);
+
+  return loadLocalCatalogCourses()
+    .filter(isGoodFallbackElective)
+    .filter((course) => {
+      const num = parseInt(course.number.match(/\d+/)?.[0] ?? "0", 10);
+      return Number.isFinite(num) && num > 0 && num < 300;
+    })
+    .filter((course) => preferredSubjects.has(course.subject))
+    .sort((a, b) =>
+      (b.totalRegsAllTime ?? 0) - (a.totalRegsAllTime ?? 0) ||
+      a.subject.localeCompare(b.subject) ||
+      a.number.localeCompare(b.number)
+    )
+    .slice(0, limit)
+    .map((course) => ({
+      subject: course.subject,
+      number: course.number,
+      title: course.title,
+      avgGpa: null,
+      difficultyScore: null,
+      genEdCategory: category ?? null,
+      totalRegsAllTime: course.totalRegsAllTime,
+    }));
+}
 
 function isReliableRankingCourse(course: {
   number?: string | null;
@@ -110,18 +246,22 @@ export async function fetchCoursesByCodesRanked(courseCodes: string[], easiestFi
 
   if (!parsed.length) return [];
 
-  return prisma.course.findMany({
-    where: { OR: parsed.map((p) => ({ subject: p.subject, number: p.number })) },
-    select: {
-      subject: true, number: true, title: true, avgGpa: true,
-      difficultyScore: true, totalRegsAllTime: true, deptName: true,
-      isGenEd: true, genEdCategory: true,
-    },
-    orderBy: easiestFirst
-      ? [{ difficultyScore: "desc" }, { avgGpa: "desc" }]
-      : [{ difficultyScore: "asc" }, { avgGpa: "asc" }],
-    take: 60,
-  });
+  try {
+    return await prisma.course.findMany({
+      where: { OR: parsed.map((p) => ({ subject: p.subject, number: p.number })) },
+      select: {
+        subject: true, number: true, title: true, avgGpa: true,
+        difficultyScore: true, totalRegsAllTime: true, deptName: true,
+        isGenEd: true, genEdCategory: true,
+      },
+      orderBy: easiestFirst
+        ? [{ difficultyScore: "desc" }, { avgGpa: "desc" }]
+        : [{ difficultyScore: "asc" }, { avgGpa: "asc" }],
+      take: 60,
+    });
+  } catch {
+    return fallbackRankCoursesByCodes(courseCodes);
+  }
 }
 
 // ─── Courses by subject or department ────────────────────────────────────────
@@ -162,23 +302,27 @@ export async function fetchGenEdCourses(category?: string | null, limit = 30) {
     ? { isGenEd: true, avgGpa: { not: null }, genEdCategory: { contains: category, mode: "insensitive" as const } }
     : { isGenEd: true, avgGpa: { not: null } };
 
-  const courses = await prisma.course.findMany({
-    where,
-    orderBy: [{ difficultyScore: "desc" }, { avgGpa: "desc" }],
-    take: limit * 3,
-    select: {
-      subject: true, number: true, title: true, avgGpa: true,
-      difficultyScore: true, genEdCategory: true, totalRegsAllTime: true,
-    },
-  });
+  try {
+    const courses = await prisma.course.findMany({
+      where,
+      orderBy: [{ difficultyScore: "desc" }, { avgGpa: "desc" }],
+      take: limit * 3,
+      select: {
+        subject: true, number: true, title: true, avgGpa: true,
+        difficultyScore: true, genEdCategory: true, totalRegsAllTime: true,
+      },
+    });
 
-  return courses
-    .filter((course) => {
-      if (!isReliableRankingCourse(course)) return false;
-      const num = parseInt(course.number?.match(/\d+/)?.[0] ?? "0", 10);
-      return Number.isFinite(num) && num > 0 && num < 300;
-    })
-    .slice(0, limit);
+    return courses
+      .filter((course) => {
+        if (!isReliableRankingCourse(course)) return false;
+        const num = parseInt(course.number?.match(/\d+/)?.[0] ?? "0", 10);
+        return Number.isFinite(num) && num > 0 && num < 300;
+      })
+      .slice(0, limit);
+  } catch {
+    return fallbackGenEdCourses(category, limit);
+  }
 }
 
 // ─── Professors by department ─────────────────────────────────────────────────

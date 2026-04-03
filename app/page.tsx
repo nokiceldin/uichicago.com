@@ -108,7 +108,7 @@ export default function Home() {
 
               <h1 className="max-w-4xl text-4xl font-black tracking-[-0.05em] text-zinc-950 dark:text-white sm:text-5xl md:text-7xl">
                 The map for figuring out
-                <span className="block bg-gradient-to-r from-zinc-950 via-red-600 to-red-500 bg-clip-text text-transparent dark:from-white dark:via-red-200 dark:to-red-500">
+                <span className="block bg-linear-to-r from-zinc-950 via-red-600 to-red-500 bg-clip-text text-transparent dark:from-white dark:via-red-200 dark:to-red-500">
                   all of UIC.
                 </span>
               </h1>
@@ -166,8 +166,8 @@ export default function Home() {
             </div>
 
             <div className="relative lg:-mr-4">
-              <div className="absolute -inset-6 rounded-[2rem] bg-gradient-to-br from-red-500/20 via-transparent to-sky-500/10 blur-3xl" />
-              <div className="relative overflow-hidden rounded-[2rem] border border-zinc-200 bg-white/85 p-4 shadow-2xl shadow-black/10 backdrop-blur-xl dark:border-white/10 dark:bg-[linear-gradient(180deg,rgba(17,19,27,0.98),rgba(9,10,15,0.95))] dark:shadow-[0_30px_80px_rgba(0,0,0,0.38)] sm:p-6 lg:p-7">
+              <div className="absolute -inset-6 rounded-4xl bg-linear-to-br from-red-500/20 via-transparent to-sky-500/10 blur-3xl" />
+              <div className="relative overflow-hidden rounded-4xl border border-zinc-200 bg-white/85 p-4 shadow-2xl shadow-black/10 backdrop-blur-xl dark:border-white/10 dark:bg-[linear-gradient(180deg,rgba(17,19,27,0.98),rgba(9,10,15,0.95))] dark:shadow-[0_30px_80px_rgba(0,0,0,0.38)] sm:p-6 lg:p-7">
                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(239,68,68,0.08),transparent_32%),radial-gradient(circle_at_100%_0%,rgba(56,189,248,0.06),transparent_26%)] dark:bg-[radial-gradient(circle_at_top_left,rgba(239,68,68,0.18),transparent_30%),radial-gradient(circle_at_100%_0%,rgba(56,189,248,0.14),transparent_24%),linear-gradient(180deg,rgba(255,255,255,0.02),transparent_45%)]" />
 
                 <div className="relative">
@@ -185,23 +185,23 @@ export default function Home() {
                     <div className="rounded-[1.6rem] border border-red-300/35 bg-[linear-gradient(180deg,rgba(254,242,242,0.96),rgba(255,255,255,0.9))] p-4 shadow-[0_14px_34px_rgba(239,68,68,0.08)] dark:border-red-400/25 dark:bg-[linear-gradient(180deg,rgba(57,21,25,0.88),rgba(24,13,18,0.82))] dark:shadow-[0_14px_34px_rgba(239,68,68,0.16)] sm:min-w-[16rem]">
                       <div className="text-right text-[10px] font-bold uppercase tracking-[0.24em] text-red-600 dark:text-red-300">Live layer</div>
                       <div className="mt-3 grid grid-cols-2 gap-2">
-                        <span className="rounded-full border border-red-100 bg-white px-2.5 py-2 text-center text-[13px] font-semibold text-zinc-900 dark:border-white/10 dark:bg-white/[0.05] dark:text-zinc-100">
+                        <span className="rounded-full border border-red-100 bg-white px-2.5 py-2 text-center text-[13px] font-semibold text-zinc-900 dark:border-white/10 dark:bg-white/5 dark:text-zinc-100">
                           Courses
                         </span>
-                        <span className="rounded-full border border-red-100 bg-white px-2.5 py-2 text-center text-[13px] font-semibold text-zinc-900 dark:border-white/10 dark:bg-white/[0.05] dark:text-zinc-100">
+                        <span className="rounded-full border border-red-100 bg-white px-2.5 py-2 text-center text-[13px] font-semibold text-zinc-900 dark:border-white/10 dark:bg-white/5 dark:text-zinc-100">
                           Professors
                         </span>
-                        <span className="rounded-full border border-red-100 bg-white px-2.5 py-2 text-center text-[13px] font-semibold text-zinc-900 dark:border-white/10 dark:bg-white/[0.05] dark:text-zinc-100">
+                        <span className="rounded-full border border-red-100 bg-white px-2.5 py-2 text-center text-[13px] font-semibold text-zinc-900 dark:border-white/10 dark:bg-white/5 dark:text-zinc-100">
                           My School
                         </span>
-                        <span className="rounded-full border border-red-100 bg-white px-2 py-2 text-center text-[12px] font-semibold leading-tight text-zinc-900 dark:border-white/10 dark:bg-white/[0.05] dark:text-zinc-100">
+                        <span className="rounded-full border border-red-100 bg-white px-2 py-2 text-center text-[12px] font-semibold leading-tight text-zinc-900 dark:border-white/10 dark:bg-white/5 dark:text-zinc-100">
                           OpenSparky AI
                         </span>
                       </div>
                     </div>
                   </div>
 
-                  <div className="mt-6 h-px w-full bg-gradient-to-r from-zinc-300 via-zinc-200 to-transparent dark:from-white/15 dark:via-white/10" />
+                  <div className="mt-6 h-px w-full bg-linear-to-r from-zinc-300 via-zinc-200 to-transparent dark:from-white/15 dark:via-white/10" />
 
                   <div className="mt-6 grid gap-3 sm:grid-cols-3">
                     {[
@@ -261,7 +261,7 @@ export default function Home() {
                 style={{ animationDelay: `${40 * (productPillars.indexOf(pillar) + 1)}ms` }}
                 className={`premium-card premium-fade-up group relative flex min-h-[320px] flex-col overflow-hidden rounded-[1.75rem] border border-zinc-200 bg-zinc-50 p-6 transition duration-300 hover:shadow-2xl dark:border-white/10 dark:bg-zinc-950 ${pillar.border}`}
               >
-                <div className={`absolute inset-x-0 top-0 h-40 bg-gradient-to-b ${pillar.accent}`} />
+                <div className={`absolute inset-x-0 top-0 h-40 bg-linear-to-b ${pillar.accent}`} />
                 <div className="relative">
                   <div className="text-[11px] font-bold uppercase tracking-[0.24em] text-zinc-500">
                     {pillar.eyebrow}
@@ -278,7 +278,7 @@ export default function Home() {
                       <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
                     </svg>
                   </div>
-                  <div className="mt-6 h-px w-full bg-gradient-to-r from-zinc-300/70 to-transparent dark:from-white/10" />
+                  <div className="mt-6 h-px w-full bg-linear-to-r from-zinc-300/70 to-transparent dark:from-white/10" />
                   <div className="mt-4 text-xs font-medium uppercase tracking-[0.18em] text-zinc-500">
                     {pillar.eyebrow === "Courses"
                       ? "Structured data"
@@ -330,7 +330,7 @@ export default function Home() {
                 key={tile.title}
                 href={tile.href}
                 style={{ animationDelay: `${45 * (launchTiles.indexOf(tile) + 1)}ms` }}
-                className="premium-card premium-fade-up rounded-[1.5rem] border border-zinc-200 bg-white p-6 transition hover:border-red-400/40 hover:shadow-xl dark:border-white/10 dark:bg-[rgba(15,17,22,0.82)] dark:shadow-[0_12px_30px_rgba(0,0,0,0.18)]"
+                className="premium-card premium-fade-up rounded-3xl border border-zinc-200 bg-white p-6 transition hover:border-red-400/40 hover:shadow-xl dark:border-white/10 dark:bg-[rgba(15,17,22,0.82)] dark:shadow-[0_12px_30px_rgba(0,0,0,0.18)]"
               >
                 <div className="flex items-start justify-between gap-3">
                   <h3 className="min-w-0 pr-2 text-xl font-black tracking-[-0.03em] text-zinc-950 dark:text-white">

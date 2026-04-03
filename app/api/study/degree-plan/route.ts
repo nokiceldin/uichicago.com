@@ -11,7 +11,6 @@ export async function POST(request: Request) {
         ? Number(body.currentSemesterNumber)
         : undefined,
       planLength: body.planLength,
-      completedCourses: Array.isArray(body.completedCourses) ? body.completedCourses : [],
       currentCourses: Array.isArray(body.currentCourses) ? body.currentCourses : [],
       honorsStudent: Boolean(body.honorsStudent),
     });

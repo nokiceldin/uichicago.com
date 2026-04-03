@@ -41,7 +41,6 @@ export default function SettingsPageClient() {
     if (typeof window === "undefined") return DEFAULT_THEME_MODE;
     return readLocalSiteSettings().themeMode ?? DEFAULT_THEME_MODE;
   });
-  const [savedTheme, setSavedTheme] = useState<ThemeMode>(themeMode);
 
   // Load theme from DB when authenticated
   useEffect(() => {
@@ -55,7 +54,6 @@ export default function SettingsPageClient() {
         if (!response.ok || !payload || cancelled) return;
         const dbTheme: ThemeMode = payload.profile?.settings?.themeMode ?? DEFAULT_THEME_MODE;
         setThemeMode(dbTheme);
-        setSavedTheme(dbTheme);
         persistThemeLocally(dbTheme);
       } finally {
         if (!cancelled) setLoadedFromDb(true);
@@ -88,7 +86,6 @@ export default function SettingsPageClient() {
         body: JSON.stringify({ settings: { themeMode: mode } }),
       });
       if (!response.ok) throw new Error("Could not save theme.");
-      setSavedTheme(mode);
       setMessage("Theme saved.");
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Could not save.");
@@ -102,8 +99,6 @@ export default function SettingsPageClient() {
     persistThemeLocally(mode);
     if (status === "authenticated") {
       void saveThemeToDb(mode);
-    } else {
-      setSavedTheme(mode);
     }
   };
 
@@ -135,7 +130,7 @@ export default function SettingsPageClient() {
   if (status === "loading" || (status === "authenticated" && !loadedFromDb)) {
     return (
       <main className="min-h-screen bg-zinc-50 px-4 py-10 text-zinc-950 dark:bg-zinc-950 dark:text-white sm:px-6">
-        <div className="mx-auto h-[340px] max-w-3xl animate-pulse rounded-[2rem] border border-zinc-200 bg-white dark:border-white/10 dark:bg-white/[0.04]" />
+        <div className="mx-auto h-[340px] max-w-3xl animate-pulse rounded-4xl border border-zinc-200 bg-white dark:border-white/10 dark:bg-white/4" />
       </main>
     );
   }
@@ -145,7 +140,7 @@ export default function SettingsPageClient() {
       <div className="mx-auto max-w-3xl space-y-6">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <div className="inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-zinc-100 px-4 py-2 text-[11px] font-bold uppercase tracking-[0.22em] text-zinc-600 dark:border-white/10 dark:bg-white/[0.04] dark:text-zinc-300">
+            <div className="inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-zinc-100 px-4 py-2 text-[11px] font-bold uppercase tracking-[0.22em] text-zinc-600 dark:border-white/10 dark:bg-white/4 dark:text-zinc-300">
               <Settings2 className="h-4 w-4" />
               Settings
             </div>
@@ -172,7 +167,7 @@ export default function SettingsPageClient() {
                 value={themeMode}
                 onChange={(event) => handleThemeChange(event.target.value as ThemeMode)}
                 disabled={isSaving}
-                className="h-11 min-w-[130px] rounded-xl border border-zinc-200 bg-zinc-50 px-4 text-sm text-zinc-900 outline-none disabled:opacity-60 dark:border-white/10 dark:bg-white/[0.04] dark:text-white"
+                className="h-11 min-w-[130px] rounded-xl border border-zinc-200 bg-zinc-50 px-4 text-sm text-zinc-900 outline-none disabled:opacity-60 dark:border-white/10 dark:bg-white/4 dark:text-white"
               >
                 <option value="dark">Dark</option>
                 <option value="light">Light</option>
@@ -194,6 +189,26 @@ export default function SettingsPageClient() {
             )}
           </div>
         </section>
+
+        {status !== "authenticated" && (
+          <section className="overflow-hidden rounded-[1.8rem] border border-zinc-200 bg-[linear-gradient(180deg,#ffffff,#f6f6f7)] p-6 shadow-[0_18px_55px_rgba(15,23,42,0.06)] dark:border-white/10 dark:bg-[linear-gradient(180deg,rgba(28,28,33,0.96),rgba(16,16,21,0.98))]">
+            <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+              <div className="max-w-2xl">
+                <div className="text-lg font-semibold text-zinc-950 dark:text-white">Sign in to unlock synced settings.</div>
+                <div className="mt-2 text-sm leading-6 text-zinc-500 dark:text-zinc-400">
+                  Theme already works on this device. Sign in if you want to sync it across devices and manage your profile and account.
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => signIn("google", { callbackUrl: "/settings" })}
+                className="inline-flex shrink-0 items-center rounded-full bg-zinc-950 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-zinc-800 dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-100"
+              >
+                Sign in with Google
+              </button>
+            </div>
+          </section>
+        )}
 
         {/* Profile picture — authenticated only, link to profile page */}
         {status === "authenticated" && (
@@ -227,7 +242,7 @@ export default function SettingsPageClient() {
                   <div className="text-sm font-semibold text-zinc-950 dark:text-white">Google account</div>
                   <div className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">{session?.user?.email}</div>
                 </div>
-                <div className="rounded-full border border-zinc-200 bg-zinc-50 px-3 py-1.5 text-xs font-semibold text-zinc-600 dark:border-white/10 dark:bg-white/[0.04] dark:text-zinc-300">
+                <div className="rounded-full border border-zinc-200 bg-zinc-50 px-3 py-1.5 text-xs font-semibold text-zinc-600 dark:border-white/10 dark:bg-white/4 dark:text-zinc-300">
                   Connected
                 </div>
               </div>
@@ -236,31 +251,10 @@ export default function SettingsPageClient() {
                   <div className="text-sm font-semibold text-zinc-950 dark:text-white">School</div>
                   <div className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">University of Illinois Chicago</div>
                 </div>
-                <div className="rounded-full border border-zinc-200 bg-zinc-50 px-3 py-1.5 text-xs font-semibold text-zinc-600 dark:border-white/10 dark:bg-white/[0.04] dark:text-zinc-300">
+                <div className="rounded-full border border-zinc-200 bg-zinc-50 px-3 py-1.5 text-xs font-semibold text-zinc-600 dark:border-white/10 dark:bg-white/4 dark:text-zinc-300">
                   UIC
                 </div>
               </div>
-            </div>
-          </section>
-        )}
-
-        {/* Sign in prompt — not authenticated */}
-        {status !== "authenticated" && (
-          <section className="overflow-hidden rounded-[1.8rem] border border-zinc-200 bg-white shadow-[0_18px_55px_rgba(15,23,42,0.06)] dark:border-white/10 dark:bg-[rgba(18,18,23,0.94)]">
-            <div className="flex flex-col gap-4 px-6 py-6 sm:flex-row sm:items-center sm:justify-between">
-              <div>
-                <div className="text-sm font-semibold text-zinc-950 dark:text-white">Profile & account settings</div>
-                <div className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
-                  Sign in to set your profile picture, major, courses, and manage your account.
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={() => signIn("google", { callbackUrl: "/profile" })}
-                className="inline-flex shrink-0 items-center rounded-full bg-zinc-950 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-zinc-800 dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-100"
-              >
-                Sign in with Google
-              </button>
             </div>
           </section>
         )}

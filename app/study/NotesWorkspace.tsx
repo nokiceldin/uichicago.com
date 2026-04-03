@@ -5,9 +5,12 @@ import { useRouter, useSearchParams } from "next/navigation";
 import {
   AudioLines,
   BookPlus,
+  Check,
   ChevronLeft,
+  ChevronDown,
   Globe,
   FileText,
+  Folder,
   LoaderCircle,
   Mic,
   Plus,
@@ -172,6 +175,8 @@ export default function NotesWorkspace({ library, onLibraryChange, onCreateFlash
   const [recordingMs, setRecordingMs] = useState(0);
   const [liveTranscript, setLiveTranscript] = useState("");
   const [actionResult, setActionResult] = useState<NoteActionResponse>(null);
+  const [saveDialogOpen, setSaveDialogOpen] = useState(false);
+  const [saveDialogFolder, setSaveDialogFolder] = useState("");
   const [, setActionLoading] = useState<string | null>(null);
   const [generatedFlashcards, setGeneratedFlashcards] = useState<GeneratedFlashcardPayload | null>(null);
   const [pendingExplanationConcept, setPendingExplanationConcept] = useState("");
@@ -187,10 +192,13 @@ export default function NotesWorkspace({ library, onLibraryChange, onCreateFlash
   const saveTimerRef = useRef<number | null>(null);
   const lastOpenedNoteIdRef = useRef<string | null>(null);
   const autoCreatedRouteRef = useRef(false);
+  const onLibraryChangeRef = useRef(onLibraryChange);
+  onLibraryChangeRef.current = onLibraryChange;
 
   const notes = library.notes;
   const requestedNoteId = searchParams.get("note");
   const isLibraryView = searchParams.get("view") === "library";
+  const isNotesMode = searchParams.get("mode") === "notes";
   const isFocusedNoteView = Boolean(requestedNoteId);
 
   useEffect(() => {
@@ -210,8 +218,29 @@ export default function NotesWorkspace({ library, onLibraryChange, onCreateFlash
       if (timerRef.current) window.clearInterval(timerRef.current);
       mediaStreamRef.current?.getTracks().forEach((track) => track.stop());
       speechRecognitionRef.current?.stop?.();
+      // On unmount, remove any notes that have no content (title, body, or transcript)
+      onLibraryChangeRef.current((current) => ({
+        ...current,
+        notes: current.notes.filter(
+          (note) => note.title.trim() || note.rawContent.trim() || note.transcriptContent.trim(),
+        ),
+      }));
     };
   }, []);
+
+  // When transitioning from note editor back to library view, prune empty notes
+  const prevIsLibraryViewRef = useRef(isLibraryView);
+  useEffect(() => {
+    const wasNote = !prevIsLibraryViewRef.current;
+    prevIsLibraryViewRef.current = isLibraryView;
+    if (!isLibraryView || !wasNote) return;
+    onLibraryChange((current) => ({
+      ...current,
+      notes: current.notes.filter(
+        (note) => note.title.trim() || note.rawContent.trim() || note.transcriptContent.trim(),
+      ),
+    }));
+  }, [isLibraryView, onLibraryChange]);
 
   const visibleNotes = useMemo(() => {
     const normalized = search.trim().toLowerCase();
@@ -329,11 +358,34 @@ export default function NotesWorkspace({ library, onLibraryChange, onCreateFlash
     return nextNote;
   }, [onLibraryChange, router, searchParams, showToast]);
 
+  const notesRef = useRef(notes);
+  notesRef.current = notes;
+
+  // Reset the guard whenever a note is open so next visit can create fresh.
   useEffect(() => {
-    if (requestedNoteId || isLibraryView || autoCreatedRouteRef.current) return;
+    if (requestedNoteId) {
+      autoCreatedRouteRef.current = false;
+    }
+  }, [requestedNoteId]);
+
+  // No ?note= in URL → create a brand-new empty note, but only when we're
+  // actually in notes mode (guards against firing during navigation away).
+  useEffect(() => {
+    if (!isNotesMode || requestedNoteId || isLibraryView || autoCreatedRouteRef.current) return;
     autoCreatedRouteRef.current = true;
     createNote("manual");
-  }, [createNote, isLibraryView, requestedNoteId]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isNotesMode, isLibraryView, requestedNoteId]);
+
+  // ?note= in URL but note doesn't exist (stale URL) → create a new one.
+  useEffect(() => {
+    if (!isNotesMode || !requestedNoteId || requestedNoteId === "create" || isLibraryView) return;
+    const exists = notesRef.current.some((n) => n.id === requestedNoteId);
+    if (exists) return;
+    autoCreatedRouteRef.current = false;
+    createNote("manual");
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isNotesMode, requestedNoteId, isLibraryView]);
 
   const startLiveTranscription = useCallback(() => {
     const recognitionWindow = window as typeof window & {
@@ -672,6 +724,29 @@ export default function NotesWorkspace({ library, onLibraryChange, onCreateFlash
     setIsPaused(false);
   };
 
+  const availableFolders = useMemo(() => {
+    const folders = [
+      ...library.sets.map((s) => (s.folder || s.course || s.subject || "").trim()),
+      ...library.notes.map((n) => (n.folder || n.course || n.subject || "").trim()),
+    ].filter(Boolean);
+    return Array.from(new Set(folders)).sort((a, b) => a.localeCompare(b));
+  }, [library.notes, library.sets]);
+
+  const saveAndDone = () => {
+    if (!selectedNote) return;
+    // Persist the chosen folder onto the note
+    updateNote(selectedNote.id, { folder: saveDialogFolder, status: "ready" });
+    setSaveDialogOpen(false);
+    // Reset so next Notes visit starts a fresh note
+    autoCreatedRouteRef.current = false;
+    // Navigate to the destination
+    if (saveDialogFolder) {
+      router.push(`/study?folder=${encodeURIComponent(saveDialogFolder)}`);
+    } else {
+      router.push("/study?view=library&section=notes");
+    }
+  };
+
   const copySummary = async () => {
     if (!selectedNote?.structuredContent?.summary) {
       showToast("No structured summary yet.", "error");
@@ -680,6 +755,9 @@ export default function NotesWorkspace({ library, onLibraryChange, onCreateFlash
     await navigator.clipboard.writeText(selectedNote.structuredContent.summary);
     showToast("Summary copied.");
   };
+
+  // We're about to auto-create a note and navigate — render nothing to avoid the flash.
+  if (isNotesMode && !requestedNoteId && !isLibraryView) return null;
 
   return (
     <div className="space-y-5">
@@ -695,7 +773,7 @@ export default function NotesWorkspace({ library, onLibraryChange, onCreateFlash
                 <button
                   onClick={() => createNote("manual")}
                   {...magneticHoverProps}
-                  className="study-premium-button inline-flex items-center gap-1 rounded-full border border-white/10 bg-white/[0.04] px-2.5 py-1 text-[11px] font-medium text-zinc-200"
+                  className="study-premium-button inline-flex items-center gap-1 rounded-full border border-white/10 bg-white/4 px-2.5 py-1 text-[11px] font-medium text-zinc-200"
                 >
                   <Plus className="h-3 w-3" />
                   New
@@ -711,7 +789,7 @@ export default function NotesWorkspace({ library, onLibraryChange, onCreateFlash
                 <select
                   value={filter}
                   onChange={(event) => setFilter(event.target.value as NotesFilter)}
-                  className="study-premium-input rounded-2xl border border-white/10 bg-white/[0.05] px-3 py-3 text-sm text-zinc-200 outline-none"
+                  className="study-premium-input rounded-2xl border border-white/10 bg-white/5 px-3 py-3 text-sm text-zinc-200 outline-none"
                 >
                   <option value="all">All notes</option>
                   <option value="pinned">Pinned</option>
@@ -720,7 +798,7 @@ export default function NotesWorkspace({ library, onLibraryChange, onCreateFlash
                 <select
                   value={sort}
                   onChange={(event) => setSort(event.target.value as NotesSort)}
-                  className="study-premium-input rounded-2xl border border-white/10 bg-white/[0.05] px-3 py-3 text-sm text-zinc-200 outline-none"
+                  className="study-premium-input rounded-2xl border border-white/10 bg-white/5 px-3 py-3 text-sm text-zinc-200 outline-none"
                 >
                   <option value="recent">Recent</option>
                   <option value="alphabetical">A-Z</option>
@@ -736,8 +814,8 @@ export default function NotesWorkspace({ library, onLibraryChange, onCreateFlash
                       onClick={() => openNote(note.id, note.structuredContent ? "structured" : "note")}
                       className={`w-full rounded-xl border px-3 py-3 text-left transition ${
                         selectedNote?.id === note.id
-                          ? "border-white/18 bg-white/[0.08]"
-                          : "border-white/8 bg-white/[0.02] hover:bg-white/[0.05]"
+                          ? "border-white/18 bg-white/8"
+                          : "border-white/8 bg-white/2 hover:bg-white/5"
                       }`}
                     >
                       <div className="flex items-start justify-between gap-3">
@@ -757,7 +835,7 @@ export default function NotesWorkspace({ library, onLibraryChange, onCreateFlash
                     </button>
                   ))
                 ) : (
-                  <div className="rounded-xl border border-dashed border-white/10 bg-white/[0.02] px-4 py-5 text-sm text-zinc-400">
+                  <div className="rounded-xl border border-dashed border-white/10 bg-white/2 px-4 py-5 text-sm text-zinc-400">
                     No notes yet.
                   </div>
                 )}
@@ -769,7 +847,7 @@ export default function NotesWorkspace({ library, onLibraryChange, onCreateFlash
         <section className="space-y-5">
           {!selectedNote ? (
             <div className="study-premium-panel rounded-[1.6rem] p-8 text-center">
-              <div className="mx-auto inline-flex h-14 w-14 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.05]">
+              <div className="mx-auto inline-flex h-14 w-14 items-center justify-center rounded-2xl border border-white/10 bg-white/5">
                 <FileText className="h-6 w-6 text-zinc-300" />
               </div>
               <h2 className="mt-4 text-2xl font-semibold text-white">
@@ -784,7 +862,7 @@ export default function NotesWorkspace({ library, onLibraryChange, onCreateFlash
                 <button
                   onClick={() => createNote("manual")}
                   {...magneticHoverProps}
-                  className="study-premium-button inline-flex items-center gap-2 rounded-2xl bg-gradient-to-b from-red-500 to-red-600 px-4 py-3 text-sm font-bold text-white"
+                  className="study-premium-button inline-flex items-center gap-2 rounded-2xl bg-linear-to-b from-red-500 to-red-600 px-4 py-3 text-sm font-bold text-white"
                 >
                   <BookPlus className="h-4 w-4" />
                   Start a note
@@ -796,7 +874,7 @@ export default function NotesWorkspace({ library, onLibraryChange, onCreateFlash
                     void startRecording(created);
                   }}
                   {...magneticHoverProps}
-                  className="study-premium-button inline-flex items-center gap-2 rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm font-semibold text-zinc-100"
+                  className="study-premium-button inline-flex items-center gap-2 rounded-2xl border border-white/10 bg-white/4 px-4 py-3 text-sm font-semibold text-zinc-100"
                 >
                   <AudioLines className="h-4 w-4" />
                   Record and let AI make notes
@@ -806,16 +884,87 @@ export default function NotesWorkspace({ library, onLibraryChange, onCreateFlash
           ) : (
             <>
                   {isFocusedNoteView && (
-                <div className="study-appear flex items-center justify-between gap-4">
+                <div className="study-appear flex items-center justify-between gap-3">
                   <button
                     onClick={closeFocusedNote}
-                    className="inline-flex items-center gap-2 text-sm font-medium text-zinc-400 transition hover:text-white"
+                    className="inline-flex items-center gap-1.5 text-[13px] font-medium text-slate-500 transition hover:text-slate-200"
                   >
-                    <ChevronLeft className="h-4 w-4" />
-                    Back to my notes
+                    <ChevronLeft className="h-3.5 w-3.5" />
+                    Notes
                   </button>
-                  <div className="text-xs font-medium uppercase tracking-[0.18em] text-zinc-500">
-                    Note editor
+
+                  {/* Save & done button + dialog */}
+                  <div className="relative">
+                    <button
+                      onClick={() => { setSaveDialogFolder(selectedNote?.folder ?? ""); setSaveDialogOpen((o) => !o); }}
+                      className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-3.5 py-1.5 text-[13px] font-semibold text-white shadow-[0_2px_8px_rgba(79,70,229,0.35)] transition hover:bg-indigo-500 active:scale-[0.97]"
+                    >
+                      <Check className="h-3.5 w-3.5" />
+                      Save &amp; done
+                      <ChevronDown className="h-3 w-3 opacity-70" />
+                    </button>
+
+                    {saveDialogOpen && (
+                      <div
+                        className="absolute right-0 top-10 z-50 w-72 rounded-xl border border-white/10 bg-[#0c1120] p-4 shadow-[0_24px_48px_rgba(0,0,0,0.6)]"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500">Save to</p>
+
+                        {/* Library (no folder) */}
+                        <button
+                          onClick={() => setSaveDialogFolder("")}
+                          className={`mt-2 flex w-full items-center gap-2.5 rounded-lg px-3 py-2.5 text-left text-[13px] transition ${
+                            saveDialogFolder === ""
+                              ? "bg-indigo-500/15 text-indigo-300"
+                              : "text-slate-300 hover:bg-white/6"
+                          }`}
+                        >
+                          <FileText className="h-3.5 w-3.5 shrink-0 text-slate-500" />
+                          <span className="flex-1">My library</span>
+                          {saveDialogFolder === "" && <Check className="h-3.5 w-3.5 text-indigo-400" />}
+                        </button>
+
+                        {/* Folders */}
+                        {availableFolders.length > 0 && (
+                          <>
+                            <p className="mt-3 mb-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-600">Folders</p>
+                            <div className="max-h-48 space-y-0.5 overflow-y-auto">
+                              {availableFolders.map((folder) => (
+                                <button
+                                  key={folder}
+                                  onClick={() => setSaveDialogFolder(folder)}
+                                  className={`flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-left text-[13px] transition ${
+                                    saveDialogFolder === folder
+                                      ? "bg-indigo-500/15 text-indigo-300"
+                                      : "text-slate-300 hover:bg-white/6"
+                                  }`}
+                                >
+                                  <Folder className="h-3.5 w-3.5 shrink-0 text-slate-500" />
+                                  <span className="flex-1 truncate">{folder}</span>
+                                  {saveDialogFolder === folder && <Check className="h-3.5 w-3.5 text-indigo-400" />}
+                                </button>
+                              ))}
+                            </div>
+                          </>
+                        )}
+
+                        <div className="mt-3 flex gap-2">
+                          <button
+                            onClick={() => setSaveDialogOpen(false)}
+                            className="flex-1 rounded-lg border border-white/8 py-2 text-[13px] font-medium text-slate-400 transition hover:text-slate-200"
+                          >
+                            Cancel
+                          </button>
+                          <button
+                            onClick={saveAndDone}
+                            className="flex-1 rounded-lg bg-indigo-600 py-2 text-[13px] font-semibold text-white transition hover:bg-indigo-500"
+                          >
+                            Save
+                          </button>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               )}
@@ -839,20 +988,20 @@ export default function NotesWorkspace({ library, onLibraryChange, onCreateFlash
                         <input
                           value={selectedNote.title}
                           onChange={(event) => updateNote(selectedNote.id, { title: event.target.value })}
-                          className="study-premium-input rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-xl font-semibold text-white outline-none placeholder:text-zinc-500"
+                          className="study-premium-input rounded-xl border border-white/10 bg-white/4 px-4 py-3 text-xl font-semibold text-white outline-none placeholder:text-zinc-500"
                           placeholder="Untitled note"
                         />
                         <input
                           value={selectedNote.course}
                           onChange={(event) => updateNote(selectedNote.id, { course: event.target.value })}
-                          className="study-premium-input rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm text-white outline-none placeholder:text-zinc-500"
+                          className="study-premium-input rounded-xl border border-white/10 bg-white/4 px-4 py-3 text-sm text-white outline-none placeholder:text-zinc-500"
                           placeholder="Course"
                         />
                         <input
                           type="date"
                           value={selectedNote.noteDate}
                           onChange={(event) => updateNote(selectedNote.id, { noteDate: event.target.value })}
-                          className="study-premium-input rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm text-white outline-none"
+                          className="study-premium-input rounded-xl border border-white/10 bg-white/4 px-4 py-3 text-sm text-white outline-none"
                         />
                       </div>
                     </div>
@@ -862,7 +1011,7 @@ export default function NotesWorkspace({ library, onLibraryChange, onCreateFlash
                           visibility: selectedNote.visibility === "public" ? "private" : "public",
                         })}
                         {...magneticHoverProps}
-                        className="study-premium-button inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-3 py-2 text-xs font-medium text-zinc-200"
+                        className="study-premium-button inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/4 px-3 py-2 text-xs font-medium text-zinc-200"
                       >
                         <Globe className="h-3.5 w-3.5" />
                         {selectedNote.visibility === "public" ? "Public" : "Private"}
@@ -870,7 +1019,7 @@ export default function NotesWorkspace({ library, onLibraryChange, onCreateFlash
                       <button
                         onClick={() => setCaptureOpen((current) => !current)}
                         {...magneticHoverProps}
-                        className="study-premium-button inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-3 py-2 text-xs font-medium text-zinc-200"
+                        className="study-premium-button inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/4 px-3 py-2 text-xs font-medium text-zinc-200"
                       >
                         <Mic className="h-3.5 w-3.5" />
                         {captureOpen ? "Hide recorder" : "Record lecture"}
@@ -906,7 +1055,7 @@ export default function NotesWorkspace({ library, onLibraryChange, onCreateFlash
                       </div>
                     </div>
                     <div className="flex flex-wrap items-center gap-2">
-                      <div className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-2 text-sm font-semibold text-zinc-200">
+                      <div className="rounded-full border border-white/10 bg-white/4 px-3 py-2 text-sm font-semibold text-zinc-200">
                         {formatDuration(recordingMs)}
                       </div>
                       {selectedNote.status === "processing" ? (
@@ -920,7 +1069,7 @@ export default function NotesWorkspace({ library, onLibraryChange, onCreateFlash
                             void startRecording();
                           }}
                           {...magneticHoverProps}
-                          className="study-premium-button inline-flex items-center gap-2 rounded-2xl bg-gradient-to-b from-red-500 to-red-600 px-4 py-3 text-sm font-bold text-white"
+                          className="study-premium-button inline-flex items-center gap-2 rounded-2xl bg-linear-to-b from-red-500 to-red-600 px-4 py-3 text-sm font-bold text-white"
                         >
                           <Mic className="h-4 w-4" />
                           Record lecture
@@ -930,7 +1079,7 @@ export default function NotesWorkspace({ library, onLibraryChange, onCreateFlash
                           <button
                             onClick={isPaused ? resumeRecording : pauseRecording}
                             {...magneticHoverProps}
-                            className="study-premium-button inline-flex items-center gap-2 rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm font-semibold text-zinc-100"
+                            className="study-premium-button inline-flex items-center gap-2 rounded-2xl border border-white/10 bg-white/4 px-4 py-3 text-sm font-semibold text-zinc-100"
                           >
                             {isPaused ? <Play className="h-4 w-4" /> : <Pause className="h-4 w-4" />}
                             {isPaused ? "Keep recording" : "Pause"}
@@ -949,7 +1098,7 @@ export default function NotesWorkspace({ library, onLibraryChange, onCreateFlash
                   </div>
 
                   <div className="mt-4 grid gap-4 lg:grid-cols-[0.72fr_1.28fr]">
-                    <div className="rounded-[1.1rem] border border-white/8 bg-white/[0.03] p-3">
+                    <div className="rounded-[1.1rem] border border-white/8 bg-white/3 p-3">
                       <div className="text-xs font-bold uppercase tracking-[0.18em] text-zinc-500">Live mic status</div>
                       <div className="mt-3 flex items-end gap-1">
                         {Array.from({ length: 14 }).map((_, index) => (
@@ -969,7 +1118,7 @@ export default function NotesWorkspace({ library, onLibraryChange, onCreateFlash
                             : "Lecture capture stays lightweight here while the transcript builds on the right.")}
                       </div>
                     </div>
-                    <div className="rounded-[1.1rem] border border-white/8 bg-white/[0.03] p-3">
+                    <div className="rounded-[1.1rem] border border-white/8 bg-white/3 p-3">
                       <div className="flex items-center justify-between gap-3">
                         <div className="text-xs font-bold uppercase tracking-[0.18em] text-zinc-500">Transcript preview</div>
                         <button
@@ -979,7 +1128,7 @@ export default function NotesWorkspace({ library, onLibraryChange, onCreateFlash
                           Hide
                         </button>
                       </div>
-                      <div className="mt-3 max-h-32 overflow-y-auto rounded-[1rem] border border-white/8 bg-[#171c29] px-4 py-3 text-sm leading-6 text-zinc-300">
+                      <div className="mt-3 max-h-32 overflow-y-auto rounded-2xl border border-white/8 bg-[#171c29] px-4 py-3 text-sm leading-6 text-zinc-300">
                         {liveTranscript
                           || (selectedNote.status === "processing"
                             ? "Generating summary from your lecture recording..."
@@ -1005,7 +1154,7 @@ export default function NotesWorkspace({ library, onLibraryChange, onCreateFlash
                           className={`rounded-full px-3 py-1.5 text-sm font-semibold transition ${
                             activeTab === tab.id
                               ? "bg-white text-zinc-900"
-                              : "border border-white/10 bg-white/[0.03] text-zinc-300 hover:bg-white/[0.06]"
+                              : "border border-white/10 bg-white/3 text-zinc-300 hover:bg-white/6"
                           }`}
                         >
                           {tab.label}
@@ -1014,7 +1163,7 @@ export default function NotesWorkspace({ library, onLibraryChange, onCreateFlash
                       <button
                         onClick={() => runNoteAction("generate_flashcards")}
                         {...magneticHoverProps}
-                        className="study-premium-button rounded-full border border-white/10 bg-white/[0.03] px-3 py-1.5 text-sm font-semibold text-zinc-300 hover:bg-white/[0.06]"
+                        className="study-premium-button rounded-full border border-white/10 bg-white/3 px-3 py-1.5 text-sm font-semibold text-zinc-300 hover:bg-white/6"
                       >
                         Flashcards
                       </button>
@@ -1039,7 +1188,7 @@ export default function NotesWorkspace({ library, onLibraryChange, onCreateFlash
                     <div className="mt-4 space-y-5">
                       {selectedNote.structuredContent ? (
                         <>
-                          <div className="rounded-[1.2rem] border border-emerald-400/10 bg-emerald-500/[0.05] p-4">
+                          <div className="rounded-[1.2rem] border border-emerald-400/10 bg-emerald-500/5 p-4">
                             <div className="flex items-center justify-between gap-3">
                               <div>
                                 <div className="text-xs font-bold uppercase tracking-[0.18em] text-emerald-200/80">Lecture summary</div>
@@ -1048,7 +1197,7 @@ export default function NotesWorkspace({ library, onLibraryChange, onCreateFlash
                               <button
                                 onClick={copySummary}
                                 {...magneticHoverProps}
-                                className="study-premium-button rounded-full border border-white/10 bg-white/[0.05] px-3 py-2 text-xs font-semibold text-zinc-100"
+                                className="study-premium-button rounded-full border border-white/10 bg-white/5 px-3 py-2 text-xs font-semibold text-zinc-100"
                               >
                                 Copy summary
                               </button>
@@ -1056,7 +1205,7 @@ export default function NotesWorkspace({ library, onLibraryChange, onCreateFlash
                           </div>
                           <div className="grid gap-4 md:grid-cols-2">
                             {selectedNote.structuredContent.sections.map((section) => (
-                              <div key={section.heading} className="rounded-[1.2rem] border border-white/8 bg-white/[0.03] p-4">
+                              <div key={section.heading} className="rounded-[1.2rem] border border-white/8 bg-white/3 p-4">
                                 <div className="text-sm font-semibold text-white">{section.heading}</div>
                                 <ul className="mt-3 space-y-2 text-sm leading-6 text-zinc-300">
                                   {section.items.length ? (
@@ -1069,17 +1218,17 @@ export default function NotesWorkspace({ library, onLibraryChange, onCreateFlash
                             ))}
                           </div>
                           <div className="grid gap-4 md:grid-cols-2">
-                            <div className="rounded-[1.2rem] border border-white/8 bg-white/[0.03] p-4">
+                            <div className="rounded-[1.2rem] border border-white/8 bg-white/3 p-4">
                               <div className="text-sm font-semibold text-white">Key terms</div>
                               <div className="mt-3 flex flex-wrap gap-2">
                                 {selectedNote.structuredContent.keyTerms.length ? selectedNote.structuredContent.keyTerms.map((term) => (
-                                  <span key={term} className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1.5 text-xs text-zinc-200">
+                                  <span key={term} className="rounded-full border border-white/10 bg-white/4 px-3 py-1.5 text-xs text-zinc-200">
                                     {term}
                                   </span>
                                 )) : <span className="text-sm text-zinc-500">No key terms yet.</span>}
                               </div>
                             </div>
-                            <div className="rounded-[1.2rem] border border-white/8 bg-white/[0.03] p-4">
+                            <div className="rounded-[1.2rem] border border-white/8 bg-white/3 p-4">
                               <div className="text-sm font-semibold text-white">Questions to review</div>
                               <ul className="mt-3 space-y-2 text-sm leading-6 text-zinc-300">
                                 {selectedNote.structuredContent.questionsToReview.length ? selectedNote.structuredContent.questionsToReview.map((item) => (
@@ -1090,7 +1239,7 @@ export default function NotesWorkspace({ library, onLibraryChange, onCreateFlash
                           </div>
                         </>
                       ) : (
-                        <div className="rounded-[1.2rem] border border-dashed border-white/10 bg-white/[0.03] px-5 py-8 text-sm leading-6 text-zinc-400">
+                        <div className="rounded-[1.2rem] border border-dashed border-white/10 bg-white/3 px-5 py-8 text-sm leading-6 text-zinc-400">
                           Structured notes will appear here after a lecture recording or AI action like summarize or review sheet.
                         </div>
                       )}
@@ -1119,7 +1268,7 @@ export default function NotesWorkspace({ library, onLibraryChange, onCreateFlash
                         {actionResult?.keyTerms?.length ? (
                           <div className="flex flex-wrap gap-2">
                             {actionResult.keyTerms.map((term) => (
-                              <span key={term} className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1.5 text-xs text-zinc-200">
+                              <span key={term} className="rounded-full border border-white/10 bg-white/4 px-3 py-1.5 text-xs text-zinc-200">
                                 {term}
                               </span>
                             ))}
@@ -1130,7 +1279,7 @@ export default function NotesWorkspace({ library, onLibraryChange, onCreateFlash
                             <div className="text-sm font-semibold text-white">{generatedFlashcards.setTitle}</div>
                             <div className="space-y-2">
                               {generatedFlashcards.cards.slice(0, 3).map((card, index) => (
-                                <div key={`${card.front}-${index}`} className="rounded-[1rem] border border-white/8 bg-white/[0.03] px-3 py-3">
+                                <div key={`${card.front}-${index}`} className="rounded-2xl border border-white/8 bg-white/3 px-3 py-3">
                                   <div className="text-xs uppercase tracking-[0.15em] text-zinc-500">Card {index + 1}</div>
                                   <div className="mt-1 text-sm font-medium text-white">{card.front}</div>
                                   <div className="mt-1 text-sm text-zinc-300">{card.back}</div>

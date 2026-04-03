@@ -64,7 +64,7 @@ function isFolderOrDescendant(path: string, candidate: string) {
 }
 
 export default function StudyLayout({ children }: { children: React.ReactNode }) {
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -73,7 +73,7 @@ export default function StudyLayout({ children }: { children: React.ReactNode })
   const [createFolderOpen, setCreateFolderOpen] = useState(false);
   const [folderDraft, setFolderDraft] = useState("");
   const [folderParent, setFolderParent] = useState("");
-  const [sidebarExpanded, setSidebarExpanded] = useState(false);
+  const [sidebarExpanded, setSidebarExpanded] = useState(true);
   const [library, setLibrary] = useState<StudyLibraryState>(DEFAULT_STUDY_LIBRARY);
   const [customFolders, setCustomFolders] = useState<string[]>([]);
   const [searchDraft, setSearchDraft] = useState("");
@@ -122,8 +122,9 @@ export default function StudyLayout({ children }: { children: React.ReactNode })
       if (rawExpanded != null) {
         setSidebarExpanded(rawExpanded === "true");
       }
+      // If no preference stored yet, keep the default (true = open)
     } catch {
-      setSidebarExpanded(false);
+      setSidebarExpanded(true);
     }
   }, []);
 
@@ -333,32 +334,29 @@ export default function StudyLayout({ children }: { children: React.ReactNode })
   const plusMenu = (
     <div
       onClick={(event) => event.stopPropagation()}
-      className="absolute right-0 top-16 z-50 w-[280px] max-w-[calc(100vw-2rem)] rounded-[1.4rem] border border-white/10 bg-[#1b1f45] p-3 shadow-[0_24px_50px_rgba(0,0,0,0.36)]"
+      className="absolute right-0 top-12 z-50 w-60 rounded-xl border border-white/10 bg-[#0f1520] py-1.5 shadow-[0_20px_40px_rgba(0,0,0,0.55)]"
     >
-      <button onClick={() => openFromPlus("/study/create?type=flashcards")} className="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-sm font-semibold text-white transition hover:bg-white/[0.06]">
-        <BookOpen className="h-5 w-5" />
-        Flashcard set
-      </button>
-      <button onClick={() => openFromPlus("/study/planner")} className="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-sm font-semibold text-white transition hover:bg-white/[0.06]">
-        <Target className="h-5 w-5" />
-        Degree planner
-      </button>
-      <button onClick={() => openFromPlus("/study/create?type=guide")} className="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-sm font-semibold text-white transition hover:bg-white/[0.06]">
-        <Sparkles className="h-5 w-5" />
-        Study guide
-      </button>
+      <div className="px-3 pb-1.5 pt-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-600">Create</div>
+      {[
+        { label: "Flashcard set", icon: <BookOpen className="h-3.5 w-3.5 text-indigo-400" />, href: "/study/create?type=flashcards" },
+        { label: "Study guide", icon: <Sparkles className="h-3.5 w-3.5 text-violet-400" />, href: "/study/create?type=guide" },
+        { label: "Degree planner", icon: <Target className="h-3.5 w-3.5 text-sky-400" />, href: "/study/planner" },
+      ].map((item) => (
+        <button key={item.label} onClick={() => openFromPlus(item.href)} className="flex w-full items-center gap-2.5 px-3 py-2 text-left text-[13px] font-medium text-slate-300 transition hover:bg-white/5 hover:text-white">
+          {item.icon}
+          {item.label}
+        </button>
+      ))}
+      <div className="my-1 h-px bg-white/6" />
       <button
-        onClick={() => {
-          setPlusOpen(false);
-          openCreateFolder();
-        }}
-        className="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-sm font-semibold text-white transition hover:bg-white/[0.06]"
+        onClick={() => { setPlusOpen(false); openCreateFolder(); }}
+        className="flex w-full items-center gap-2.5 px-3 py-2 text-left text-[13px] font-medium text-slate-300 transition hover:bg-white/5 hover:text-white"
       >
-        <Folder className="h-5 w-5" />
-        Folder
+        <Folder className="h-3.5 w-3.5 text-slate-500" />
+        New folder
       </button>
-      <button onClick={() => openFromPlus("/study?screen=groups")} className="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-sm font-semibold text-white transition hover:bg-white/[0.06]">
-        <Users className="h-5 w-5" />
+      <button onClick={() => openFromPlus("/study?screen=groups")} className="flex w-full items-center gap-2.5 px-3 py-2 text-left text-[13px] font-medium text-slate-300 transition hover:bg-white/5 hover:text-white">
+        <Users className="h-3.5 w-3.5 text-slate-500" />
         Study group
       </button>
     </div>
@@ -375,15 +373,15 @@ export default function StudyLayout({ children }: { children: React.ReactNode })
       href={item.href}
       onClick={onClick}
       title={compact ? item.label : undefined}
-      className={`group flex items-center rounded-xl text-sm font-medium transition ${
-        compact ? "justify-center px-2 py-3" : "gap-3 px-3 py-2.5"
+      className={`group flex items-center rounded-lg text-[13px] font-medium transition-colors ${
+        compact ? "justify-center p-2.5" : "gap-2.5 px-2.5 py-2"
       } ${
         item.active
-          ? "bg-white/[0.12] text-white"
-          : "text-zinc-300 hover:bg-white/[0.05] hover:text-white"
+          ? "bg-white/8 text-white"
+          : "text-slate-400 hover:bg-white/5 hover:text-slate-200"
       }`}
     >
-      <span className="shrink-0">{item.icon}</span>
+      <span className={`shrink-0 ${item.active ? "text-indigo-400" : "text-slate-500 group-hover:text-slate-300"}`}>{item.icon}</span>
       {!compact ? <span className="truncate">{item.label}</span> : null}
       {!compact && badge ? <span className="ml-auto shrink-0">{badge}</span> : null}
     </Link>
@@ -391,132 +389,93 @@ export default function StudyLayout({ children }: { children: React.ReactNode })
 
   const sidebarContent = (compact: boolean, mobile = false) => (
     <>
+      {/* Logo */}
       <div className={`flex items-center px-3 py-2 ${compact ? "justify-center" : "gap-3"}`}>
-        <button
-          type="button"
-          onClick={() => setMenuOpen(false)}
-          className="inline-flex h-9 w-9 items-center justify-center rounded-full text-zinc-300 transition hover:bg-white/[0.06] hover:text-white lg:hidden"
-          aria-label="Close study menu"
-        >
-          <X className="h-5 w-5" />
-        </button>
+        {!mobile && (
+          <button
+            type="button"
+            onClick={() => setMenuOpen(false)}
+            className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 transition hover:bg-white/6 hover:text-white lg:hidden"
+            aria-label="Close menu"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        )}
         {!compact ? (
           <Link
             href="/"
             onClick={closeMenu}
-            className="inline-flex items-center gap-3 rounded-xl px-2 py-1 text-white transition hover:bg-white/[0.05]"
-            aria-label="Go to main website homepage"
+            className="inline-flex min-w-0 flex-1 items-center gap-2.5 rounded-lg px-1.5 py-1 text-white transition hover:bg-white/4"
           >
-            <Image
-              src="/atlas-navbar-mark.png"
-              alt="UIChicago"
-              width={36}
-              height={36}
-              className="h-9 w-9 object-contain"
-            />
-            <div className="hidden min-w-0 sm:block">
-              <div className="truncate text-sm font-semibold text-white">UIChicago</div>
-              <div className="text-[11px] text-zinc-400">Back to website homepage</div>
-            </div>
+            <Image src="/atlas-navbar-mark.png" alt="UIChicago" width={28} height={28} className="h-7 w-7 shrink-0 object-contain" />
+            <span className="truncate text-[13px] font-semibold tracking-[-0.01em] text-white">UIChicago</span>
           </Link>
         ) : (
-          <Link
-            href="/"
-            onClick={closeMenu}
-            className="inline-flex h-10 w-10 items-center justify-center rounded-xl text-white transition hover:bg-white/[0.05]"
-            aria-label="Go to main website homepage"
-          >
-            <Image
-              src="/atlas-navbar-mark.png"
-              alt="UIChicago"
-              width={32}
-              height={32}
-              className="h-8 w-8 object-contain"
-            />
+          <Link href="/" onClick={closeMenu} className="inline-flex h-9 w-9 items-center justify-center rounded-lg transition hover:bg-white/5">
+            <Image src="/atlas-navbar-mark.png" alt="UIChicago" width={26} height={26} className="h-6.5 w-6.5 object-contain" />
           </Link>
         )}
       </div>
 
-      <div className="mt-5 space-y-1 px-3">
+      {/* Primary nav */}
+      <div className="mt-4 space-y-px px-2">
         {navItems.map((item) => renderSidebarItem(item, compact, mobile ? closeMenu : undefined))}
       </div>
 
-      <div className="mx-3 mt-6 border-t border-white/10 pt-5">
-        {!compact ? (
-          <div className="px-3 text-[11px] font-bold uppercase tracking-[0.18em] text-zinc-500">
-            Your folders
+      {/* Folders */}
+      <div className="mt-6 px-2">
+        {!compact && (
+          <div className="mb-1 px-2.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-600">
+            Folders
           </div>
-        ) : (
-          <div className="mx-auto h-px w-7 bg-white/12" />
         )}
-        <div className="mt-3 space-y-1">
+        {!compact && <div className="my-1 h-px bg-white/6" />}
+        {compact && <div className="my-3 mx-auto h-px w-6 bg-white/8" />}
+        <div className="mt-1 space-y-px">
           {sidebarFolders.length ? (
             sidebarFolders.map((folder) => {
               const isCustomFolder = customFolderSet.has(folder);
               return (
-                <div key={folder} className="group">
-                  <div
-                    className={`flex items-center rounded-lg text-sm transition ${
-                      compact ? "justify-center px-2 py-3" : "gap-3 px-3 py-2"
-                    } ${
-                      selectedFolder === folder
-                        ? "bg-white/[0.12] text-white"
-                        : "text-zinc-300 hover:bg-white/[0.05] hover:text-white"
-                    }`}
-                  >
+                <div key={folder} className="group relative">
+                  <div className={`flex items-center rounded-lg text-[13px] transition-colors ${
+                    compact ? "justify-center p-2.5" : "gap-2.5 px-2.5 py-2"
+                  } ${
+                    selectedFolder === folder
+                      ? "bg-white/8 text-white"
+                      : "text-slate-400 hover:bg-white/5 hover:text-slate-200"
+                  }`}>
                     <Link
-                      key={folder}
                       href={`/study?folder=${encodeURIComponent(folder)}`}
                       onClick={mobile ? closeMenu : undefined}
                       title={compact ? folderLabelFromPath(folder) : undefined}
-                      className={`flex min-w-0 flex-1 items-center ${compact ? "justify-center" : "gap-3"}`}
+                      className={`flex min-w-0 flex-1 items-center ${compact ? "justify-center" : "gap-2.5"}`}
                     >
-                      <Folder className="h-4 w-4 shrink-0 text-zinc-500" />
+                      <Folder className={`h-4 w-4 shrink-0 ${selectedFolder === folder ? "text-indigo-400" : "text-slate-600 group-hover:text-slate-400"}`} />
                       {!compact ? <span className="truncate">{folderLabelFromPath(folder)}</span> : null}
                     </Link>
                     {!compact ? (
-                      <div
-                        className="relative ml-auto opacity-0 transition group-hover:opacity-100"
-                        onClick={(event) => event.stopPropagation()}
-                      >
+                      <div className="relative ml-auto opacity-0 transition group-hover:opacity-100" onClick={(e) => e.stopPropagation()}>
                         <button
                           type="button"
-                          onClick={() => setFolderMenuOpen((current) => (current === folder ? null : folder))}
-                          className="inline-flex h-7 w-7 items-center justify-center rounded-full text-zinc-400 hover:bg-white/[0.08] hover:text-white"
-                          aria-label={`Open folder actions for ${folderLabelFromPath(folder)}`}
+                          onClick={() => setFolderMenuOpen((c) => (c === folder ? null : folder))}
+                          className="inline-flex h-6 w-6 items-center justify-center rounded-md text-slate-500 hover:bg-white/8 hover:text-white"
                         >
                           <MoreHorizontal className="h-3.5 w-3.5" />
                         </button>
                         {folderMenuOpen === folder ? (
-                          <div className="absolute right-0 top-9 z-20 w-[190px] rounded-[1rem] border border-white/10 bg-[#171b42] p-2 shadow-[0_20px_40px_rgba(0,0,0,0.35)]">
-                            <button
-                              type="button"
-                              onClick={() => openCreateFolder(folder)}
-                              className="flex w-full items-center gap-2 rounded-[0.8rem] px-3 py-2.5 text-left text-sm font-medium text-zinc-200 transition hover:bg-white/[0.06]"
-                            >
-                              <Folder className="h-4 w-4" />
-                              Add subfolder
+                          <div className="absolute right-0 top-8 z-20 w-44 rounded-xl border border-white/10 bg-[#0f1520] py-1 shadow-[0_16px_32px_rgba(0,0,0,0.5)]">
+                            <button type="button" onClick={() => openCreateFolder(folder)} className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-slate-300 hover:bg-white/6">
+                              <Folder className="h-3.5 w-3.5 text-slate-500" /> Add subfolder
                             </button>
-                            {isCustomFolder ? (
-                              <>
-                                <button
-                                  type="button"
-                                  onClick={() => renameFolder(folder)}
-                                  className="mt-1 flex w-full items-center gap-2 rounded-[0.8rem] px-3 py-2.5 text-left text-sm font-medium text-zinc-200 transition hover:bg-white/[0.06]"
-                                >
-                                  <Pencil className="h-4 w-4" />
-                                  Rename
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={() => deleteFolder(folder)}
-                                  className="mt-1 flex w-full items-center gap-2 rounded-[0.8rem] px-3 py-2.5 text-left text-sm font-medium text-red-200 transition hover:bg-red-500/[0.12]"
-                                >
-                                  <Trash2 className="h-4 w-4" />
-                                  Delete
-                                </button>
-                              </>
-                            ) : null}
+                            {isCustomFolder && <>
+                              <button type="button" onClick={() => renameFolder(folder)} className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-slate-300 hover:bg-white/6">
+                                <Pencil className="h-3.5 w-3.5 text-slate-500" /> Rename
+                              </button>
+                              <div className="my-1 h-px bg-white/6" />
+                              <button type="button" onClick={() => deleteFolder(folder)} className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-rose-400 hover:bg-rose-500/10">
+                                <Trash2 className="h-3.5 w-3.5" /> Delete
+                              </button>
+                            </>}
                           </div>
                         ) : null}
                       </div>
@@ -526,34 +485,28 @@ export default function StudyLayout({ children }: { children: React.ReactNode })
               );
             })
           ) : (
-            !compact ? <div className="px-3 py-2 text-sm text-zinc-500">No folders yet.</div> : null
+            !compact ? <div className="px-2.5 py-1.5 text-[13px] text-slate-600">No folders yet</div> : null
           )}
           <button
             type="button"
-            onClick={() => {
-              openCreateFolder();
-              if (mobile) closeMenu();
-            }}
+            onClick={() => { openCreateFolder(); if (mobile) closeMenu(); }}
             title={compact ? "New folder" : undefined}
-            className={`flex w-full items-center rounded-lg text-sm text-zinc-200 transition hover:bg-white/[0.05] hover:text-white ${
-              compact ? "justify-center px-2 py-3" : "gap-3 px-3 py-2"
+            className={`flex w-full items-center rounded-lg text-[13px] text-slate-500 transition hover:bg-white/5 hover:text-slate-300 ${
+              compact ? "justify-center p-2.5" : "gap-2.5 px-2.5 py-2"
             }`}
           >
-            <Folder className="h-4 w-4 text-zinc-300" />
+            <Plus className="h-3.5 w-3.5 shrink-0" />
             {!compact ? <span>New folder</span> : null}
           </button>
         </div>
       </div>
 
-      <div className="mx-3 mt-6 border-t border-white/10 pt-5">
-        {!compact ? (
-          <div className="px-3 text-[11px] font-bold uppercase tracking-[0.18em] text-zinc-500">
-            Study tools
-          </div>
-        ) : (
-          <div className="mx-auto h-px w-7 bg-white/12" />
-        )}
-        <div className="mt-3 space-y-1">
+      {/* Study tools */}
+      <div className="mt-4 px-2">
+        {!compact && <div className="mb-1 px-2.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-600">Tools</div>}
+        {!compact && <div className="my-1 h-px bg-white/6" />}
+        {compact && <div className="my-3 mx-auto h-px w-6 bg-white/8" />}
+        <div className="mt-1 space-y-px">
           {studyItems.map((item) => renderSidebarItem(item, compact, mobile ? closeMenu : undefined))}
         </div>
       </div>
@@ -561,50 +514,36 @@ export default function StudyLayout({ children }: { children: React.ReactNode })
   );
 
   return (
-    <div className="min-h-screen overflow-x-clip bg-[#111136] text-white">
+    <div className="min-h-screen overflow-x-clip bg-[#080d18] text-white">
+      {/* New folder modal */}
       {createFolderOpen ? (
         <div
-          className="fixed inset-0 z-[90] flex items-center justify-center bg-black/55 px-4"
-          onClick={() => {
-            setCreateFolderOpen(false);
-            setFolderDraft("");
-            setFolderParent("");
-          }}
+          className="fixed inset-0 z-[90] flex items-center justify-center bg-black/60 px-4 backdrop-blur-sm"
+          onClick={() => { setCreateFolderOpen(false); setFolderDraft(""); setFolderParent(""); }}
         >
           <div
-            onClick={(event) => event.stopPropagation()}
-            className="w-full max-w-[420px] rounded-[2rem] border border-white/12 bg-[#171b42] p-6 shadow-[0_24px_60px_rgba(0,0,0,0.42)]"
+            onClick={(e) => e.stopPropagation()}
+            className="w-full max-w-[400px] rounded-2xl border border-white/10 bg-[#0f1520] p-6 shadow-[0_32px_64px_rgba(0,0,0,0.6)]"
           >
-            <div className="flex justify-center">
-              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-white/[0.05]">
-                <Folder className="h-7 w-7 text-white" />
-              </div>
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-indigo-500/15">
+              <Folder className="h-5 w-5 text-indigo-400" />
             </div>
-            <div className="mt-5 text-center text-2xl font-semibold text-white">
-              {folderParent ? `New subfolder in ${folderLabelFromPath(folderParent)}` : "Name your folder"}
+            <div className="mt-4 text-lg font-semibold text-white">
+              {folderParent ? `New subfolder in "${folderLabelFromPath(folderParent)}"` : "Create folder"}
             </div>
             <input
               autoFocus
               value={folderDraft}
-              onChange={(event) => setFolderDraft(event.target.value)}
-              onKeyDown={(event) => {
-                if (event.key === "Enter") {
-                  event.preventDefault();
-                  createFolder();
-                }
-              }}
-              placeholder={folderParent ? "Subfolder name" : "Folder name"}
-              className="mt-5 h-12 w-full rounded-xl border border-white/12 bg-white/[0.06] px-4 text-white outline-none placeholder:text-zinc-500"
+              onChange={(e) => setFolderDraft(e.target.value)}
+              onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); createFolder(); } }}
+              placeholder="Folder name"
+              className="mt-4 h-11 w-full rounded-xl border border-white/10 bg-white/5 px-4 text-sm text-white outline-none placeholder:text-slate-600 focus:border-indigo-500/40 focus:bg-white/7"
             />
-            <div className="mt-6 flex justify-end gap-3">
+            <div className="mt-4 flex justify-end gap-2">
               <button
                 type="button"
-                onClick={() => {
-                  setCreateFolderOpen(false);
-                  setFolderDraft("");
-                  setFolderParent("");
-                }}
-                className="rounded-full bg-white/[0.08] px-5 py-2.5 text-sm font-semibold text-zinc-200 transition hover:bg-white/[0.12] hover:text-white"
+                onClick={() => { setCreateFolderOpen(false); setFolderDraft(""); setFolderParent(""); }}
+                className="rounded-lg border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-slate-300 transition hover:bg-white/8"
               >
                 Cancel
               </button>
@@ -612,7 +551,7 @@ export default function StudyLayout({ children }: { children: React.ReactNode })
                 type="button"
                 onClick={createFolder}
                 disabled={!folderDraft.trim()}
-                className="rounded-full bg-[#4f46e5] px-5 py-2.5 text-sm font-semibold text-white transition enabled:hover:bg-[#5d53f3] disabled:cursor-not-allowed disabled:opacity-40"
+                className="atlas-cta-btn disabled:cursor-not-allowed disabled:opacity-40"
               >
                 Create
               </button>
@@ -621,145 +560,129 @@ export default function StudyLayout({ children }: { children: React.ReactNode })
         </div>
       ) : null}
 
-      <aside
-        className={`fixed inset-y-0 left-0 z-40 hidden border-r border-white/10 bg-[#111136] transition-[width] duration-300 ease-out lg:block ${
-          sidebarExpanded ? "w-[270px]" : "w-[72px]"
-        }`}
-      >
-        <div className="flex h-full flex-col pb-6 pt-5">
+      {/* Desktop sidebar */}
+      <aside className={`fixed inset-y-0 left-0 z-40 hidden flex-col border-r border-white/6 bg-[#080d18] transition-[width] duration-300 ease-out lg:flex ${
+        sidebarExpanded ? "w-[240px]" : "w-[60px]"
+      }`}>
+        <div className="flex flex-1 flex-col overflow-y-auto pb-4 pt-4">
           {sidebarContent(!sidebarExpanded)}
         </div>
       </aside>
 
-      <div
-        className={`fixed inset-0 z-[70] transition lg:hidden ${menuOpen ? "pointer-events-auto" : "pointer-events-none"}`}
-        aria-hidden={!menuOpen}
-      >
-        <div
-          onClick={() => setMenuOpen(false)}
-          className={`absolute inset-0 bg-black/50 transition-opacity duration-200 ${menuOpen ? "opacity-100" : "opacity-0"}`}
-        />
-        <aside
-          className={`absolute left-0 top-0 h-full w-[270px] border-r border-white/10 bg-[#111136] transition-transform duration-300 ${menuOpen ? "translate-x-0" : "-translate-x-full"}`}
-        >
-          <div className="flex h-full flex-col pb-6 pt-5">
+      {/* Mobile slide-in */}
+      <div className={`fixed inset-0 z-[70] lg:hidden ${menuOpen ? "pointer-events-auto" : "pointer-events-none"}`} aria-hidden={!menuOpen}>
+        <div onClick={() => setMenuOpen(false)} className={`absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity duration-200 ${menuOpen ? "opacity-100" : "opacity-0"}`} />
+        <aside className={`absolute left-0 top-0 h-full w-[240px] border-r border-white/6 bg-[#080d18] transition-transform duration-300 ${menuOpen ? "translate-x-0" : "-translate-x-full"}`}>
+          <div className="flex h-full flex-col overflow-y-auto pb-4 pt-4">
+            <div className="flex items-center justify-between px-3 pb-2">
+              <Link href="/" onClick={closeMenu} className="inline-flex items-center gap-2 rounded-lg px-1.5 py-1 text-white transition hover:bg-white/5">
+                <Image src="/atlas-navbar-mark.png" alt="UIChicago" width={24} height={24} className="h-6 w-6 object-contain" />
+                <span className="text-[13px] font-semibold text-white">UIChicago</span>
+              </Link>
+              <button type="button" onClick={closeMenu} className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 hover:bg-white/6 hover:text-white">
+                <X className="h-4 w-4" />
+              </button>
+            </div>
             {sidebarContent(false, true)}
           </div>
         </aside>
       </div>
 
-      <div className={`transition-[padding-left] duration-300 ease-out ${sidebarExpanded ? "lg:pl-[270px]" : "lg:pl-[72px]"}`}>
-        <header className="sticky top-0 z-30 border-b border-white/8 bg-[#111136]/95 backdrop-blur">
-          <div className="flex items-center gap-3 px-4 py-3 lg:px-8">
+      {/* Main content */}
+      <div className={`transition-[padding-left] duration-300 ease-out ${sidebarExpanded ? "lg:pl-[240px]" : "lg:pl-[60px]"}`}>
+        <header className="sticky top-0 z-30 border-b border-white/6 bg-[#080d18]/92 backdrop-blur-md">
+          <div className="flex items-center gap-2 px-4 py-2.5 lg:px-6">
+            {/* Mobile hamburger */}
             <button
               type="button"
               onClick={() => setMenuOpen(true)}
-              className="inline-flex h-10 w-10 items-center justify-center rounded-full text-zinc-300 transition hover:bg-white/[0.06] hover:text-white lg:hidden"
-              aria-label="Open study menu"
+              className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-slate-400 transition hover:bg-white/6 hover:text-white lg:hidden"
             >
-              <Menu className="h-5 w-5" />
+              <Menu className="h-4 w-4" />
             </button>
 
+            {/* Desktop sidebar toggle */}
             <button
               type="button"
-              onClick={() => setSidebarExpanded((current) => !current)}
-              className="hidden h-10 w-10 items-center justify-center rounded-full text-zinc-300 transition hover:bg-white/[0.06] hover:text-white lg:inline-flex"
-              aria-label={sidebarExpanded ? "Collapse study menu" : "Expand study menu"}
+              onClick={() => setSidebarExpanded((c) => !c)}
+              className="hidden h-9 w-9 items-center justify-center rounded-lg text-slate-500 transition hover:bg-white/6 hover:text-slate-300 lg:inline-flex"
             >
-              <span className="relative flex h-4 w-5 flex-col justify-between">
-                <span className="block h-0.5 w-5 rounded-full bg-current" />
-                <span className="block h-0.5 w-4 rounded-full bg-current" />
-                <span className="block h-0.5 w-5 rounded-full bg-current" />
-              </span>
+              <Menu className="h-4 w-4" />
             </button>
 
-            <div className="relative min-w-0 flex-1 lg:mx-auto lg:max-w-[420px]">
-              <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-500" />
+            {/* Search */}
+            <div className="relative min-w-0 flex-1 lg:mx-auto lg:max-w-[380px]">
+              <Search className="pointer-events-none absolute left-3.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-600" />
               <input
                 data-tour="study-nav-search"
                 value={searchDraft}
-                onChange={(event) => setSearchDraft(event.target.value)}
-                placeholder="Find it faster with a search"
-                className="h-11 w-full rounded-xl border border-white/10 bg-[#23234f] pl-11 pr-4 text-sm text-white outline-none placeholder:text-zinc-500"
+                onChange={(e) => setSearchDraft(e.target.value)}
+                placeholder="Search your library…"
+                className="h-9 w-full rounded-lg border border-white/8 bg-white/4 pl-9 pr-4 text-sm text-white outline-none placeholder:text-slate-600 focus:border-indigo-500/30 focus:bg-white/6"
               />
             </div>
 
-            <div className="relative ml-auto flex items-center gap-3">
+            {/* Actions */}
+            <div className="relative ml-auto flex items-center gap-2">
               <button
                 data-tour="study-nav-create"
                 type="button"
-                onClick={(event) => {
-                  event.stopPropagation();
-                  setPlusOpen((current) => !current);
-                }}
-                className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-[#5561ff] text-white shadow-[0_10px_24px_rgba(85,97,255,0.28)]"
-                aria-label="Create"
+                onClick={(e) => { e.stopPropagation(); setPlusOpen((c) => !c); }}
+                className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-indigo-600 text-white shadow-[0_2px_8px_rgba(79,70,229,0.35)] transition hover:bg-indigo-500"
               >
-                <Plus className="h-5 w-5" />
+                <Plus className="h-4 w-4" />
               </button>
+
+              {/* Profile / Sign in */}
               <div ref={profileMenuRef} className="relative hidden lg:block">
-                <button
-                  type="button"
-                  onClick={(event) => {
-                    event.stopPropagation();
-                    setProfileMenuOpen((current) => !current);
-                  }}
-                  className="inline-flex items-center gap-3 rounded-full border border-white/10 bg-white/[0.04] pl-2 pr-3 py-2 text-sm font-semibold text-white transition hover:bg-white/[0.08]"
-                  aria-label="Open profile menu"
-                  aria-expanded={profileMenuOpen}
-                >
-                  {profileAvatarUrl || fallbackAvatar ? (
-                    <span className="relative inline-flex h-8 w-8 overflow-hidden rounded-full border border-white/10 bg-[#6e4cff]">
-                      <img src={profileAvatarUrl || fallbackAvatar || ""} alt="Profile picture" className="h-full w-full object-cover" />
-                    </span>
-                  ) : (
-                    <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-[#6e4cff] text-xs font-bold text-white">
-                      {profileInitials}
-                    </span>
-                  )}
-                  <span className="max-w-[120px] truncate">{profileName}</span>
-                  <ChevronDown className={`h-4 w-4 text-zinc-400 transition ${profileMenuOpen ? "rotate-180" : ""}`} />
-                </button>
-
-                {profileMenuOpen ? (
-                  <div
-                    onClick={(event) => event.stopPropagation()}
-                    className="absolute right-0 top-[calc(100%+0.7rem)] z-50 w-[240px] rounded-[1.25rem] border border-white/10 bg-[#171b42] p-2 shadow-[0_24px_50px_rgba(0,0,0,0.36)]"
+                {status === "unauthenticated" ? (
+                  <button
+                    type="button"
+                    onClick={() => router.push("/auth/signin?callbackUrl=/study")}
+                    className="inline-flex items-center gap-2 rounded-lg border border-white/8 bg-white/4 px-3 py-1.5 text-[13px] font-medium text-slate-300 transition hover:bg-white/7 hover:text-white"
                   >
-                    <div className="rounded-[1rem] bg-white/[0.04] px-3 py-3">
-                      <div className="text-sm font-semibold text-white">{profileName}</div>
-                      <div className="mt-1 truncate text-xs text-zinc-400">{session?.user?.email || ""}</div>
-                    </div>
-
-                    <Link
-                      href="/profile"
-                      onClick={() => setProfileMenuOpen(false)}
-                      className="mt-2 inline-flex w-full items-center gap-2 rounded-[0.9rem] px-3 py-2.5 text-sm font-medium text-zinc-200 transition hover:bg-white/[0.06]"
-                    >
-                      <UserRound className="h-4 w-4" />
-                      Profile
-                    </Link>
-
-                    <Link
-                      href="/settings"
-                      onClick={() => setProfileMenuOpen(false)}
-                      className="mt-1 inline-flex w-full items-center gap-2 rounded-[0.9rem] px-3 py-2.5 text-sm font-medium text-zinc-200 transition hover:bg-white/[0.06]"
-                    >
-                      <Settings className="h-4 w-4" />
-                      Settings
-                    </Link>
-
+                    Sign in
+                  </button>
+                ) : status === "authenticated" ? (
+                  <>
                     <button
                       type="button"
-                      onClick={() => signOut({ callbackUrl: "/" })}
-                      className="mt-1 inline-flex w-full items-center gap-2 rounded-[0.9rem] px-3 py-2.5 text-sm font-medium text-zinc-200 transition hover:bg-white/[0.06]"
+                      onClick={(e) => { e.stopPropagation(); setProfileMenuOpen((c) => !c); }}
+                      className="inline-flex items-center gap-2 rounded-lg border border-white/8 bg-white/4 px-2.5 py-1.5 text-sm font-medium text-white transition hover:bg-white/7"
                     >
-                      <LogOut className="h-4 w-4" />
-                      Log out
+                      {profileAvatarUrl || fallbackAvatar ? (
+                        <span className="inline-flex h-6 w-6 overflow-hidden rounded-full border border-white/10">
+                          <img src={profileAvatarUrl || fallbackAvatar || ""} alt="Avatar" className="h-full w-full object-cover" />
+                        </span>
+                      ) : (
+                        <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-indigo-600 text-[10px] font-bold text-white">{profileInitials}</span>
+                      )}
+                      <span className="max-w-25 truncate text-[13px]">{profileName}</span>
+                      <ChevronDown className={`h-3.5 w-3.5 text-slate-500 transition ${profileMenuOpen ? "rotate-180" : ""}`} />
                     </button>
-                  </div>
-                ) : null}
+
+                    {profileMenuOpen ? (
+                      <div onClick={(e) => e.stopPropagation()} className="absolute right-0 top-[calc(100%+8px)] z-50 w-55 rounded-xl border border-white/10 bg-[#0f1520] py-1.5 shadow-[0_20px_40px_rgba(0,0,0,0.5)]">
+                        <div className="border-b border-white/6 px-3 pb-2.5 pt-1.5">
+                          <div className="text-[13px] font-semibold text-white">{profileName}</div>
+                          <div className="mt-0.5 truncate text-[11px] text-slate-500">{session?.user?.email || ""}</div>
+                        </div>
+                        <Link href="/profile" onClick={() => setProfileMenuOpen(false)} className="flex items-center gap-2 px-3 py-2 text-[13px] text-slate-300 transition hover:bg-white/5 hover:text-white">
+                          <UserRound className="h-3.5 w-3.5 text-slate-500" /> Profile
+                        </Link>
+                        <Link href="/settings" onClick={() => setProfileMenuOpen(false)} className="flex items-center gap-2 px-3 py-2 text-[13px] text-slate-300 transition hover:bg-white/5 hover:text-white">
+                          <Settings className="h-3.5 w-3.5 text-slate-500" /> Settings
+                        </Link>
+                        <div className="my-1 h-px bg-white/6" />
+                        <button type="button" onClick={() => signOut({ callbackUrl: "/" })} className="flex w-full items-center gap-2 px-3 py-2 text-[13px] text-slate-300 transition hover:bg-white/5 hover:text-white">
+                          <LogOut className="h-3.5 w-3.5 text-slate-500" /> Log out
+                        </button>
+                      </div>
+                    ) : null}
+                  </>
+                ) : null /* loading — render nothing to avoid flash */}
               </div>
+
               {plusOpen ? plusMenu : null}
             </div>
           </div>

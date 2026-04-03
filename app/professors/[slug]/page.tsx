@@ -117,7 +117,7 @@ console.log("peers found:", peers?.length);  // add this after the findMany too
 
   return (
     <main className="relative min-h-screen bg-zinc-50 text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100">
-  <div className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-72 bg-gradient-to-b from-sky-50/60 to-transparent dark:from-sky-950/30 dark:to-transparent" />
+  <div className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-72 bg-linear-to-b from-sky-50/60 to-transparent dark:from-sky-950/30 dark:to-transparent" />
 
   <div className="mx-auto max-w-3xl px-4 py-6 sm:px-6 sm:py-16">
     {/* Profile card */}
@@ -140,7 +140,7 @@ console.log("peers found:", peers?.length);  // add this after the findMany too
             </div>
 
             {professor.aiSummary && (
-              <div className="mt-6 rounded-xl border border-zinc-100 dark:border-white/8 bg-zinc-50 dark:bg-white/[0.03] p-5 text-sm leading-relaxed">
+              <div className="mt-6 rounded-xl border border-zinc-100 dark:border-white/8 bg-zinc-50 dark:bg-white/3 p-5 text-sm leading-relaxed">
                 {professor.aiSummary.split("\n\n").map((block: string, i: number) => {
                   if (block.trim().startsWith("•")) {
                     const items = block.split("\n").map((s: string) => s.replace(/^•\s*/, "").trim()).filter(Boolean);
@@ -153,13 +153,13 @@ console.log("peers found:", peers?.length);  // add this after the findMany too
 
             <div className={`mt-6 grid gap-3 ${professor.salary ? "grid-cols-2 sm:grid-cols-3" : "grid-cols-2"}`}>
               {[{ label: "Department", value: professor.department }, { label: "School", value: professor.school }].map((s) => (
-                <div key={s.label} className="rounded-xl bg-zinc-50 dark:bg-white/[0.03] px-4 py-3 ring-1 ring-zinc-200 dark:ring-white/8">
+                <div key={s.label} className="rounded-xl bg-zinc-50 dark:bg-white/3 px-4 py-3 ring-1 ring-zinc-200 dark:ring-white/8">
                   <div className="text-[10px] font-bold uppercase tracking-widest text-zinc-400 dark:text-zinc-600">{s.label}</div>
                   <div className="mt-1 text-sm font-semibold text-zinc-900 dark:text-zinc-200">{s.value}</div>
                 </div>
               ))}
               {professor.salary && (
-                <div className="col-span-2 sm:col-span-1 rounded-xl bg-emerald-50 dark:bg-emerald-500/[0.07] px-4 py-3 ring-1 ring-emerald-200 dark:ring-emerald-500/20">
+                <div className="col-span-2 sm:col-span-1 rounded-xl bg-emerald-50 dark:bg-emerald-500/7 px-4 py-3 ring-1 ring-emerald-200 dark:ring-emerald-500/20">
                   <div className="text-[10px] font-bold uppercase tracking-widest text-sky-600 dark:text-sky-500">Annual Salary</div>
                   <div className="mt-1 text-sm font-bold text-sky-700 dark:text-sky-400">
                     ${Number(professor.salary).toLocaleString("en-US", { maximumFractionDigits: 0 })}
@@ -175,7 +175,7 @@ console.log("peers found:", peers?.length);  // add this after the findMany too
 
             {professor.rmpUrl && (
               <div className="mt-5">
-                <a href={professor.rmpUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-xl border border-zinc-200 bg-white px-5 py-2.5 text-sm font-semibold text-zinc-700 transition hover:bg-zinc-50 hover:border-zinc-300 dark:border-sky-500/15 dark:bg-sky-500/[0.05] dark:text-zinc-200 dark:hover:bg-sky-500/[0.1] dark:hover:border-sky-500/25">
+                <a href={professor.rmpUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-xl border border-zinc-200 bg-white px-5 py-2.5 text-sm font-semibold text-zinc-700 transition hover:bg-zinc-50 hover:border-zinc-300 dark:border-sky-500/15 dark:bg-sky-500/5 dark:text-zinc-200 dark:hover:bg-sky-500/10 dark:hover:border-sky-500/25">
                   View on RateMyProfessors →
                 </a>
               </div>
@@ -195,7 +195,7 @@ console.log("peers found:", peers?.length);  // add this after the findMany too
             <>
               <div className="space-y-3 px-4 py-4 sm:hidden">
                 {courseRanks.map((r) => (
-                  <div key={r.courseLabel} className="rounded-2xl bg-zinc-50 p-4 ring-1 ring-zinc-200 dark:bg-white/[0.03] dark:ring-white/8">
+                  <div key={r.courseLabel} className="rounded-2xl bg-zinc-50 p-4 ring-1 ring-zinc-200 dark:bg-white/3 dark:ring-white/8">
                     <div className="flex items-start justify-between gap-3">
                       <div className="min-w-0">
                         <Link
@@ -222,9 +222,9 @@ console.log("peers found:", peers?.length);  // add this after the findMany too
                   <div className="col-span-6">Title</div>
                   <div className="col-span-3 text-right">Rank</div>
                 </div>
-                <ul className="divide-y divide-zinc-100 dark:divide-white/[0.04]">
+                <ul className="divide-y divide-zinc-100 dark:divide-white/4">
                   {courseRanks.map((r) => (
-                    <li key={r.courseLabel} className="grid grid-cols-12 items-center px-5 sm:px-6 py-4 text-sm hover:bg-zinc-50 dark:hover:bg-white/[0.03] transition-colors">
+                    <li key={r.courseLabel} className="grid grid-cols-12 items-center px-5 sm:px-6 py-4 text-sm hover:bg-zinc-50 dark:hover:bg-white/3 transition-colors">
                       <div className="col-span-3 font-bold text-zinc-900 dark:text-zinc-100">
                         <Link
                           href={`/courses/${r.courseLabel.split(" ")[0].toLowerCase()}/${r.courseLabel.split(" ")[1]?.toLowerCase()}`}

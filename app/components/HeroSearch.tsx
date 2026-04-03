@@ -149,7 +149,7 @@ export default function HeroSearch({ compact = false }: { compact?: boolean }) {
             placeholder={compact ? "Search professors or courses…" : "Search by professor, course code, or title"}
             className={`w-full rounded-xl border border-zinc-200 bg-white/95 pl-9 text-zinc-900 outline-none transition placeholder:text-zinc-400 focus:border-emerald-400 dark:border-white/10 dark:bg-zinc-900/80 dark:text-zinc-100 dark:placeholder:text-zinc-500 ${
               compact
-                ? "h-9 pr-3 text-xs shadow-[inset_0_1px_0_rgba(255,255,255,0.03)] backdrop-blur-md focus:ring-2 focus:ring-emerald-100 dark:border-white/12 dark:bg-white/[0.045] dark:hover:border-white/16 dark:focus:ring-emerald-400/10"
+                ? "h-9 pr-3 text-xs shadow-[inset_0_1px_0_rgba(255,255,255,0.03)] backdrop-blur-md focus:ring-2 focus:ring-emerald-100 dark:border-white/12 dark:bg-white/4.5 dark:hover:border-white/16 dark:focus:ring-emerald-400/10"
                 : "h-14 pr-28 text-[15px] shadow-lg focus:ring-4 focus:ring-emerald-100 dark:focus:ring-emerald-400/10"
             }`}
           />

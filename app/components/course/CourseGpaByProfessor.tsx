@@ -31,7 +31,7 @@ export default function CourseGpaByProfessor({ professors = [], courseLabel }: {
         {professors.map((row, idx) => {
           const gc = gpaConfig(row.avgGpa);
           return (
-            <div key={`${row.instructorName}-${idx}`} className="rounded-2xl bg-zinc-50 p-4 ring-1 ring-zinc-200 dark:bg-white/[0.04] dark:ring-white/8">
+            <div key={`${row.instructorName}-${idx}`} className="rounded-2xl bg-zinc-50 p-4 ring-1 ring-zinc-200 dark:bg-white/4 dark:ring-white/8">
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
                   <div className="text-[11px] font-bold uppercase tracking-widest text-zinc-400 dark:text-zinc-600">#{idx + 1}</div>
@@ -72,11 +72,11 @@ export default function CourseGpaByProfessor({ professors = [], courseLabel }: {
             <div className="col-span-2 text-right">Graded</div>
             <div className="col-span-2 text-right">Total regs</div>
           </div>
-          <ul className="divide-y divide-zinc-100 dark:divide-white/[0.04]">
+          <ul className="divide-y divide-zinc-100 dark:divide-white/4">
             {professors.map((row, idx) => {
               const gc = gpaConfig(row.avgGpa);
               return (
-                <li key={`${row.instructorName}-${idx}`} className="grid grid-cols-12 items-center px-5 sm:px-6 py-4 text-sm hover:bg-zinc-50 dark:hover:bg-white/[0.03] transition-colors">
+                <li key={`${row.instructorName}-${idx}`} className="grid grid-cols-12 items-center px-5 sm:px-6 py-4 text-sm hover:bg-zinc-50 dark:hover:bg-white/3 transition-colors">
                   <div className="col-span-1">
                     <span className="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-zinc-100 dark:bg-white/5 text-xs font-bold text-zinc-500 dark:text-zinc-500 ring-1 ring-zinc-200 dark:ring-white/8">{idx + 1}</span>
                   </div>

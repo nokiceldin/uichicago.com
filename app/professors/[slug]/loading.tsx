@@ -21,7 +21,7 @@ export default function ProfessorLoading() {
             </div>
 
             {/* Summary skeleton */}
-            <div className="mt-6 rounded-xl border border-zinc-100 dark:border-white/8 bg-zinc-50 dark:bg-white/[0.03] p-5 space-y-2">
+            <div className="mt-6 rounded-xl border border-zinc-100 dark:border-white/8 bg-zinc-50 dark:bg-white/3 p-5 space-y-2">
               <div className="h-4 w-full rounded bg-zinc-200 dark:bg-zinc-800 animate-pulse" />
               <div className="h-4 w-5/6 rounded bg-zinc-200 dark:bg-zinc-800 animate-pulse" />
               <div className="h-4 w-4/6 rounded bg-zinc-200 dark:bg-zinc-800 animate-pulse" />
@@ -44,7 +44,7 @@ export default function ProfessorLoading() {
             <div className="h-6 w-40 rounded-lg bg-zinc-200 dark:bg-zinc-800 animate-pulse" />
             <div className="mt-2 h-4 w-64 rounded-lg bg-zinc-200 dark:bg-zinc-800 animate-pulse" />
           </div>
-          <div className="divide-y divide-zinc-100 dark:divide-white/[0.04]">
+          <div className="divide-y divide-zinc-100 dark:divide-white/4">
             {[...Array(4)].map((_, i) => (
               <div key={i} className="flex items-center justify-between px-5 sm:px-6 py-4 gap-4">
                 <div className="h-4 w-16 rounded bg-zinc-200 dark:bg-zinc-800 animate-pulse" />

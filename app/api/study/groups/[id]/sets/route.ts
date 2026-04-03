@@ -75,3 +75,43 @@ export async function POST(
     return NextResponse.json({ error: "Failed to link study set." }, { status: 500 });
   }
 }
+
+export async function DELETE(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  try {
+    const studyUser = await requireCurrentStudyUser();
+    const { id } = await params;
+    const body = await request.json();
+    const setId = String(body.setId || "").trim();
+
+    if (!setId) {
+      return NextResponse.json({ error: "Study set id is required." }, { status: 400 });
+    }
+
+    const membership = await prisma.studyGroupMembership.findUnique({
+      where: { groupId_userId: { groupId: id, userId: studyUser.id } },
+    });
+    if (!membership) {
+      return NextResponse.json({ error: "You must be a member to remove sets." }, { status: 403 });
+    }
+
+    await prisma.studyGroupSet.deleteMany({ where: { groupId: id, setId } });
+
+    const updated = await prisma.studyGroup.findUniqueOrThrow({
+      where: { id },
+      include: {
+        memberships: { include: { user: true }, orderBy: { joinedAt: "asc" } },
+        linkedSets: true,
+      },
+    });
+
+    return NextResponse.json({ ok: true, group: serializeStudyGroup(updated as never) });
+  } catch (error) {
+    if (error instanceof Error && error.message === "UNAUTHORIZED") {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    return NextResponse.json({ error: "Failed to remove study set." }, { status: 500 });
+  }
+}

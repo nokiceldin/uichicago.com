@@ -1607,7 +1607,7 @@ const visiblePrompts = useMemo(() => getRandomItems(topic.items, 4), [topic.item
           <span className="h-1.5 w-1.5 rounded-full bg-red-500" />
           UIC AI assistant
         </div>
-        <div className="sparky-float mb-4 rounded-[1.6rem] border border-white/10 bg-white/[0.03] px-4 py-3 shadow-[0_24px_80px_rgba(0,0,0,0.24)] backdrop-blur-md sm:mb-5 sm:rounded-[2rem] sm:px-5 sm:py-4">
+        <div className="sparky-float mb-4 rounded-[1.6rem] border border-white/10 bg-white/3 px-4 py-3 shadow-[0_24px_80px_rgba(0,0,0,0.24)] backdrop-blur-md sm:mb-5 sm:rounded-4xl sm:px-5 sm:py-4">
           <img src="/sparky-icon.png" alt="Sparky" className="h-16 w-16 object-contain drop-shadow-lg sm:h-20 sm:w-20" />
         </div>
         <h1 className="mb-3 text-center text-[32px] font-black leading-none tracking-[-0.05em] text-zinc-900 dark:text-white sm:text-[46px]">
@@ -1638,7 +1638,7 @@ const visiblePrompts = useMemo(() => getRandomItems(topic.items, 4), [topic.item
       </div>
 
       {/* Topic tabs + prompt cards */}
-      <div className="w-full max-w-3xl rounded-[1.6rem] border border-zinc-200/70 bg-white/55 p-3 shadow-[0_18px_50px_rgba(0,0,0,0.06)] backdrop-blur-md dark:border-white/8 dark:bg-[rgba(14,16,22,0.52)] dark:shadow-[0_18px_50px_rgba(0,0,0,0.24)] sm:rounded-[2rem] sm:p-4">
+      <div className="w-full max-w-3xl rounded-[1.6rem] border border-zinc-200/70 bg-white/55 p-3 shadow-[0_18px_50px_rgba(0,0,0,0.06)] backdrop-blur-md dark:border-white/8 dark:bg-[rgba(14,16,22,0.52)] dark:shadow-[0_18px_50px_rgba(0,0,0,0.24)] sm:rounded-4xl sm:p-4">
         {/* Scrollable topic chips — negative mx so fade mask reaches edge */}
         <div className="mb-4">
           <div className="mb-3 px-1 text-[11px] font-bold uppercase tracking-[0.2em] text-zinc-400 dark:text-zinc-500">
@@ -1860,7 +1860,7 @@ function ChatHistorySidebar({
         <button
           type="button"
           onClick={onToggle}
-          className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-zinc-200 bg-white text-zinc-600 shadow-sm transition hover:bg-zinc-50 dark:border-white/10 dark:bg-white/[0.04] dark:text-zinc-300 dark:hover:bg-white/[0.08]"
+          className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-zinc-200 bg-white text-zinc-600 shadow-sm transition hover:bg-zinc-50 dark:border-white/10 dark:bg-white/4 dark:text-zinc-300 dark:hover:bg-white/8"
           aria-label={open ? "Collapse history" : "Expand history"}
         >
           {open ? <PanelLeftClose className="h-4 w-4" /> : <PanelLeftOpen className="h-4 w-4" />}
@@ -1871,7 +1871,7 @@ function ChatHistorySidebar({
         <button
           type="button"
           onClick={onNewChat}
-          className={`inline-flex w-full items-center gap-2 rounded-2xl border border-zinc-200 bg-white px-3 py-3 text-sm font-semibold text-zinc-900 shadow-sm transition hover:bg-zinc-50 dark:border-white/10 dark:bg-white/[0.05] dark:text-white dark:hover:bg-white/[0.08] ${open ? "justify-start" : "justify-center px-0"}`}
+          className={`inline-flex w-full items-center gap-2 rounded-2xl border border-zinc-200 bg-white px-3 py-3 text-sm font-semibold text-zinc-900 shadow-sm transition hover:bg-zinc-50 dark:border-white/10 dark:bg-white/5 dark:text-white dark:hover:bg-white/8 ${open ? "justify-start" : "justify-center px-0"}`}
         >
           <Plus className="h-4 w-4" />
           {open ? <span>New chat</span> : null}
@@ -1882,15 +1882,15 @@ function ChatHistorySidebar({
         {loading ? (
           <div className={`space-y-2 ${open ? "" : "hidden"}`}>
             {Array.from({ length: 5 }).map((_, index) => (
-              <div key={index} className="h-16 rounded-2xl bg-zinc-200/70 dark:bg-white/[0.05]" />
+              <div key={index} className="h-16 rounded-2xl bg-zinc-200/70 dark:bg-white/5" />
             ))}
           </div>
         ) : !signedIn && items.length === 0 ? (
-          <div className={`rounded-2xl border border-dashed border-zinc-200 bg-white/70 p-4 text-sm text-zinc-500 dark:border-white/10 dark:bg-white/[0.03] dark:text-zinc-400 ${open ? "" : "hidden"}`}>
+          <div className={`rounded-2xl border border-dashed border-zinc-200 bg-white/70 p-4 text-sm text-zinc-500 dark:border-white/10 dark:bg-white/3 dark:text-zinc-400 ${open ? "" : "hidden"}`}>
             Chats save on this device automatically. Sign in if you want them synced across sessions.
           </div>
         ) : items.length === 0 ? (
-          <div className={`rounded-2xl border border-dashed border-zinc-200 bg-white/70 p-4 text-sm text-zinc-500 dark:border-white/10 dark:bg-white/[0.03] dark:text-zinc-400 ${open ? "" : "hidden"}`}>
+          <div className={`rounded-2xl border border-dashed border-zinc-200 bg-white/70 p-4 text-sm text-zinc-500 dark:border-white/10 dark:bg-white/3 dark:text-zinc-400 ${open ? "" : "hidden"}`}>
             No saved chats yet. Start a conversation and Sparky will keep it here.
           </div>
         ) : (
@@ -1901,7 +1901,7 @@ function ChatHistorySidebar({
               return (
                 <div
                   key={item.id}
-                  className={`group relative rounded-xl transition ${active ? "bg-white shadow-sm dark:bg-white/[0.05]" : "hover:bg-white/70 dark:hover:bg-white/[0.035]"}`}
+                  className={`group relative rounded-xl transition ${active ? "bg-white shadow-sm dark:bg-white/5" : "hover:bg-white/70 dark:hover:bg-white/3.5"}`}
                 >
                   {open ? (
                     <>
@@ -1925,7 +1925,7 @@ function ChatHistorySidebar({
                             onBlur={() => {
                               void saveEditing(item.id);
                             }}
-                            className="w-full rounded-md border border-zinc-300 bg-white px-2 py-1 text-[13px] font-medium text-zinc-900 outline-none focus:border-red-400 dark:border-white/10 dark:bg-white/[0.05] dark:text-white"
+                            className="w-full rounded-md border border-zinc-300 bg-white px-2 py-1 text-[13px] font-medium text-zinc-900 outline-none focus:border-red-400 dark:border-white/10 dark:bg-white/5 dark:text-white"
                           />
                           <button
                             type="button"
@@ -1934,7 +1934,7 @@ function ChatHistorySidebar({
                               event.stopPropagation();
                               void saveEditing(item.id);
                             }}
-                            className="inline-flex h-7 w-7 items-center justify-center rounded-md text-zinc-500 hover:bg-zinc-100 hover:text-zinc-800 dark:text-zinc-400 dark:hover:bg-white/[0.06] dark:hover:text-white"
+                            className="inline-flex h-7 w-7 items-center justify-center rounded-md text-zinc-500 hover:bg-zinc-100 hover:text-zinc-800 dark:text-zinc-400 dark:hover:bg-white/6 dark:hover:text-white"
                             aria-label="Save chat name"
                           >
                             <Check className="h-3.5 w-3.5" />
@@ -1946,7 +1946,7 @@ function ChatHistorySidebar({
                               event.stopPropagation();
                               cancelEditing();
                             }}
-                            className="inline-flex h-7 w-7 items-center justify-center rounded-md text-zinc-500 hover:bg-zinc-100 hover:text-zinc-800 dark:text-zinc-400 dark:hover:bg-white/[0.06] dark:hover:text-white"
+                            className="inline-flex h-7 w-7 items-center justify-center rounded-md text-zinc-500 hover:bg-zinc-100 hover:text-zinc-800 dark:text-zinc-400 dark:hover:bg-white/6 dark:hover:text-white"
                             aria-label="Cancel renaming"
                           >
                             <X className="h-3.5 w-3.5" />
@@ -1957,7 +1957,7 @@ function ChatHistorySidebar({
                           <button
                             type="button"
                             onClick={() => onOpenConversation(item.id)}
-                            className="min-w-0 flex-1 rounded-lg px-2 py-2 text-left text-[14px] font-medium leading-5 text-zinc-900 transition hover:bg-zinc-100/70 dark:text-white dark:hover:bg-white/[0.04]"
+                            className="min-w-0 flex-1 rounded-lg px-2 py-2 text-left text-[14px] font-medium leading-5 text-zinc-900 transition hover:bg-zinc-100/70 dark:text-white dark:hover:bg-white/4"
                           >
                             <div className="truncate">{item.title}</div>
                           </button>
@@ -1967,7 +1967,7 @@ function ChatHistorySidebar({
                               event.stopPropagation();
                               setMenuId((current) => (current === item.id ? null : item.id));
                             }}
-                            className={`inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-zinc-500 transition hover:bg-zinc-100 hover:text-zinc-800 dark:text-zinc-400 dark:hover:bg-white/[0.06] dark:hover:text-white ${menuId === item.id ? "opacity-100" : "opacity-0 group-hover:opacity-100"}`}
+                            className={`inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-zinc-500 transition hover:bg-zinc-100 hover:text-zinc-800 dark:text-zinc-400 dark:hover:bg-white/6 dark:hover:text-white ${menuId === item.id ? "opacity-100" : "opacity-0 group-hover:opacity-100"}`}
                             aria-label="Conversation options"
                           >
                             <Ellipsis className="h-4 w-4" />
@@ -1983,7 +1983,7 @@ function ChatHistorySidebar({
                               event.stopPropagation();
                               startEditing(item.id, item.title);
                             }}
-                            className="inline-flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-left text-[12px] font-medium text-zinc-700 transition hover:bg-zinc-100 dark:text-zinc-200 dark:hover:bg-white/[0.06]"
+                            className="inline-flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-left text-[12px] font-medium text-zinc-700 transition hover:bg-zinc-100 dark:text-zinc-200 dark:hover:bg-white/6"
                           >
                             <Pencil className="h-3.5 w-3.5" />
                             Rename
@@ -1995,7 +1995,7 @@ function ChatHistorySidebar({
                               setMenuId(null);
                               onDeleteConversation(item.id);
                             }}
-                            className="inline-flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-left text-[12px] font-medium text-zinc-700 transition hover:bg-zinc-100 dark:text-zinc-200 dark:hover:bg-white/[0.06]"
+                            className="inline-flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-left text-[12px] font-medium text-zinc-700 transition hover:bg-zinc-100 dark:text-zinc-200 dark:hover:bg-white/6"
                           >
                             <Trash2 className="h-3.5 w-3.5" />
                             Delete
@@ -2009,7 +2009,7 @@ function ChatHistorySidebar({
                       onClick={() => onOpenConversation(item.id)}
                       className="flex w-full justify-center px-0 py-2"
                     >
-                      <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-zinc-900/90 text-white dark:bg-white/[0.08]">
+                      <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-zinc-900/90 text-white dark:bg-white/8">
                         <MessageSquare className="h-3.5 w-3.5" />
                       </div>
                     </button>

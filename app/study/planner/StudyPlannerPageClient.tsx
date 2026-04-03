@@ -54,7 +54,8 @@ export default function StudyPlannerPageClient() {
     if (!profile) return;
 
     if (typeof profile.major === "string") {
-      setProfileMajor((current) => (current === profile.major ? current : profile.major));
+      const nextMajor = profile.major ?? "";
+      setProfileMajor((current) => (current === nextMajor ? current : nextMajor));
     }
     if (Array.isArray(profile.currentCourses)) {
       const nextCourses = profile.currentCourses.join(", ");
@@ -64,7 +65,8 @@ export default function StudyPlannerPageClient() {
       setProfileInterests((current) => (sameStringArray(current, profile.interests ?? []) ? current : profile.interests ?? []));
     }
     if (typeof profile.studyPreferences === "string") {
-      setProfileStudyPreferences((current) => (current === profile.studyPreferences ? current : profile.studyPreferences));
+      const nextStudyPreferences = profile.studyPreferences ?? "";
+      setProfileStudyPreferences((current) => (current === nextStudyPreferences ? current : nextStudyPreferences));
     }
     if (profile.plannerProfile || Array.isArray(profile.currentCourses)) {
       const nextPlannerProfile: PlannerProfileState = {

@@ -70,12 +70,14 @@ export async function PATCH(request: Request) {
     const normalizedPlannerCurrentCourses = Array.isArray(body.plannerProfile?.currentCourses)
       ? body.plannerProfile.currentCourses.map((course: unknown) => String(course).trim()).filter(Boolean)
       : null;
+    const unifiedCourseSource: string[] =
+      normalizedTopLevelCurrentCourses
+      ?? normalizedPlannerCurrentCourses
+      ?? existingUnifiedCourses;
     const nextUnifiedCourses = Array.from(
       new Set(
-        (normalizedTopLevelCurrentCourses
-          ?? normalizedPlannerCurrentCourses
-          ?? existingUnifiedCourses)
-          .map((course) => String(course).trim())
+        unifiedCourseSource
+          .map((course: string) => String(course).trim())
           .filter(Boolean),
       ),
     );

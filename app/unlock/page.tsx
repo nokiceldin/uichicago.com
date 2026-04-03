@@ -4,26 +4,26 @@ import { Suspense, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
 function getTargetMeta(nextPath: string) {
-  if (nextPath.startsWith("/study")) {
+  if (nextPath.startsWith("/study/planner")) {
     return {
       badge: "Private Area",
-      title: "My School is locked",
-      description: "Enter the password to open your personal school workspace.",
-      button: "Enter My School",
-      accent: "from-indigo-500 to-indigo-600",
-      glow: "shadow-indigo-950/35",
-      dot: "bg-indigo-400",
+      title: "Degree Planner is locked",
+      description: "Enter the password to open the degree planner while it is still in progress.",
+      button: "Enter Degree Planner",
+      accent: "from-sky-500 to-indigo-600",
+      glow: "shadow-sky-950/35",
+      dot: "bg-sky-400",
     };
   }
 
   return {
     badge: "Private Area",
-    title: "Sparky is locked",
-    description: "Enter the password to continue into Sparky.",
-    button: "Enter Sparky",
-    accent: "from-red-500 to-red-600",
-    glow: "shadow-red-950/35",
-    dot: "bg-red-400",
+    title: "Private page",
+    description: "Enter the password to continue.",
+    button: "Continue",
+    accent: "from-zinc-700 to-zinc-900",
+    glow: "shadow-zinc-950/35",
+    dot: "bg-zinc-400",
   };
 }
 
@@ -37,8 +37,8 @@ function UnlockForm() {
   const [shake, setShake] = useState(false);
 
   const nextPath = useMemo(() => {
-    const requested = searchParams.get("next") || "/chat";
-    if (!requested.startsWith("/") || requested.startsWith("//")) return "/chat";
+    const requested = searchParams.get("next") || "/study/planner";
+    if (!requested.startsWith("/") || requested.startsWith("//")) return "/study/planner";
     return requested;
   }, [searchParams]);
 

@@ -1,4 +1,4 @@
-type ProtectedScope = "chat" | "study";
+type ProtectedScope = "planner";
 
 type ScopeConfig = {
   cookieName: string;
@@ -8,13 +8,9 @@ type ScopeConfig = {
 const ACCESS_VERSION = "uichicago-private-v1";
 
 const SCOPE_CONFIG: Record<ProtectedScope, ScopeConfig> = {
-  chat: {
-    cookieName: "uic_private_chat_access",
-    password: "uicsparky2026",
-  },
-  study: {
-    cookieName: "uic_private_study_access",
-    password: "mypage2026",
+  planner: {
+    cookieName: "uic_private_planner_access",
+    password: "planner2026",
   },
 };
 
@@ -26,12 +22,8 @@ function normalizePathname(pathname: string) {
 export function getProtectedScope(pathname: string): ProtectedScope | null {
   const normalized = normalizePathname(pathname);
 
-  if (normalized === "/chat" || normalized.startsWith("/chat/") || normalized === "/api/chat" || normalized.startsWith("/api/chat/")) {
-    return "chat";
-  }
-
-  if (normalized === "/study" || normalized.startsWith("/study/") || normalized === "/api/study" || normalized.startsWith("/api/study/")) {
-    return "study";
+  if (normalized === "/study/planner" || normalized.startsWith("/study/planner/")) {
+    return "planner";
   }
 
   return null;

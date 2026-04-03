@@ -7,7 +7,7 @@ type LocalCatalogCourse = {
   subject: string;
   number: string;
   title: string;
-  deptName?: string | null;
+  deptName: string | null;
   totalRegsAllTime: number;
 };
 
@@ -54,7 +54,7 @@ function loadLocalCatalogCourses() {
     }
   }
 
-  localCatalogCache = rawCatalog
+  const normalizedCatalog = rawCatalog
     .map((course) => {
       const subject = String(course.subject ?? "").trim().toUpperCase();
       const number = String(course.number ?? "").trim().toUpperCase();
@@ -69,6 +69,8 @@ function loadLocalCatalogCourses() {
       };
     })
     .filter((course): course is LocalCatalogCourse => course !== null);
+
+  localCatalogCache = normalizedCatalog;
 
   return localCatalogCache;
 }

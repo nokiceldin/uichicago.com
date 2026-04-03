@@ -80,6 +80,9 @@ type RankedCourse = {
   number: string;
   title: string;
   totalRegsAllTime?: number | null;
+  deptName?: string | null;
+  isGenEd?: boolean | null;
+  genEdCategory?: string | null;
 };
 
 function isHonorsCourse(course: RankedCourse) {
@@ -101,6 +104,7 @@ type MajorData = {
       code?: string | null;
       title?: string | null;
       hours?: number | null;
+      note?: string | null;
       isElective?: boolean;
       electiveType?: string | null;
     }>;
@@ -108,7 +112,7 @@ type MajorData = {
   scienceElectives?: { options?: Array<{ code: string; title?: string }>; totalHours?: number };
   requiredMath?: { options?: Array<{ code: string; title?: string }>; totalHours?: number };
   technicalElectives?: { options?: Array<{ code: string; title?: string }>; totalHours?: number };
-  requiredEngineering?: { courses?: Array<{ code: string; title?: string; hours?: number | null }> };
+  requiredEngineering?: { courses?: Array<{ code: string; title?: string; hours?: number | null; note?: string | null }> };
 };
 
 function loadMajorIndex(): MajorIndexEntry[] {
@@ -127,6 +131,108 @@ function normalizeCourseCode(code: string) {
 
 function normalizeCourseCodeList(codes?: string[]) {
   return Array.from(new Set((codes ?? []).map(normalizeCourseCode).filter(Boolean)));
+}
+
+function extractCourseCodes(text: string) {
+  const matches = text.match(/\b[A-Z]{2,5}\s*\d{2,3}[A-Z]?\b/gi) ?? [];
+  return normalizeCourseCodeList(matches);
+}
+
+function noteImpliesAlternatives(note: string) {
+  const normalized = note.toLowerCase();
+  return /\bor\b/.test(normalized) || /\beither\b/.test(normalized) || /\bone of\b/.test(normalized) || /\bat least one\b/.test(normalized);
+}
+
+function buildMajorCourseCatalog(major: MajorData) {
+  const catalog = new Map<string, { title: string | null; hours: number | null }>();
+
+  const visit = (value: unknown) => {
+    if (!value || typeof value !== "object") return;
+
+    if (Array.isArray(value)) {
+      for (const item of value) visit(item);
+      return;
+    }
+
+    const record = value as Record<string, unknown>;
+    if (typeof record.code === "string" && record.code.trim()) {
+      const code = normalizeCourseCode(record.code);
+      const title = typeof record.title === "string" && record.title.trim() ? record.title.trim() : null;
+      const hours = typeof record.hours === "number" ? record.hours : null;
+      const existing = catalog.get(code);
+      if (!existing || (!existing.title && title) || (existing.hours == null && hours != null)) {
+        catalog.set(code, {
+          title: title ?? existing?.title ?? null,
+          hours: hours ?? existing?.hours ?? null,
+        });
+      }
+    }
+
+    for (const child of Object.values(record)) visit(child);
+  };
+
+  visit(major);
+  return catalog;
+}
+
+function buildRequirementAlternatives(major: MajorData) {
+  const alternatives = new Map<string, Set<string>>();
+
+  const addAlternatives = (baseCode: string, codes: string[]) => {
+    const normalizedBase = normalizeCourseCode(baseCode);
+    const normalizedCodes = normalizeCourseCodeList([normalizedBase, ...codes]);
+    if (normalizedCodes.length < 2) return;
+
+    const existing = alternatives.get(normalizedBase) ?? new Set<string>();
+    for (const code of normalizedCodes) existing.add(code);
+    alternatives.set(normalizedBase, existing);
+  };
+
+  const visit = (value: unknown) => {
+    if (!value || typeof value !== "object") return;
+
+    if (Array.isArray(value)) {
+      for (const item of value) visit(item);
+      return;
+    }
+
+    const record = value as Record<string, unknown>;
+    if (typeof record.code === "string" && record.code.trim() && typeof record.note === "string" && record.note.trim()) {
+      const note = record.note.trim();
+      const mentionedCodes = extractCourseCodes(note);
+      if (noteImpliesAlternatives(note) && mentionedCodes.length) {
+        addAlternatives(record.code, mentionedCodes);
+      }
+    }
+
+    for (const child of Object.values(record)) visit(child);
+  };
+
+  visit(major);
+  return alternatives;
+}
+
+function pickSatisfiedCode(
+  primaryCode: string,
+  alternatives: Map<string, Set<string>>,
+  availableTakenCodes: Set<string>,
+  consumedTakenCodes: Set<string>,
+) {
+  const codesToTry = Array.from(alternatives.get(primaryCode) ?? [primaryCode]);
+
+  if (availableTakenCodes.has(primaryCode) && !consumedTakenCodes.has(primaryCode)) {
+    consumedTakenCodes.add(primaryCode);
+    return primaryCode;
+  }
+
+  for (const code of codesToTry) {
+    if (availableTakenCodes.has(code) && !consumedTakenCodes.has(code)) {
+      consumedTakenCodes.add(code);
+      return code;
+    }
+  }
+
+  return primaryCode;
 }
 
 function normalizeMajorText(value: string) {
@@ -322,12 +428,18 @@ async function buildElectivePools(major: MajorData): Promise<Record<string, Rank
   };
 }
 
-function buildAlternatives(pool: RankedCourse[] | undefined, usedCodes: Set<string>, currentCode?: string, honorsStudent = false) {
+function buildAlternatives(
+  pool: RankedCourse[] | undefined,
+  usedCodes: Set<string>,
+  blockedCodes: Set<string>,
+  currentCode?: string,
+  honorsStudent = false,
+) {
   return (pool ?? [])
     .filter((course) => honorsStudent || !isHonorsCourse(course))
     .filter((course) => {
       const code = normalizeCourseCode(`${course.subject} ${course.number}`);
-      return code === currentCode || !usedCodes.has(code);
+      return code === currentCode || (!usedCodes.has(code) && !blockedCodes.has(code));
     })
     .slice(0, 6)
     .map((course) => ({
@@ -337,11 +449,16 @@ function buildAlternatives(pool: RankedCourse[] | undefined, usedCodes: Set<stri
     }));
 }
 
-function chooseCourse(pool: RankedCourse[] | undefined, usedCodes: Set<string>, honorsStudent = false) {
+function chooseTakenCourse(
+  pool: RankedCourse[] | undefined,
+  usedCodes: Set<string>,
+  takenCodes: Set<string>,
+  consumedTakenCodes: Set<string>,
+) {
   for (const course of pool ?? []) {
-    if (!honorsStudent && isHonorsCourse(course)) continue;
     const code = normalizeCourseCode(`${course.subject} ${course.number}`);
-    if (!usedCodes.has(code)) {
+    if (takenCodes.has(code) && !consumedTakenCodes.has(code) && !usedCodes.has(code)) {
+      consumedTakenCodes.add(code);
       return {
         code,
         title: course.title,
@@ -352,6 +469,368 @@ function chooseCourse(pool: RankedCourse[] | undefined, usedCodes: Set<string>, 
   return null;
 }
 
+function chooseCourse(
+  pool: RankedCourse[] | undefined,
+  usedCodes: Set<string>,
+  blockedCodes: Set<string>,
+  honorsStudent = false,
+) {
+  for (const course of pool ?? []) {
+    if (!honorsStudent && isHonorsCourse(course)) continue;
+    const code = normalizeCourseCode(`${course.subject} ${course.number}`);
+    if (!usedCodes.has(code) && !blockedCodes.has(code)) {
+      return {
+        code,
+        title: course.title,
+        totalRegsAllTime: course.totalRegsAllTime ?? 0,
+      };
+    }
+  }
+  return null;
+}
+
+type TakenCourseDetails = {
+  code: string;
+  title: string;
+  subject: string;
+  number: string;
+  isGenEd: boolean;
+  genEdCategory: string | null;
+};
+
+function normalizeCategory(value: string | null | undefined) {
+  return (value ?? "").toLowerCase().replace(/[^a-z]+/g, " ").trim();
+}
+
+function buildTakenCourseDetailsMap(courses: RankedCourse[], explicitSavedCourses: string[]) {
+  const details = new Map<string, TakenCourseDetails>();
+
+  for (const course of courses) {
+    const code = normalizeCourseCode(`${course.subject} ${course.number}`);
+    details.set(code, {
+      code,
+      title: course.title,
+      subject: course.subject,
+      number: course.number,
+      isGenEd: Boolean(course.isGenEd),
+      genEdCategory: course.genEdCategory ?? null,
+    });
+  }
+
+  for (const code of explicitSavedCourses) {
+    if (details.has(code)) continue;
+    const match = code.match(/^([A-Z&]+)\s+(\d+[A-Z]?)$/);
+    details.set(code, {
+      code,
+      title: code,
+      subject: match?.[1] ?? "",
+      number: match?.[2] ?? "",
+      isGenEd: false,
+      genEdCategory: null,
+    });
+  }
+
+  return details;
+}
+
+function likelyCountsAsHumanitiesOrGenEd(details: TakenCourseDetails) {
+  if (details.isGenEd) return true;
+  return new Set(["AH", "CL", "COMM", "ENGL", "HIST", "HN", "MUS", "THTR", "SOC", "PSCH", "ANTH", "POLS", "CLJ"]).has(details.subject);
+}
+
+function fitsElectiveBucket(details: TakenCourseDetails, bucket: string) {
+  const category = normalizeCategory(details.genEdCategory);
+
+  switch (bucket) {
+    case "gen_ed_any":
+      return likelyCountsAsHumanitiesOrGenEd(details);
+    case "gen_ed_individual_society":
+      return category.includes("individual") || category.includes("society") || new Set(["SOC", "PSCH", "ANTH", "CLJ", "POLS", "ECON"]).has(details.subject);
+    case "gen_ed_past":
+      return category.includes("past") || new Set(["HIST", "AH", "CL"]).has(details.subject);
+    case "gen_ed_world_cultures":
+    case "global_biz":
+      return category.includes("world") || category.includes("culture") || new Set(["SPAN", "FREN", "GER", "ITAL", "CL", "HIST"]).has(details.subject);
+    case "humanities_elective":
+      return likelyCountsAsHumanitiesOrGenEd(details);
+    case "free_elective":
+      return true;
+    default:
+      return false;
+  }
+}
+
+function placeRemainingTakenCourses(
+  schedule: DegreePlannerSemester[],
+  currentSemesterNumber: number,
+  remainingTakenCodes: string[],
+  takenCourseDetails: Map<string, TakenCourseDetails>,
+) {
+  if (!remainingTakenCodes.length) return schedule;
+
+  const next = schedule.map((semester) => ({
+    ...semester,
+    courses: semester.courses.map((course) => ({ ...course })),
+  }));
+
+  const preferredSlots: Array<{ semesterIndex: number; courseIndex: number; course: DegreePlannerCourse }> = [];
+  const fallbackSlots: Array<{ semesterIndex: number; courseIndex: number; course: DegreePlannerCourse }> = [];
+
+  for (let semesterIndex = 0; semesterIndex < next.length; semesterIndex += 1) {
+    const semester = next[semesterIndex];
+    for (let courseIndex = 0; courseIndex < semester.courses.length; courseIndex += 1) {
+      const course = semester.courses[courseIndex];
+      if (course.kind !== "elective" || course.status !== "planned") continue;
+
+      const slot = { semesterIndex, courseIndex, course };
+      if (semesterIndex < currentSemesterNumber) {
+        preferredSlots.push(slot);
+      } else {
+        fallbackSlots.push(slot);
+      }
+    }
+  }
+
+  const slotOrder = [...preferredSlots, ...fallbackSlots];
+
+  for (const code of remainingTakenCodes) {
+    const details = takenCourseDetails.get(code);
+    if (!details) continue;
+
+    const exactIndex = slotOrder.findIndex(({ course }) => fitsElectiveBucket(details, course.bucket));
+    if (exactIndex < 0) continue;
+
+    const [{ semesterIndex, courseIndex, course }] = slotOrder.splice(exactIndex, 1);
+    const title =
+      course.bucket === "free_elective" && !fitsElectiveBucket(details, "gen_ed_any")
+        ? `${details.title} / Free elective`
+        : details.title;
+
+    next[semesterIndex].courses[courseIndex] = {
+      ...course,
+      code: details.code,
+      title,
+      status: "in_progress",
+      popularityReason:
+        course.bucket === "free_elective" && !fitsElectiveBucket(details, "gen_ed_any")
+          ? "Placed from your completed/current course list as a likely free elective. Verify with your advisor or degree audit."
+          : course.popularityReason,
+      alternatives: course.alternatives.some((option) => option.code === details.code)
+        ? course.alternatives
+        : [{ code: details.code, title: details.title, totalRegsAllTime: 0 }, ...course.alternatives].slice(0, 6),
+    };
+  }
+
+  return next;
+}
+
+function swapCourseIntoSlot(course: DegreePlannerCourse, slotId: string): DegreePlannerCourse {
+  return {
+    ...course,
+    slotId,
+  };
+}
+
+function pickReplacementAlternative(
+  course: DegreePlannerCourse,
+  takenCodes: Set<string>,
+  usedCodes: Set<string>,
+) {
+  return course.alternatives.find((option) => option.code !== course.code && !takenCodes.has(option.code) && !usedCodes.has(option.code)) ?? null;
+}
+
+function chooseOverflowSemesterIndex(schedule: DegreePlannerSemester[], currentSemesterNumber: number) {
+  if (currentSemesterNumber <= 0) return -1;
+
+  let bestIndex = 0;
+  let bestScore = Number.POSITIVE_INFINITY;
+
+  for (let semesterIndex = 0; semesterIndex < Math.min(currentSemesterNumber, schedule.length); semesterIndex += 1) {
+    const semester = schedule[semesterIndex];
+    const creditScore = semester.courses.reduce((sum, course) => sum + (course.credits ?? 0), 0);
+    const countScore = semester.courses.length;
+    const combinedScore = creditScore * 10 + countScore;
+    if (combinedScore < bestScore) {
+      bestScore = combinedScore;
+      bestIndex = semesterIndex;
+    }
+  }
+
+  return bestIndex;
+}
+
+function buildTakenPlannerCourse(
+  details: TakenCourseDetails,
+  template: DegreePlannerCourse,
+  slotId: string,
+): DegreePlannerCourse {
+  const isFreeElectiveFallback = template.bucket === "free_elective" && !fitsElectiveBucket(details, "gen_ed_any");
+
+  return {
+    ...template,
+    slotId,
+    code: details.code,
+    title: isFreeElectiveFallback ? `${details.title} / Free elective` : details.title,
+    status: "in_progress",
+    popularityReason: isFreeElectiveFallback
+      ? "Placed from your completed/current course list as a likely free elective. Verify with your advisor or degree audit."
+      : template.popularityReason,
+    alternatives: template.alternatives.some((option) => option.code === details.code)
+      ? template.alternatives
+      : [{ code: details.code, title: details.title, totalRegsAllTime: 0 }, ...template.alternatives].slice(0, 6),
+  };
+}
+
+function reconcileMissingTakenCourses(
+  schedule: DegreePlannerSemester[],
+  currentSemesterNumber: number,
+  takenCodes: string[],
+  takenCourseDetails: Map<string, TakenCourseDetails>,
+) {
+  const next = schedule.map((semester) => ({
+    ...semester,
+    courses: semester.courses.map((course) => ({ ...course })),
+  }));
+
+  const visibleCodes = new Set(next.flatMap((semester) => semester.courses.map((course) => course.code)));
+  const missingCodes = takenCodes.filter((code) => !visibleCodes.has(code));
+  if (!missingCodes.length) return next;
+
+  for (const code of missingCodes) {
+    const details = takenCourseDetails.get(code);
+    if (!details) continue;
+
+    let matchedTemplate:
+      | { semesterIndex: number; courseIndex: number; course: DegreePlannerCourse }
+      | null = null;
+
+    for (let semesterIndex = next.length - 1; semesterIndex >= 0 && !matchedTemplate; semesterIndex -= 1) {
+      for (let courseIndex = next[semesterIndex].courses.length - 1; courseIndex >= 0; courseIndex -= 1) {
+        const course = next[semesterIndex].courses[courseIndex];
+        if (course.kind !== "elective" || course.status !== "planned") continue;
+        if (fitsElectiveBucket(details, course.bucket)) {
+          matchedTemplate = { semesterIndex, courseIndex, course };
+          break;
+        }
+      }
+    }
+
+    const overflowSemesterIndex = chooseOverflowSemesterIndex(next, currentSemesterNumber);
+    if (overflowSemesterIndex < 0) continue;
+
+    const template = matchedTemplate?.course ?? {
+      slotId: `${next[overflowSemesterIndex].id}-free-elective-template`,
+      code: "FREE ELECTIVE",
+      title: "Free elective",
+      credits: null,
+      bucket: "free_elective",
+      bucketLabel: "Free elective",
+      kind: "elective" as const,
+      popularityReason: null,
+      totalRegsAllTime: null,
+      alternatives: [],
+      status: "planned" as const,
+    };
+
+    const insertedCourse = buildTakenPlannerCourse(
+      details,
+      template,
+      `${next[overflowSemesterIndex].id}-taken-${next[overflowSemesterIndex].courses.length + 1}`,
+    );
+    next[overflowSemesterIndex].courses.push(insertedCourse);
+
+    if (matchedTemplate) {
+      next[matchedTemplate.semesterIndex].courses.splice(matchedTemplate.courseIndex, 1);
+    }
+  }
+
+  return next;
+}
+
+function rebalanceScheduleAroundCurrentSemester(
+  schedule: DegreePlannerSemester[],
+  currentSemesterNumber: number,
+  takenCodes: Set<string>,
+) {
+  if (currentSemesterNumber <= 0) return schedule;
+
+  const rebalanced = schedule.map((semester) => ({
+    ...semester,
+    courses: semester.courses.map((course) => ({ ...course })),
+  }));
+
+  const earlierPlannedSlots: Array<{ semesterIndex: number; courseIndex: number; course: DegreePlannerCourse }> = [];
+  const futureTakenSlots: Array<{ semesterIndex: number; courseIndex: number; course: DegreePlannerCourse }> = [];
+  const usedCodes = new Set(rebalanced.flatMap((semester) => semester.courses.map((course) => course.code)));
+
+  for (let semesterIndex = 0; semesterIndex < rebalanced.length; semesterIndex += 1) {
+    const semester = rebalanced[semesterIndex];
+    for (let courseIndex = 0; courseIndex < semester.courses.length; courseIndex += 1) {
+      const course = semester.courses[courseIndex];
+      if (semesterIndex < currentSemesterNumber && course.status === "planned") {
+        earlierPlannedSlots.push({ semesterIndex, courseIndex, course });
+      } else if (semesterIndex >= currentSemesterNumber && course.status !== "planned") {
+        futureTakenSlots.push({ semesterIndex, courseIndex, course });
+      }
+    }
+  }
+
+  const compatibleTargetIndex = (source: DegreePlannerCourse) => {
+    const exactIndex = earlierPlannedSlots.findIndex(({ course }) => {
+      if (source.kind === "required") {
+        return course.kind === "required";
+      }
+      return course.kind === "elective" && course.bucket === source.bucket;
+    });
+
+    if (exactIndex >= 0) return exactIndex;
+
+    const sameKindIndex = earlierPlannedSlots.findIndex(({ course }) => course.kind === source.kind);
+    if (sameKindIndex >= 0) return sameKindIndex;
+
+    return earlierPlannedSlots.findIndex(() => true);
+  };
+
+  for (const source of futureTakenSlots) {
+    const targetIndex = compatibleTargetIndex(source.course);
+    const sourceCourse = rebalanced[source.semesterIndex].courses[source.courseIndex];
+
+    if (targetIndex >= 0) {
+      const [target] = earlierPlannedSlots.splice(targetIndex, 1);
+      const targetCourse = rebalanced[target.semesterIndex].courses[target.courseIndex];
+      rebalanced[target.semesterIndex].courses[target.courseIndex] = swapCourseIntoSlot(sourceCourse, targetCourse.slotId);
+      rebalanced[source.semesterIndex].courses[source.courseIndex] = swapCourseIntoSlot(targetCourse, sourceCourse.slotId);
+      continue;
+    }
+
+    if (sourceCourse.kind !== "elective") continue;
+
+    const overflowSemesterIndex = chooseOverflowSemesterIndex(rebalanced, currentSemesterNumber);
+    if (overflowSemesterIndex < 0) continue;
+
+    rebalanced[overflowSemesterIndex].courses.push({
+      ...sourceCourse,
+      slotId: `${rebalanced[overflowSemesterIndex].id}-overflow-${rebalanced[overflowSemesterIndex].courses.length + 1}`,
+    });
+
+    const replacement = pickReplacementAlternative(sourceCourse, takenCodes, usedCodes);
+    if (!replacement) continue;
+
+    usedCodes.add(replacement.code);
+    rebalanced[source.semesterIndex].courses[source.courseIndex] = {
+      ...sourceCourse,
+      code: replacement.code,
+      title: replacement.title,
+      totalRegsAllTime: replacement.totalRegsAllTime,
+      popularityReason: buildPopularityReason(sourceCourse.bucketLabel, replacement.totalRegsAllTime ?? null),
+      status: "planned",
+      alternatives: sourceCourse.alternatives,
+    };
+  }
+
+  return rebalanced;
+}
+
 export async function generateDegreePlan(request: DegreePlannerRequest): Promise<DegreePlannerResult> {
   const matchedMajor = findMajorBySlug(request.majorSlug) ?? findMajor(request.major);
   if (!matchedMajor) {
@@ -359,6 +838,8 @@ export async function generateDegreePlan(request: DegreePlannerRequest): Promise
   }
 
   const major = loadMajorData(matchedMajor.file);
+  const majorCourseCatalog = buildMajorCourseCatalog(major);
+  const requirementAlternatives = buildRequirementAlternatives(major);
   const sampleSchedule = Array.isArray(major.sampleSchedule) ? major.sampleSchedule : [];
   if (!sampleSchedule.length) {
     throw new Error("This major does not have a semester-by-semester sample schedule in the current dataset yet.");
@@ -366,17 +847,24 @@ export async function generateDegreePlan(request: DegreePlannerRequest): Promise
 
   const pools = await buildElectivePools(major);
   const usedCodes = new Set<string>();
+  const explicitSavedCourses = normalizeCourseCodeList(request.currentCourses);
+  const explicitSavedCourseMetadata = await fetchCoursesByCodesRanked(explicitSavedCourses, true).catch(() => []);
+  const takenCourseDetails = buildTakenCourseDetailsMap(explicitSavedCourseMetadata, explicitSavedCourses);
+  const availableTakenCodes = new Set(explicitSavedCourses);
+  const consumedTakenCodes = new Set<string>();
   const fullSchedule: DegreePlannerSemester[] = sampleSchedule.map((semester, semesterIndex) => {
     const courses = (semester.courses ?? []).map((course, courseIndex) => {
       const slotId = `${semesterIndex}-${courseIndex}`;
       if (!course.isElective && course.code) {
         const normalizedCode = normalizeCourseCode(course.code);
-        usedCodes.add(normalizedCode);
+        const satisfiedCode = pickSatisfiedCode(normalizedCode, requirementAlternatives, availableTakenCodes, consumedTakenCodes);
+        const satisfiedCourse = majorCourseCatalog.get(satisfiedCode);
+        usedCodes.add(satisfiedCode);
         return {
           slotId,
-          code: normalizedCode,
-          title: course.title ?? normalizedCode,
-          credits: course.hours ?? null,
+          code: satisfiedCode,
+          title: satisfiedCourse?.title ?? course.title ?? satisfiedCode,
+          credits: satisfiedCourse?.hours ?? course.hours ?? null,
           bucket: "required",
           bucketLabel: "Required course",
           kind: "required" as const,
@@ -389,10 +877,28 @@ export async function generateDegreePlan(request: DegreePlannerRequest): Promise
 
       const bucket = course.electiveType ?? "gen_ed_any";
       const bucketLabel = ELECTIVE_LABELS[bucket] ?? "Elective";
-      const picked = chooseCourse(pools[bucket], usedCodes, Boolean(request.honorsStudent));
+      const picked =
+        chooseTakenCourse(
+          pools[bucket],
+          usedCodes,
+          availableTakenCodes,
+          consumedTakenCodes,
+        ) ??
+        chooseCourse(
+          pools[bucket],
+          usedCodes,
+          availableTakenCodes,
+          Boolean(request.honorsStudent),
+        );
       const code = picked?.code ?? normalizeCourseCode(`${bucketLabel} ${semesterIndex + 1}${courseIndex + 1}`);
       if (picked) usedCodes.add(code);
-      const alternatives = buildAlternatives(pools[bucket], usedCodes, code, Boolean(request.honorsStudent));
+      const alternatives = buildAlternatives(
+        pools[bucket],
+        usedCodes,
+        availableTakenCodes,
+        code,
+        Boolean(request.honorsStudent),
+      );
 
       return {
         slotId,
@@ -420,10 +926,16 @@ export async function generateDegreePlan(request: DegreePlannerRequest): Promise
   });
 
   const currentSemesterNumber = Math.max(0, Math.min(request.currentSemesterNumber ?? 0, fullSchedule.length));
-  const explicitSavedCourses = normalizeCourseCodeList(request.currentCourses);
+  const unmatchedTakenCodes = explicitSavedCourses.filter((code) => !consumedTakenCodes.has(code) && !usedCodes.has(code));
+  const scheduleWithRemainingTakenCourses = placeRemainingTakenCourses(
+    fullSchedule,
+    currentSemesterNumber,
+    unmatchedTakenCodes,
+    takenCourseDetails,
+  );
   const inferredCompletedCourses =
     explicitSavedCourses.length === 0 && currentSemesterNumber > 1
-      ? fullSchedule
+      ? scheduleWithRemainingTakenCourses
           .slice(0, currentSemesterNumber - 1)
           .flatMap((semester) => semester.courses.map((course) => course.code))
       : [];
@@ -434,17 +946,24 @@ export async function generateDegreePlan(request: DegreePlannerRequest): Promise
     return "planned";
   };
 
-  const markedSchedule = fullSchedule.map((semester) => ({
+  const markedSchedule = scheduleWithRemainingTakenCourses.map((semester) => ({
     ...semester,
     courses: semester.courses.map((course) => ({
       ...course,
       status: statusForCode(course.code),
     })),
   }));
+  const balancedSchedule = rebalanceScheduleAroundCurrentSemester(markedSchedule, currentSemesterNumber, new Set(currentCourses));
+  const reconciledSchedule = reconcileMissingTakenCourses(
+    balancedSchedule,
+    currentSemesterNumber,
+    currentCourses,
+    takenCourseDetails,
+  );
 
   const startIndex = request.planLength === "full" ? 0 : currentSemesterNumber;
-  const semesterCount = planLengthToSemesterCount(request.planLength ?? "remaining", markedSchedule.length, startIndex);
-  const semesters = markedSchedule.slice(startIndex, startIndex + semesterCount);
+  const semesterCount = planLengthToSemesterCount(request.planLength ?? "remaining", reconciledSchedule.length, startIndex);
+  const semesters = reconciledSchedule.slice(startIndex, startIndex + semesterCount);
 
   return {
     majorName: major.name,

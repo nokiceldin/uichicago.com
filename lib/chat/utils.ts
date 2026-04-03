@@ -1,5 +1,6 @@
 import fs from "fs";
 import path from "path";
+import { PROFESSOR_COURSE_MAP_FILE } from "@/lib/professors/course-map-config";
 
 // ─── Professor course map ─────────────────────────────────────────────────────
 
@@ -9,7 +10,7 @@ const globalForMap = globalThis as unknown as { __profCourseMap?: ProfCoursesMap
 export function getProfCourseMap(): ProfCoursesMap {
   if (globalForMap.__profCourseMap) return globalForMap.__profCourseMap;
   const raw = fs.readFileSync(
-    path.join(process.cwd(), "public", "data", "professor_to_courses.json"),
+    path.join(process.cwd(), PROFESSOR_COURSE_MAP_FILE),
     "utf8"
   );
   return (globalForMap.__profCourseMap = JSON.parse(raw));

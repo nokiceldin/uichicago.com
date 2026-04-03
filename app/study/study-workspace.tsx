@@ -3,9 +3,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { signIn, signOut, useSession } from "next-auth/react";
+import { signIn, useSession } from "next-auth/react";
 import {
-  BarChart3,
   Bookmark,
   BookOpen,
   Brain,
@@ -20,11 +19,11 @@ import {
   Flame,
   Folder,
   FolderPlus,
-  FolderOpen,
   Globe,
   GripVertical,
   ImageIcon,
   Layers3,
+  Lock,
   Maximize2,
   Minimize2,
   MoreHorizontal,
@@ -42,7 +41,6 @@ import {
   Trash2,
   Trophy,
   Users,
-  UserPlus,
   Volume2,
   WandSparkles,
   X,
@@ -122,6 +120,41 @@ function playCelebrationSound() {
       osc.stop(start + 0.32);
     });
   } catch { /* ignore */ }
+}
+
+function VisibilityIcon({
+  visibility,
+  className = "h-3.5 w-3.5",
+}: {
+  visibility: StudySet["visibility"];
+  className?: string;
+}) {
+  return visibility === "public" ? <Globe className={className} /> : <Lock className={className} />;
+}
+
+function VisibilityBadge({
+  visibility,
+  compact = false,
+}: {
+  visibility: StudySet["visibility"];
+  compact?: boolean;
+}) {
+  return (
+    <span
+      className={`inline-flex items-center gap-1.5 rounded-full border font-semibold ${
+        compact
+          ? visibility === "public"
+            ? "border-emerald-500/20 bg-emerald-500/10 px-2 py-0.5 text-[10px] uppercase tracking-[0.12em] text-emerald-200"
+            : "border-amber-500/20 bg-amber-500/10 px-2 py-0.5 text-[10px] uppercase tracking-[0.12em] text-amber-200"
+          : visibility === "public"
+            ? "border-emerald-500/20 bg-emerald-500/10 px-2.5 py-1 text-[11px] text-emerald-200"
+            : "border-amber-500/20 bg-amber-500/10 px-2.5 py-1 text-[11px] text-amber-200"
+      }`}
+    >
+      <VisibilityIcon visibility={visibility} className={compact ? "h-3 w-3" : "h-3.5 w-3.5"} />
+      {visibility === "public" ? "Public" : "Private"}
+    </span>
+  );
 }
 
 function triggerCelebration() {
@@ -1118,7 +1151,7 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
     }));
     setSelectedSetId(localCopy.id);
     openStudyScreen("overview", localCopy.id);
-    showToast("Added shared set to your library.");
+    showToast("Added shared set to your library as a private copy.");
 
     if (isSignedIn) {
       fetch("/api/study/sets", {
@@ -1811,7 +1844,6 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
     ) : selectedSet && screen === "learn" ? (
       <LearnMode
         set={selectedSet}
-        progressMap={selectedProgress}
         initialPracticeCardFronts={learnInitialMistakeFronts}
         onBack={() => { setLearnInitialMistakeFronts(null); openStudyScreen("overview", selectedSet.id); }}
         onProgress={(cardId, result) => updateCardProgress(selectedSet.id, cardId, (current) => updateProgressForReview(current, result))}
@@ -1822,7 +1854,6 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
       <AssessmentMode
         title="Test"
         set={selectedSet}
-        progressMap={selectedProgress}
         onBack={() => openStudyScreen("overview", selectedSet.id)}
         onProgress={(cardId, result) => updateCardProgress(selectedSet.id, cardId, (current) => updateProgressForReview(current, result))}
         onSessionSave={saveSession}
@@ -1846,7 +1877,7 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
   if (isCreateRoute) {
     return (
       <main className="min-h-screen bg-transparent pb-20 text-white">
-        <div className="mx-auto max-w-[1240px] px-1 pb-14 pt-3 sm:px-2">
+        <div className="mx-auto max-w-310 px-1 pb-14 pt-3 sm:px-2">
           <div className="study-appear mb-8 flex items-center justify-between gap-4">
             <div>
               <h1 className="text-[2rem] font-bold tracking-[-0.04em] text-white">
@@ -1933,7 +1964,7 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
   if (standaloneSetView && selectedSet) {
     return (
       <main className="min-h-screen bg-transparent pb-20 text-white">
-        <div className="mx-auto max-w-[1120px] px-4 pb-14 pt-5 sm:px-6">
+        <div className="mx-auto max-w-280 px-4 pb-14 pt-5 sm:px-6">
           <div className="study-appear mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <button
               onClick={() => router.push("/study?view=library")}
@@ -2009,7 +2040,7 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
           ]}
         />
       ) : null}
-      <div className="mx-auto max-w-[1280px] px-1 pb-16 pt-3 sm:px-2">
+      <div className="mx-auto max-w-7xl px-1 pb-16 pt-3 sm:px-2">
         {surface === "home" ? (
           <div className="space-y-6">
             {screen === "groups" ? (
@@ -2036,7 +2067,6 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
                 onJoinGroup={joinGroup}
                 onDeleteGroup={deleteGroup}
                 onRenameGroup={renameGroup}
-                onAddSetToGroup={addSetToGroup}
                 onRemoveSetFromGroup={removeSetFromGroup}
                 onOpenAddSetPicker={setGroupSetPickerGroupId}
               />
@@ -2058,7 +2088,7 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
                         value={search}
                         onChange={(event) => setSearch(event.target.value)}
                         placeholder={librarySearchPlaceholder}
-                        className="h-9 w-[220px] rounded-lg border border-white/8 bg-white/4 pl-9 pr-4 text-[13px] text-white outline-none placeholder:text-slate-600 focus:border-white/14 focus:bg-white/6"
+                        className="h-9 w-55 rounded-lg border border-white/8 bg-white/4 pl-9 pr-4 text-[13px] text-white outline-none placeholder:text-slate-600 focus:border-white/14 focus:bg-white/6"
                       />
                     </div>
                   </div>
@@ -2135,7 +2165,7 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
               </section>
             ) : null}
             {folderFilter ? (
-              <section className="mx-auto max-w-[860px] space-y-6 pb-24">
+              <section className="mx-auto max-w-215 space-y-6 pb-24">
                 {/* Folder header */}
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex items-center gap-3">
@@ -2155,7 +2185,7 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
                         value={search}
                         onChange={(event) => setSearch(event.target.value)}
                         placeholder="Search folder"
-                        className="h-8 w-[180px] rounded-lg border border-white/8 bg-white/4 pl-9 pr-3 text-[13px] text-white outline-none placeholder:text-slate-600 focus:border-white/14"
+                        className="h-8 w-45 rounded-lg border border-white/8 bg-white/4 pl-9 pr-3 text-[13px] text-white outline-none placeholder:text-slate-600 focus:border-white/14"
                       />
                     </div>
                     {/* Folder actions */}
@@ -2166,7 +2196,7 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
                       <MoreHorizontal className="h-4 w-4" />
                     </button>
                     {folderActionsOpen ? (
-                      <div className="absolute right-0 top-10 z-20 w-[200px] rounded-xl border border-white/10 bg-[#0f1520] py-1 shadow-[0_20px_40px_rgba(0,0,0,0.5)]">
+                      <div className="absolute right-0 top-10 z-20 w-50 rounded-xl border border-white/10 bg-[#0f1520] py-1 shadow-[0_20px_40px_rgba(0,0,0,0.5)]">
                         <button onClick={() => renameCurrentFolder(folderFilter)} className="flex w-full items-center gap-2.5 px-3 py-2 text-left text-[13px] text-slate-300 transition hover:bg-white/6 hover:text-white">
                           <Pencil className="h-3.5 w-3.5 text-slate-500" /> Rename
                         </button>
@@ -2296,7 +2326,7 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
                 </div>
               </section>
             ) : (
-            <section className={`${libraryView ? "space-y-6" : "mx-auto max-w-[920px] space-y-6"}`}>
+            <section className={`${libraryView ? "space-y-6" : "mx-auto max-w-230 space-y-6"}`}>
 
               {/* ─── HOME VIEW: Flashcards, not in library mode ─── */}
               {librarySection === "flashcards" && !libraryView ? (
@@ -2421,7 +2451,7 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
                                 onClick={() => { setSelectedSetId(set.id); openStudyScreen("overview", set.id); }}
                                 className={`atlas-set-rail-card${isActive ? " atlas-set-rail-card--active" : ""}`}
                               >
-                                <div className={`mb-2.5 h-[2px] w-full rounded-full ${masteryColor}`} />
+                                <div className={`mb-2.5 h-0.5 w-full rounded-full ${masteryColor}`} />
                                 <p className="line-clamp-2 text-[13px] font-semibold leading-tight text-white">{set.title}</p>
                                 <p className="mt-1.5 text-[11px] text-slate-500">{set.cards.length} cards · {masteryPct}%</p>
                               </button>
@@ -2466,7 +2496,7 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
                   {/* ── QUICK-FIRE TRIVIA ─────────────────────────────── */}
                   <div>
                     <div className="mb-2.5 flex items-center gap-2">
-                      <div className="flex h-[18px] w-[18px] items-center justify-center rounded-[5px] bg-amber-500/18">
+                      <div className="flex h-4.5 w-4.5 items-center justify-center rounded-[5px] bg-amber-500/18">
                         <Brain className="h-2.5 w-2.5 text-amber-400" />
                       </div>
                       <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-500">Quick-fire</p>
@@ -2474,7 +2504,7 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
                         {triviaSessionQuestions.map((_, i) => (
                           <span
                             key={i}
-                            className={`h-[3px] w-4 rounded-full transition-all duration-300 ${
+                            className={`h-0.75 w-4 rounded-full transition-all duration-300 ${
                               i < triviaIndex ? "bg-amber-400" : i === triviaIndex ? "bg-white/35" : "bg-white/8"
                             }`}
                           />
@@ -2538,7 +2568,7 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
                       className="atlas-action-strip-btn flex-1"
                     >
                       <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-indigo-500/15 text-indigo-400">
-                        <Layers3 className="h-[17px] w-[17px]" />
+                        <Layers3 className="h-4.25 w-4.25" />
                       </div>
                       <div className="text-left">
                         <p className="text-[13px] font-semibold text-white">Create flashcards</p>
@@ -2550,7 +2580,7 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
                       className="atlas-action-strip-btn flex-1"
                     >
                       <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-violet-500/15 text-violet-400">
-                        <WandSparkles className="h-[17px] w-[17px]" />
+                        <WandSparkles className="h-4.25 w-4.25" />
                       </div>
                       <div className="text-left">
                         <p className="text-[13px] font-semibold text-white">AI study guide</p>
@@ -2586,7 +2616,10 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
                                     <BookOpen className="h-3.5 w-3.5" />
                                   </div>
                                   <div className="min-w-0 flex-1">
-                                    <p className="truncate text-[13px] font-semibold text-white">{set.title}</p>
+                                    <div className="flex items-center gap-2">
+                                      <p className="truncate text-[13px] font-semibold text-white">{set.title}</p>
+                                      <VisibilityBadge visibility={set.visibility} compact />
+                                    </div>
                                     <p className="text-[11px] text-slate-500">{set.cards.length} cards{set.course ? ` · ${set.course}` : ""}</p>
                                   </div>
                                 </button>
@@ -2814,7 +2847,7 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
           </div>
         ) : isFocusedStudyMode ? (
           <div className="study-appear">
-            <div className="mx-auto max-w-[1380px]">
+            <div className="mx-auto max-w-345">
               {focusedModeContent}
             </div>
           </div>
@@ -2873,7 +2906,6 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
                 onJoinGroup={joinGroup}
                 onDeleteGroup={deleteGroup}
                 onRenameGroup={renameGroup}
-                onAddSetToGroup={addSetToGroup}
                 onRemoveSetFromGroup={removeSetFromGroup}
                 onOpenAddSetPicker={setGroupSetPickerGroupId}
               />
@@ -2984,8 +3016,9 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
                         className="study-premium-button min-w-0 flex-1 text-left"
                       >
                         <div className="truncate text-sm font-medium text-white">{set.title}</div>
-                        <div className="mt-0.5 text-[11px] text-slate-500">
-                          {set.course || set.subject} · {set.cards.length} cards
+                        <div className="mt-0.5 flex items-center gap-2 text-[11px] text-slate-500">
+                          <span>{set.course || set.subject} · {set.cards.length} cards</span>
+                          <VisibilityBadge visibility={set.visibility} compact />
                         </div>
                       </button>
                       <button
@@ -3018,7 +3051,10 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
                         <div key={set.id} className="atlas-set-card rounded-xl p-3">
                           <div className="flex items-start justify-between gap-2">
                             <div className="min-w-0">
-                              <div className="truncate text-sm font-medium text-white">{set.title}</div>
+                              <div className="flex items-center gap-2">
+                                <div className="truncate text-sm font-medium text-white">{set.title}</div>
+                                <VisibilityBadge visibility={set.visibility} compact />
+                              </div>
                               <div className="mt-0.5 text-[11px] text-slate-500">
                                 {[set.course || set.subject, `${set.cards.length} cards`].filter(Boolean).join(" · ")}
                               </div>
@@ -3058,7 +3094,7 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
 
       {folderLibraryPickerOpen ? (
         <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/20 px-4 pt-16 backdrop-blur-[2px]">
-          <div className="w-full max-w-[680px] rounded-[1.6rem] border border-white/10 bg-[#0f1520] p-6 shadow-[0_30px_80px_rgba(0,0,0,0.4)]">
+          <div className="w-full max-w-170 rounded-[1.6rem] border border-white/10 bg-[#0f1520] p-6 shadow-[0_30px_80px_rgba(0,0,0,0.4)]">
             <div className="flex items-start justify-between gap-4">
               <div>
                 <div className="text-[1.7rem] font-bold tracking-[-0.04em] text-white">Add from library</div>
@@ -3121,7 +3157,7 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
 
       {moveLibraryItem ? (
         <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/20 px-4 pt-16 backdrop-blur-[2px]">
-          <div className="w-full max-w-[560px] rounded-[1.6rem] border border-white/10 bg-[#0f1520] p-6 shadow-[0_30px_80px_rgba(0,0,0,0.4)]">
+          <div className="w-full max-w-140 rounded-[1.6rem] border border-white/10 bg-[#0f1520] p-6 shadow-[0_30px_80px_rgba(0,0,0,0.4)]">
             <div className="flex items-start justify-between gap-4">
               <div>
                 <div className="text-[1.7rem] font-bold tracking-[-0.04em] text-white">Move to folder</div>
@@ -3177,7 +3213,7 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
 
       {groupSetPickerGroupId ? (
         <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/20 px-4 pt-16 backdrop-blur-[2px]">
-          <div className="w-full max-w-[620px] rounded-[1.6rem] border border-white/10 bg-[#0f1520] p-6 shadow-[0_30px_80px_rgba(0,0,0,0.4)]">
+          <div className="w-full max-w-155 rounded-[1.6rem] border border-white/10 bg-[#0f1520] p-6 shadow-[0_30px_80px_rgba(0,0,0,0.4)]">
             <div className="flex items-start justify-between gap-4">
               <div>
                 <div className="text-[1.7rem] font-bold tracking-[-0.04em] text-white">Add a set</div>
@@ -3243,7 +3279,7 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
             className="fixed inset-0 z-50 flex items-start justify-center bg-black/20 px-4 pt-16 backdrop-blur-[2px]"
             onClick={(e) => { if (e.target === e.currentTarget) setGroupPickerSetId(null); }}
           >
-            <div className="w-full max-w-[500px] rounded-[1.6rem] border border-white/10 bg-[#0f1520] p-6 shadow-[0_30px_80px_rgba(0,0,0,0.45)]">
+            <div className="w-full max-w-125 rounded-[1.6rem] border border-white/10 bg-[#0f1520] p-6 shadow-[0_30px_80px_rgba(0,0,0,0.45)]">
               <div className="flex items-start justify-between gap-4">
                 <div>
                   <div className="text-[1.4rem] font-bold tracking-[-0.04em] text-white">Add to a group</div>
@@ -3296,7 +3332,7 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
                   })
                 ) : (
                   <div className="rounded-xl border border-dashed border-white/12 bg-white/3 px-5 py-5 text-sm text-zinc-400">
-                    You don't have any study groups yet. Create one below.
+                    You don&apos;t have any study groups yet. Create one below.
                   </div>
                 )}
               </div>
@@ -3427,7 +3463,7 @@ function DashboardView({
   return (
     <div className="space-y-5">
       <div className="study-appear atlas-hero-card relative overflow-hidden rounded-2xl p-6">
-        <div className="pointer-events-none absolute inset-y-0 left-0 w-[3px] rounded-r-sm bg-linear-to-b from-indigo-400 via-violet-500 to-transparent" />
+        <div className="pointer-events-none absolute inset-y-0 left-0 w-0.75 rounded-r-sm bg-linear-to-b from-indigo-400 via-violet-500 to-transparent" />
         <div className="flex items-start justify-between gap-4">
           <div>
             <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500">Recommended next</p>
@@ -3531,7 +3567,6 @@ function GroupsView({
   onJoinGroup,
   onDeleteGroup,
   onRenameGroup,
-  onAddSetToGroup,
   onRemoveSetFromGroup,
   onOpenAddSetPicker,
 }: {
@@ -3557,19 +3592,19 @@ function GroupsView({
   onJoinGroup: () => void;
   onDeleteGroup: (groupId: string) => void;
   onRenameGroup: (groupId: string) => void;
-  onAddSetToGroup: (groupId: string, setId: string) => void;
   onRemoveSetFromGroup: (groupId: string, setId: string) => void;
   onOpenAddSetPicker: (groupId: string) => void;
 }) {
   const [showDetail, setShowDetail] = useState(false);
   const [moreMenuOpen, setMoreMenuOpen] = useState(false);
   const moreMenuRef = useRef<HTMLDivElement>(null);
-
-  // Auto-show detail when selectedGroupId changes (e.g. after creating a group)
   const prevGroupIdRef = useRef(selectedGroupId);
+
   useEffect(() => {
     if (selectedGroupId && selectedGroupId !== prevGroupIdRef.current) {
-      setShowDetail(true);
+      const timeoutId = window.setTimeout(() => setShowDetail(true), 0);
+      prevGroupIdRef.current = selectedGroupId;
+      return () => window.clearTimeout(timeoutId);
     }
     prevGroupIdRef.current = selectedGroupId;
   }, [selectedGroupId]);
@@ -3701,7 +3736,7 @@ function GroupsView({
                   ))}
                 </div>
               ) : (
-                <div className="flex min-h-[280px] flex-col items-center justify-center text-center">
+                <div className="flex min-h-70 flex-col items-center justify-center text-center">
                   <div className="mb-6 flex h-20 w-20 items-center justify-center rounded-[1.4rem] bg-[#4f46e5]/20 text-[#a5b4fc]">
                     <BookOpen className="h-9 w-9" />
                   </div>
@@ -3775,7 +3810,7 @@ function GroupsView({
         {/* Create group modal */}
         {createGroupOpen ? (
           <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/20 px-4 pt-16 backdrop-blur-[2px]">
-            <div className="w-full max-w-[560px] rounded-[1.6rem] border border-white/10 bg-[#0f1520] p-6 shadow-[0_30px_80px_rgba(0,0,0,0.4)]">
+            <div className="w-full max-w-140 rounded-[1.6rem] border border-white/10 bg-[#0f1520] p-6 shadow-[0_30px_80px_rgba(0,0,0,0.4)]">
               <div className="flex items-start justify-between gap-4">
                 <div>
                   <div className="text-[2rem] font-bold tracking-[-0.04em] text-white">Create a study group</div>
@@ -3830,7 +3865,7 @@ function GroupsView({
                 ))}
               </div>
             </div>
-            <h2 className="max-w-[460px] text-[1.9rem] font-bold leading-tight tracking-tight text-white">
+            <h2 className="max-w-115 text-[1.9rem] font-bold leading-tight tracking-tight text-white">
               Get your study group going and learn together
             </h2>
             <p className="mt-3 max-w-sm text-sm text-zinc-400">Create a group, add your sets, and share the invite link with classmates.</p>
@@ -3888,7 +3923,7 @@ function GroupsView({
       {/* Create group modal */}
       {createGroupOpen ? (
         <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/20 px-4 pt-16 backdrop-blur-[2px]">
-          <div className="w-full max-w-[560px] rounded-[1.6rem] border border-white/10 bg-[#0f1520] p-6 shadow-[0_30px_80px_rgba(0,0,0,0.4)]">
+          <div className="w-full max-w-140 rounded-[1.6rem] border border-white/10 bg-[#0f1520] p-6 shadow-[0_30px_80px_rgba(0,0,0,0.4)]">
             <div className="flex items-start justify-between gap-4">
               <div>
                 <div className="text-[2rem] font-bold tracking-[-0.04em] text-white">Create a study group</div>
@@ -3990,7 +4025,7 @@ function CreateView({
               onClick={toggleVisibility}
               className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/6 px-3 py-1 text-xs font-semibold text-zinc-200 transition hover:bg-white/12"
             >
-              <Globe className="h-3.5 w-3.5" />
+              <VisibilityIcon visibility={draftSet.visibility} className="h-3.5 w-3.5" />
               {draftSet.visibility === "public" ? "Public" : "Private"}
             </button>
             <div className="flex items-center gap-3">
@@ -4162,7 +4197,7 @@ function CreateView({
                   </div>
                   <button
                     type="button"
-                    className="flex min-h-[120px] flex-col items-center justify-center rounded-xl border border-dashed border-white/25 bg-transparent text-zinc-300 transition hover:bg-white/5"
+                    className="flex min-h-30 flex-col items-center justify-center rounded-xl border border-dashed border-white/25 bg-transparent text-zinc-300 transition hover:bg-white/5"
                   >
                     <ImageIcon className="h-5 w-5" />
                     <span className="mt-2 text-xs font-semibold">Image</span>
@@ -4280,7 +4315,7 @@ function SaveSetDialog({
 }) {
   return (
     <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/20 px-4 pt-16 backdrop-blur-[2px]">
-      <div className="w-full max-w-[480px] rounded-[1.7rem] border border-white/10 bg-[#171b42] p-6 shadow-[0_28px_80px_rgba(0,0,0,0.42)]">
+      <div className="w-full max-w-120 rounded-[1.7rem] border border-white/10 bg-[#171b42] p-6 shadow-[0_28px_80px_rgba(0,0,0,0.42)]">
         <div className="flex items-start justify-between gap-4">
           <div>
             <div className="text-[1.55rem] font-bold tracking-[-0.04em] text-white">Save flashcard set</div>
@@ -4633,11 +4668,16 @@ function OverviewView({
     : 0;
   const starred = set.cards.filter((card) => progressMap[card.id]?.starred).length;
   const difficult = set.cards.filter((card) => progressMap[card.id]?.markedDifficult).length;
-  const [previewIndex, setPreviewIndex] = useState(0);
-  const [previewFlipped, setPreviewFlipped] = useState(false);
+  const [previewState, setPreviewState] = useState(() => ({
+    setId: set.id,
+    index: 0,
+    flipped: false,
+  }));
   const [previewMotion, setPreviewMotion] = useState<"idle" | "next" | "prev">("idle");
   const previewMotionTimeoutRef = useRef<number | null>(null);
   const [trackPreviewProgress, setTrackPreviewProgress] = useState(false);
+  const previewIndex = previewState.setId === set.id ? previewState.index : 0;
+  const previewFlipped = previewState.setId === set.id ? previewState.flipped : false;
   const previewCard = set.cards[previewIndex] ?? set.cards[0];
   const previewCardProgress = progressMap[previewCard?.id ?? ""] ?? getDefaultProgress(previewCard?.id ?? "");
   const missedCardCount = set.cards.filter((card) => progressMap[card.id]?.missedRecently).length;
@@ -4682,10 +4722,21 @@ function OverviewView({
     { label: "Match", icon: <Shuffle className="h-4 w-4" />, active: false, onClick: () => onModeChange("match") },
   ];
 
-  useEffect(() => {
-    setPreviewIndex(0);
-    setPreviewFlipped(false);
-  }, [set.id]);
+  const setPreviewIndex = (updater: number | ((current: number) => number)) => {
+    setPreviewState((current) => {
+      const currentIndex = current.setId === set.id ? current.index : 0;
+      const nextIndex = typeof updater === "function" ? updater(currentIndex) : updater;
+      return { setId: set.id, index: nextIndex, flipped: false };
+    });
+  };
+
+  const setPreviewFlipped = (updater: boolean | ((current: boolean) => boolean)) => {
+    setPreviewState((current) => {
+      const currentFlipped = current.setId === set.id ? current.flipped : false;
+      const nextFlipped = typeof updater === "function" ? updater(currentFlipped) : updater;
+      return { setId: set.id, index: previewIndex, flipped: nextFlipped };
+    });
+  };
 
   const triggerPreviewMotion = (direction: "next" | "prev") => {
     if (previewMotionTimeoutRef.current) window.clearTimeout(previewMotionTimeoutRef.current);
@@ -4743,7 +4794,7 @@ function OverviewView({
                 Share via WhatsApp
               </a>
               <a
-                href={`mailto:?subject=${encodeURIComponent(set.title)}&body=${encodeURIComponent(`Here's a study set I thought you'd find useful:\n${shareUrl}`)}`}
+                href={`mailto:?subject=${encodeURIComponent(set.title)}&body=${encodeURIComponent(`Here is a study set I thought you would find useful:\n${shareUrl}`)}`}
                 className="flex items-center gap-3 rounded-xl bg-white/5 px-4 py-3 text-sm font-medium text-zinc-200 transition hover:bg-white/10"
               >
                 <Share2 className="h-4 w-4 text-zinc-400" />
@@ -4763,7 +4814,7 @@ function OverviewView({
         </div>
       )}
 
-    <div className="mx-auto max-w-[860px] space-y-6">
+    <div className="mx-auto max-w-215 space-y-6">
       <div className="study-appear">
         <div className="flex flex-col gap-5">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
@@ -4777,6 +4828,7 @@ function OverviewView({
               </h1>
             </div>
             <div className="flex flex-wrap items-center gap-2">
+              <VisibilityBadge visibility={set.visibility} />
               <button
                 onClick={onToggleSaved}
                 title={set.saved ? "Remove from saved" : "Save this set"}
@@ -4831,7 +4883,7 @@ function OverviewView({
                       onClick={() => { setMenuOpen(false); onToggleVisibility(); }}
                       className="flex w-full items-center gap-3 px-4 py-2.5 text-sm text-zinc-200 transition hover:bg-white/5 hover:text-white"
                     >
-                      <Globe className="h-4 w-4 text-zinc-400" />
+                      <VisibilityIcon visibility={set.visibility === "public" ? "private" : "public"} className="h-4 w-4 text-zinc-400" />
                       {set.visibility === "public" ? "Make private" : "Make public"}
                     </button>
                     {availableFolders.length > 0 && (
@@ -4939,11 +4991,11 @@ function OverviewView({
             <button
               type="button"
               onClick={() => setPreviewFlipped((current) => !current)}
-              className="relative mt-5 h-[290px] w-full cursor-pointer select-none rounded-3xl [perspective:1400px] outline-none focus:outline-none"
+              className="relative mt-5 h-72.5 w-full cursor-pointer select-none rounded-3xl perspective-[1400px] outline-none focus:outline-none"
             >
               <div
                 key={`${previewCard.id}-${previewIndex}`}
-                className={`relative h-full w-full transform-gpu rounded-3xl transition-transform duration-[420ms] ease-[cubic-bezier(0.22,1,0.36,1)] will-change-transform ${previewMotion === "next" ? "study-card-enter-next" : previewMotion === "prev" ? "study-card-enter-prev" : ""}`}
+                className={`relative h-full w-full transform-gpu rounded-3xl transition-transform duration-420 ease-[cubic-bezier(0.22,1,0.36,1)] will-change-transform ${previewMotion === "next" ? "study-card-enter-next" : previewMotion === "prev" ? "study-card-enter-prev" : ""}`}
                 style={{
                   transformStyle: "preserve-3d",
                   WebkitTransformStyle: "preserve-3d",
@@ -4988,7 +5040,7 @@ function OverviewView({
               >
                 <ChevronLeft className="h-5 w-5" />
               </button>
-              <div className="min-w-[78px] text-center text-sm font-semibold text-white">
+              <div className="min-w-19.5 text-center text-sm font-semibold text-white">
                 {previewIndex + 1} / {set.cards.length}
               </div>
               <button
@@ -5017,7 +5069,7 @@ function OverviewView({
           </div>
 
           {/* Narrow progress bar below nav */}
-          <div className="mt-4 h-[3px] w-full overflow-hidden rounded-full bg-white/10">
+          <div className="mt-4 h-0.75 w-full overflow-hidden rounded-full bg-white/10">
             <div
               className="h-full rounded-full bg-white/50"
               style={{ width: `${set.cards.length > 1 ? ((previewIndex + 1) / set.cards.length) * 100 : 100}%` }}
@@ -5083,7 +5135,7 @@ function FlashcardsMode({
   onSessionSave: (session: ReturnType<typeof buildStudySession>) => void;
   onCelebrate: (message: string) => void;
 }) {
-  const [filter, setFilter] = useState<StudyFilter>("all");
+  const filter: StudyFilter = "all";
   const [index, setIndex] = useState(0);
   const [flipped, setFlipped] = useState(false);
   const [autoplay, setAutoplay] = useState(false);
@@ -5224,7 +5276,6 @@ function FlashcardsMode({
       window.clearInterval(interval);
       window.clearTimeout(flipTimer);
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [autoplay, cards.length]);
 
   useEffect(() => {
@@ -5249,8 +5300,26 @@ function FlashcardsMode({
 
   useEffect(() => {
     const handler = (event: KeyboardEvent) => {
-      if (event.key === "ArrowRight") moveCard("next");
-      if (event.key === "ArrowLeft") moveCard("prev");
+      if (event.key === "ArrowRight") {
+        setIndex((current) => {
+          const nextIndex = Math.min(cards.length - 1, current + 1);
+          if (nextIndex !== current) {
+            setFlipped(false);
+            triggerCardMotion("next");
+          }
+          return nextIndex;
+        });
+      }
+      if (event.key === "ArrowLeft") {
+        setIndex((current) => {
+          const nextIndex = Math.max(0, current - 1);
+          if (nextIndex !== current) {
+            setFlipped(false);
+            triggerCardMotion("prev");
+          }
+          return nextIndex;
+        });
+      }
       if (event.key === " ") {
         event.preventDefault();
         setFlipped((current) => !current);
@@ -5258,26 +5327,13 @@ function FlashcardsMode({
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  }, [cards.length, index]);
+  }, [cards.length]);
 
   if (!card) {
     return <EmptyModeState title="No cards match that filter." onBack={onBack} />;
   }
 
   const currentProgress = effectiveProgressMap[card.id] ?? getDefaultProgress(card.id);
-  const setMastery = set.cards.length
-    ? Math.round(
-        set.cards.reduce((sum, currentCard) => {
-          const progress = effectiveProgressMap[currentCard.id] ?? getDefaultProgress(currentCard.id);
-          return sum + progress.masteryScore;
-        }, 0) / set.cards.length,
-      )
-    : 0;
-  const streak = Math.min(4, cards.slice(0, index + 1).filter((item) => {
-    const progress = effectiveProgressMap[item.id] ?? getDefaultProgress(item.id);
-    return progress.timesCorrect > progress.timesWrong;
-  }).length);
-
   const toggleFullscreen = async () => {
     if (!panelRef.current) return;
     if (document.fullscreenElement === panelRef.current) {
@@ -5369,7 +5425,7 @@ function FlashcardsMode({
                 Share via WhatsApp
               </a>
               <a
-                href={`mailto:?subject=${encodeURIComponent(set.title)}&body=${encodeURIComponent(`Here's a study set I thought you'd find useful:\n${fcShareUrl}`)}`}
+                href={`mailto:?subject=${encodeURIComponent(set.title)}&body=${encodeURIComponent(`Here is a study set I thought you would find useful:\n${fcShareUrl}`)}`}
                 className="flex items-center gap-3 rounded-xl bg-white/5 px-4 py-3 text-sm font-medium text-zinc-200 transition hover:bg-white/10"
               >
                 <Share2 className="h-4 w-4 text-zinc-400" />
@@ -5379,7 +5435,7 @@ function FlashcardsMode({
           </div>
         </div>
       )}
-    <div className="mx-auto max-w-[860px] space-y-5">
+    <div className="mx-auto max-w-215 space-y-5">
       <div className="study-appear">
         <div className="flex flex-col gap-5">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
@@ -5506,7 +5562,7 @@ function FlashcardsMode({
         </div>
 
         {/* Narrow progress bar */}
-        <div className="mt-5 h-[3px] w-full overflow-hidden rounded-full bg-white/10">
+        <div className="mt-5 h-0.75 w-full overflow-hidden rounded-full bg-white/10">
           <div
             className="h-full rounded-full bg-white/50"
             style={{ width: `${cards.length > 1 ? ((index + 1) / cards.length) * 100 : 100}%` }}
@@ -5517,7 +5573,7 @@ function FlashcardsMode({
           <button
             type="button"
             onClick={() => setFlipped((current) => !current)}
-            className={`group relative w-full cursor-pointer select-none overflow-hidden rounded-4xl [perspective:1800px] outline-none focus:outline-none focus-visible:outline-none focus-visible:ring-0 ${isFullscreen ? "h-[68vh] max-h-[760px] min-h-[520px]" : "h-[420px]"}`}
+            className={`group relative w-full cursor-pointer select-none overflow-hidden rounded-4xl perspective-[1800px] outline-none focus:outline-none focus-visible:outline-none focus-visible:ring-0 ${isFullscreen ? "h-[68vh] max-h-190 min-h-130" : "h-105"}`}
             onTouchStart={(event) => {
               touchStartX.current = event.touches[0]?.clientX ?? null;
             }}
@@ -5549,7 +5605,7 @@ function FlashcardsMode({
               }`}
             >
               <div
-                className={`relative h-full w-full transform-gpu rounded-4xl will-change-transform transition-transform ${isFullscreen ? "duration-[1020ms] ease-[cubic-bezier(0.16,1,0.3,1)]" : "duration-[630ms] ease-[cubic-bezier(0.22,1,0.36,1)]"}`}
+                className={`relative h-full w-full transform-gpu rounded-4xl will-change-transform transition-transform ${isFullscreen ? "duration-1020 ease-[cubic-bezier(0.16,1,0.3,1)]" : "duration-630 ease-[cubic-bezier(0.22,1,0.36,1)]"}`}
                 style={{
                   transformStyle: "preserve-3d",
                   WebkitTransformStyle: "preserve-3d",
@@ -5603,7 +5659,7 @@ function FlashcardsMode({
             {!trackProgress ? (
               <>
                 <IconControlButton onClick={() => moveCard("prev")} icon={<ChevronLeft className="h-5 w-5" />} label="Previous card" />
-                <div className="min-w-[88px] text-center text-base font-semibold tracking-[-0.03em] text-white">
+                <div className="min-w-22 text-center text-base font-semibold tracking-[-0.03em] text-white">
                   {index + 1} / {cards.length}
                 </div>
                 <IconControlButton onClick={() => moveCard("next")} icon={<ChevronRight className="h-5 w-5" />} label="Next card" />
@@ -5634,7 +5690,7 @@ function FlashcardsMode({
                   tone="danger"
                   active={recentFeedback === "missed"}
                 />
-                <div className="min-w-[88px] text-center text-2xl font-semibold tracking-[-0.04em] text-white">
+                <div className="min-w-22 text-center text-2xl font-semibold tracking-[-0.04em] text-white">
                   {index + 1} / {cards.length}
                 </div>
                 <ProgressChoiceButton
@@ -5657,7 +5713,6 @@ function FlashcardsMode({
 
 function LearnMode({
   set,
-  progressMap,
   initialPracticeCardFronts,
   onBack,
   onProgress,
@@ -5665,7 +5720,6 @@ function LearnMode({
   onCelebrate,
 }: {
   set: StudySet;
-  progressMap: Record<string, CardProgress>;
   initialPracticeCardFronts?: string[] | null;
   onBack: () => void;
   onProgress: (cardId: string, result: "knew" | "missed") => void;
@@ -5842,8 +5896,7 @@ function LearnMode({
         setEnhancedChoices(map);
       })
       .catch(() => {});
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [set.id]);
+  }, [questions]);
 
   const toggleFullscreen = async () => {
     if (!panelRef.current) return;
@@ -5854,12 +5907,7 @@ function LearnMode({
     await panelRef.current.requestFullscreen?.();
   };
 
-  if (!question && !completed) {
-    return <EmptyModeState title="No cards available to learn right now." onBack={onBack} />;
-  }
-
-  // Active question helpers (only valid when not completed)
-  const q = question ?? questions[0]!;
+  const q = question ?? questions[0];
   const choices = q
     ? (q.type === "true_false" ? ["True", "False"] : (enhancedChoices[q.id] ?? q.choices ?? []))
     : [];
@@ -5903,8 +5951,11 @@ function LearnMode({
         }
       });
     return () => { cancelled = true; };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [index, questions]);
+
+  if (!question && !completed) {
+    return <EmptyModeState title="No cards available to learn right now." onBack={onBack} />;
+  }
 
   const handleExplainThis = () => {
     if (showExplanation) {
@@ -5986,7 +6037,7 @@ function LearnMode({
   return (
     <div
       ref={panelRef}
-      className={`study-appear mx-auto max-w-[1240px] ${isFullscreen ? "study-flashcards-fullscreen min-h-screen overflow-auto p-8" : ""}`}
+      className={`study-appear mx-auto max-w-310 ${isFullscreen ? "study-flashcards-fullscreen min-h-screen overflow-auto p-8" : ""}`}
     >
       {/* Shared header — always visible */}
       <div className={`flex items-center justify-between gap-4 ${isFullscreen && !completed ? "pt-[8vh]" : ""}`}>
@@ -6028,7 +6079,7 @@ function LearnMode({
             : pct >= 50 ? { label: "Keep it up!", color: "text-amber-300", ring: "ring-amber-400/40", bg: "bg-amber-500/10" }
             : { label: "Keep practicing!", color: "text-rose-300", ring: "ring-rose-400/40", bg: "bg-rose-500/10" };
           return (
-            <div className="relative mx-auto mt-8 flex max-w-[680px] flex-col items-center gap-8 px-4 pb-12">
+            <div className="relative mx-auto mt-8 flex max-w-170 flex-col items-center gap-8 px-4 pb-12">
               {pct === 100 ? (
                 <div className="pointer-events-none absolute inset-x-0 top-0 h-48 overflow-hidden">
                   {Array.from({ length: 24 }).map((_, i) => (
@@ -6166,7 +6217,7 @@ function LearnMode({
             );
           })()}
 
-          <div className="mx-auto w-full max-w-[980px] rounded-[1.6rem] border border-[#515b84] bg-[#394264] p-6 shadow-[0_24px_70px_rgba(0,0,0,0.22)] sm:p-7">
+          <div className="mx-auto w-full max-w-245 rounded-[1.6rem] border border-[#515b84] bg-[#394264] p-6 shadow-[0_24px_70px_rgba(0,0,0,0.22)] sm:p-7">
             <div className="flex items-center justify-between gap-4">
               <div className="flex items-center gap-2 text-xs font-semibold text-zinc-300">
                 <span>Term</span>
@@ -6181,7 +6232,7 @@ function LearnMode({
               </div>
               <div className="text-xs text-zinc-400">{index + 1} of {questions.length}</div>
             </div>
-            <div className="mt-8 min-h-[110px] text-[2rem] leading-[1.2] font-medium tracking-[-0.03em] text-white">
+            <div className="mt-8 min-h-27.5 text-[2rem] leading-[1.2] font-medium tracking-[-0.03em] text-white">
               {stripQuestionPrompt(q.prompt)}
             </div>
             {submitted ? (
@@ -6211,7 +6262,7 @@ function LearnMode({
             </div>
             <div className="mt-5 flex items-center justify-between gap-4">
               <button onClick={handleDontKnow} disabled={submitted} className={`text-xs font-medium transition ${submitted ? "cursor-default text-zinc-600" : "text-zinc-400 hover:text-zinc-200"}`}>
-                Don't know?
+                Don&apos;t know?
               </button>
               {submitted ? (
                 <div className="flex items-center gap-3">
@@ -6237,7 +6288,7 @@ function LearnMode({
             const liveAccuracy = Math.round((score / Math.max(index + Number(submitted), 1)) * 100) || 0;
             const accColor = liveAccuracy >= 80 ? "#4ade80" : liveAccuracy >= 60 ? "#fbbf24" : liveAccuracy >= 40 ? "#fb923c" : "#f87171";
             return (
-              <div className="mx-auto flex w-full max-w-[980px] items-center justify-between px-2 text-sm text-zinc-300">
+              <div className="mx-auto flex w-full max-w-245 items-center justify-between px-2 text-sm text-zinc-300">
                 <div>Click the correct answer or press any key to continue</div>
                 <div className="rounded-full border border-white/10 bg-white/4 px-3 py-1 text-xs font-semibold transition-colors" style={{ color: accColor }}>
                   {liveAccuracy}% correct
@@ -6254,7 +6305,6 @@ function LearnMode({
 function AssessmentMode({
   title,
   set,
-  progressMap,
   onBack,
   onProgress,
   onSessionSave,
@@ -6263,7 +6313,6 @@ function AssessmentMode({
 }: {
   title: string;
   set: StudySet;
-  progressMap: Record<string, CardProgress>;
   onBack: () => void;
   onProgress: (cardId: string, result: "correct" | "wrong") => void;
   onSessionSave: (session: ReturnType<typeof buildStudySession>) => void;
@@ -6304,10 +6353,6 @@ function AssessmentMode({
     const pool = filtered.length ? filtered : bank;
     return pool.slice(0, Math.min(questionCount, pool.length));
   }, [enabledTypes, questionCount, set]);
-
-  if (!questions.length) {
-    return <EmptyModeState title="Not enough material to generate this assessment yet." onBack={onBack} />;
-  }
 
   const toggleSetupType = (key: keyof typeof enabledTypes) => {
     setEnabledTypes((current) => {
@@ -6358,8 +6403,11 @@ function AssessmentMode({
         setEnhancedChoices(map);
       })
       .catch(() => {});
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [set.id]);
+  }, [questions]);
+
+  if (!questions.length) {
+    return <EmptyModeState title="Not enough material to generate this assessment yet." onBack={onBack} />;
+  }
 
   const toggleTestFullscreen = async () => {
     if (!testPanelRef.current) return;
@@ -6646,7 +6694,7 @@ function AssessmentMode({
 
   return (
       <div ref={testPanelRef} className={`study-appear space-y-5 ${isFullscreen ? "study-flashcards-fullscreen min-h-screen overflow-auto p-8" : ""}`}>
-      <div className="mx-auto flex w-full max-w-[1240px] items-center justify-between gap-4 text-zinc-200">
+      <div className="mx-auto flex w-full max-w-310 items-center justify-between gap-4 text-zinc-200">
         <div className="flex items-center gap-3">
           <button
             onClick={onBack}
@@ -6684,7 +6732,7 @@ function AssessmentMode({
         </div>
       </div>
 
-      <div className="mx-auto w-full max-w-[980px] space-y-24 sm:space-y-32">
+      <div className="mx-auto w-full max-w-245 space-y-24 sm:space-y-32">
         {questions.map((q, qIndex) => {
           const isMC = q.type === "multiple_choice" || q.type === "true_false";
           const isWritten = q.type === "short_answer" || q.type === "fill_blank" || q.type === "written";
@@ -6787,8 +6835,8 @@ function AssessmentMode({
       </div>
 
       {setupOpen ? (
-        <div className="fixed inset-0 z-[80] flex items-start justify-center bg-black/20 px-4 pt-16 backdrop-blur-[2px]">
-          <div className="w-full max-w-[460px] rounded-[1.55rem] border border-[#2f3761] bg-[#151137] p-6 shadow-[0_30px_90px_rgba(0,0,0,0.45)]">
+        <div className="fixed inset-0 z-80 flex items-start justify-center bg-black/20 px-4 pt-16 backdrop-blur-[2px]">
+          <div className="w-full max-w-115 rounded-[1.55rem] border border-[#2f3761] bg-[#151137] p-6 shadow-[0_30px_90px_rgba(0,0,0,0.45)]">
             <div className="flex items-start justify-between gap-4">
               <div>
                 <div className="text-sm font-medium text-zinc-300">{set.title}</div>
@@ -7137,7 +7185,7 @@ function MatchMode({
                   onClick={() => handlePick(item.id)}
                   disabled={isComplete || solved}
                   {...magneticHoverProps}
-                  className={`study-premium-button min-h-[176px] rounded-[1.15rem] border p-6 text-center text-[1.05rem] font-medium leading-8 transition disabled:cursor-default ${
+                  className={`study-premium-button min-h-44 rounded-[1.15rem] border p-6 text-center text-[1.05rem] font-medium leading-8 transition disabled:cursor-default ${
                     solved
                       ? "border-emerald-400/35 bg-emerald-500/16 text-emerald-50"
                       : active
@@ -7175,35 +7223,6 @@ function ModeHeader({ title, subtitle, onBack }: { title: string; subtitle?: str
   );
 }
 
-function NavButton({ active, onClick, icon, children }: { active: boolean; onClick: () => void; icon: React.ReactNode; children: React.ReactNode }) {
-  return (
-    <button
-      onClick={onClick}
-      {...magneticHoverProps}
-      className={`study-premium-button flex w-full items-center gap-2.5 rounded-2xl px-3.5 py-2.5 text-[13px] font-medium transition ${
-        active ? "border border-sky-300/20 bg-sky-100 text-slate-950 shadow-[0_12px_30px_rgba(125,211,252,0.14)]" : "border border-white/8 bg-white/3 text-zinc-300 hover:bg-white/7"
-      }`}
-    >
-      {icon}
-      {children}
-    </button>
-  );
-}
-
-function ModeCard({ icon, title, body, onClick }: { icon: React.ReactNode; title: string; body: string; onClick: () => void }) {
-  return (
-    <button
-      onClick={onClick}
-      {...magneticHoverProps}
-      className="study-premium-card study-premium-button rounded-[1.6rem] p-5 text-left transition hover:-translate-y-1 hover:border-sky-300/24 hover:bg-white/5"
-    >
-      <div className="inline-flex rounded-2xl border border-white/10 bg-white/4 p-3 text-indigo-200">{icon}</div>
-      <div className="mt-5 text-xl font-black tracking-[-0.03em] text-white">{title}</div>
-      <div className="mt-3 text-sm leading-7 text-zinc-400">{body}</div>
-    </button>
-  );
-}
-
 function StatCard({ label, value, icon }: { label: string; value: string; icon: React.ReactNode }) {
   return (
     <div className="study-premium-card rounded-[1.35rem] p-4">
@@ -7217,33 +7236,6 @@ function StatCard({ label, value, icon }: { label: string; value: string; icon: 
         </div>
       </div>
     </div>
-  );
-}
-
-function ControlButton({
-  onClick,
-  children,
-  icon,
-  destructive,
-}: {
-  onClick: () => void;
-  children: React.ReactNode;
-  icon: React.ReactNode;
-  destructive?: boolean;
-}) {
-  return (
-    <button
-      onClick={onClick}
-      {...magneticHoverProps}
-      className={`study-premium-button inline-flex items-center gap-2 rounded-full px-4 py-2.5 text-sm font-semibold transition ${
-        destructive
-          ? "border border-red-400/20 bg-red-500/10 text-red-100 hover:bg-red-500/20"
-          : "border border-white/10 bg-white/5 text-zinc-100 hover:bg-white/8"
-      }`}
-    >
-      {icon}
-      {children}
-    </button>
   );
 }
 
@@ -7323,7 +7315,7 @@ function EmptyModeState({ title, onBack }: { title: string; onBack: () => void }
 function StudyWorkspaceSkeleton() {
   return (
     <main className="min-h-screen bg-[#080d18] pb-20 text-white">
-      <div className="mx-auto max-w-[1180px] px-4 pb-16 pt-6 sm:px-6">
+      <div className="mx-auto max-w-295 px-4 pb-16 pt-6 sm:px-6">
         <section className="study-premium-panel rounded-[1.75rem] p-5 backdrop-blur-xl md:p-6">
           <div className="study-skeleton h-6 w-40 rounded-full" />
           <div className="study-skeleton mt-5 h-16 max-w-3xl rounded-3xl" />
@@ -7411,12 +7403,6 @@ function updateDraftCard(
 
 function stripQuestionPrompt(prompt: string) {
   return prompt.replace(/^What best matches:\s*/i, "").replace(/^Type the definition for:\s*/i, "").trim();
-}
-
-function formatSeconds(total: number) {
-  const minutes = Math.floor(total / 60);
-  const seconds = total % 60;
-  return `${minutes}:${seconds.toString().padStart(2, "0")}`;
 }
 
 function formatMatchTime(totalMs: number) {

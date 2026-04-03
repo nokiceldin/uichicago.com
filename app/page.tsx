@@ -45,7 +45,7 @@ const productPillars = [
 
 const proofStats = [
   { value: "2,696", label: "courses indexed" },
-  { value: "1,275", label: "professors tracked" },
+  { value: "2,640", label: "professors tracked" },
   { value: "460+", label: "student orgs mapped" },
 ];
 
@@ -96,7 +96,7 @@ export default function Home() {
   return (
     <main className="min-h-screen bg-white text-zinc-950 dark:bg-black dark:text-white">
       <section className="relative overflow-hidden border-b border-zinc-200/80 bg-[radial-gradient(circle_at_top,rgba(239,68,68,0.14),transparent_28%),radial-gradient(circle_at_80%_18%,rgba(56,189,248,0.10),transparent_24%),linear-gradient(180deg,#fff7f7_0%,#fff5f2_50%,#ffffff_100%)] px-4 pb-16 pt-14 text-zinc-950 dark:border-white/10 dark:bg-[radial-gradient(circle_at_top,rgba(239,68,68,0.18),transparent_26%),radial-gradient(circle_at_80%_20%,rgba(56,189,248,0.12),transparent_22%),linear-gradient(180deg,#0d0d10_0%,#120809_52%,#09090b_100%)] dark:text-white sm:px-6 sm:pb-20 sm:pt-20">
-        <div className="absolute inset-0 bg-[linear-gradient(rgba(15,23,42,0.04)_1px,transparent_1px),linear-gradient(90deg,rgba(15,23,42,0.04)_1px,transparent_1px)] bg-[size:42px_42px] opacity-[0.28] dark:bg-[linear-gradient(rgba(255,255,255,0.04)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.04)_1px,transparent_1px)] dark:opacity-[0.07]" />
+        <div className="absolute inset-0 bg-[linear-gradient(rgba(15,23,42,0.04)_1px,transparent_1px),linear-gradient(90deg,rgba(15,23,42,0.04)_1px,transparent_1px)] bg-size-[42px_42px] opacity-[0.28] dark:bg-[linear-gradient(rgba(255,255,255,0.04)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.04)_1px,transparent_1px)] dark:opacity-[0.07]" />
         <div className="relative mx-auto max-w-6xl">
           <div className="grid items-center gap-10 sm:gap-14 lg:grid-cols-[1.2fr_0.8fr]">
             <div>
@@ -121,7 +121,7 @@ export default function Home() {
                 <HeroSearchBar />
               </div>
 
-              <div className="mt-8 grid grid-cols-1 gap-3 text-sm sm:max-w-[34rem] sm:grid-cols-2">
+              <div className="mt-8 grid grid-cols-1 gap-3 text-sm sm:max-w-136 sm:grid-cols-2">
                 <Link
                   href="/courses"
                   className="premium-button group inline-flex w-full items-center justify-between gap-2 rounded-full border border-emerald-300/50 bg-white/80 px-5 py-3 font-semibold text-zinc-900 shadow-[0_10px_28px_rgba(0,0,0,0.08)] transition hover:border-emerald-400/60 hover:bg-emerald-50 hover:shadow-[0_16px_38px_rgba(16,185,129,0.12)] dark:border-emerald-400/25 dark:bg-[linear-gradient(180deg,rgba(20,24,29,0.96),rgba(10,13,17,0.94))] dark:text-zinc-100 dark:shadow-[0_10px_28px_rgba(0,0,0,0.28)] dark:hover:border-emerald-400/45 dark:hover:bg-[linear-gradient(180deg,rgba(16,33,27,0.98),rgba(10,18,15,0.96))]"
@@ -211,7 +211,7 @@ export default function Home() {
                     ].map(([title, body]) => (
                       <div
                         key={title}
-                        className="rounded-[1.35rem] border border-zinc-200 bg-white/85 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.35)] dark:border-white/10 dark:!bg-[linear-gradient(180deg,rgba(28,32,40,0.96),rgba(18,21,29,0.94))] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]"
+                        className="rounded-[1.35rem] border border-zinc-200 bg-white/85 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.35)] dark:border-white/10 dark:bg-[linear-gradient(180deg,rgba(28,32,40,0.96),rgba(18,21,29,0.94))]! dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]"
                       >
                         <div className="text-sm font-semibold text-zinc-950 dark:text-white">{title}</div>
                         <div className="mt-1.5 text-sm leading-6 text-zinc-600 dark:text-zinc-400">{body}</div>
@@ -259,7 +259,7 @@ export default function Home() {
                 key={pillar.title}
                 href={pillar.href}
                 style={{ animationDelay: `${40 * (productPillars.indexOf(pillar) + 1)}ms` }}
-                className={`premium-card premium-fade-up group relative flex min-h-[320px] flex-col overflow-hidden rounded-[1.75rem] border border-zinc-200 bg-zinc-50 p-6 transition duration-300 hover:shadow-2xl dark:border-white/10 dark:bg-zinc-950 ${pillar.border}`}
+                className={`premium-card premium-fade-up group relative flex min-h-80 flex-col overflow-hidden rounded-[1.75rem] border border-zinc-200 bg-zinc-50 p-6 transition duration-300 hover:shadow-2xl dark:border-white/10 dark:bg-zinc-950 ${pillar.border}`}
               >
                 <div className={`absolute inset-x-0 top-0 h-40 bg-linear-to-b ${pillar.accent}`} />
                 <div className="relative">

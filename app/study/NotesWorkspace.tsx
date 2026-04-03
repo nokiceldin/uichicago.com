@@ -1005,7 +1005,7 @@ export default function NotesWorkspace({ library, onLibraryChange, onCreateFlash
                         />
                       </div>
                     </div>
-                    <div className="flex flex-wrap gap-2 lg:max-w-[360px] lg:justify-end">
+                    <div className="flex flex-wrap gap-2 lg:max-w-90 lg:justify-end">
                       <button
                         onClick={() => updateNote(selectedNote.id, {
                           visibility: selectedNote.visibility === "public" ? "private" : "public",
@@ -1180,7 +1180,7 @@ export default function NotesWorkspace({ library, onLibraryChange, onCreateFlash
                       value={selectedNote.rawContent}
                       onChange={(event) => updateNote(selectedNote.id, { rawContent: event.target.value, sourceType: "manual" })}
                       placeholder="Start with the main ideas from class. Paste rough notes, key points, or lecture takeaways here."
-                      className="mt-4 min-h-[460px] w-full resize-none bg-transparent text-[15px] leading-8 text-zinc-100 outline-none placeholder:text-zinc-500"
+                      className="mt-4 min-h-115 w-full resize-none bg-transparent text-[15px] leading-8 text-zinc-100 outline-none placeholder:text-zinc-500"
                     />
                   )}
 

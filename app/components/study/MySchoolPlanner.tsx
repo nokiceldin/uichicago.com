@@ -77,7 +77,16 @@ type Props = {
     currentCourses: string[];
   }) => void;
   onProfileSync: (profile: { major: string; currentCourses: string[] }) => void;
-  onPersistProfile: () => void;
+  onPersistProfile: (overrides?: {
+    major?: string;
+    currentCourses?: string[];
+    plannerProfile?: {
+      majorSlug: string;
+      currentSemesterNumber: number;
+      honorsStudent: boolean;
+      currentCourses: string[];
+    };
+  }) => void;
 };
 
 function statusClasses(status: PlannerCourse["status"]) {
@@ -104,6 +113,13 @@ function dedupeCourses(courses: SelectedCourse[]) {
     seen.add(course.code);
     return true;
   });
+}
+
+function sameSelectedCourses(a: SelectedCourse[], b: SelectedCourse[]) {
+  return (
+    a.length === b.length &&
+    a.every((course, index) => course.code === b[index]?.code)
+  );
 }
 
 function courseBadgeClasses() {
@@ -201,10 +217,11 @@ export default function MySchoolPlanner({
   const [majorOptions, setMajorOptions] = useState<MajorOption[]>([]);
   const [selectedMajorSlug, setSelectedMajorSlug] = useState("");
   const [currentSemesterNumber, setCurrentSemesterNumber] = useState("0");
-  const [planLength, setPlanLength] = useState<"one_semester" | "one_year" | "two_years" | "three_years" | "remaining" | "full">("remaining");
+  const [planLength, setPlanLength] = useState<"one_semester" | "one_year" | "two_years" | "three_years" | "remaining" | "full">("full");
   const [currentCourseQuery, setCurrentCourseQuery] = useState("");
   const [currentCourseResults, setCurrentCourseResults] = useState<CourseSearchResult[]>([]);
   const [selectedCurrentCourses, setSelectedCurrentCourses] = useState<SelectedCourse[]>([]);
+  const [shouldPersistCourseSelection, setShouldPersistCourseSelection] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [plan, setPlan] = useState<PlannerResult | null>(null);
@@ -244,17 +261,23 @@ export default function MySchoolPlanner({
   }, [defaultMajor]);
 
   useEffect(() => {
-    const defaults = parseCourseCodes(defaultCurrentCourses).map((code) => ({ code, title: code }));
-    setSelectedCurrentCourses(defaults);
-  }, [defaultCurrentCourses]);
+    const nextMajorSlug = initialPlannerProfile.majorSlug || "";
+    const nextSemesterNumber = String(initialPlannerProfile.currentSemesterNumber || 0);
+    const fallbackCourses = parseCourseCodes(defaultCurrentCourses);
+    const nextCourses = (initialPlannerProfile.currentCourses?.length ? initialPlannerProfile.currentCourses : fallbackCourses).map((code) => ({
+      code,
+      title: code,
+    }));
 
-  useEffect(() => {
-    setSelectedMajorSlug(initialPlannerProfile.majorSlug || "");
-    setCurrentSemesterNumber(String(initialPlannerProfile.currentSemesterNumber || 0));
-    setSelectedCurrentCourses(
-      (initialPlannerProfile.currentCourses ?? []).map((code) => ({ code, title: code })),
-    );
-  }, [initialPlannerProfile]);
+    setSelectedMajorSlug((current) => (current === nextMajorSlug ? current : nextMajorSlug));
+    setCurrentSemesterNumber((current) => (current === nextSemesterNumber ? current : nextSemesterNumber));
+    setSelectedCurrentCourses((current) => (sameSelectedCourses(current, nextCourses) ? current : nextCourses));
+  }, [
+    defaultCurrentCourses,
+    initialPlannerProfile.currentCourses,
+    initialPlannerProfile.currentSemesterNumber,
+    initialPlannerProfile.majorSlug,
+  ]);
 
   useEffect(() => {
     const query = currentCourseQuery.trim();
@@ -304,17 +327,31 @@ export default function MySchoolPlanner({
     });
   }, [defaultMajor, onProfileSync, selectedCurrentCourses, selectedMajor]);
 
-  const plannedCounts = useMemo(() => {
-    if (!plan) return [];
-    const buckets = new Map<string, number>();
-    for (const semester of plan.semesters) {
-      for (const course of semester.courses) {
-        if (course.status !== "planned") continue;
-        buckets.set(course.bucketLabel, (buckets.get(course.bucketLabel) ?? 0) + 1);
-      }
-    }
-    return Array.from(buckets.entries()).sort((a, b) => b[1] - a[1]).slice(0, 4);
-  }, [plan]);
+  useEffect(() => {
+    if (!shouldPersistCourseSelection) return;
+
+    onPersistProfile({
+      major: selectedMajor?.name ?? defaultMajor,
+      currentCourses: selectedCurrentCourses.map((course) => course.code),
+      plannerProfile: {
+        majorSlug: selectedMajorSlug,
+        currentSemesterNumber: Number(currentSemesterNumber || "0"),
+        honorsStudent: Boolean(initialPlannerProfile.honorsStudent),
+        currentCourses: selectedCurrentCourses.map((course) => course.code),
+      },
+    });
+
+    setShouldPersistCourseSelection(false);
+  }, [
+    currentSemesterNumber,
+    defaultMajor,
+    initialPlannerProfile.honorsStudent,
+    onPersistProfile,
+    selectedCurrentCourses,
+    selectedMajor,
+    selectedMajorSlug,
+    shouldPersistCourseSelection,
+  ]);
 
   const handleGenerate = async () => {
     if (!selectedMajor) {
@@ -353,13 +390,17 @@ export default function MySchoolPlanner({
 
   const addCurrentCourse = (course: SelectedCourse) => {
     setSelectedCurrentCourses((current) => dedupeCourses([...current, course]));
+    setShouldPersistCourseSelection(true);
   };
 
   const removeCurrentCourse = (code: string) => {
     setSelectedCurrentCourses((current) => current.filter((course) => course.code !== code));
+    setShouldPersistCourseSelection(true);
   };
 
   const markTaken = (slotId: string) => {
+    const plannedCourse = plan?.semesters.flatMap((semester) => semester.courses).find((course) => course.slotId === slotId);
+
     setPlan((current) => {
       if (!current) return current;
       return {
@@ -374,10 +415,10 @@ export default function MySchoolPlanner({
         })),
       };
     });
-    const plannedCourse = plan?.semesters.flatMap((semester) => semester.courses).find((course) => course.slotId === slotId);
+
     if (plannedCourse) {
       setSelectedCurrentCourses((current) => dedupeCourses([...current, { code: plannedCourse.code, title: plannedCourse.title }]));
-      onPersistProfile();
+      setShouldPersistCourseSelection(true);
     }
   };
 
@@ -508,10 +549,6 @@ export default function MySchoolPlanner({
             onRemoveCourse={removeCurrentCourse}
           />
 
-          <div className="rounded-[1.2rem] border border-indigo-400/20 bg-indigo-500/10 p-3 text-xs leading-6 text-indigo-100">
-            The generator now reads the exact major you picked plus the exact class codes you added, then builds from that major&apos;s sample schedule around the courses you already have or are taking.
-          </div>
-
           {error ? (
             <div className="rounded-[1.2rem] border border-red-400/20 bg-red-500/10 px-4 py-3 text-sm text-red-100">
               {error}
@@ -534,38 +571,6 @@ export default function MySchoolPlanner({
             </div>
           ) : (
             <>
-              <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_240px]">
-                <div className="rounded-[1.35rem] border border-white/10 bg-white/4 p-4">
-                  <div className="text-[11px] font-bold uppercase tracking-[0.2em] text-zinc-500">Generated plan</div>
-                  <div className="mt-2 text-2xl font-semibold tracking-[-0.04em] text-white">{plan.majorName}</div>
-                  <div className="mt-2 text-sm text-zinc-300">{plan.planLengthLabel}</div>
-                  {plan.catalogUrl ? (
-                    <a href={plan.catalogUrl} target="_blank" rel="noreferrer" className="mt-3 inline-flex text-sm font-medium text-indigo-200 transition hover:text-white">
-                      Open catalog reference
-                    </a>
-                  ) : null}
-                  {plan.inferredCompletedCourses.length ? (
-                    <div className="mt-4 rounded-2xl border border-emerald-400/20 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-100">
-                      Inferred {plan.inferredCompletedCourses.length} completed courses from the semesters before your current one.
-                    </div>
-                  ) : null}
-                </div>
-
-                <div className="rounded-[1.35rem] border border-white/10 bg-white/4 p-4">
-                  <div className="text-[11px] font-bold uppercase tracking-[0.2em] text-zinc-500">What is planned</div>
-                  <div className="mt-4 space-y-2">
-                    {plannedCounts.length ? plannedCounts.map(([label, count]) => (
-                      <div key={label} className="flex items-center justify-between gap-4 rounded-xl border border-white/10 bg-white/3 px-3 py-2 text-sm text-zinc-200">
-                        <span>{label}</span>
-                        <span className="font-semibold text-white">{count}</span>
-                      </div>
-                    )) : (
-                      <div className="text-sm text-zinc-400">Everything in this view is already marked completed or in progress.</div>
-                    )}
-                  </div>
-                </div>
-              </div>
-
               <div className="space-y-2.5">
                 {plan.semesters.map((semester) => (
                   <section key={semester.id} className="rounded-[1.2rem] border border-white/10 bg-white/4 p-3">
@@ -588,7 +593,7 @@ export default function MySchoolPlanner({
                                   {course.bucketLabel}
                                 </span>
                                 <span className="rounded-full border border-white/10 bg-black/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-zinc-300">
-                                  {course.status === "completed" ? "Taken" : course.status === "in_progress" ? "Saved" : "Planned"}
+                                  {course.status === "completed" || course.status === "in_progress" ? "Taken" : "Planned"}
                                 </span>
                               </div>
                               <div className="mt-1 line-clamp-2 text-sm text-zinc-200">{course.title}</div>
@@ -599,7 +604,7 @@ export default function MySchoolPlanner({
                             </div>
 
                             <div className="flex shrink-0 flex-wrap items-center gap-1.5">
-                              {course.status !== "completed" ? (
+                              {course.status === "planned" ? (
                                 <button
                                   type="button"
                                   onClick={() => markTaken(course.slotId)}

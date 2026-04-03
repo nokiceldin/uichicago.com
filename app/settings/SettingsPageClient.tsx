@@ -10,6 +10,7 @@ import {
   readLocalSiteSettings,
   writeLocalSiteSettings,
 } from "@/lib/site-settings";
+import ContactButton from "@/app/components/ContactButton";
 import type { SiteSettingsPayload, ThemeMode } from "@/lib/study/profile";
 
 function persistThemeLocally(themeMode: ThemeMode) {
@@ -209,6 +210,25 @@ export default function SettingsPageClient() {
             </div>
           </section>
         )}
+
+        <section className="overflow-hidden rounded-[1.8rem] border border-zinc-200 bg-white shadow-[0_18px_55px_rgba(15,23,42,0.06)] dark:border-white/10 dark:bg-[rgba(18,18,23,0.94)]">
+          <div className="border-b border-zinc-200 px-6 py-5 dark:border-white/10">
+            <div className="text-sm font-semibold text-zinc-950 dark:text-white">Contact</div>
+          </div>
+          <div className="flex flex-col gap-4 px-6 py-5 md:flex-row md:items-center md:justify-between">
+            <div>
+              <div className="text-sm font-semibold text-zinc-950 dark:text-white">Need help or want to reach out?</div>
+              <div className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
+                Send a message here and include your email if you want a reply back.
+              </div>
+            </div>
+            <ContactButton
+              page="settings"
+              buttonLabel="Open contact form"
+              className="inline-flex shrink-0 items-center justify-center rounded-full bg-zinc-950 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-zinc-800 dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-100"
+            />
+          </div>
+        </section>
 
         {/* Profile picture — authenticated only, link to profile page */}
         {status === "authenticated" && (

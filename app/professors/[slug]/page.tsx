@@ -1,46 +1,40 @@
-import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
-import fs from "fs";
-import path from "path";
 import Link from "next/link";
 import SiteFooter from "@/app/components/SiteFooter";
+import {
+  getProfessorDirectory,
+  getProfessorDirectoryBySlug,
+} from "@/lib/professors/directory";
 
-type ProfCoursesMap = Record<string, string[]>;
+type CourseRankRow = {
+  courseLabel: string;
+  courseTitle: string;
+  profRank: number | null;
+  totalInCourse: number;
+};
 
-function mapKeyToDbName(key: string) {
-  const s = (key || "").trim();
-  if (!s) return s;
-  if (s.includes(",")) {
-    const parts = s.split(",").map((p) => p.trim()).filter(Boolean);
-    if (parts.length >= 2) return `${parts.slice(1).join(" ")} ${parts[0]}`.replace(/\s+/g, " ").trim();
+function courseLabelFromItem(item: string) {
+  const value = (item || "").trim().toUpperCase();
+  const match = value.match(/^([A-Z&]+)\s*\|?\s*(\d+[A-Z]?)\b/);
+  if (match) return `${match[1]} ${match[2]}`;
+  const pipeParts = value.split("|").map((part) => part.trim());
+  if (pipeParts.length >= 2) {
+    const fallback = `${pipeParts[0]} ${pipeParts[1]}`.match(/^([A-Z&]+)\s+(\d+[A-Z]?)\b/);
+    if (fallback) return `${fallback[1]} ${fallback[2]}`;
   }
-  return s;
+  return value;
 }
 
-function normName(s: string) { return (s || "").toLowerCase().replace(/[^a-z0-9]+/g, " ").trim().replace(/\s+/g, " "); }
-function courseLabelFromItem(s: string) {
-  const t = (s || "").trim().toUpperCase();
-  const m = t.match(/^([A-Z&]+)\s*\|?\s*(\d+[A-Z]?)\b/);
-  if (m) return `${m[1]} ${m[2]}`;
-  const pipe = t.split("|").map((x) => x.trim());
-  if (pipe.length >= 2) { const mm = `${pipe[0]} ${pipe[1]}`.match(/^([A-Z&]+)\s+(\d+[A-Z]?)\b/); if (mm) return `${mm[1]} ${mm[2]}`; }
-  return t;
-}
-function courseTitleFromItem(s: string) { const pipe = (s || "").trim().split("|").map((x) => x.trim()); return pipe.length >= 2 ? pipe.slice(1).join(" | ") : ""; }
-
-const globalForCourseMap = globalThis as unknown as { __profCourseMap?: ProfCoursesMap };
-function getProfCourseMap(): ProfCoursesMap {
-  if (globalForCourseMap.__profCourseMap) return globalForCourseMap.__profCourseMap;
-  const raw = fs.readFileSync(path.join(process.cwd(), "public", "data", "professor_to_courses.json"), "utf8");
-  return (globalForCourseMap.__profCourseMap = JSON.parse(raw));
+function courseTitleFromItem(item: string) {
+  const pipe = (item || "").trim().split("|").map((part) => part.trim());
+  return pipe.length >= 2 ? pipe.slice(1).join(" | ") : "";
 }
 
-type CourseRankRow = { courseLabel: string; courseTitle: string; profRank: number | null; totalInCourse: number; profScore: number; profRatings: number; };
-
-function ratingBg(v: number) {
-  if (v >= 4.5) return "bg-emerald-500";
-  if (v >= 4.0) return "bg-green-500";
-  if (v >= 3.0) return "bg-amber-500";
+function ratingBg(value: number, isRated: boolean) {
+  if (!isRated) return "bg-zinc-500";
+  if (value >= 4.5) return "bg-emerald-500";
+  if (value >= 4.0) return "bg-green-500";
+  if (value >= 3.0) return "bg-amber-500";
   return "bg-red-500";
 }
 
@@ -57,162 +51,219 @@ export default async function ProfessorPage({ params }: { params: Promise<{ slug
   const { slug } = await params;
   if (!slug) notFound();
 
-  const C = 20, M = 4.0;
-  const result = await prisma.$queryRawUnsafe<any[]>(`
-    WITH scored AS (
-      SELECT "id","slug","name","department","school",
-        COALESCE("rmpQuality",0) as "quality", COALESCE("rmpRatingsCount",0) as "ratingsCount",
-        COALESCE("rmpUrl",'') as "rmpUrl", COALESCE("aiSummary",'') as "aiSummary",
-        "salary", "salaryTitle",
-        CASE WHEN COALESCE("rmpRatingsCount",0)=0 THEN 0
-          ELSE (COALESCE("rmpRatingsCount",0)::float/(COALESCE("rmpRatingsCount",0)+${C}))*COALESCE("rmpQuality",0)
-               +(${C}::float/(COALESCE("rmpRatingsCount",0)+${C}))*${M} END as "score"
-      FROM "Professor"
-    ),
-    ranked AS (
-      SELECT *, ROW_NUMBER() OVER (ORDER BY "score" DESC,"ratingsCount" DESC,"name" ASC) as "overallRank",
-        ROW_NUMBER() OVER (PARTITION BY "department" ORDER BY "score" DESC,"ratingsCount" DESC,"name" ASC) as "deptRank"
-      FROM scored
-    )
-    SELECT * FROM ranked WHERE "slug"=$1`, slug);
+  const [professor, directory] = await Promise.all([
+    getProfessorDirectoryBySlug(slug),
+    getProfessorDirectory(),
+  ]);
 
-  const professor = result[0];
   if (!professor) notFound();
 
-  const courseMap = getProfCourseMap();
-  const profNorm = normName(professor.name);
-  const profMapKey = Object.keys(courseMap).find((k) => normName(mapKeyToDbName(k)) === profNorm) || "";
-  const profCourses = (profMapKey ? courseMap[profMapKey] || [] : []).map((item) => ({ courseLabel: courseLabelFromItem(item), courseTitle: courseTitleFromItem(item) })).filter((x) => x.courseLabel);
+  const overallRanked = directory.filter((entry) => entry.isRated);
+  const departmentRanked = overallRanked.filter((entry) => entry.department === professor.department);
 
-  async function computeRankForCourse(courseLabel: string, courseTitle: string): Promise<CourseRankRow> {
-  const peerDbNames: string[] = [];
-  for (const [key, courses] of Object.entries(courseMap)) {
-    if ((courses || []).some((c) => courseLabelFromItem(c) === courseLabel)) 
-      peerDbNames.push(mapKeyToDbName(key));
-  }
-  console.log("courseLabel:", courseLabel);
-console.log("peerDbNames:", peerDbNames);
-console.log("profNorm:", profNorm);
-  if (peerDbNames.length === 0) return { courseLabel, courseTitle, profRank: null, totalInCourse: 0, profScore: Number(professor.score || 0), profRatings: Number(professor.ratingsCount || 0) };
-  
-  const peers = await prisma.professor.findMany({ 
-    where: { name: { in: peerDbNames, mode: "insensitive" } },  // <-- add this
-    select: { name: true, rmpQuality: true, rmpRatingsCount: true } 
+  const overallRank = professor.isRated
+    ? overallRanked.findIndex((entry) => entry.slug === professor.slug) + 1
+    : null;
+  const departmentRank = professor.isRated
+    ? departmentRanked.findIndex((entry) => entry.slug === professor.slug) + 1
+    : null;
+
+  const profCourses = professor.courseItems
+    .map((item) => ({
+      courseLabel: courseLabelFromItem(item),
+      courseTitle: courseTitleFromItem(item),
+    }))
+    .filter((course) => course.courseLabel);
+
+  const courseRanks: CourseRankRow[] = profCourses.map((course) => {
+    const peers = directory
+      .filter((entry) => entry.courseLabels.includes(course.courseLabel))
+      .sort((a, b) => {
+        if (a.isRated !== b.isRated) return a.isRated ? -1 : 1;
+        if (b.score !== a.score) return b.score - a.score;
+        if (b.ratingsCount !== a.ratingsCount) return b.ratingsCount - a.ratingsCount;
+        return a.name.localeCompare(b.name);
+      });
+
+    const profRank = professor.isRated
+      ? peers.findIndex((entry) => entry.slug === professor.slug) + 1
+      : null;
+
+    return {
+      courseLabel: course.courseLabel,
+      courseTitle: course.courseTitle,
+      profRank: typeof profRank === "number" && profRank > 0 ? profRank : null,
+      totalInCourse: peers.length,
+    };
   });
 
-console.log("peers found:", peers?.length);  // add this after the findMany too
-  
-  const scored = peers.map((p) => { 
-    const q = Number(p.rmpQuality ?? 0), r = Number(p.rmpRatingsCount ?? 0); 
-    return { name: p.name, score: r === 0 ? 0 : (r/(r+C))*q+(C/(r+C))*M, ratings: r }; 
-  });
-  scored.sort((a, b) => b.score !== a.score ? b.score - a.score : b.ratings !== a.ratings ? b.ratings - a.ratings : a.name.localeCompare(b.name));
-  
-  const idx = scored.findIndex((p) => normName(p.name) === profNorm);  // this stays the same
-  return { courseLabel, courseTitle, profRank: idx === -1 ? null : idx + 1, totalInCourse: scored.length, profScore: Number(professor.score || 0), profRatings: Number(professor.ratingsCount || 0) };
-}
-
-  const courseRanks: CourseRankRow[] = await Promise.all(profCourses.map((c) => computeRankForCourse(c.courseLabel, c.courseTitle)));
-  const bg = ratingBg(Number(professor.quality || 0));
+  const bg = ratingBg(professor.quality, professor.isRated);
 
   return (
     <main className="relative min-h-screen bg-zinc-50 text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100">
-  <div className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-72 bg-linear-to-b from-sky-50/60 to-transparent dark:from-sky-950/30 dark:to-transparent" />
+      <div className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-72 bg-linear-to-b from-sky-50/60 to-transparent dark:from-sky-950/30 dark:to-transparent" />
 
-  <div className="mx-auto max-w-3xl px-4 py-6 sm:px-6 sm:py-16">
-    {/* Profile card */}
+      <div className="mx-auto max-w-3xl px-4 py-6 sm:px-6 sm:py-16">
         <div className="overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-lg dark:border-white/8 dark:bg-zinc-900/50 dark:shadow-black/40">
           <div className={`h-1 w-full ${bg}`} />
           <div className="p-6 sm:p-8">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:gap-6">
-              <div className={`flex h-20 w-20 items-center justify-center rounded-2xl text-3xl font-black text-white shadow-lg sm:h-24 sm:w-24 sm:text-4xl ${bg}`}>
-                {Number(professor.quality || 0).toFixed(1)}
+              <div className={`flex h-20 w-20 items-center justify-center rounded-2xl text-2xl font-black text-white shadow-lg sm:h-24 sm:w-24 sm:text-3xl ${bg}`}>
+                {professor.isRated ? Number(professor.quality || 0).toFixed(1) : "NR"}
               </div>
               <div className="min-w-0 flex-1">
-                <h1 className="text-2xl font-black tracking-tight text-zinc-900 dark:text-white sm:text-3xl lg:text-4xl">{professor.name}</h1>
+                <h1 className="text-2xl font-black tracking-tight text-zinc-900 dark:text-white sm:text-3xl lg:text-4xl">
+                  {professor.name}
+                </h1>
                 <p className="mt-1 text-sm text-zinc-400 dark:text-zinc-500">{professor.school}</p>
                 <div className="mt-3 flex flex-wrap gap-2">
-                  {[`#${professor.overallRank} overall`, `#${professor.deptRank} in ${professor.department}`, `${professor.ratingsCount} reviews`].map((t) => (
-                    <span key={t} className="inline-flex items-center rounded-lg bg-zinc-100 dark:bg-white/5 px-3 py-1 text-xs font-bold text-zinc-600 dark:text-zinc-300 ring-1 ring-zinc-200 dark:ring-white/10">{t}</span>
-                  ))}
+                  {professor.isRated ? (
+                    <>
+                      <span className="inline-flex items-center rounded-lg bg-zinc-100 dark:bg-white/5 px-3 py-1 text-xs font-bold text-zinc-600 dark:text-zinc-300 ring-1 ring-zinc-200 dark:ring-white/10">
+                        #{overallRank} overall
+                      </span>
+                      <span className="inline-flex items-center rounded-lg bg-zinc-100 dark:bg-white/5 px-3 py-1 text-xs font-bold text-zinc-600 dark:text-zinc-300 ring-1 ring-zinc-200 dark:ring-white/10">
+                        #{departmentRank} in {professor.department}
+                      </span>
+                      <span className="inline-flex items-center rounded-lg bg-zinc-100 dark:bg-white/5 px-3 py-1 text-xs font-bold text-zinc-600 dark:text-zinc-300 ring-1 ring-zinc-200 dark:ring-white/10">
+                        {professor.ratingsCount} reviews
+                      </span>
+                    </>
+                  ) : (
+                    <>
+                      <span className="inline-flex items-center rounded-lg bg-zinc-100 dark:bg-white/5 px-3 py-1 text-xs font-bold text-zinc-600 dark:text-zinc-300 ring-1 ring-zinc-200 dark:ring-white/10">
+                        Active at UIC
+                      </span>
+                      <span className="inline-flex items-center rounded-lg bg-zinc-100 dark:bg-white/5 px-3 py-1 text-xs font-bold text-zinc-600 dark:text-zinc-300 ring-1 ring-zinc-200 dark:ring-white/10">
+                        No RMP profile yet
+                      </span>
+                    </>
+                  )}
                 </div>
               </div>
             </div>
 
-            {professor.aiSummary && (
+            {professor.aiSummary ? (
               <div className="mt-6 rounded-xl border border-zinc-100 dark:border-white/8 bg-zinc-50 dark:bg-white/3 p-5 text-sm leading-relaxed">
-                {professor.aiSummary.split("\n\n").map((block: string, i: number) => {
+                {professor.aiSummary.split("\n\n").map((block, i) => {
                   if (block.trim().startsWith("•")) {
-                    const items = block.split("\n").map((s: string) => s.replace(/^•\s*/, "").trim()).filter(Boolean);
-                    return <ul key={i} className="mt-3 space-y-1.5 pl-4">{items.map((it: string, idx: number) => <li key={idx} className="flex items-start gap-2 text-zinc-500 dark:text-zinc-400"><span className="mt-1.5 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-sky-500" />{it}</li>)}</ul>;
+                    const items = block
+                      .split("\n")
+                      .map((line) => line.replace(/^•\s*/, "").trim())
+                      .filter(Boolean);
+                    return (
+                      <ul key={i} className="mt-3 space-y-1.5 pl-4">
+                        {items.map((item, idx) => (
+                          <li key={idx} className="flex items-start gap-2 text-zinc-500 dark:text-zinc-400">
+                            <span className="mt-1.5 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-sky-500" />
+                            {item}
+                          </li>
+                        ))}
+                      </ul>
+                    );
                   }
-                  return <p key={i} className={i === 0 ? "font-bold text-zinc-900 dark:text-white" : "mt-3 text-zinc-500 dark:text-zinc-400"}>{block}</p>;
+
+                  return (
+                    <p key={i} className={i === 0 ? "font-bold text-zinc-900 dark:text-white" : "mt-3 text-zinc-500 dark:text-zinc-400"}>
+                      {block}
+                    </p>
+                  );
                 })}
               </div>
-            )}
+            ) : !professor.isRated ? (
+              <div className="mt-6 rounded-xl border border-zinc-100 dark:border-white/8 bg-zinc-50 dark:bg-white/3 p-5 text-sm text-zinc-500 dark:text-zinc-400">
+                This instructor is active in current UIC teaching data, but there is no matched RateMyProfessors profile yet.
+              </div>
+            ) : null}
 
             <div className={`mt-6 grid gap-3 ${professor.salary ? "grid-cols-2 sm:grid-cols-3" : "grid-cols-2"}`}>
-              {[{ label: "Department", value: professor.department }, { label: "School", value: professor.school }].map((s) => (
-                <div key={s.label} className="rounded-xl bg-zinc-50 dark:bg-white/3 px-4 py-3 ring-1 ring-zinc-200 dark:ring-white/8">
-                  <div className="text-[10px] font-bold uppercase tracking-widest text-zinc-400 dark:text-zinc-600">{s.label}</div>
-                  <div className="mt-1 text-sm font-semibold text-zinc-900 dark:text-zinc-200">{s.value}</div>
+              {[{ label: "Department", value: professor.department }, { label: "School", value: professor.school }].map((section) => (
+                <div key={section.label} className="rounded-xl bg-zinc-50 dark:bg-white/3 px-4 py-3 ring-1 ring-zinc-200 dark:ring-white/8">
+                  <div className="text-[10px] font-bold uppercase tracking-widest text-zinc-400 dark:text-zinc-600">
+                    {section.label}
+                  </div>
+                  <div className="mt-1 text-sm font-semibold text-zinc-900 dark:text-zinc-200">
+                    {section.value}
+                  </div>
                 </div>
               ))}
-              {professor.salary && (
+              {professor.salary ? (
                 <div className="col-span-2 sm:col-span-1 rounded-xl bg-emerald-50 dark:bg-emerald-500/7 px-4 py-3 ring-1 ring-emerald-200 dark:ring-emerald-500/20">
-                  <div className="text-[10px] font-bold uppercase tracking-widest text-sky-600 dark:text-sky-500">Annual Salary</div>
+                  <div className="text-[10px] font-bold uppercase tracking-widest text-sky-600 dark:text-sky-500">
+                    Annual Salary
+                  </div>
                   <div className="mt-1 text-sm font-bold text-sky-700 dark:text-sky-400">
                     ${Number(professor.salary).toLocaleString("en-US", { maximumFractionDigits: 0 })}
                   </div>
-                  {professor.salaryTitle && (
+                  {professor.salaryTitle ? (
                     <div className="mt-0.5 truncate text-[11px] capitalize text-sky-600/70 dark:text-sky-500/60">
-                      {professor.salaryTitle.toLowerCase().replace(/\b\w/g, (c: string) => c.toUpperCase())}
+                      {professor.salaryTitle.toLowerCase().replace(/\b\w/g, (char) => char.toUpperCase())}
                     </div>
-                  )}
+                  ) : null}
                 </div>
-              )}
+              ) : null}
             </div>
 
-            {professor.rmpUrl && (
+            {professor.url ? (
               <div className="mt-5">
-                <a href={professor.rmpUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-xl border border-zinc-200 bg-white px-5 py-2.5 text-sm font-semibold text-zinc-700 transition hover:bg-zinc-50 hover:border-zinc-300 dark:border-sky-500/15 dark:bg-sky-500/5 dark:text-zinc-200 dark:hover:bg-sky-500/10 dark:hover:border-sky-500/25">
+                <a
+                  href={professor.url}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-2 rounded-xl border border-zinc-200 bg-white px-5 py-2.5 text-sm font-semibold text-zinc-700 transition hover:bg-zinc-50 hover:border-zinc-300 dark:border-sky-500/15 dark:bg-sky-500/5 dark:text-zinc-200 dark:hover:bg-sky-500/10 dark:hover:border-sky-500/25"
+                >
                   View on RateMyProfessors →
                 </a>
               </div>
-            )}
+            ) : null}
           </div>
         </div>
 
-        {/* Course rankings */}
         <div className="mt-6 overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-lg dark:border-white/8 dark:bg-zinc-900/40 dark:shadow-xl">
           <div className="border-b border-zinc-100 dark:border-white/8 px-5 py-5 sm:px-6">
             <h2 className="text-lg font-bold text-zinc-900 dark:text-white sm:text-xl">Course Rankings</h2>
-            <p className="mt-1 text-sm text-zinc-500">How this professor ranks among peers in each course they teach</p>
+            <p className="mt-1 text-sm text-zinc-500">
+              {professor.isRated
+                ? "How this professor ranks among peers in each course they teach"
+                : "Courses currently tied to this instructor in UIC teaching data"}
+            </p>
           </div>
           {courseRanks.length === 0 ? (
-            <div className="px-6 py-12 text-center text-sm text-zinc-400 dark:text-zinc-600">No course data found for this professor.</div>
+            <div className="px-6 py-12 text-center text-sm text-zinc-400 dark:text-zinc-600">
+              No course data found for this professor.
+            </div>
           ) : (
             <>
               <div className="space-y-3 px-4 py-4 sm:hidden">
-                {courseRanks.map((r) => (
-                  <div key={r.courseLabel} className="rounded-2xl bg-zinc-50 p-4 ring-1 ring-zinc-200 dark:bg-white/3 dark:ring-white/8">
+                {courseRanks.map((row) => (
+                  <div key={row.courseLabel} className="rounded-2xl bg-zinc-50 p-4 ring-1 ring-zinc-200 dark:bg-white/3 dark:ring-white/8">
                     <div className="flex items-start justify-between gap-3">
                       <div className="min-w-0">
                         <Link
-                          href={`/courses/${r.courseLabel.split(" ")[0].toLowerCase()}/${r.courseLabel.split(" ")[1]?.toLowerCase()}`}
+                          href={`/courses/${row.courseLabel.split(" ")[0].toLowerCase()}/${row.courseLabel.split(" ")[1]?.toLowerCase()}`}
                           className="text-base font-bold text-zinc-900 transition-colors hover:text-sky-600 hover:underline dark:text-zinc-100 dark:hover:text-sky-400"
                         >
-                          {r.courseLabel}
+                          {row.courseLabel}
                         </Link>
-                        <div className="mt-1 text-sm leading-6 text-zinc-500 dark:text-zinc-400">{r.courseTitle || "Untitled"}</div>
+                        <div className="mt-1 text-sm leading-6 text-zinc-500 dark:text-zinc-400">
+                          {row.courseTitle || "Untitled"}
+                        </div>
                       </div>
-                      {r.profRank ? (
-                        <span className={`inline-flex shrink-0 items-center rounded-lg px-2.5 py-1 text-xs font-bold ring-1 ${rankBadgeClass(r.profRank, r.totalInCourse)}`}>
-                          #{r.profRank}
+                      {row.profRank ? (
+                        <span className={`inline-flex shrink-0 items-center rounded-lg px-2.5 py-1 text-xs font-bold ring-1 ${rankBadgeClass(row.profRank, row.totalInCourse)}`}>
+                          #{row.profRank}
                         </span>
-                      ) : <span className="text-xs text-zinc-300 dark:text-zinc-700">No data</span>}
+                      ) : (
+                        <span className="text-xs text-zinc-300 dark:text-zinc-700">
+                          {professor.isRated ? "No data" : "Active"}
+                        </span>
+                      )}
                     </div>
-                    {r.profRank ? <div className="mt-3 text-xs text-zinc-500 dark:text-zinc-400">Ranked #{r.profRank} of {r.totalInCourse} professors in this course.</div> : null}
+                    {row.profRank ? (
+                      <div className="mt-3 text-xs text-zinc-500 dark:text-zinc-400">
+                        Ranked #{row.profRank} of {row.totalInCourse} professors in this course.
+                      </div>
+                    ) : null}
                   </div>
                 ))}
               </div>
@@ -223,23 +274,29 @@ console.log("peers found:", peers?.length);  // add this after the findMany too
                   <div className="col-span-3 text-right">Rank</div>
                 </div>
                 <ul className="divide-y divide-zinc-100 dark:divide-white/4">
-                  {courseRanks.map((r) => (
-                    <li key={r.courseLabel} className="grid grid-cols-12 items-center px-5 sm:px-6 py-4 text-sm hover:bg-zinc-50 dark:hover:bg-white/3 transition-colors">
+                  {courseRanks.map((row) => (
+                    <li key={row.courseLabel} className="grid grid-cols-12 items-center px-5 sm:px-6 py-4 text-sm hover:bg-zinc-50 dark:hover:bg-white/3 transition-colors">
                       <div className="col-span-3 font-bold text-zinc-900 dark:text-zinc-100">
                         <Link
-                          href={`/courses/${r.courseLabel.split(" ")[0].toLowerCase()}/${r.courseLabel.split(" ")[1]?.toLowerCase()}`}
+                          href={`/courses/${row.courseLabel.split(" ")[0].toLowerCase()}/${row.courseLabel.split(" ")[1]?.toLowerCase()}`}
                           className="transition-colors hover:text-sky-600 hover:underline dark:hover:text-sky-400"
                         >
-                          {r.courseLabel}
+                          {row.courseLabel}
                         </Link>
                       </div>
-                      <div className="col-span-6 pr-4 text-xs text-zinc-400 dark:text-zinc-500">{r.courseTitle || "Untitled"}</div>
+                      <div className="col-span-6 pr-4 text-xs text-zinc-400 dark:text-zinc-500">
+                        {row.courseTitle || "Untitled"}
+                      </div>
                       <div className="col-span-3 flex justify-end">
-                        {r.profRank ? (
-                          <span className={`inline-flex items-center rounded-lg px-2.5 py-1 text-xs font-bold ring-1 ${rankBadgeClass(r.profRank, r.totalInCourse)}`}>
-                            #{r.profRank} of {r.totalInCourse}
+                        {row.profRank ? (
+                          <span className={`inline-flex items-center rounded-lg px-2.5 py-1 text-xs font-bold ring-1 ${rankBadgeClass(row.profRank, row.totalInCourse)}`}>
+                            #{row.profRank} of {row.totalInCourse}
                           </span>
-                        ) : <span className="text-xs text-zinc-300 dark:text-zinc-700">No data</span>}
+                        ) : (
+                          <span className="text-xs text-zinc-300 dark:text-zinc-700">
+                            {professor.isRated ? "No data" : "Active"}
+                          </span>
+                        )}
                       </div>
                     </li>
                   ))}
@@ -248,7 +305,6 @@ console.log("peers found:", peers?.length);  // add this after the findMany too
             </>
           )}
         </div>
-
       </div>
 
       <SiteFooter className="mt-12" />

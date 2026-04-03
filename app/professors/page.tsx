@@ -8,9 +8,23 @@ import Link from "next/link";
 import MissingProfessorButton from "@/app/components/MissingProfessorButton";
 import SiteFooter from "@/app/components/SiteFooter";
 
-type Prof = { name: string; department: string; school: string; quality: number; ratingsCount: number; wouldTakeAgain: number | null; difficulty: number; url: string; slug: string; };
+type Prof = {
+  id: string;
+  name: string;
+  department: string;
+  school: string;
+  quality: number;
+  ratingsCount: number;
+  wouldTakeAgain: number | null;
+  difficulty: number | null;
+  url: string;
+  slug: string;
+  isRated?: boolean;
+  isSynthetic?: boolean;
+};
 
-function ratingConfig(v: number) {
+function ratingConfig(v: number, isRated: boolean) {
+  if (!isRated) return { text: "text-zinc-700 dark:text-zinc-300", bg: "bg-zinc-100 dark:bg-white/10", ring: "ring-zinc-200 dark:ring-white/15" };
   if (v >= 4.5) return { text: "text-emerald-700 dark:text-emerald-400", bg: "bg-emerald-50 dark:bg-emerald-500/15", ring: "ring-emerald-200 dark:ring-emerald-500/25" };
   if (v >= 4.0) return { text: "text-green-700 dark:text-green-400", bg: "bg-green-50 dark:bg-green-500/15", ring: "ring-green-200 dark:ring-green-500/25" };
   if (v >= 3.0) return { text: "text-amber-700 dark:text-amber-400", bg: "bg-amber-50 dark:bg-amber-500/15", ring: "ring-amber-200 dark:ring-amber-500/25" };
@@ -176,7 +190,7 @@ export default function Page() {
 
         <div className="space-y-3 sm:hidden">
           {data.map((p, idx) => {
-            const rc = ratingConfig(Number(p.quality) || 0);
+            const rc = ratingConfig(Number(p.quality) || 0, Boolean(p.isRated));
             return (
               <div key={p.slug} className="rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-white/8 dark:bg-zinc-900/40">
                 <div className="flex items-start justify-between gap-3">
@@ -188,8 +202,8 @@ export default function Page() {
                     <div className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">{p.school}</div>
                   </div>
                   <span className={`inline-flex flex-col items-center rounded-lg px-2.5 py-1.5 text-xs font-black tabular-nums ring-1 ${rc.bg} ${rc.text} ${rc.ring}`}>
-                    <span className="text-sm">{(Number(p.quality) || 0).toFixed(1)}</span>
-                    <span className="text-[9px] font-medium opacity-60">({Number(p.ratingsCount) || 0})</span>
+                    <span className="text-sm">{p.isRated ? (Number(p.quality) || 0).toFixed(1) : "NR"}</span>
+                    <span className="text-[9px] font-medium opacity-60">{p.isRated ? `(${Number(p.ratingsCount) || 0})` : "active"}</span>
                   </span>
                 </div>
 
@@ -204,9 +218,13 @@ export default function Page() {
 
                 <div className="mt-4 flex items-center justify-between">
                   <div className="text-xs text-zinc-500 dark:text-zinc-400">
-                    {Number(p.ratingsCount) || 0} reviews
+                    {p.isRated ? `${Number(p.ratingsCount) || 0} reviews` : "No RMP profile yet"}
                   </div>
-                  <a href={p.url} target="_blank" rel="noreferrer" className="inline-flex items-center justify-center rounded-lg border border-zinc-200 bg-white px-3 py-2 text-xs font-semibold text-zinc-700 transition hover:bg-zinc-50 dark:border-white/10 dark:bg-white/5 dark:text-zinc-300 dark:hover:bg-white/10 dark:hover:text-white">Open RMP</a>
+                  {p.url ? (
+                    <a href={p.url} target="_blank" rel="noreferrer" className="inline-flex items-center justify-center rounded-lg border border-zinc-200 bg-white px-3 py-2 text-xs font-semibold text-zinc-700 transition hover:bg-zinc-50 dark:border-white/10 dark:bg-white/5 dark:text-zinc-300 dark:hover:bg-white/10 dark:hover:text-white">Open RMP</a>
+                  ) : (
+                    <span className="inline-flex items-center justify-center rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-2 text-xs font-semibold text-zinc-500 dark:border-white/10 dark:bg-white/5 dark:text-zinc-400">No RMP</span>
+                  )}
                 </div>
               </div>
             );
@@ -232,7 +250,7 @@ export default function Page() {
             <div className="min-w-[640px]">
               <ul className="divide-y divide-zinc-100 dark:divide-white/4">
                 {data.map((p, idx) => {
-                  const rc = ratingConfig(Number(p.quality) || 0);
+                  const rc = ratingConfig(Number(p.quality) || 0, Boolean(p.isRated));
                   return (
                     <li key={p.slug} className="grid grid-cols-12 items-center px-4 sm:px-6 py-4 transition-colors hover:bg-zinc-50 dark:hover:bg-white/4">
                       <div className="col-span-4 min-w-0 pr-3">
@@ -248,12 +266,16 @@ export default function Page() {
                       <div data-tour={idx === 0 ? "professors-classes" : undefined} className="col-span-3 pr-3"><ClassesCell profName={p.name} map={courseMap} /></div>
                       <div className="col-span-1 flex justify-end">
                         <span className={`inline-flex flex-col items-center rounded-lg px-2.5 py-1.5 text-xs font-black tabular-nums ring-1 ${rc.bg} ${rc.text} ${rc.ring}`}>
-                          <span className="text-sm">{(Number(p.quality) || 0).toFixed(1)}</span>
-                          <span className="text-[9px] font-medium opacity-60">({Number(p.ratingsCount) || 0})</span>
+                          <span className="text-sm">{p.isRated ? (Number(p.quality) || 0).toFixed(1) : "NR"}</span>
+                          <span className="text-[9px] font-medium opacity-60">{p.isRated ? `(${Number(p.ratingsCount) || 0})` : "active"}</span>
                         </span>
                       </div>
                       <div className="col-span-1 flex justify-end">
-                        <a href={p.url} target="_blank" rel="noreferrer" className="inline-flex items-center justify-center rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-xs font-semibold text-zinc-700 transition hover:bg-zinc-50 dark:border-white/10 dark:bg-white/5 dark:text-zinc-300 dark:hover:bg-white/10 dark:hover:text-white">RMP</a>
+                        {p.url ? (
+                          <a href={p.url} target="_blank" rel="noreferrer" className="inline-flex items-center justify-center rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-xs font-semibold text-zinc-700 transition hover:bg-zinc-50 dark:border-white/10 dark:bg-white/5 dark:text-zinc-300 dark:hover:bg-white/10 dark:hover:text-white">RMP</a>
+                        ) : (
+                          <span className="inline-flex items-center justify-center rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-1.5 text-xs font-semibold text-zinc-500 dark:border-white/10 dark:bg-white/5 dark:text-zinc-400">No RMP</span>
+                        )}
                       </div>
                     </li>
                   );

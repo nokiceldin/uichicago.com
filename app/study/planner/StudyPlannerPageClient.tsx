@@ -32,21 +32,15 @@ function samePlannerProfile(a: PlannerProfileState, b: PlannerProfileState) {
 export default function StudyPlannerPageClient() {
   const { data: session, status } = useSession();
   const [hasLoadedProfile, setHasLoadedProfile] = useState(false);
-  const [profileMajor, setProfileMajor] = useState(() => readLocalStudyProfile()?.major ?? "");
-  const [profileCurrentCourses, setProfileCurrentCourses] = useState(() => {
-    const cached = readLocalStudyProfile();
-    return Array.isArray(cached?.currentCourses) ? cached.currentCourses.join(", ") : "";
-  });
-  const [profileInterests, setProfileInterests] = useState(() => readLocalStudyProfile()?.interests ?? []);
-  const [profileStudyPreferences, setProfileStudyPreferences] = useState(() => readLocalStudyProfile()?.studyPreferences ?? "");
-  const [plannerProfile, setPlannerProfile] = useState<PlannerProfileState>(() => {
-    const cached = readLocalStudyProfile();
-    return {
-      majorSlug: cached?.plannerProfile?.majorSlug ?? "",
-      currentSemesterNumber: Number(cached?.plannerProfile?.currentSemesterNumber ?? 0),
-      honorsStudent: Boolean(cached?.plannerProfile?.honorsStudent),
-      currentCourses: Array.isArray(cached?.plannerProfile?.currentCourses) ? cached!.plannerProfile.currentCourses! : [],
-    };
+  const [profileMajor, setProfileMajor] = useState("");
+  const [profileCurrentCourses, setProfileCurrentCourses] = useState("");
+  const [profileInterests, setProfileInterests] = useState<string[]>([]);
+  const [profileStudyPreferences, setProfileStudyPreferences] = useState("");
+  const [plannerProfile, setPlannerProfile] = useState<PlannerProfileState>({
+    majorSlug: "",
+    currentSemesterNumber: 0,
+    honorsStudent: false,
+    currentCourses: [],
   });
 
   const syncLocalProfile = useCallback((profile: {
@@ -59,17 +53,32 @@ export default function StudyPlannerPageClient() {
   } | null | undefined) => {
     if (!profile) return;
 
-    if (typeof profile.major === "string") setProfileMajor(profile.major);
-    if (Array.isArray(profile.currentCourses)) setProfileCurrentCourses(profile.currentCourses.join(", "));
-    if (Array.isArray(profile.interests)) setProfileInterests(profile.interests);
-    if (typeof profile.studyPreferences === "string") setProfileStudyPreferences(profile.studyPreferences);
-    if (profile.plannerProfile) {
-      setPlannerProfile({
-        majorSlug: typeof profile.plannerProfile.majorSlug === "string" ? profile.plannerProfile.majorSlug : "",
-        currentSemesterNumber: Number(profile.plannerProfile.currentSemesterNumber ?? 0),
-        honorsStudent: Boolean(profile.plannerProfile.honorsStudent),
-        currentCourses: Array.isArray(profile.plannerProfile.currentCourses) ? profile.plannerProfile.currentCourses : [],
-      });
+    if (typeof profile.major === "string") {
+      setProfileMajor((current) => (current === profile.major ? current : profile.major));
+    }
+    if (Array.isArray(profile.currentCourses)) {
+      const nextCourses = profile.currentCourses.join(", ");
+      setProfileCurrentCourses((current) => (current === nextCourses ? current : nextCourses));
+    }
+    if (Array.isArray(profile.interests)) {
+      setProfileInterests((current) => (sameStringArray(current, profile.interests ?? []) ? current : profile.interests ?? []));
+    }
+    if (typeof profile.studyPreferences === "string") {
+      setProfileStudyPreferences((current) => (current === profile.studyPreferences ? current : profile.studyPreferences));
+    }
+    if (profile.plannerProfile || Array.isArray(profile.currentCourses)) {
+      const nextPlannerProfile: PlannerProfileState = {
+        majorSlug: typeof profile.plannerProfile?.majorSlug === "string" ? profile.plannerProfile.majorSlug : "",
+        currentSemesterNumber: Number(profile.plannerProfile?.currentSemesterNumber ?? 0),
+        honorsStudent: Boolean(profile.plannerProfile?.honorsStudent),
+        currentCourses: Array.isArray(profile.plannerProfile?.currentCourses)
+          ? profile.plannerProfile.currentCourses
+          : Array.isArray(profile.currentCourses)
+            ? profile.currentCourses
+            : [],
+      };
+
+      setPlannerProfile((current) => (samePlannerProfile(current, nextPlannerProfile) ? current : nextPlannerProfile));
     }
   }, []);
 
@@ -127,16 +136,29 @@ export default function StudyPlannerPageClient() {
     };
   }, [status, syncLocalProfile]);
 
-  const saveAcademicContext = useCallback(async () => {
+  const saveAcademicContext = useCallback(async (overrides?: {
+    major?: string;
+    currentCourses?: string[];
+    plannerProfile?: Partial<PlannerProfileState>;
+  }) => {
     if (status !== "authenticated") return;
+
+    const nextMajor = overrides?.major ?? profileMajor;
+    const nextCurrentCourses = overrides?.currentCourses ?? parseCommaSeparated(profileCurrentCourses);
+    const nextPlannerProfile: PlannerProfileState = {
+      majorSlug: typeof overrides?.plannerProfile?.majorSlug === "string" ? overrides.plannerProfile.majorSlug : plannerProfile.majorSlug,
+      currentSemesterNumber: Number(overrides?.plannerProfile?.currentSemesterNumber ?? plannerProfile.currentSemesterNumber),
+      honorsStudent: Boolean(overrides?.plannerProfile?.honorsStudent ?? plannerProfile.honorsStudent),
+      currentCourses: Array.isArray(overrides?.plannerProfile?.currentCourses) ? overrides!.plannerProfile!.currentCourses! : plannerProfile.currentCourses,
+    };
 
     const localProfile = {
       school: "UIC",
-      major: profileMajor,
-      currentCourses: parseCommaSeparated(profileCurrentCourses),
+      major: nextMajor,
+      currentCourses: nextCurrentCourses,
       interests: profileInterests,
       studyPreferences: profileStudyPreferences,
-      plannerProfile,
+      plannerProfile: nextPlannerProfile,
     };
 
     writeLocalStudyProfile(localProfile);
@@ -147,11 +169,11 @@ export default function StudyPlannerPageClient() {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          major: profileMajor,
-          currentCourses: parseCommaSeparated(profileCurrentCourses),
+          major: nextMajor,
+          currentCourses: nextCurrentCourses,
           interests: profileInterests,
           studyPreferences: profileStudyPreferences,
-          plannerProfile,
+          plannerProfile: nextPlannerProfile,
         }),
       });
 
@@ -204,18 +226,6 @@ export default function StudyPlannerPageClient() {
               </div>
               <div className="mt-2 text-sm text-zinc-400">
                 {profileMajor || "No major saved yet"}
-              </div>
-              <div className="mt-3 flex flex-wrap gap-2">
-                {(profileCurrentCourses ? parseCommaSeparated(profileCurrentCourses).slice(0, 4) : []).map((course) => (
-                  <span key={course} className="rounded-full border border-white/10 bg-white/4 px-3 py-1.5 text-xs font-semibold text-zinc-200">
-                    {course}
-                  </span>
-                ))}
-                {!profileCurrentCourses ? (
-                  <span className="rounded-full border border-white/10 bg-white/4 px-3 py-1.5 text-xs font-semibold text-zinc-400">
-                    Add current or completed courses in your profile
-                  </span>
-                ) : null}
               </div>
             </div>
 

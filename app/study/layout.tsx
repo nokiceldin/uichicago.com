@@ -518,12 +518,12 @@ export default function StudyLayout({ children }: { children: React.ReactNode })
       {/* New folder modal */}
       {createFolderOpen ? (
         <div
-          className="fixed inset-0 z-[90] flex items-center justify-center bg-black/60 px-4 backdrop-blur-sm"
+          className="fixed inset-0 z-90 flex items-center justify-center bg-black/60 px-4 backdrop-blur-sm"
           onClick={() => { setCreateFolderOpen(false); setFolderDraft(""); setFolderParent(""); }}
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="w-full max-w-[400px] rounded-2xl border border-white/10 bg-[#0f1520] p-6 shadow-[0_32px_64px_rgba(0,0,0,0.6)]"
+            className="w-full max-w-100 rounded-2xl border border-white/10 bg-[#0f1520] p-6 shadow-[0_32px_64px_rgba(0,0,0,0.6)]"
           >
             <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-indigo-500/15">
               <Folder className="h-5 w-5 text-indigo-400" />
@@ -562,7 +562,7 @@ export default function StudyLayout({ children }: { children: React.ReactNode })
 
       {/* Desktop sidebar */}
       <aside className={`fixed inset-y-0 left-0 z-40 hidden flex-col border-r border-white/6 bg-[#080d18] transition-[width] duration-300 ease-out lg:flex ${
-        sidebarExpanded ? "w-[240px]" : "w-[60px]"
+        sidebarExpanded ? "w-60" : "w-15"
       }`}>
         <div className="flex flex-1 flex-col overflow-y-auto pb-4 pt-4">
           {sidebarContent(!sidebarExpanded)}
@@ -570,9 +570,9 @@ export default function StudyLayout({ children }: { children: React.ReactNode })
       </aside>
 
       {/* Mobile slide-in */}
-      <div className={`fixed inset-0 z-[70] lg:hidden ${menuOpen ? "pointer-events-auto" : "pointer-events-none"}`} aria-hidden={!menuOpen}>
+      <div className={`fixed inset-0 z-70 lg:hidden ${menuOpen ? "pointer-events-auto" : "pointer-events-none"}`} aria-hidden={!menuOpen}>
         <div onClick={() => setMenuOpen(false)} className={`absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity duration-200 ${menuOpen ? "opacity-100" : "opacity-0"}`} />
-        <aside className={`absolute left-0 top-0 h-full w-[240px] border-r border-white/6 bg-[#080d18] transition-transform duration-300 ${menuOpen ? "translate-x-0" : "-translate-x-full"}`}>
+        <aside className={`absolute left-0 top-0 h-full w-60 border-r border-white/6 bg-[#080d18] transition-transform duration-300 ${menuOpen ? "translate-x-0" : "-translate-x-full"}`}>
           <div className="flex h-full flex-col overflow-y-auto pb-4 pt-4">
             <div className="flex items-center justify-between px-3 pb-2">
               <Link href="/" onClick={closeMenu} className="inline-flex items-center gap-2 rounded-lg px-1.5 py-1 text-white transition hover:bg-white/5">
@@ -589,7 +589,7 @@ export default function StudyLayout({ children }: { children: React.ReactNode })
       </div>
 
       {/* Main content */}
-      <div className={`transition-[padding-left] duration-300 ease-out ${sidebarExpanded ? "lg:pl-[240px]" : "lg:pl-[60px]"}`}>
+      <div className={`transition-[padding-left] duration-300 ease-out ${sidebarExpanded ? "lg:pl-60" : "lg:pl-15"}`}>
         <header className="sticky top-0 z-30 border-b border-white/6 bg-[#080d18]/92 backdrop-blur-md">
           <div className="flex items-center gap-2 px-4 py-2.5 lg:px-6">
             {/* Mobile hamburger */}
@@ -611,7 +611,7 @@ export default function StudyLayout({ children }: { children: React.ReactNode })
             </button>
 
             {/* Search */}
-            <div className="relative min-w-0 flex-1 lg:mx-auto lg:max-w-[380px]">
+            <div className="relative min-w-0 flex-1 lg:mx-auto lg:max-w-95">
               <Search className="pointer-events-none absolute left-3.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-600" />
               <input
                 data-tour="study-nav-search"

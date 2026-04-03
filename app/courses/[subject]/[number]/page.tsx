@@ -2,7 +2,7 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 import { notFound } from "next/navigation";
 import prisma from "@/lib/prisma";
-import { findSlugForUicName } from "@/app/lib/name";
+import { findProfessorDirectorySlugForUicName } from "@/lib/professors/directory";
 import CourseHeader from "../../../components/course/CourseHeader";
 import GradeDistributionCard from "../../../components/course/GradeDistributionCard";
 import CourseInsightCards from "../../../components/course/CourseInsightCards";
@@ -43,7 +43,7 @@ export default async function CourseDetailPage({
   });
   const recentTermIds = recentTerms.map((t) => t.id);
 
-  const [totals, instructorGroups, allProfessors] = await Promise.all([
+  const [totals, instructorGroups] = await Promise.all([
     prisma.courseTermStats.aggregate({
       where: { courseId: course.id },
       _sum: {
@@ -58,7 +58,6 @@ export default async function CourseDetailPage({
       _sum: { gradeRegs: true, a: true, b: true, c: true, d: true, f: true, w: true },
       orderBy: { _sum: { gradeRegs: "desc" } },
     }),
-    prisma.professor.findMany({ select: { name: true, slug: true } }),
   ]);
 
   const sum = totals._sum;
@@ -82,25 +81,27 @@ export default async function CourseDetailPage({
     (best, cur) => (cur.value > best.value ? cur : best), gradeMap[0]
   )?.label ?? "N/A";
 
-  const professorGpas = instructorGroups
-    .map((row) => {
-      const pa = row._sum.a ?? 0, pb = row._sum.b ?? 0, pc = row._sum.c ?? 0;
-      const pd = row._sum.d ?? 0, pf = row._sum.f ?? 0, pw = row._sum.w ?? 0;
-      const pTotalRegs = row._sum.gradeRegs ?? 0;
-      const gradedCount = pa + pb + pc + pd + pf;
-      const avgGpa = gradedCount > 0
-        ? (4 * pa + 3 * pb + 2 * pc + 1 * pd) / gradedCount
-        : null;
+  const professorGpas = (await Promise.all(
+    instructorGroups
+      .map(async (row) => {
+        const pa = row._sum.a ?? 0, pb = row._sum.b ?? 0, pc = row._sum.c ?? 0;
+        const pd = row._sum.d ?? 0, pf = row._sum.f ?? 0, pw = row._sum.w ?? 0;
+        const pTotalRegs = row._sum.gradeRegs ?? 0;
+        const gradedCount = pa + pb + pc + pd + pf;
+        const avgGpa = gradedCount > 0
+          ? (4 * pa + 3 * pb + 2 * pc + 1 * pd) / gradedCount
+          : null;
 
-      return {
-        instructorName: row.instructorName,
-        slug: findSlugForUicName(row.instructorName, allProfessors),
-        avgGpa,
-        gradedCount,
-        totalRegs: pTotalRegs,
-        a: pa, b: pb, c: pc, d: pd, f: pf, w: pw,
-      };
-    })
+        return {
+          instructorName: row.instructorName,
+          slug: await findProfessorDirectorySlugForUicName(row.instructorName),
+          avgGpa,
+          gradedCount,
+          totalRegs: pTotalRegs,
+          a: pa, b: pb, c: pc, d: pd, f: pf, w: pw,
+        };
+      })
+  ))
     .filter((row) => row.gradedCount >= 20)
     .sort((x, y) => {
       const gpaDiff = (y.avgGpa ?? -1) - (x.avgGpa ?? -1);

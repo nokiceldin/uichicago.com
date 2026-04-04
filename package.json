@@ -16,7 +16,7 @@
 
     "lint": "eslint",
 
-    "syllabus:review": "node scripts/review-syllabus-submissions.mjs",
+    "syllabus:review": "node --env-file=.env scripts/review-syllabus-submissions.mjs",
 
     "syllabus:upsert": "node --env-file=.env scripts/upsert-syllabus-submissions.mjs",
 

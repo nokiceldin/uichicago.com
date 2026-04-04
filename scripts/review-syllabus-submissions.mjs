@@ -3,65 +3,78 @@
 import fs from "fs/promises";
 import path from "path";
 import { fileURLToPath } from "url";
+import { PrismaClient } from "@prisma/client";
+import { Pool } from "pg";
+import { PrismaPg } from "@prisma/adapter-pg";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const ROOT_DIR = path.resolve(__dirname, "..");
 const STORAGE_ROOT = process.env.SYLLABUS_SUBMISSIONS_DIR?.trim() || path.join(ROOT_DIR, "artifacts", "syllabus-submissions");
-const PENDING_DIR = path.join(STORAGE_ROOT, "pending");
+const REVIEW_DIR = path.join(STORAGE_ROOT, "review-cache");
+const pool = new Pool({ connectionString: process.env.DATABASE_URL, max: 3 });
+const prisma = new PrismaClient({ adapter: new PrismaPg(pool) });
 
 async function readPendingSubmissions() {
-  try {
-    const entries = await fs.readdir(PENDING_DIR, { withFileTypes: true });
-    const submissions = [];
-
-    for (const entry of entries) {
-      if (!entry.isDirectory()) continue;
-      const jsonPath = path.join(PENDING_DIR, entry.name, "submission.json");
-      try {
-        const raw = await fs.readFile(jsonPath, "utf8");
-        submissions.push(JSON.parse(raw));
-      } catch (error) {
-        console.warn(`Skipping ${entry.name}: ${error.message}`);
-      }
-    }
-
-    submissions.sort((a, b) => a.submittedAt.localeCompare(b.submittedAt));
-    return submissions;
-  } catch (error) {
-    if (error && error.code === "ENOENT") return [];
-    throw error;
-  }
+  return prisma.syllabusSubmission.findMany({
+    where: { status: "pending" },
+    orderBy: { createdAt: "asc" },
+    select: {
+      id: true,
+      createdAt: true,
+      courseCode: true,
+      courseTitle: true,
+      term: true,
+      instructor: true,
+      notes: true,
+      originalFileName: true,
+      mimeType: true,
+      sizeBytes: true,
+      fileData: true,
+      extractedText: true,
+    },
+  });
 }
 
-function printSubmission(submission) {
+async function materializeSubmission(submission) {
+  const dir = path.join(REVIEW_DIR, submission.id);
+  await fs.mkdir(dir, { recursive: true });
+
+  const filePath = path.join(dir, submission.originalFileName);
+  await fs.writeFile(filePath, submission.fileData);
+
+  let extractedPath = null;
+  if (submission.extractedText?.trim()) {
+    extractedPath = path.join(dir, "extracted.txt");
+    await fs.writeFile(extractedPath, submission.extractedText, "utf8");
+  }
+
+  return { filePath, extractedPath };
+}
+
+function printSubmission(submission, materialized) {
   console.log(`\n${submission.id}`);
   console.log(`  Course: ${submission.courseCode} - ${submission.courseTitle}`);
   console.log(`  Term: ${submission.term || "N/A"} | Instructor: ${submission.instructor || "N/A"}`);
   console.log(`  File: ${submission.originalFileName} (${submission.mimeType || "unknown"}, ${Math.round((submission.sizeBytes || 0) / 1024)} KB)`);
-  console.log(`  Submitted: ${submission.submittedAt}`);
-  console.log(`  Stored file: ${path.join(STORAGE_ROOT, submission.relativeStoredPath)}`);
-  if (submission.relativeExtractedTextPath) {
-    console.log(`  Extracted text: ${path.join(STORAGE_ROOT, submission.relativeExtractedTextPath)}`);
-  } else {
-    console.log(`  Extracted text: none`);
-  }
-  if (submission.notes) {
-    console.log(`  Notes: ${submission.notes}`);
-  }
+  console.log(`  Submitted: ${submission.createdAt.toISOString()}`);
+  console.log(`  Review file: ${materialized.filePath}`);
+  console.log(`  Extracted text: ${materialized.extractedPath || "none"}`);
+  if (submission.notes) console.log(`  Notes: ${submission.notes}`);
 }
 
 async function main() {
   const submissions = await readPendingSubmissions();
 
   if (submissions.length === 0) {
-    console.log(`No pending syllabus submissions in ${PENDING_DIR}`);
+    console.log(`No pending syllabus submissions in the database.`);
     return;
   }
 
   console.log(`Pending syllabus submissions: ${submissions.length}`);
   for (const submission of submissions) {
-    printSubmission(submission);
+    const materialized = await materializeSubmission(submission);
+    printSubmission(submission, materialized);
   }
 
   console.log(`\nApprove everything with: npm run syllabus:upsert -- --all`);
@@ -71,4 +84,7 @@ async function main() {
 main().catch((error) => {
   console.error(error);
   process.exit(1);
+}).finally(async () => {
+  await prisma.$disconnect().catch(() => {});
+  await pool.end().catch(() => {});
 });

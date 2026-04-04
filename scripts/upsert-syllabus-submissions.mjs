@@ -12,7 +12,6 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const ROOT_DIR = path.resolve(__dirname, "..");
 const STORAGE_ROOT = process.env.SYLLABUS_SUBMISSIONS_DIR?.trim() || path.join(ROOT_DIR, "artifacts", "syllabus-submissions");
-const PENDING_DIR = path.join(STORAGE_ROOT, "pending");
 const APPROVED_DIR = path.join(STORAGE_ROOT, "approved");
 const EMBEDDING_MODEL = "voyage-3-large";
 
@@ -143,55 +142,42 @@ async function upsertChunk(content, sourceId, metadata, embedding) {
   );
 }
 
-async function readSubmissionDir(dirName) {
-  const jsonPath = path.join(PENDING_DIR, dirName, "submission.json");
-  const raw = await fs.readFile(jsonPath, "utf8");
-  return JSON.parse(raw);
-}
-
 async function readPendingSubmissions() {
-  try {
-    const entries = await fs.readdir(PENDING_DIR, { withFileTypes: true });
-    const submissions = [];
-
-    for (const entry of entries) {
-      if (!entry.isDirectory()) continue;
-      submissions.push(await readSubmissionDir(entry.name));
-    }
-
-    submissions.sort((a, b) => a.submittedAt.localeCompare(b.submittedAt));
-    return submissions;
-  } catch (error) {
-    if (error && error.code === "ENOENT") return [];
-    throw error;
-  }
+  return prisma.syllabusSubmission.findMany({
+    where: { status: "pending" },
+    orderBy: { createdAt: "asc" },
+  });
 }
 
 async function extractText(submission) {
-  if (submission.relativeExtractedTextPath) {
-    const extractedPath = path.join(STORAGE_ROOT, submission.relativeExtractedTextPath);
-    return cleanText(await fs.readFile(extractedPath, "utf8"));
+  if (submission.extractedText?.trim()) {
+    return cleanText(submission.extractedText);
   }
 
-  const filePath = path.join(STORAGE_ROOT, submission.relativeStoredPath);
+  const filePath = path.join(APPROVED_DIR, submission.id, submission.originalFileName);
+  const fileBuffer = Buffer.isBuffer(submission.fileData)
+    ? submission.fileData
+    : Buffer.from(submission.fileData);
 
   if (submission.mimeType === "application/pdf" || filePath.toLowerCase().endsWith(".pdf")) {
-    const parsed = await pdf(await fs.readFile(filePath));
+    const parsed = await pdf(fileBuffer);
     return cleanText(parsed.text || "");
   }
 
   if (submission.mimeType === "text/plain" || filePath.toLowerCase().endsWith(".txt")) {
-    return cleanText(await fs.readFile(filePath, "utf8"));
+    return cleanText(fileBuffer.toString("utf8"));
   }
 
   return "";
 }
 
 async function moveToApproved(submission) {
-  const fromDir = path.join(PENDING_DIR, submission.id);
   const toDir = path.join(APPROVED_DIR, submission.id);
-  await fs.mkdir(APPROVED_DIR, { recursive: true });
-  await fs.rename(fromDir, toDir);
+  await fs.mkdir(toDir, { recursive: true });
+  await fs.writeFile(path.join(toDir, submission.originalFileName), submission.fileData);
+  if (submission.extractedText?.trim()) {
+    await fs.writeFile(path.join(toDir, "extracted.txt"), submission.extractedText, "utf8");
+  }
 }
 
 async function main() {
@@ -199,7 +185,7 @@ async function main() {
   const pending = await readPendingSubmissions();
 
   if (pending.length === 0) {
-    console.log(`No pending syllabus submissions in ${PENDING_DIR}`);
+    console.log(`No pending syllabus submissions in the database.`);
     return;
   }
 
@@ -233,7 +219,7 @@ async function main() {
       instructor: submission.instructor || null,
       originalFileName: submission.originalFileName,
       reviewedAt: new Date().toISOString(),
-      storagePath: submission.relativeStoredPath,
+      storagePath: `approved/${submission.id}/${submission.originalFileName}`,
       chunkType: "syllabus",
       entityType: "course_syllabus",
       trustLevel: "reviewed_user_submission",
@@ -249,8 +235,17 @@ async function main() {
     }
 
     const [embedding] = await embedBatch([content]);
-    await upsertChunk(content, `syllabus:${submission.id}`, metadata, embedding);
+    const sourceId = `syllabus:${submission.id}`;
+    await upsertChunk(content, sourceId, metadata, embedding);
     await moveToApproved(submission);
+    await prisma.syllabusSubmission.update({
+      where: { id: submission.id },
+      data: {
+        status: "approved",
+        reviewedAt: new Date(),
+        knowledgeChunkSourceId: sourceId,
+      },
+    });
     console.log("  Approved and upserted");
   }
 }

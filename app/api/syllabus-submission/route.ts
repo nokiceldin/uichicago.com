@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { Resend } from "resend";
 import { extractReadableTextFromUploadedFile } from "@/lib/chat/attachments";
-import { savePendingSyllabusSubmission } from "@/lib/syllabus-submissions";
+import { prisma } from "@/lib/prisma";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -59,19 +59,25 @@ export async function POST(req: Request) {
             : "image",
     }).catch(() => "");
 
-    const { submission } = await savePendingSyllabusSubmission({
-      courseCode,
-      courseTitle,
-      department,
-      term,
-      instructor,
-      notes,
-      userAgent: userAgent || "",
-      fileName: file.name,
-      mimeType: lowerMimeType,
-      sizeBytes: file.size,
-      buffer,
-      extractedText,
+    const submission = await prisma.syllabusSubmission.create({
+      data: {
+        courseCode,
+        courseTitle,
+        department: department || null,
+        term: term || null,
+        instructor: instructor || null,
+        notes: notes || null,
+        userAgent: userAgent || null,
+        originalFileName: file.name,
+        mimeType: lowerMimeType,
+        sizeBytes: file.size,
+        fileData: buffer,
+        extractedText: extractedText || null,
+      },
+      select: {
+        id: true,
+        extractedText: true,
+      },
     });
 
     if (process.env.RESEND_API_KEY && process.env.MISSING_REPORT_TO_EMAIL) {
@@ -87,13 +93,14 @@ export async function POST(req: Request) {
           `Instructor: ${instructor || "N/A"}\n` +
           `Notes: ${notes || "N/A"}\n` +
           `File: ${file.name}\n` +
-          `Extracted text chars: ${submission.extractedTextLength}\n` +
+          `Extracted text chars: ${(submission.extractedText || "").length}\n` +
           `User-Agent: ${userAgent || "N/A"}\n`,
       });
     }
 
     return NextResponse.json({ ok: true, submissionId: submission.id });
-  } catch {
+  } catch (error) {
+    console.error("[syllabus-submission] failed", error);
     return NextResponse.json({ error: "Failed to submit syllabus." }, { status: 500 });
   }
 }

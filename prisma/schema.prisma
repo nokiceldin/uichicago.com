@@ -136,6 +136,29 @@ model MissingProfessorReport {
   userAgent     String?
 }
 
+model SyllabusSubmission {
+  id                    String    @id @default(cuid())
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+  reviewedAt            DateTime?
+  status                String    @default("pending")
+  courseCode            String
+  courseTitle           String
+  department            String?
+  term                  String?
+  instructor            String?
+  notes                 String?
+  userAgent             String?
+  originalFileName      String
+  mimeType              String
+  sizeBytes             Int
+  fileData              Bytes
+  extractedText         String?   @db.Text
+  knowledgeChunkSourceId String?  @unique
+
+  @@index([status, createdAt(sort: Desc)])
+}
+
 model Term {
   id              String                      @id @default(cuid())
   code            String                      @unique

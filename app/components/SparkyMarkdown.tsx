@@ -45,8 +45,11 @@ function remarkSparkyEntityLinks(lookup: SparkyEntityLookup) {
 
       const nextChildren: MarkdownNode[] = [];
       for (const child of node.children) {
-        if (child?.type === "text") {
-          const matches = findSparkyTextMatches(String(child.value ?? ""), lookup);
+        const childType = child?.type ?? "";
+
+        if (childType === "text") {
+          const childText = String(child.value ?? "");
+          const matches = findSparkyTextMatches(childText, lookup);
 
           if (!matches.length) {
             nextChildren.push(child);
@@ -58,7 +61,7 @@ function remarkSparkyEntityLinks(lookup: SparkyEntityLookup) {
             if (match.start > cursor) {
               nextChildren.push({
                 type: "text",
-                value: child.value.slice(cursor, match.start),
+                value: childText.slice(cursor, match.start),
               });
             }
 
@@ -71,17 +74,17 @@ function remarkSparkyEntityLinks(lookup: SparkyEntityLookup) {
             cursor = match.end;
           }
 
-          if (cursor < child.value.length) {
+          if (cursor < childText.length) {
             nextChildren.push({
               type: "text",
-              value: child.value.slice(cursor),
+              value: childText.slice(cursor),
             });
           }
 
           continue;
         }
 
-        if (!["link", "linkReference", "code", "inlineCode", "html"].includes(child?.type)) {
+        if (!["link", "linkReference", "code", "inlineCode", "html"].includes(childType)) {
           visit(child);
         }
 

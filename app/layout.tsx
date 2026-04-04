@@ -1,4 +1,5 @@
 // app/layout.tsx
+import { Suspense } from "react"
 import type { Metadata } from "next"
 import { Geist, Geist_Mono } from "next/font/google"
 import "./globals.css"
@@ -35,7 +36,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className={`${inter.className} ${geistSans.variable} ${geistMono.variable}`}>
         <AuthProvider>
           <ThemeInit />
-          <Navbar />
+          <Suspense fallback={null}>
+            <Navbar />
+          </Suspense>
           {children}
           <Analytics />
         </AuthProvider>

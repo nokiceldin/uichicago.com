@@ -22,6 +22,17 @@ type StudySetRecord = Prisma.StudySetGetPayload<{
   include: { flashcards: true };
 }>;
 
+type WorkspaceStudySetRecord = Prisma.StudySetGetPayload<{
+  include: {
+    flashcards: true;
+    studyGroups: {
+      select: {
+        groupId: true;
+      };
+    };
+  };
+}>;
+
 type StudySessionRecordDb = Prisma.StudySessionGetPayload<Record<string, never>>;
 
 type StudyGroupRecord = Prisma.StudyGroupGetPayload<{
@@ -33,9 +44,19 @@ type StudyGroupRecord = Prisma.StudyGroupGetPayload<{
   };
 }>;
 
-export function serializeStudySet(set: StudySetRecord): StudySet {
+export function serializeStudySet(
+  set: StudySetRecord | WorkspaceStudySetRecord,
+  viewerUserId?: string,
+): StudySet {
+  const sharedGroupIds =
+    "studyGroups" in set && Array.isArray(set.studyGroups)
+      ? set.studyGroups.map((entry) => entry.groupId)
+      : [];
+  const isOwner = viewerUserId ? set.ownerId === viewerUserId : true;
+
   return {
     id: set.id,
+    ownerId: set.ownerId ?? null,
     title: set.title,
     description: set.description ?? "",
     folder: set.folder ?? "",
@@ -46,6 +67,8 @@ export function serializeStudySet(set: StudySetRecord): StudySet {
     visibility: toUiVisibility(set.visibility),
     createdAt: set.createdAt.toISOString(),
     updatedAt: set.updatedAt.toISOString(),
+    canEdit: isOwner,
+    sharedViaGroup: sharedGroupIds.length > 0 && !isOwner,
     cards: set.flashcards
       .slice()
       .sort((a, b) => a.orderIndex - b.orderIndex)
@@ -98,8 +121,41 @@ export function serializeStudyGroup(group: StudyGroupRecord): StudyGroup {
 export async function getStudyWorkspacePayload(studyUserId: string) {
   const [sets, sessions, groups] = await Promise.all([
     prisma.studySet.findMany({
-      where: { ownerId: studyUserId },
-      include: { flashcards: true },
+      where: {
+        OR: [
+          { ownerId: studyUserId },
+          {
+            studyGroups: {
+              some: {
+                group: {
+                  memberships: {
+                    some: {
+                      userId: studyUserId,
+                    },
+                  },
+                },
+              },
+            },
+          },
+        ],
+      },
+      include: {
+        flashcards: true,
+        studyGroups: {
+          where: {
+            group: {
+              memberships: {
+                some: {
+                  userId: studyUserId,
+                },
+              },
+            },
+          },
+          select: {
+            groupId: true,
+          },
+        },
+      },
       orderBy: { updatedAt: "desc" },
     }),
     prisma.studySession.findMany({
@@ -131,7 +187,7 @@ export async function getStudyWorkspacePayload(studyUserId: string) {
   ]);
 
   return {
-    sets: sets.map((set) => serializeStudySet(set)),
+    sets: sets.map((set) => serializeStudySet(set, studyUserId)),
     groups: groups.map((group) => serializeStudyGroup(group)),
     sessions: sessions.map((session) => serializeStudySession(session)),
   };

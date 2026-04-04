@@ -14,6 +14,18 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Invalid study set payload." }, { status: 400 });
     }
 
+    const existing = await prisma.studySet.findUnique({
+      where: { id: set.id },
+      select: { ownerId: true },
+    });
+
+    if (existing?.ownerId && existing.ownerId !== studyUser.id) {
+      return NextResponse.json(
+        { error: "You can only edit study sets you own. Duplicate the shared set to make your own copy." },
+        { status: 403 },
+      );
+    }
+
     const saved = await prisma.$transaction(async (tx) => {
       await tx.studySet.upsert({
         where: { id: set.id },

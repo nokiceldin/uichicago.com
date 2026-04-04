@@ -39,6 +39,7 @@ export interface StudyCard {
 
 export interface StudySet {
   id: string;
+  ownerId?: string | null;
   title: string;
   description: string;
   folder?: string;
@@ -51,6 +52,8 @@ export interface StudySet {
   updatedAt: string;
   cards: StudyCard[];
   saved?: boolean;
+  canEdit?: boolean;
+  sharedViaGroup?: boolean;
 }
 
 export interface StructuredNoteSection {

@@ -541,6 +541,10 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
   const hasAutoJoinedRef = useRef(false);
   useEffect(() => {
     if (!joinCodeFromUrl || hasAutoJoinedRef.current) return;
+    if (status !== "authenticated") {
+      promptGoogleSignIn();
+      return;
+    }
     hasAutoJoinedRef.current = true;
     setInviteCodeInput(joinCodeFromUrl.toUpperCase());
     fetch("/api/study/groups/join", {
@@ -565,7 +569,7 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
       })
       .catch(() => showToast("Could not join that group.", "error"));
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [joinCodeFromUrl]);
+  }, [joinCodeFromUrl, status]);
 
   const globalQuery = (searchParams.get("query") || "").trim();
   const folderFilter = (searchParams.get("folder") || "").trim();
@@ -1165,6 +1169,10 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
   const deleteSet = (setId: string, options?: { stayOnCreate?: boolean }) => {
     const target = library.sets.find((set) => set.id === setId);
     if (!target) return;
+    if (target.canEdit === false) {
+      showToast("This shared set is read-only. Duplicate it to make your own copy.", "error");
+      return;
+    }
 
     const confirmed = window.confirm(`Delete "${target.title}"? This will remove the set and its local study progress.`);
     if (!confirmed) return;
@@ -1206,6 +1214,10 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
   const quickToggleSetVisibility = async (setId: string) => {
     const target = library.sets.find((set) => set.id === setId);
     if (!target) return;
+    if (target.canEdit === false) {
+      showToast("Only the owner can change visibility for this shared set.", "error");
+      return;
+    }
     const nextVisibility: StudySet["visibility"] = target.visibility === "public" ? "private" : "public";
     const nextSet = { ...target, visibility: nextVisibility, updatedAt: new Date().toISOString() };
     setLibrary((current) => ({
@@ -1990,6 +2002,10 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
                 onDuplicate={() => duplicateSet(selectedSet)}
                 onDelete={() => deleteSet(selectedSet.id)}
                 onEdit={() => {
+                  if (selectedSet.canEdit === false) {
+                    duplicateSet(selectedSet);
+                    return;
+                  }
                   router.push(`/study/create?edit=${encodeURIComponent(selectedSet.id)}`);
                 }}
                 onToggleVisibility={() => quickToggleSetVisibility(selectedSet.id)}
@@ -2944,6 +2960,10 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
                 onDuplicate={() => duplicateSet(selectedSet)}
                 onDelete={() => deleteSet(selectedSet.id)}
                 onEdit={() => {
+                  if (selectedSet.canEdit === false) {
+                    duplicateSet(selectedSet);
+                    return;
+                  }
                   router.push(`/study/create?edit=${encodeURIComponent(selectedSet.id)}`);
                 }}
                 onToggleVisibility={() => quickToggleSetVisibility(selectedSet.id)}

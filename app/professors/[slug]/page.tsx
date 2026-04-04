@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import SiteFooter from "@/app/components/SiteFooter";
+import SaveProfessorControl from "@/app/components/saved/SaveProfessorControl";
 import {
   getProfessorDirectory,
   getProfessorDirectoryBySlug,
@@ -204,8 +205,16 @@ export default async function ProfessorPage({ params }: { params: Promise<{ slug
               ) : null}
             </div>
 
-            {professor.url ? (
-              <div className="mt-5">
+            <div className="mt-5 flex flex-wrap items-center gap-3">
+              <SaveProfessorControl
+                professor={{
+                  slug: professor.slug,
+                  name: professor.name,
+                  department: professor.department,
+                  school: professor.school,
+                }}
+              />
+              {professor.url ? (
                 <a
                   href={professor.url}
                   target="_blank"
@@ -214,8 +223,8 @@ export default async function ProfessorPage({ params }: { params: Promise<{ slug
                 >
                   View on RateMyProfessors →
                 </a>
-              </div>
-            ) : null}
+              ) : null}
+            </div>
           </div>
         </div>
 

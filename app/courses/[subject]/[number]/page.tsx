@@ -9,6 +9,7 @@ import CourseInsightCards from "../../../components/course/CourseInsightCards";
 import CourseGpaByProfessor from "../../../components/course/CourseGpaByProfessor";
 import SyllabusSubmissionCard from "../../../components/course/SyllabusSubmissionCard";
 import SiteFooter from "@/app/components/SiteFooter";
+import SaveCourseControl from "@/app/components/saved/SaveCourseControl";
 
 function decodeParam(value: string) {
   return decodeURIComponent(value || "").trim();
@@ -112,7 +113,10 @@ export default async function CourseDetailPage({
     <main className="relative min-h-screen bg-zinc-50 text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100">
       <div className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-72 bg-linear-to-b from-emerald-50/50 to-transparent dark:from-emerald-950/20 dark:to-transparent" />
       <div className="mx-auto max-w-6xl px-4 py-6 sm:px-5 sm:py-10">
-  <CourseHeader course={course} />
+  <CourseHeader
+    course={course}
+    actions={<SaveCourseControl course={{ id: course.id }} />}
+  />
 
         <div className="mt-6">
           <GradeDistributionCard

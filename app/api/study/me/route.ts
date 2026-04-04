@@ -3,13 +3,17 @@ import { requireCurrentStudyUser } from "@/lib/auth/session";
 import { getStudyWorkspacePayload } from "@/lib/study/server";
 import { parseStoredPreferences, serializeStoredPreferences, type PlannerProfilePayload, type SiteSettingsPayload } from "@/lib/study/profile";
 import { resolveAvatarUrl } from "@/lib/site-settings";
+import { getSavedItemsForStudyUser } from "@/lib/saved-items";
 
 export const dynamic = "force-dynamic";
 
 export async function GET() {
   try {
     const studyUser = await requireCurrentStudyUser();
-    const library = await getStudyWorkspacePayload(studyUser.id);
+    const [library, saved] = await Promise.all([
+      getStudyWorkspacePayload(studyUser.id),
+      getSavedItemsForStudyUser(studyUser.id),
+    ]);
     const preferences = parseStoredPreferences(studyUser.studyPreferences);
     const unifiedSavedCourses = Array.from(
       new Set([
@@ -42,6 +46,7 @@ export async function GET() {
         settings: preferences.settings,
       },
       library,
+      saved,
     });
   } catch (error) {
     if (error instanceof Error && error.message === "UNAUTHORIZED") {

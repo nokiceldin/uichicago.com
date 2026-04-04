@@ -6,6 +6,7 @@ import { signIn, useSession } from "next-auth/react";
 import { CheckCircle2, ChevronDown, ChevronRight, ImageIcon, Plus, Search, Upload, UserRound, X } from "lucide-react";
 import { parseCommaSeparated, readLocalStudyProfile, writeLocalStudyProfile } from "@/lib/study/profile";
 import type { SiteSettingsPayload } from "@/lib/study/profile";
+import type { SavedCourseSummary, SavedProfessorSummary } from "@/lib/saved-items";
 import {
   PRESET_AVATARS,
   getPresetAvatarUrl,
@@ -115,6 +116,8 @@ export default function ProfilePageClient() {
   const [loaded, setLoaded] = useState(false);
   const [message, setMessage] = useState("");
   const [lastSavedAt, setLastSavedAt] = useState<Date | null>(null);
+  const [savedProfessors, setSavedProfessors] = useState<SavedProfessorSummary[]>([]);
+  const [savedCourses, setSavedCourses] = useState<SavedCourseSummary[]>([]);
   const [currentClassesOpen, setCurrentClassesOpen] = useState(false);
   const [currentCourseQuery, setCurrentCourseQuery] = useState("");
   const [currentCourseSuggestions, setCurrentCourseSuggestions] = useState<CourseSuggestion[]>([]);
@@ -387,6 +390,8 @@ export default function ProfilePageClient() {
         const nextFallbackAvatar = payload.user?.avatarUrl ?? payload.user?.image ?? session?.user?.image ?? null;
         setAvatar(resolvedAvatar as AvatarPayload);
         setFallbackAvatar(nextFallbackAvatar);
+        setSavedProfessors(Array.isArray(payload.saved?.professors) ? payload.saved.professors : []);
+        setSavedCourses(Array.isArray(payload.saved?.courses) ? payload.saved.courses : []);
         // Keep localStorage in sync with DB value
         writeLocalSiteSettings({ ...localSettings, avatar: resolvedAvatar as AvatarPayload });
         broadcastStudyProfile({
@@ -811,6 +816,87 @@ export default function ProfilePageClient() {
                 </div>
               </div>
             ) : null}
+          </div>
+        </section>
+
+        <section className="grid gap-6 lg:grid-cols-2">
+          <div className="rounded-[1.55rem] border border-zinc-200 bg-white p-5 shadow-[0_18px_50px_rgba(15,23,42,0.07)] dark:border-white/10 dark:bg-[linear-gradient(180deg,rgba(28,28,33,0.96),rgba(16,16,21,0.98))] dark:shadow-[0_22px_60px_rgba(0,0,0,0.24)]">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <div className="text-[11px] font-bold uppercase tracking-[0.22em] text-zinc-500">Saved professors</div>
+                <h2 className="mt-1.5 text-[1.7rem] font-bold tracking-[-0.04em] text-zinc-950 dark:text-white">Saved professors</h2>
+              </div>
+              <span className="rounded-full border border-zinc-200 bg-zinc-50 px-3 py-1 text-xs font-semibold text-zinc-700 dark:border-white/10 dark:bg-white/5 dark:text-zinc-200">
+                {savedProfessors.length}
+              </span>
+            </div>
+            {savedProfessors.length ? (
+              <div className="mt-3 divide-y divide-zinc-200/70 dark:divide-white/8">
+                {savedProfessors.map((professor) => (
+                  <Link
+                    key={professor.id}
+                    href={professor.href}
+                    className="group block py-2.5 transition"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <div className="text-sm font-semibold text-zinc-950 transition-colors group-hover:text-zinc-700 dark:text-white dark:group-hover:text-zinc-100">{professor.name}</div>
+                        <div className="mt-0.5 text-[11px] text-zinc-500 dark:text-zinc-400">
+                          {[professor.department, professor.school].filter(Boolean).join(" · ")}
+                        </div>
+                        {professor.note ? (
+                          <div className="mt-1 text-[11px] text-zinc-600 dark:text-zinc-300">
+                            {professor.note}
+                          </div>
+                        ) : null}
+                      </div>
+                      <ChevronRight className="mt-0.5 h-4 w-4 shrink-0 text-zinc-400 transition-transform group-hover:translate-x-0.5" />
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            ) : (
+              <div className="mt-4 rounded-xl border border-dashed border-zinc-200 px-4 py-6 text-sm text-zinc-500 dark:border-white/10 dark:text-zinc-400">
+                Save a professor from the professors page and it will show up here, with your note if you added one.
+              </div>
+            )}
+          </div>
+
+          <div className="rounded-[1.55rem] border border-zinc-200 bg-white p-5 shadow-[0_18px_50px_rgba(15,23,42,0.07)] dark:border-white/10 dark:bg-[linear-gradient(180deg,rgba(28,28,33,0.96),rgba(16,16,21,0.98))] dark:shadow-[0_22px_60px_rgba(0,0,0,0.24)]">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <div className="text-[11px] font-bold uppercase tracking-[0.22em] text-zinc-500">Saved courses</div>
+                <h2 className="mt-1.5 text-[1.7rem] font-bold tracking-[-0.04em] text-zinc-950 dark:text-white">Saved courses</h2>
+              </div>
+              <span className="rounded-full border border-zinc-200 bg-zinc-50 px-3 py-1 text-xs font-semibold text-zinc-700 dark:border-white/10 dark:bg-white/5 dark:text-zinc-200">
+                {savedCourses.length}
+              </span>
+            </div>
+            {savedCourses.length ? (
+              <div className="mt-3 divide-y divide-zinc-200/70 dark:divide-white/8">
+                {savedCourses.map((course) => (
+                  <Link
+                    key={course.id}
+                    href={course.href}
+                    className="group flex items-center justify-between gap-3 py-2.5 transition"
+                  >
+                    <div className="min-w-0">
+                      <div className="text-sm font-semibold text-zinc-950 transition-colors group-hover:text-zinc-700 dark:text-white dark:group-hover:text-zinc-100">
+                        {course.subject} {course.number}
+                      </div>
+                      <div className="mt-0.5 truncate text-[11px] text-zinc-500 dark:text-zinc-400">
+                        {course.title}
+                      </div>
+                    </div>
+                    <ChevronRight className="h-4 w-4 shrink-0 text-zinc-400 transition-transform group-hover:translate-x-0.5" />
+                  </Link>
+                ))}
+              </div>
+            ) : (
+              <div className="mt-4 rounded-xl border border-dashed border-zinc-200 px-4 py-6 text-sm text-zinc-500 dark:border-white/10 dark:text-zinc-400">
+                Save a course from the courses page and you will be able to find it again here.
+              </div>
+            )}
           </div>
         </section>
 

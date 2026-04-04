@@ -11,25 +11,11 @@ export async function getCurrentStudyUser() {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) return null;
 
-  const authUser = await prisma.user.findUnique({
-    where: { id: session.user.id },
-    select: {
-      id: true,
-      email: true,
-      name: true,
-      image: true,
-    },
-  });
-
-  if (!authUser) {
-    return null;
-  }
-
   return ensureStudyUserForAuthUser({
-    id: authUser.id,
-    email: authUser.email ?? null,
-    name: authUser.name ?? null,
-    image: authUser.image ?? null,
+    id: session.user.id,
+    email: session.user.email ?? null,
+    name: session.user.name ?? null,
+    image: session.user.image ?? null,
   });
 }
 

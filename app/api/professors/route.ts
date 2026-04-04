@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 import { getProfessorDirectory } from "@/lib/professors/directory";
+import prisma from "@/lib/prisma";
+import { getCurrentStudyUser } from "@/lib/auth/session";
 
 function normalizeCourseInput(value: string) {
   const text = (value || "").trim().toUpperCase();
@@ -52,11 +54,31 @@ export async function GET(req: Request) {
   const minStars = Math.max(0, Number(searchParams.get("minStars") || "0") || 0);
   const sort = (searchParams.get("sort") || "best").toLowerCase();
   const course = normalizeCourseInput(searchParams.get("course") || "");
+  const savedOnly = searchParams.get("saved") === "1";
 
   const page = Math.max(1, Number(searchParams.get("page") || "1") || 1);
   const pageSize = Math.min(100, Math.max(1, Number(searchParams.get("pageSize") || "50") || 50));
 
   let items = await getProfessorDirectory();
+
+  if (savedOnly) {
+    const studyUser = await getCurrentStudyUser();
+    if (!studyUser) {
+      return NextResponse.json({
+        total: 0,
+        page,
+        pageSize,
+        items: [],
+      });
+    }
+
+    const savedProfessors = await prisma.savedProfessor.findMany({
+      where: { userId: studyUser.id },
+      select: { professorSlug: true },
+    });
+    const savedSlugs = new Set(savedProfessors.map((entry) => entry.professorSlug));
+    items = items.filter((entry) => savedSlugs.has(entry.slug));
+  }
 
   if (dept !== "All") {
     items = items.filter((entry) => entry.department === dept);

@@ -28,6 +28,7 @@ prisma/dev.db
 
 # production
 /build
+/artifacts/syllabus-submissions
 
 # misc
 .DS_Store

@@ -172,6 +172,7 @@ model Course {
   prereqEdges      PrerequisiteEdge[]   @relation("CourseAsPrereq")
   requirementItems RequirementItem[]
   studentRecords   StudentCourseRecord[]
+  savedByUsers     SavedCourse[]
 
   @@unique([subject, number])
   @@index([deptName])
@@ -349,7 +350,17 @@ model CampusKnowledge {
 model QueryLog {
   id               String   @id
   sessionId        String
+  userId           String?
+  conversationId   String?
   query            String   @db.Text
+  normalizedQuery  String?  @db.Text
+  requestMessages  String?  @db.Text
+  responseText     String?  @db.Text
+  responseKind     String?
+  responseStatus   String?
+  attachedFileName String?
+  attachedFileType String?
+  metadataJson     String?  @db.Text
   answerMode       String?
   domainsTriggered String?
   retrievalSources String?
@@ -361,9 +372,12 @@ model QueryLog {
   createdAt        DateTime @default(now())
 
   @@index([sessionId])
+  @@index([userId])
+  @@index([conversationId])
   @@index([createdAt])
   @@index([abstained])
   @@index([answerMode])
+  @@index([responseKind])
 }
 
 model ChatConversation {
@@ -613,8 +627,43 @@ model StudyUser {
   createdStudyGroups StudyGroup[]      @relation("StudyGroupCreator")
   studyGroupMemberships StudyGroupMembership[]
   groupSetLinks     StudyGroupSet[]    @relation("StudyGroupSetAddedBy")
+  savedProfessors   SavedProfessor[]
+  savedCourses      SavedCourse[]
 
   @@map("study_users")
+}
+
+model SavedProfessor {
+  id             String    @id @default(cuid())
+  userId         String
+  professorSlug  String
+  professorName  String
+  department     String?
+  school         String?
+  note           String?   @db.Text
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  user           StudyUser @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, professorSlug])
+  @@index([userId])
+  @@index([professorSlug])
+  @@map("saved_professors")
+}
+
+model SavedCourse {
+  id        String    @id @default(cuid())
+  userId    String
+  courseId  String
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  user      StudyUser @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course    Course    @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, courseId])
+  @@index([userId])
+  @@index([courseId])
+  @@map("saved_courses")
 }
 
 model StudySet {

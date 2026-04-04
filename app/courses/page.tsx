@@ -3,6 +3,7 @@ export const revalidate = 0
 import prisma from "@/lib/prisma"
 import CoursesTable from "./CoursesTable"
 import { majorRequirements } from "@/lib/majorRequirements"
+import { getCurrentStudyUser } from "@/lib/auth/session"
 
 type SortKey = "difficultyDesc" | "difficultyAsc"
 
@@ -25,6 +26,7 @@ export default async function CoursesPage({
     genedCategory?: string
     major?: string
     majorCategory?: string
+    saved?: string
   }>
 }) {
   const sp = await searchParams
@@ -42,8 +44,9 @@ const genedCategory = sp.genedCategory?.trim() || ""
 
   const major = sp.major?.trim() || ""
   const majorCategory = sp.majorCategory?.trim() || ""
+  const savedOnly = sp.saved === "1"
+  const studyUser = savedOnly ? await getCurrentStudyUser() : null
 
-  const hasSortParam = !!sp.sort
 const hasQuery = q.length > 0
 
 const qLower = q.toLowerCase()
@@ -134,6 +137,18 @@ const where = {
         ]
       : []),
 
+    ...(savedOnly
+      ? [
+          {
+            savedByUsers: {
+              some: {
+                userId: studyUser?.id ?? "__no_saved_courses__",
+              },
+            },
+          },
+        ]
+      : []),
+
     ...(!hasQuery
       ? [
           {
@@ -202,6 +217,7 @@ const where = {
       genedCategory={genedCategory}
       major={major}
       majorCategory={majorCategory}
+      savedOnly={savedOnly}
     />
   )
 }

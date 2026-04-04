@@ -1,5 +1,8 @@
+import type { ReactNode } from "react";
+
 type CourseHeaderProps = {
   course: {
+    id: string;
     subject: string;
     number: string;
     title: string | null;
@@ -10,6 +13,7 @@ type CourseHeaderProps = {
     isGenEd: boolean;
     genEdCategory: string | null;
   };
+  actions?: ReactNode;
 };
 
 function gpaColor(v: number | null) {
@@ -47,7 +51,7 @@ function statPill(label: string, value: string, valueClass?: string) {
   );
 }
 
-export default function CourseHeader({ course }: CourseHeaderProps) {
+export default function CourseHeader({ course, actions }: CourseHeaderProps) {
   const totalRegs = course.totalRegsAllTime ?? 0;
 
   return (
@@ -79,6 +83,7 @@ export default function CourseHeader({ course }: CourseHeaderProps) {
           <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
             {course.deptName || "Department not available"}
           </p>
+          {actions ? <div className="mt-4">{actions}</div> : null}
         </div>
 
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 lg:min-w-[420px]">

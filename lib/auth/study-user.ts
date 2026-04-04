@@ -9,15 +9,19 @@ type AuthUserSeed = {
 };
 
 export async function ensureStudyUserForAuthUser(authUser: AuthUserSeed) {
-  const updateData = {
-    email: authUser.email,
-    displayName: authUser.name,
-    image: authUser.image,
-  };
-
-  const byAuthId = await prisma.studyUser.findUnique({
-    where: { authUserId: authUser.id },
-  });
+  const hasPersistedAuthUser = authUser.id
+    ? Boolean(
+        await prisma.user.findUnique({
+          where: { id: authUser.id },
+          select: { id: true },
+        }),
+      )
+    : false;
+  const byAuthId = hasPersistedAuthUser
+    ? await prisma.studyUser.findUnique({
+        where: { authUserId: authUser.id },
+      })
+    : null;
 
   if (byAuthId) {
     return prisma.studyUser.update({
@@ -39,7 +43,7 @@ export async function ensureStudyUserForAuthUser(authUser: AuthUserSeed) {
       return prisma.studyUser.update({
         where: { id: byEmail.id },
         data: {
-          authUserId: authUser.id,
+          authUserId: hasPersistedAuthUser ? authUser.id : byEmail.authUserId,
           displayName: authUser.name ?? byEmail.displayName,
           image: authUser.image ?? byEmail.image,
         },
@@ -50,7 +54,7 @@ export async function ensureStudyUserForAuthUser(authUser: AuthUserSeed) {
   try {
     return await prisma.studyUser.create({
       data: {
-        authUserId: authUser.id,
+        authUserId: hasPersistedAuthUser ? authUser.id : null,
         email: authUser.email,
         displayName: authUser.name,
         image: authUser.image,
@@ -79,7 +83,7 @@ export async function ensureStudyUserForAuthUser(authUser: AuthUserSeed) {
     return prisma.studyUser.update({
       where: { id: recovered.id },
       data: {
-        authUserId: authUser.id,
+        authUserId: hasPersistedAuthUser ? authUser.id : recovered.authUserId,
         email: authUser.email ?? recovered.email,
         displayName: authUser.name ?? recovered.displayName,
         image: authUser.image ?? recovered.image,

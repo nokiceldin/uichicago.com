@@ -340,6 +340,7 @@ export default function StudyLayout({ children }: { children: React.ReactNode })
       {[
         { label: "Flashcard set", icon: <BookOpen className="h-3.5 w-3.5 text-indigo-400" />, href: "/study/create?type=flashcards" },
         { label: "Study guide", icon: <Sparkles className="h-3.5 w-3.5 text-violet-400" />, href: "/study/create?type=guide" },
+        { label: "Notes", icon: <FileText className="h-3.5 w-3.5 text-emerald-400" />, href: "/study?mode=notes" },
         { label: "Degree planner", icon: <Target className="h-3.5 w-3.5 text-sky-400" />, href: "/study/planner" },
       ].map((item) => (
         <button key={item.label} onClick={() => openFromPlus(item.href)} className="flex w-full items-center gap-2.5 px-3 py-2 text-left text-[13px] font-medium text-slate-300 transition hover:bg-white/5 hover:text-white">

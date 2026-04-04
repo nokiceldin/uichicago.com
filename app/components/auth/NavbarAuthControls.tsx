@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ChevronDown, LogOut, Settings, UserRound } from "lucide-react";
+import { ChevronDown, LayoutDashboard, LogOut, Settings, UserRound } from "lucide-react";
 import { signIn, signOut, useSession } from "next-auth/react";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
@@ -11,6 +11,7 @@ export default function NavbarAuthControls() {
   const pathname = usePathname();
   const { data: session, status } = useSession();
   const [open, setOpen] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
   const menuRef = useRef<HTMLDivElement | null>(null);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(() => {
     const localSettings = typeof window !== "undefined" ? readLocalSiteSettings() : {};
@@ -74,6 +75,29 @@ export default function NavbarAuthControls() {
       cancelled = true;
       window.removeEventListener("uichicago-settings-change", refreshAvatar);
       window.removeEventListener("uichicago-avatar-change", applySavedAvatar as EventListener);
+    };
+  }, [session?.user]);
+
+  useEffect(() => {
+    if (!session?.user) return;
+
+    let cancelled = false;
+
+    const loadAdminState = async () => {
+      try {
+        const response = await fetch("/api/admin/me", { cache: "no-store" });
+        const payload = await response.json().catch(() => null);
+        if (!cancelled) {
+          setIsAdmin(Boolean(payload?.isAdmin));
+        }
+      } catch {
+        if (!cancelled) setIsAdmin(false);
+      }
+    };
+
+    void loadAdminState();
+    return () => {
+      cancelled = true;
     };
   }, [session?.user]);
 
@@ -161,6 +185,17 @@ export default function NavbarAuthControls() {
             <Settings className="h-4 w-4" />
             Settings
           </Link>
+
+          {isAdmin ? (
+            <Link
+              href="/admin/sparky"
+              onClick={() => setOpen(false)}
+              className="mt-1 inline-flex w-full items-center gap-2 rounded-[0.9rem] px-3 py-2.5 text-sm font-medium text-zinc-700 transition hover:bg-zinc-100 dark:text-zinc-200 dark:hover:bg-white/6"
+            >
+              <LayoutDashboard className="h-4 w-4" />
+              Sparky Admin
+            </Link>
+          ) : null}
 
           <button
             type="button"

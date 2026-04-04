@@ -304,6 +304,21 @@ function normalizeQuery(raw: string): string {
   return s;
 }
 
+type PersistChatLogInput = {
+  responseText: string;
+  responseKind: string;
+  responseStatus?: "success" | "abstained" | "error";
+  answerMode?: string | null;
+  domainsTriggered?: string[];
+  retrievalSources?: string[];
+  topChunkScore?: number | null;
+  chunkCount?: number | null;
+  abstained?: boolean;
+  abstainReason?: string | null;
+  responseMs?: number;
+  extraMetadata?: Record<string, unknown>;
+};
+
 function analyzeQuery(msg: string, conversationHistory: ChatMessage[]): QueryAnalysis {
   const lower = msg.toLowerCase();
   const words = lower.split(/\s+/).map(w => w.replace(/^[^a-z0-9]+|[^a-z0-9]+$/g, ''));
@@ -3739,9 +3754,84 @@ export async function POST(req: Request) {
 // ── Session & query analysis ──────────────────────────────────────────────
 // ── Casual message fast path ──────────────────────────────────────────────
   const { sessionId, isNew } = resolveSession(req, preferredSessionId);
+  const normalizedLastMsg = normalizeQuery(lastMsg);
+  const requestMessagesJson = JSON.stringify(
+    messages.map((message, index) => ({
+      index,
+      role: message.role,
+      content: message.content,
+    }))
+  );
+  const baseChatLogMetadata = {
+    authenticated: Boolean(authSession?.user?.id),
+    messageCount: messages.length,
+    userMessageCount: messages.filter((message) => message.role === "user").length,
+    assistantMessageCount: messages.filter((message) => message.role === "assistant").length,
+    lastMessageLength: lastMsg.length,
+    normalizedMessageLength: normalizedLastMsg.length,
+    promptWordCount: lastMsg.split(/\s+/).filter(Boolean).length,
+    questionMarkCount: (lastMsg.match(/\?/g) ?? []).length,
+    hasAttachment: Boolean(uploadedFile),
+    attachmentName: uploadedFile?.name ?? null,
+    attachmentType: uploadedFile?.fileType ?? null,
+    hasUrl: /https?:\/\//i.test(lastMsg),
+    hasCourseCode: /\b[A-Z]{2,4}\s?\d{3}[A-Z]?\b/i.test(lastMsg),
+    requestedConversationId,
+    preferredConversationId: preferredSessionId,
+  };
+  let chatLogSaved = false;
+  const persistChatLog = async ({
+    responseText,
+    responseKind,
+    responseStatus = "success",
+    answerMode = null,
+    domainsTriggered,
+    retrievalSources,
+    topChunkScore,
+    chunkCount,
+    abstained = false,
+    abstainReason = null,
+    responseMs,
+    extraMetadata,
+  }: PersistChatLogInput) => {
+    if (chatLogSaved) return;
+    chatLogSaved = true;
+
+    await prisma.queryLog.create({
+      data: {
+        id: `ql_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+        sessionId,
+        userId: authSession?.user?.id ?? null,
+        conversationId: preferredSessionId ?? requestedConversationId ?? sessionId,
+        query: lastMsg,
+        normalizedQuery: normalizedLastMsg,
+        requestMessages: requestMessagesJson,
+        responseText,
+        responseKind,
+        responseStatus,
+        attachedFileName: uploadedFile?.name ?? null,
+        attachedFileType: uploadedFile?.fileType ?? null,
+        metadataJson: JSON.stringify({
+          ...baseChatLogMetadata,
+          ...(extraMetadata ?? {}),
+        }),
+        answerMode,
+        domainsTriggered: domainsTriggered ? JSON.stringify(domainsTriggered) : null,
+        retrievalSources: retrievalSources ? JSON.stringify(retrievalSources) : null,
+        topChunkScore: topChunkScore ?? null,
+        chunkCount: chunkCount ?? null,
+        abstained,
+        abstainReason,
+        responseMs: responseMs ?? Date.now() - requestStartMs,
+      },
+    }).catch((error) => {
+      chatLogSaved = false;
+      console.error("Failed to persist Sparky query log:", error);
+    });
+  };
   // Normalize before casual check: collapse 3+ repeated chars to 2 (helooo→heloo, heyyyy→heyy)
   // and strip punctuation/emoji noise so "hey!!!" and "heyyy 😂" both match.
-  const normMsg = normalizeQuery(lastMsg).replace(/[\s!?.]+$/, "");
+  const normMsg = normalizedLastMsg.replace(/[\s!?.]+$/, "");
   const casualPatterns = /^(h+e+y+|h+i+|hel+o+|helo+|hullo|howdy|sup+|s+u+p|yo+|yoo+|wh?[ao]+t'?s+ ?up+|wh?[ao]+t'?s+ ?good|wassup|wazzup|wsg|how are (you|u|ya)|how r u|how'?s? it go+ing|thanks+|thank you|thnks?|thx+|o+k+a*y*|coo+l|nice|great|lo+l|haha+|lmao+|bruh|bro|k+|gotcha|got it|makes sense|sounds good|perfect|awesome|sure|np|no problem|good|good morning|good afternoon|good evening|morning|night|bye+|goodbye|see ya|later|wyd|wbu|idk)$/i;
 
   if (casualPatterns.test(normMsg)) {
@@ -3753,6 +3843,14 @@ export async function POST(req: Request) {
     });
 
     const casualText = (casualResponse.content[0] as any)?.text ?? "Hey!";
+    await persistChatLog({
+      responseText: casualText,
+      responseKind: "casual_fast_path",
+      answerMode: "discovery",
+      extraMetadata: {
+        matchedPath: "casual_fast_path",
+      },
+    });
     const encoder = new TextEncoder();
     const readable = new ReadableStream({
       start(controller) {
@@ -3770,6 +3868,14 @@ export async function POST(req: Request) {
 
   if (isProductQuestion(lastMsg.toLowerCase())) {
     const aboutText = getProductAnswer(lastMsg.toLowerCase());
+    await persistChatLog({
+      responseText: aboutText,
+      responseKind: "product_fast_path",
+      answerMode: "discovery",
+      extraMetadata: {
+        matchedPath: "product_fast_path",
+      },
+    });
     const encoder = new TextEncoder();
     const readable = new ReadableStream({
       start(controller) {
@@ -3788,6 +3894,14 @@ export async function POST(req: Request) {
   if (isFlamesSongRequest(lastMsg)) {
     const encoder = new TextEncoder();
     const flamesText = "Lets go Flames!";
+    await persistChatLog({
+      responseText: flamesText,
+      responseKind: "flames_song_fast_path",
+      answerMode: "discovery",
+      extraMetadata: {
+        matchedPath: "flames_song_fast_path",
+      },
+    });
     const readable = new ReadableStream({
       start(controller) {
         controller.enqueue(encoder.encode(flamesText));
@@ -3807,11 +3921,22 @@ export async function POST(req: Request) {
 
   // Normalize the message for the regex pipeline (fixes typos/abbreviations).
   // Claude sees the original lastMsg — it handles imperfect text natively.
-  const normalizedMsg = normalizeQuery(lastMsg);
+  const normalizedMsg = normalizedLastMsg;
   const query = analyzeQuery(normalizedMsg, messages.slice(0, -1));
   const normalizedLower = normalizedMsg.toLowerCase();
 
-  const makePlainTextResponse = (text: string, extraHeaders?: Record<string, string>) => {
+  const makePlainTextResponse = async (
+    text: string,
+    extraHeaders?: Record<string, string>,
+    logOptions?: Partial<PersistChatLogInput>
+  ) => {
+    await persistChatLog({
+      responseText: text,
+      responseKind: logOptions?.responseKind ?? "direct_rule_response",
+      responseStatus: logOptions?.responseStatus,
+      answerMode: logOptions?.answerMode ?? query.answerMode,
+      extraMetadata: logOptions?.extraMetadata,
+    });
     const encoder = new TextEncoder();
     const readable = new ReadableStream({
       start(controller) {
@@ -3832,7 +3957,14 @@ export async function POST(req: Request) {
 
   if (/\bu.?pass\b/.test(normalizedLower) && /\b(fee|cost|price|how much|per semester)\b/.test(normalizedLower)) {
     return makePlainTextResponse(
-      "UIC's U-Pass costs $163 per semester. It is part of your semester fees for students enrolled in 6+ credit hours and covers unlimited CTA rides during the semester."
+      "UIC's U-Pass costs $163 per semester. It is part of your semester fees for students enrolled in 6+ credit hours and covers unlimited CTA rides during the semester.",
+      undefined,
+      {
+        responseKind: "direct_rule_response",
+        extraMetadata: {
+          matchedPath: "u_pass_fee_rule",
+        },
+      }
     );
   }
 
@@ -3849,14 +3981,28 @@ export async function POST(req: Request) {
           `**MRH**: ${mrh.address}. Better if you want a more apartment-like feel and gender-inclusive apartments.`,
           `**TBH**: ${tbh.address}. Better if you want extra study/lounge space and the University Village location.`,
           "**Bottom line**: choose MRH for a more independent apartment feel, or TBH for a quieter, study-focused setup.",
-        ].join("\n")
+        ].join("\n"),
+        undefined,
+        {
+          responseKind: "direct_rule_response",
+          extraMetadata: {
+            matchedPath: "housing_compare_rule",
+          },
+        }
       );
     }
   }
 
   if ((/\b24 ?hours?\b/.test(normalizedLower) || /\bopen all night\b/.test(normalizedLower)) && /\b(food|eat|dining|restaurant|market|snack)\b/.test(normalizedLower)) {
     return makePlainTextResponse(
-      "The main on-campus food option open 24 hours is Market at Halsted in Student Center East. It is listed as open 24 hours daily in the current dining data."
+      "The main on-campus food option open 24 hours is Market at Halsted in Student Center East. It is listed as open 24 hours daily in the current dining data.",
+      undefined,
+      {
+        responseKind: "direct_rule_response",
+        extraMetadata: {
+          matchedPath: "dining_24h_rule",
+        },
+      }
     );
   }
 
@@ -4416,6 +4562,14 @@ if (relevantVectors.length > 0 && !query.isFact && query.answerMode !== "plannin
     const directPlan = deterministicPlanChunk.content
       .replace(/^=== DETERMINISTIC PLAN ===\n?/, "")
       .trim();
+    await persistChatLog({
+      responseText: directPlan,
+      responseKind: "deterministic_plan",
+      answerMode: query.answerMode,
+      extraMetadata: {
+        matchedPath: "deterministic_plan",
+      },
+    });
     const enc = new TextEncoder();
     const readable = new ReadableStream({
       start(controller) {
@@ -4432,6 +4586,14 @@ if (relevantVectors.length > 0 && !query.isFact && query.answerMode !== "plannin
     const directText = (deterministicRequirementsChunk ?? deterministicNextTermChunk)!.content
       .replace(/^=== DETERMINISTIC (REQUIREMENTS|NEXT TERM) ===\n?/, "")
       .trim();
+    await persistChatLog({
+      responseText: directText,
+      responseKind: deterministicRequirementsChunk ? "deterministic_requirements" : "deterministic_next_term",
+      answerMode: query.answerMode,
+      extraMetadata: {
+        matchedPath: deterministicRequirementsChunk ? "deterministic_requirements" : "deterministic_next_term",
+      },
+    });
     const enc = new TextEncoder();
     const readable = new ReadableStream({
       start(controller) {
@@ -4448,6 +4610,14 @@ if (relevantVectors.length > 0 && !query.isFact && query.answerMode !== "plannin
     const directText = deterministicFactChunk.content
       .replace(/^=== DETERMINISTIC FACT ===\n?/, "")
       .trim();
+    await persistChatLog({
+      responseText: directText,
+      responseKind: "deterministic_fact",
+      answerMode: query.answerMode,
+      extraMetadata: {
+        matchedPath: "deterministic_fact",
+      },
+    });
     const enc = new TextEncoder();
     const readable = new ReadableStream({
       start(controller) {
@@ -4517,6 +4687,15 @@ if (relevantVectors.length > 0 && !query.isFact && query.answerMode !== "plannin
         // Both attempts failed — return controlled failure. Do NOT proceed with raw scaffold.
         console.error("[planning pipeline] buildPlanningObject failed after retry:", (err as Error).message);
         const failMsg = "I couldn't generate a valid academic plan. Please try again.";
+        await persistChatLog({
+          responseText: failMsg,
+          responseKind: "planning_validation_failure",
+          responseStatus: "error",
+          answerMode: query.answerMode,
+          extraMetadata: {
+            matchedPath: "planning_validation_failure",
+          },
+        });
         const enc = new TextEncoder();
         const failStream = new ReadableStream({
           start(c) { c.enqueue(enc.encode(failMsg)); c.close(); },
@@ -4607,25 +4786,28 @@ console.log(JSON.stringify({
   ms: Date.now() - requestStartMs,
 }));
 
-prisma.queryLog.create({
-  data: {
-    id:               `ql_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
-    sessionId,
-    query:            lastMsg,
-    answerMode:       query.answerMode,
-    domainsTriggered: JSON.stringify(domainsTriggered),
-    retrievalSources: JSON.stringify(retrievalSources),
-    topChunkScore:    trust.explanation.top_score > 0 ? trust.explanation.top_score : null,
-    chunkCount:       rerankedChunks.length,
-    abstained:        trust.decision === "abstain",
-    abstainReason:    trust.decision !== "answer" ? trust.reason : null,
-    responseMs:       Date.now() - requestStartMs,
-  },
-}).catch(() => {});
-
 // ── Abstain gate ──────────────────────────────────────────────────────────
 if (trust.decision === "abstain") {
   const abstainText = getAbstainResponse(query, trust.reason);
+  await persistChatLog({
+    responseText: abstainText,
+    responseKind: "abstain",
+    responseStatus: "abstained",
+    answerMode: query.answerMode,
+    domainsTriggered,
+    retrievalSources,
+    topChunkScore: trust.explanation.top_score > 0 ? trust.explanation.top_score : null,
+    chunkCount: rerankedChunks.length,
+    abstained: true,
+    abstainReason: trust.reason,
+    extraMetadata: {
+      trustDecision: trust.decision,
+      trustConfidence: trust.confidence,
+      trustClass: trust.explanation.query_class,
+      primaryDomain: trust.explanation.primary_domain,
+      entityVerification,
+    },
+  });
   const encoder = new TextEncoder();
   const readable = new ReadableStream({
     start(controller) {
@@ -4742,6 +4924,18 @@ const maxTokens = uploadedFile ? 2000
         });
         stateUpdates.lastResponseExcerpt = majorNotFoundMsg.slice(0, 400);
         await updateSessionState(sessionId, stateUpdates);
+        await persistChatLog({
+          responseText: majorNotFoundMsg,
+          responseKind: "planning_major_not_found",
+          answerMode: query.answerMode,
+          domainsTriggered,
+          retrievalSources,
+          topChunkScore: trust.explanation.top_score > 0 ? trust.explanation.top_score : null,
+          chunkCount: rerankedChunks.length,
+          extraMetadata: {
+            matchedPath: "planning_major_not_found",
+          },
+        });
         return new Response(fallbackStream, { headers: responseHeaders });
       }
 
@@ -4795,6 +4989,18 @@ const maxTokens = uploadedFile ? 2000
       // Single write: entity state + excerpt together
       stateUpdates.lastResponseExcerpt = planText.slice(0, 400);
       await updateSessionState(sessionId, stateUpdates);
+      await persistChatLog({
+        responseText: planText,
+        responseKind: "planning_response",
+        answerMode: query.answerMode,
+        domainsTriggered,
+        retrievalSources,
+        topChunkScore: trust.explanation.top_score > 0 ? trust.explanation.top_score : null,
+        chunkCount: rerankedChunks.length,
+        extraMetadata: {
+          planValidationManifestCount: planningManifest.length,
+        },
+      });
 
       // Stream the final (validated or disclaimed) plan text back to the client
       const enc = new TextEncoder();
@@ -4831,6 +5037,22 @@ const maxTokens = uploadedFile ? 2000
           // Single write: entity state + excerpt together, after stream completes
           stateUpdates.lastResponseExcerpt = accumulatedText ? accumulatedText.slice(0, 400) : undefined;
           await updateSessionState(sessionId, stateUpdates);
+          await persistChatLog({
+            responseText: accumulatedText,
+            responseKind: "model_stream_response",
+            answerMode: query.answerMode,
+            domainsTriggered,
+            retrievalSources,
+            topChunkScore: trust.explanation.top_score > 0 ? trust.explanation.top_score : null,
+            chunkCount: rerankedChunks.length,
+            extraMetadata: {
+              trustDecision: trust.decision,
+              trustConfidence: trust.confidence,
+              trustClass: trust.explanation.query_class,
+              primaryDomain: trust.explanation.primary_domain,
+              entityVerification,
+            },
+          });
         }
       },
     });
@@ -4839,6 +5061,15 @@ const maxTokens = uploadedFile ? 2000
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "Unknown error";
     console.error("Chat API error:", message);
+    await persistChatLog({
+      responseText: message,
+      responseKind: "error",
+      responseStatus: "error",
+      answerMode: query.answerMode,
+      extraMetadata: {
+        matchedPath: "catch",
+      },
+    }).catch(() => undefined);
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }

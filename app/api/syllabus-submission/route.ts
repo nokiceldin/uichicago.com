@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 import { Resend } from "resend";
+import { extractReadableTextFromUploadedFile } from "@/lib/chat/attachments";
+import { savePendingSyllabusSubmission } from "@/lib/syllabus-submissions";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -43,28 +45,54 @@ export async function POST(req: Request) {
 
     const buffer = Buffer.from(await file.arrayBuffer());
     const userAgent = req.headers.get("user-agent");
+    const lowerMimeType = file.type.toLowerCase();
 
-    await resend.emails.send({
-      from: "UIC Ratings <onboarding@resend.dev>",
-      to: process.env.MISSING_REPORT_TO_EMAIL!,
-      subject: `Syllabus submission: ${courseCode}`,
-      text:
-        `Course: ${courseCode} - ${courseTitle}\n` +
-        `Department: ${department || "N/A"}\n` +
-        `Term: ${term || "N/A"}\n` +
-        `Instructor: ${instructor || "N/A"}\n` +
-        `Notes: ${notes || "N/A"}\n` +
-        `File: ${file.name}\n` +
-        `User-Agent: ${userAgent || "N/A"}\n`,
-      attachments: [
-        {
-          filename: file.name,
-          content: buffer,
-        },
-      ],
+    const extractedText = await extractReadableTextFromUploadedFile({
+      name: file.name,
+      mimeType: lowerMimeType,
+      data: buffer.toString("base64"),
+      fileType:
+        lowerMimeType === "application/pdf"
+          ? "pdf"
+          : lowerMimeType.startsWith("text/")
+            ? "text"
+            : "image",
+    }).catch(() => "");
+
+    const { submission } = await savePendingSyllabusSubmission({
+      courseCode,
+      courseTitle,
+      department,
+      term,
+      instructor,
+      notes,
+      userAgent: userAgent || "",
+      fileName: file.name,
+      mimeType: lowerMimeType,
+      sizeBytes: file.size,
+      buffer,
+      extractedText,
     });
 
-    return NextResponse.json({ ok: true });
+    if (process.env.RESEND_API_KEY && process.env.MISSING_REPORT_TO_EMAIL) {
+      await resend.emails.send({
+        from: "UIC Ratings <onboarding@resend.dev>",
+        to: process.env.MISSING_REPORT_TO_EMAIL,
+        subject: `Syllabus submission queued: ${courseCode}`,
+        text:
+          `Submission ID: ${submission.id}\n` +
+          `Course: ${courseCode} - ${courseTitle}\n` +
+          `Department: ${department || "N/A"}\n` +
+          `Term: ${term || "N/A"}\n` +
+          `Instructor: ${instructor || "N/A"}\n` +
+          `Notes: ${notes || "N/A"}\n` +
+          `File: ${file.name}\n` +
+          `Extracted text chars: ${submission.extractedTextLength}\n` +
+          `User-Agent: ${userAgent || "N/A"}\n`,
+      });
+    }
+
+    return NextResponse.json({ ok: true, submissionId: submission.id });
   } catch {
     return NextResponse.json({ error: "Failed to submit syllabus." }, { status: 500 });
   }

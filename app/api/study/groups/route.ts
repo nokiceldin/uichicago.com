@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { requireCurrentStudyUser } from "@/lib/auth/session";
 import prisma from "@/lib/prisma";
+import { validateStudyGroupName } from "@/lib/study/group-moderation";
 import { serializeStudyGroup } from "@/lib/study/server";
 
 function generateInviteCode(length = 10) {
@@ -14,8 +15,10 @@ export async function POST(request: Request) {
     const studyUser = await requireCurrentStudyUser();
     const body = await request.json();
 
-    if (!String(body.name || "").trim()) {
-      return NextResponse.json({ error: "Group name is required." }, { status: 400 });
+    const normalizedName = String(body.name || "").trim();
+    const nameValidation = validateStudyGroupName(normalizedName);
+    if (!nameValidation.valid) {
+      return NextResponse.json({ error: nameValidation.reason || "Group name is required." }, { status: 400 });
     }
 
     let createdGroupId = "";
@@ -26,7 +29,7 @@ export async function POST(request: Request) {
         const created = await prisma.$transaction(async (tx) => {
           const group = await tx.studyGroup.create({
             data: {
-              name: String(body.name).trim(),
+              name: normalizedName,
               course: String(body.course || "").trim() || null,
               description: String(body.description || "").trim() || null,
               creatorId: studyUser.id,

@@ -19,12 +19,14 @@ export default function ContactButton({
   title = "Contact us",
   description = "Send a message and it will go straight to us.",
 }: ContactButtonProps) {
+  const requiredFieldError = "This field is required";
   const [open, setOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [name, setName] = useState("");
   const [details, setDetails] = useState("");
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
+  const [errors, setErrors] = useState<{ name?: string; details?: string }>({});
 
   useEffect(() => setMounted(true), []);
 
@@ -51,9 +53,23 @@ export default function ContactButton({
     setDetails("");
     setEmail("");
     setStatus("idle");
+    setErrors({});
   };
 
   async function submit() {
+    const trimmedName = name.trim();
+    const trimmedDetails = details.trim();
+    const nextErrors: { name?: string; details?: string } = {};
+
+    if (!trimmedName) nextErrors.name = requiredFieldError;
+    if (!trimmedDetails) nextErrors.details = requiredFieldError;
+
+    if (Object.keys(nextErrors).length > 0) {
+      setErrors(nextErrors);
+      return;
+    }
+
+    setErrors({});
     setStatus("sending");
 
     try {
@@ -109,10 +125,19 @@ export default function ContactButton({
             </label>
             <input
               value={name}
-              onChange={(event) => setName(event.target.value)}
+              onChange={(event) => {
+                setName(event.target.value);
+                if (errors.name) {
+                  setErrors((current) => ({ ...current, name: undefined }));
+                }
+              }}
               placeholder="Enter your name"
-              className="mt-1 w-full rounded-xl bg-zinc-900 px-3 py-2 text-white ring-1 ring-white/10 outline-none placeholder:text-white/30"
+              aria-invalid={!!errors.name}
+              className={`mt-1 w-full rounded-xl bg-zinc-900 px-3 py-2 text-white outline-none placeholder:text-white/30 ${
+                errors.name ? "border border-red-500 ring-1 ring-red-500" : "ring-1 ring-white/10"
+              }`}
             />
+            {errors.name ? <p className="mt-1 text-sm text-red-400">{errors.name}</p> : null}
           </div>
 
           <div>
@@ -121,11 +146,20 @@ export default function ContactButton({
             </label>
             <textarea
               value={details}
-              onChange={(event) => setDetails(event.target.value)}
+              onChange={(event) => {
+                setDetails(event.target.value);
+                if (errors.details) {
+                  setErrors((current) => ({ ...current, details: undefined }));
+                }
+              }}
               placeholder="Tell us what you need help with"
-              className="mt-1 w-full rounded-xl bg-zinc-900 px-3 py-2 text-white ring-1 ring-white/10 outline-none placeholder:text-white/30"
+              aria-invalid={!!errors.details}
+              className={`mt-1 w-full rounded-xl bg-zinc-900 px-3 py-2 text-white outline-none placeholder:text-white/30 ${
+                errors.details ? "border border-red-500 ring-1 ring-red-500" : "ring-1 ring-white/10"
+              }`}
               rows={4}
             />
+            {errors.details ? <p className="mt-1 text-sm text-red-400">{errors.details}</p> : null}
           </div>
 
           <div>
@@ -142,7 +176,7 @@ export default function ContactButton({
           <div className="flex items-center gap-2 pt-2">
             <button
               onClick={submit}
-              disabled={status === "sending" || name.trim().length < 2 || details.trim().length < 5}
+              disabled={status === "sending"}
               className="rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-500 disabled:opacity-50"
             >
               {status === "sending" ? "Sending..." : "Submit"}

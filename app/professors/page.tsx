@@ -46,6 +46,7 @@ function getPageButtons(current: number, total: number) {
 }
 
 export default function Page() {
+  const nf = useMemo(() => new Intl.NumberFormat("en-US"), []);
   const pathname = usePathname();
   const courseMap = useProfCoursesMap();
   const { loading: savedLoading, saved, savedProfessorSlugs, savedProfessorNotes, saveProfessor, sessionStatus, unsaveProfessor } = useSavedItems();
@@ -268,7 +269,7 @@ export default function Page() {
 
         <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-sm text-zinc-500 tabular-nums">
-            Showing <span className="text-zinc-700 dark:text-zinc-300 font-medium">{effectiveTotal === 0 ? 0 : start + 1}–{Math.min(start + pageSize, effectiveTotal)}</span> of <span className="text-zinc-700 dark:text-zinc-300 font-medium">{effectiveTotal.toLocaleString()}</span>
+            Showing <span className="text-zinc-700 dark:text-zinc-300 font-medium">{effectiveTotal === 0 ? 0 : nf.format(start + 1)}–{nf.format(Math.min(start + pageSize, effectiveTotal))}</span> of <span className="text-zinc-700 dark:text-zinc-300 font-medium">{nf.format(effectiveTotal)}</span>
             {loading && <span className="ml-2 text-zinc-400">Loading…</span>}
           </p>
           <div className="flex items-center gap-2 overflow-x-auto pb-1 sm:flex-wrap sm:overflow-visible">

@@ -1,6 +1,8 @@
 import Link from "next/link";
+import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { getCurrentAdminSession } from "@/lib/admin";
+import prisma from "@/lib/prisma";
 import { getSparkyAnalytics } from "@/lib/sparky-analytics";
 
 type SearchParamsValue = string | string[] | undefined;
@@ -36,6 +38,91 @@ function truncate(value: string | null | undefined, max = 180) {
   return value.length > max ? `${value.slice(0, max).trimEnd()}...` : value;
 }
 
+function withAdminNotice(
+  returnTo: string,
+  next: { groupStatus?: string; groupError?: string },
+) {
+  const url = new URL(returnTo || "/admin/sparky", "http://localhost");
+  if (next.groupStatus) {
+    url.searchParams.set("groupStatus", next.groupStatus);
+  } else {
+    url.searchParams.delete("groupStatus");
+  }
+  if (next.groupError) {
+    url.searchParams.set("groupError", next.groupError);
+  } else {
+    url.searchParams.delete("groupError");
+  }
+  return `${url.pathname}${url.search}`;
+}
+
+async function deleteStudyGroupAction(formData: FormData) {
+  "use server";
+
+  const adminSession = await getCurrentAdminSession();
+  if (!adminSession) {
+    redirect("/auth/signin?callbackUrl=/admin/sparky");
+  }
+
+  const returnTo = String(formData.get("returnTo") || "/admin/sparky");
+  const groupId = String(formData.get("groupId") || "").trim();
+  const deleteTarget = String(formData.get("deleteTarget") || "").trim();
+
+  let targetId = groupId;
+
+  if (!targetId && deleteTarget) {
+    const exactIdMatch = await prisma.studyGroup.findUnique({
+      where: { id: deleteTarget },
+      select: { id: true, name: true },
+    });
+
+    if (exactIdMatch) {
+      targetId = exactIdMatch.id;
+    } else {
+      const exactNameMatches = await prisma.studyGroup.findMany({
+        where: {
+          name: {
+            equals: deleteTarget,
+            mode: "insensitive",
+          },
+        },
+        select: { id: true },
+        take: 2,
+      });
+
+      if (exactNameMatches.length === 0) {
+        redirect(withAdminNotice(returnTo, { groupError: "No study group matched that exact name or ID." }));
+      }
+
+      if (exactNameMatches.length > 1) {
+        redirect(withAdminNotice(returnTo, { groupError: "That exact group name matched multiple groups. Delete by ID instead." }));
+      }
+
+      targetId = exactNameMatches[0]?.id ?? "";
+    }
+  }
+
+  if (!targetId) {
+    redirect(withAdminNotice(returnTo, { groupError: "Enter a study group ID or exact name first." }));
+  }
+
+  const existing = await prisma.studyGroup.findUnique({
+    where: { id: targetId },
+    select: { id: true, name: true },
+  });
+
+  if (!existing) {
+    redirect(withAdminNotice(returnTo, { groupError: "Study group not found." }));
+  }
+
+  await prisma.studyGroup.delete({
+    where: { id: existing.id },
+  });
+
+  revalidatePath("/admin/sparky");
+  redirect(withAdminNotice(returnTo, { groupStatus: `Deleted study group "${existing.name}".` }));
+}
+
 export default async function SparkyAdminPage({
   searchParams,
 }: {
@@ -54,6 +141,9 @@ export default async function SparkyAdminPage({
     days: Number(pickFirst(resolved.days) ?? 30),
     page: Number(pickFirst(resolved.page) ?? 1),
   };
+  const groupQuery = (pickFirst(resolved.groupQuery) ?? "").trim();
+  const groupStatus = pickFirst(resolved.groupStatus) ?? "";
+  const groupError = pickFirst(resolved.groupError) ?? "";
 
   const analytics = await getSparkyAnalytics(filters);
   const exportQuery = buildQueryString({
@@ -65,6 +155,41 @@ export default async function SparkyAdminPage({
 
   const previousPage = analytics.filters.page > 1 ? analytics.filters.page - 1 : undefined;
   const nextPage = analytics.filters.page < analytics.totalPages ? analytics.filters.page + 1 : undefined;
+  const groupMatches = groupQuery
+    ? await prisma.studyGroup.findMany({
+        where: {
+          OR: [
+            { id: { contains: groupQuery } },
+            { inviteCode: { contains: groupQuery, mode: "insensitive" } },
+            { name: { contains: groupQuery, mode: "insensitive" } },
+          ],
+        },
+        include: {
+          creator: {
+            select: {
+              displayName: true,
+              email: true,
+            },
+          },
+          memberships: {
+            select: { id: true },
+          },
+          linkedSets: {
+            select: { id: true },
+          },
+        },
+        orderBy: { updatedAt: "desc" },
+        take: 25,
+      })
+    : [];
+  const returnTo = `/admin/sparky?${buildQueryString({
+    q: filters.q,
+    responseKind: filters.responseKind,
+    answerMode: filters.answerMode,
+    days: filters.days,
+    page: filters.page,
+    groupQuery,
+  })}`;
 
   return (
     <main className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(239,68,68,0.08),transparent_24%),#fafafa] px-4 py-8 text-zinc-950 sm:px-6 dark:bg-[radial-gradient(circle_at_top,rgba(239,68,68,0.15),transparent_28%),#09090b] dark:text-white">
@@ -158,6 +283,119 @@ export default async function SparkyAdminPage({
               </Link>
             </div>
           </form>
+        </section>
+
+        <section className="rounded-[1.8rem] border border-zinc-200 bg-white p-6 shadow-[0_18px_55px_rgba(15,23,42,0.06)] dark:border-white/10 dark:bg-[rgba(18,18,23,0.94)]">
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+            <div>
+              <h2 className="text-lg font-semibold">Study group cleanup</h2>
+              <p className="mt-1 max-w-3xl text-sm leading-6 text-zinc-500 dark:text-zinc-400">
+                Search live study groups by ID, invite code, or name, then remove leftover test data directly from the database.
+              </p>
+            </div>
+            <form action={deleteStudyGroupAction} className="flex w-full max-w-2xl flex-col gap-3 sm:flex-row">
+              <input type="hidden" name="returnTo" value={returnTo} />
+              <input
+                type="text"
+                name="deleteTarget"
+                placeholder="Exact study group ID or exact name"
+                className="h-11 flex-1 rounded-xl border border-zinc-200 bg-zinc-50 px-4 text-sm outline-none dark:border-white/10 dark:bg-white/5"
+              />
+              <button
+                type="submit"
+                className="inline-flex h-11 items-center justify-center rounded-full bg-red-600 px-5 text-sm font-semibold text-white transition hover:bg-red-500"
+              >
+                Delete exact match
+              </button>
+            </form>
+          </div>
+
+          {groupStatus ? (
+            <div className="mt-4 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-200">
+              {groupStatus}
+            </div>
+          ) : null}
+          {groupError ? (
+            <div className="mt-4 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-200">
+              {groupError}
+            </div>
+          ) : null}
+
+          <form className="mt-5 grid gap-4 md:grid-cols-[minmax(0,1fr)_auto]">
+            <input type="hidden" name="q" value={filters.q} />
+            <input type="hidden" name="responseKind" value={filters.responseKind} />
+            <input type="hidden" name="answerMode" value={filters.answerMode} />
+            <input type="hidden" name="days" value={String(filters.days)} />
+            <input type="hidden" name="page" value="1" />
+            <label className="space-y-2">
+              <span className="text-xs font-semibold uppercase tracking-[0.18em] text-zinc-500 dark:text-zinc-400">Find study groups</span>
+              <input
+                type="text"
+                name="groupQuery"
+                defaultValue={groupQuery}
+                placeholder="Search by name, invite code, or ID"
+                className="h-11 w-full rounded-xl border border-zinc-200 bg-zinc-50 px-4 text-sm outline-none dark:border-white/10 dark:bg-white/5"
+              />
+            </label>
+            <div className="flex items-end gap-3">
+              <button
+                type="submit"
+                className="inline-flex h-11 items-center justify-center rounded-full bg-zinc-950 px-5 text-sm font-semibold text-white transition hover:bg-zinc-800 dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-100"
+              >
+                Search groups
+              </button>
+              <Link
+                href={`/admin/sparky?${buildQueryString({
+                  q: filters.q,
+                  responseKind: filters.responseKind,
+                  answerMode: filters.answerMode,
+                  days: filters.days,
+                  page: filters.page,
+                })}`}
+                className="inline-flex h-11 items-center justify-center rounded-full border border-zinc-200 px-5 text-sm font-semibold text-zinc-700 transition hover:bg-zinc-50 dark:border-white/10 dark:text-zinc-200 dark:hover:bg-white/5"
+              >
+                Clear group search
+              </Link>
+            </div>
+          </form>
+
+          {groupQuery ? (
+            <div className="mt-5 space-y-3">
+              {groupMatches.length === 0 ? (
+                <div className="rounded-2xl border border-dashed border-zinc-200 px-4 py-6 text-sm text-zinc-500 dark:border-white/10 dark:text-zinc-400">
+                  No study groups matched "{groupQuery}".
+                </div>
+              ) : groupMatches.map((group) => (
+                <div
+                  key={group.id}
+                  className="flex flex-col gap-4 rounded-[1.4rem] border border-zinc-200 px-4 py-4 dark:border-white/10 lg:flex-row lg:items-center lg:justify-between"
+                >
+                  <div className="space-y-1">
+                    <div className="text-base font-semibold text-zinc-900 dark:text-zinc-100">{group.name}</div>
+                    <div className="text-xs uppercase tracking-[0.16em] text-zinc-500 dark:text-zinc-400">
+                      ID {group.id}
+                    </div>
+                    <div className="text-sm text-zinc-600 dark:text-zinc-300">
+                      Invite {group.inviteCode} • {group.linkedSets.length} sets • {group.memberships.length} members
+                    </div>
+                    <div className="text-sm text-zinc-500 dark:text-zinc-400">
+                      Creator {group.creator.displayName || group.creator.email || "Unknown"} • updated {formatDate(group.updatedAt)}
+                    </div>
+                  </div>
+                  <form action={deleteStudyGroupAction}>
+                    <input type="hidden" name="returnTo" value={returnTo} />
+                    <input type="hidden" name="groupId" value={group.id} />
+                    <button
+                      type="submit"
+                      className="inline-flex items-center justify-center rounded-full bg-red-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-red-500"
+                    >
+                      Delete group
+                    </button>
+                  </form>
+                </div>
+              ))}
+            </div>
+          ) : null}
         </section>
 
         <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">

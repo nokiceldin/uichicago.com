@@ -1,14 +1,123 @@
 "use client";
 
+import type { ComponentProps } from "react";
+import { useEffect, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeSanitize from "rehype-sanitize";
+import {
+  buildSparkyEntityLookup,
+  findSparkyTextMatches,
+  type SparkyEntityLookup,
+  type SparkyLinkEntityPayload,
+} from "@/lib/chat/entity-linking";
+
+let sparkyLinkLookupPromise: Promise<SparkyEntityLookup> | null = null;
+
+type MarkdownNode = {
+  type?: string;
+  value?: string;
+  url?: string;
+  children?: MarkdownNode[];
+};
+
+type MarkdownCodeProps = ComponentProps<"code"> & {
+  inline?: boolean;
+};
+
+async function loadSparkyLinkLookup() {
+  sparkyLinkLookupPromise ??= fetch("/api/chat/link-entities")
+    .then(async (response) => {
+      if (!response.ok) {
+        throw new Error(`Failed to load Sparky link entities (${response.status})`);
+      }
+      return response.json() as Promise<SparkyLinkEntityPayload>;
+    })
+    .then((payload) => buildSparkyEntityLookup(payload));
+
+  return sparkyLinkLookupPromise;
+}
+
+function remarkSparkyEntityLinks(lookup: SparkyEntityLookup) {
+  return function transform(tree: MarkdownNode) {
+    const visit = (node: MarkdownNode) => {
+      if (!node || !Array.isArray(node.children)) return;
+
+      const nextChildren: MarkdownNode[] = [];
+      for (const child of node.children) {
+        if (child?.type === "text") {
+          const matches = findSparkyTextMatches(String(child.value ?? ""), lookup);
+
+          if (!matches.length) {
+            nextChildren.push(child);
+            continue;
+          }
+
+          let cursor = 0;
+          for (const match of matches) {
+            if (match.start > cursor) {
+              nextChildren.push({
+                type: "text",
+                value: child.value.slice(cursor, match.start),
+              });
+            }
+
+            nextChildren.push({
+              type: "link",
+              url: match.href,
+              children: [{ type: "text", value: match.label }],
+            });
+
+            cursor = match.end;
+          }
+
+          if (cursor < child.value.length) {
+            nextChildren.push({
+              type: "text",
+              value: child.value.slice(cursor),
+            });
+          }
+
+          continue;
+        }
+
+        if (!["link", "linkReference", "code", "inlineCode", "html"].includes(child?.type)) {
+          visit(child);
+        }
+
+        nextChildren.push(child);
+      }
+
+      node.children = nextChildren;
+    };
+
+    visit(tree);
+  };
+}
 
 export default function SparkyMarkdown({ content }: { content: string }) {
+  const [linkLookup, setLinkLookup] = useState<SparkyEntityLookup | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    loadSparkyLinkLookup()
+      .then((lookup) => {
+        if (!cancelled) setLinkLookup(lookup);
+      })
+      .catch((error) => {
+        console.error("Failed to load Sparky link lookup", error);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   return (
     <div className="prose-sparky markdown-body">
       <ReactMarkdown
-        remarkPlugins={[remarkGfm]}
+        remarkPlugins={linkLookup ? [remarkGfm, remarkSparkyEntityLinks(linkLookup)] : [remarkGfm]}
         rehypePlugins={[rehypeSanitize]}
         components={{
           h1: ({ children }) => (
@@ -36,7 +145,7 @@ export default function SparkyMarkdown({ content }: { content: string }) {
             <li className="leading-[1.7]">{children}</li>
           ),
           code(props) {
-            const { inline, children } = props as any;
+            const { inline, children } = props as MarkdownCodeProps;
             if (inline) {
               return (
                 <code className="bg-zinc-200 dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200 px-1.5 py-0.5 rounded text-[13px] font-mono">
@@ -72,16 +181,20 @@ export default function SparkyMarkdown({ content }: { content: string }) {
           td: ({ children }) => (
             <td className="px-4 py-3 align-top">{children}</td>
           ),
-          a: ({ href, children }) => (
-            <a
-              href={href}
-              target="_blank"
-              rel="noreferrer"
-              className="text-red-500 dark:text-red-400 hover:text-red-600 dark:hover:text-red-300 underline"
-            >
-              {children}
-            </a>
-          ),
+          a: ({ href, children }) => {
+            const isInternal = typeof href === "string" && href.startsWith("/");
+
+            return (
+              <a
+                href={href}
+                target={isInternal ? undefined : "_blank"}
+                rel={isInternal ? undefined : "noreferrer"}
+                className="font-medium text-red-500 underline decoration-red-300 underline-offset-2 hover:text-red-600 dark:text-red-400 dark:decoration-red-500/60 dark:hover:text-red-300"
+              >
+                {children}
+              </a>
+            );
+          },
           blockquote: ({ children }) => (
             <blockquote className="border-l-4 border-zinc-300 dark:border-zinc-700 pl-4 my-3 text-zinc-500 dark:text-zinc-400 italic">
               {children}

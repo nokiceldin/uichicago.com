@@ -1,6 +1,7 @@
 import type { StudyDifficulty, StudyGroup, StudySessionRecord, StudySet, StudyVisibility } from "@/lib/study/types";
 import type { Prisma } from "@prisma/client";
 import prisma from "@/lib/prisma";
+import { shouldHidePlaceholderStudyGroup } from "@/lib/study/group-moderation";
 
 function toUiDifficulty(value: string): StudyDifficulty {
   return value.toLowerCase() as StudyDifficulty;
@@ -186,9 +187,11 @@ export async function getStudyWorkspacePayload(studyUserId: string) {
     }),
   ]);
 
+  const visibleGroups = groups.filter((group) => !shouldHidePlaceholderStudyGroup(group));
+
   return {
     sets: sets.map((set) => serializeStudySet(set, studyUserId)),
-    groups: groups.map((group) => serializeStudyGroup(group)),
+    groups: visibleGroups.map((group) => serializeStudyGroup(group)),
     sessions: sessions.map((session) => serializeStudySession(session)),
   };
 }

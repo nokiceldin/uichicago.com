@@ -2,12 +2,10 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { signOut, useSession } from "next-auth/react";
 import {
   BookOpen,
-  ChevronDown,
   FileText,
   Folder,
   Home,
@@ -15,19 +13,14 @@ import {
   MoreHorizontal,
   Pencil,
   Plus,
-  Search,
-  Settings,
   Sparkles,
   Target,
   Trash2,
-  UserRound,
   Users,
   X,
-  LogOut,
 } from "lucide-react";
 import { DEFAULT_STUDY_LIBRARY } from "@/lib/study/sample-data";
 import type { StudyLibraryState } from "@/lib/study/types";
-import { getPresetAvatarUrl, readLocalSiteSettings, resolveAvatarUrl } from "@/lib/site-settings";
 
 const STORAGE_KEY = "uic-atlas-study-library-v1";
 const CUSTOM_FOLDERS_KEY = "uic-atlas-study-custom-folders-v1";
@@ -64,7 +57,6 @@ function isFolderOrDescendant(path: string, candidate: string) {
 }
 
 export default function StudyLayout({ children }: { children: React.ReactNode }) {
-  const { data: session, status } = useSession();
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -76,14 +68,7 @@ export default function StudyLayout({ children }: { children: React.ReactNode })
   const [sidebarExpanded, setSidebarExpanded] = useState(true);
   const [library, setLibrary] = useState<StudyLibraryState>(DEFAULT_STUDY_LIBRARY);
   const [customFolders, setCustomFolders] = useState<string[]>([]);
-  const [searchDraft, setSearchDraft] = useState("");
-  const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const [folderMenuOpen, setFolderMenuOpen] = useState<string | null>(null);
-  const [profileAvatarUrl, setProfileAvatarUrl] = useState<string | null>(() => {
-    const localSettings = typeof window !== "undefined" ? readLocalSiteSettings() : {};
-    return resolveAvatarUrl(localSettings.avatar, session?.user?.image ?? null);
-  });
-  const profileMenuRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     try {
@@ -129,10 +114,6 @@ export default function StudyLayout({ children }: { children: React.ReactNode })
   }, []);
 
   useEffect(() => {
-    setSearchDraft(searchParams.get("query") || "");
-  }, [searchParams]);
-
-  useEffect(() => {
     window.localStorage.setItem(CUSTOM_FOLDERS_KEY, JSON.stringify(customFolders));
   }, [customFolders]);
 
@@ -141,72 +122,10 @@ export default function StudyLayout({ children }: { children: React.ReactNode })
   }, [sidebarExpanded]);
 
   useEffect(() => {
-    const timeout = window.setTimeout(() => {
-      const nextQuery = searchDraft.trim();
-      const currentQuery = (searchParams.get("query") || "").trim();
-      if (nextQuery === currentQuery) return;
-      const params = new URLSearchParams();
-      if (nextQuery) params.set("query", nextQuery);
-      const currentView = searchParams.get("view");
-      if (currentView) params.set("view", currentView);
-      const currentMode = searchParams.get("mode");
-      if (currentMode) params.set("mode", currentMode);
-      const currentScreen = searchParams.get("screen");
-      if (currentScreen) params.set("screen", currentScreen);
-      const selectedFolder = searchParams.get("folder");
-      if (selectedFolder) params.set("folder", selectedFolder);
-      router.push(`/study${params.toString() ? `?${params.toString()}` : ""}`);
-    }, 220);
-    return () => window.clearTimeout(timeout);
-  }, [router, searchDraft, searchParams]);
-
-  useEffect(() => {
     const close = () => setPlusOpen(false);
     window.addEventListener("click", close);
     return () => window.removeEventListener("click", close);
   }, []);
-
-  useEffect(() => {
-    if (!profileMenuOpen) return;
-
-    const handlePointerDown = (event: MouseEvent) => {
-      if (!profileMenuRef.current?.contains(event.target as Node)) {
-        setProfileMenuOpen(false);
-      }
-    };
-
-    window.addEventListener("pointerdown", handlePointerDown);
-    return () => window.removeEventListener("pointerdown", handlePointerDown);
-  }, [profileMenuOpen]);
-
-  useEffect(() => {
-    const sessionUser = session?.user;
-    if (!sessionUser) return;
-
-    const applyAvatar = (nextAvatarUrl?: string | null) => {
-      if (typeof nextAvatarUrl !== "undefined") {
-        setProfileAvatarUrl(nextAvatarUrl ?? resolveAvatarUrl(readLocalSiteSettings().avatar, sessionUser.image ?? null));
-        return;
-      }
-
-      const localSettings = readLocalSiteSettings();
-      setProfileAvatarUrl(resolveAvatarUrl(localSettings.avatar, sessionUser.image ?? null));
-    };
-
-    applyAvatar();
-
-    const handleAvatarChange = (event: Event) => {
-      applyAvatar((event as CustomEvent<{ avatarUrl?: string | null }>).detail?.avatarUrl);
-    };
-
-    window.addEventListener("uichicago-avatar-change", handleAvatarChange as EventListener);
-    window.addEventListener("uichicago-settings-change", handleAvatarChange as EventListener);
-
-    return () => {
-      window.removeEventListener("uichicago-avatar-change", handleAvatarChange as EventListener);
-      window.removeEventListener("uichicago-settings-change", handleAvatarChange as EventListener);
-    };
-  }, [session?.user]);
 
   useEffect(() => {
     if (!folderMenuOpen) return;
@@ -266,6 +185,12 @@ export default function StudyLayout({ children }: { children: React.ReactNode })
     setCreateFolderOpen(true);
   };
 
+  const openFolder = (folder: string, shouldCloseMenu = false) => {
+    setFolderMenuOpen(null);
+    if (shouldCloseMenu) closeMenu();
+    router.push(`/study?folder=${encodeURIComponent(folder)}`);
+  };
+
   const createFolder = () => {
     const leaf = folderDraft.trim();
     const next = normalizeFolderPath(folderParent ? `${folderParent}/${leaf}` : leaf);
@@ -322,15 +247,6 @@ export default function StudyLayout({ children }: { children: React.ReactNode })
     { href: "/study?mode=notes", label: "Notes", icon: <FileText className="h-4 w-4" />, active: onNotes },
     { href: "/study/create?type=guide", label: "Study guides", icon: <Sparkles className="h-4 w-4" />, active: onStudyGuides },
   ];
-  const profileName = session?.user?.name?.trim() || "Profile";
-  const profileInitials = profileName
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part[0]?.toUpperCase() || "")
-    .join("") || "P";
-  const fallbackAvatar = getPresetAvatarUrl("night-owl");
-
   const plusMenu = (
     <div
       onClick={(event) => event.stopPropagation()}
@@ -378,7 +294,7 @@ export default function StudyLayout({ children }: { children: React.ReactNode })
         compact ? "justify-center p-2.5" : "gap-2.5 px-2.5 py-2"
       } ${
         item.active
-          ? "bg-white/8 text-white"
+          ? "bg-white/8 text-white shadow-[inset_3px_0_0_rgba(99,102,241,0.9)]"
           : "text-slate-400 hover:bg-white/5 hover:text-slate-200"
       }`}
     >
@@ -442,20 +358,24 @@ export default function StudyLayout({ children }: { children: React.ReactNode })
                     compact ? "justify-center p-2.5" : "gap-2.5 px-2.5 py-2"
                   } ${
                     selectedFolder === folder
-                      ? "bg-white/8 text-white"
+                      ? "bg-white/8 text-white shadow-[inset_3px_0_0_rgba(99,102,241,0.9)]"
                       : "text-slate-400 hover:bg-white/5 hover:text-slate-200"
                   }`}>
-                    <Link
-                      href={`/study?folder=${encodeURIComponent(folder)}`}
-                      onClick={mobile ? closeMenu : undefined}
+                    <button
+                      type="button"
+                      onClick={() => openFolder(folder, mobile)}
                       title={compact ? folderLabelFromPath(folder) : undefined}
-                      className={`flex min-w-0 flex-1 items-center ${compact ? "justify-center" : "gap-2.5"}`}
+                      className={`flex min-w-0 flex-1 items-center text-left ${compact ? "justify-center" : "gap-2.5"}`}
                     >
                       <Folder className={`h-4 w-4 shrink-0 ${selectedFolder === folder ? "text-indigo-400" : "text-slate-600 group-hover:text-slate-400"}`} />
                       {!compact ? <span className="truncate">{folderLabelFromPath(folder)}</span> : null}
-                    </Link>
+                    </button>
                     {!compact ? (
-                      <div className="relative ml-auto opacity-0 transition group-hover:opacity-100" onClick={(e) => e.stopPropagation()}>
+                      <div
+                        className="relative ml-auto opacity-0 transition group-hover:opacity-100"
+                        onClick={(e) => e.stopPropagation()}
+                        onPointerDown={(e) => e.stopPropagation()}
+                      >
                         <button
                           type="button"
                           onClick={() => setFolderMenuOpen((c) => (c === folder ? null : folder))}
@@ -539,7 +459,7 @@ export default function StudyLayout({ children }: { children: React.ReactNode })
               onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); createFolder(); } }}
               placeholder="Folder name"
               className="mt-4 h-11 w-full rounded-xl border border-white/10 bg-white/5 px-4 text-sm text-white outline-none placeholder:text-slate-600 focus:border-indigo-500/40 focus:bg-white/7"
-            />
+              />
             <div className="mt-4 flex justify-end gap-2">
               <button
                 type="button"
@@ -565,6 +485,7 @@ export default function StudyLayout({ children }: { children: React.ReactNode })
       <aside className={`fixed inset-y-0 left-0 z-40 hidden flex-col border-r border-white/6 bg-[#080d18] transition-[width] duration-300 ease-out lg:flex ${
         sidebarExpanded ? "w-60" : "w-15"
       }`}>
+        <div className="pointer-events-none absolute inset-y-0 right-0 w-px bg-linear-to-b from-transparent via-violet-500/80 to-transparent" />
         <div className="flex flex-1 flex-col overflow-y-auto pb-4 pt-4">
           {sidebarContent(!sidebarExpanded)}
         </div>
@@ -574,6 +495,7 @@ export default function StudyLayout({ children }: { children: React.ReactNode })
       <div className={`fixed inset-0 z-70 lg:hidden ${menuOpen ? "pointer-events-auto" : "pointer-events-none"}`} aria-hidden={!menuOpen}>
         <div onClick={() => setMenuOpen(false)} className={`absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity duration-200 ${menuOpen ? "opacity-100" : "opacity-0"}`} />
         <aside className={`absolute left-0 top-0 h-full w-60 border-r border-white/6 bg-[#080d18] transition-transform duration-300 ${menuOpen ? "translate-x-0" : "-translate-x-full"}`}>
+          <div className="pointer-events-none absolute inset-y-0 right-0 w-px bg-linear-to-b from-transparent via-violet-500/80 to-transparent" />
           <div className="flex h-full flex-col overflow-y-auto pb-4 pt-4">
             <div className="flex items-center justify-between px-3 pb-2">
               <Link href="/" onClick={closeMenu} className="inline-flex items-center gap-2 rounded-lg px-1.5 py-1 text-white transition hover:bg-white/5">
@@ -591,8 +513,8 @@ export default function StudyLayout({ children }: { children: React.ReactNode })
 
       {/* Main content */}
       <div className={`transition-[padding-left] duration-300 ease-out ${sidebarExpanded ? "lg:pl-60" : "lg:pl-15"}`}>
-        <header className="sticky top-0 z-30 border-b border-white/6 bg-[#080d18]/92 backdrop-blur-md">
-          <div className="flex items-center gap-2 px-4 py-2.5 lg:px-6">
+        <header className="sticky top-[69px] z-30 border-b border-white/8 bg-[rgba(8,13,24,0.92)] backdrop-blur-md">
+          <div className="flex items-center justify-between gap-3 px-4 py-2.5 lg:px-6">
             {/* Mobile hamburger */}
             <button
               type="button"
@@ -611,20 +533,13 @@ export default function StudyLayout({ children }: { children: React.ReactNode })
               <Menu className="h-4 w-4" />
             </button>
 
-            {/* Search */}
-            <div className="relative min-w-0 flex-1 lg:mx-auto lg:max-w-95">
-              <Search className="pointer-events-none absolute left-3.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-600" />
-              <input
-                data-tour="study-nav-search"
-                value={searchDraft}
-                onChange={(e) => setSearchDraft(e.target.value)}
-                placeholder="Search your library…"
-                className="h-9 w-full rounded-lg border border-white/8 bg-white/4 pl-9 pr-4 text-sm text-white outline-none placeholder:text-slate-600 focus:border-indigo-500/30 focus:bg-white/6"
-              />
+            <div className="min-w-0 flex-1">
+              <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-zinc-500">
+                My School
+              </div>
             </div>
 
-            {/* Actions */}
-            <div className="relative ml-auto flex items-center gap-2">
+            <div className="relative flex items-center gap-2">
               <button
                 data-tour="study-nav-create"
                 type="button"
@@ -633,56 +548,6 @@ export default function StudyLayout({ children }: { children: React.ReactNode })
               >
                 <Plus className="h-4 w-4" />
               </button>
-
-              {/* Profile / Sign in */}
-              <div ref={profileMenuRef} className="relative hidden lg:block">
-                {status === "unauthenticated" ? (
-                  <button
-                    type="button"
-                    onClick={() => router.push("/auth/signin?callbackUrl=/study")}
-                    className="inline-flex items-center gap-2 rounded-lg border border-white/8 bg-white/4 px-3 py-1.5 text-[13px] font-medium text-slate-300 transition hover:bg-white/7 hover:text-white"
-                  >
-                    Sign in
-                  </button>
-                ) : status === "authenticated" ? (
-                  <>
-                    <button
-                      type="button"
-                      onClick={(e) => { e.stopPropagation(); setProfileMenuOpen((c) => !c); }}
-                      className="inline-flex items-center gap-2 rounded-lg border border-white/8 bg-white/4 px-2.5 py-1.5 text-sm font-medium text-white transition hover:bg-white/7"
-                    >
-                      {profileAvatarUrl || fallbackAvatar ? (
-                        <span className="inline-flex h-6 w-6 overflow-hidden rounded-full border border-white/10">
-                          <img src={profileAvatarUrl || fallbackAvatar || ""} alt="Avatar" className="h-full w-full object-cover" />
-                        </span>
-                      ) : (
-                        <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-indigo-600 text-[10px] font-bold text-white">{profileInitials}</span>
-                      )}
-                      <span className="max-w-25 truncate text-[13px]">{profileName}</span>
-                      <ChevronDown className={`h-3.5 w-3.5 text-slate-500 transition ${profileMenuOpen ? "rotate-180" : ""}`} />
-                    </button>
-
-                    {profileMenuOpen ? (
-                      <div onClick={(e) => e.stopPropagation()} className="absolute right-0 top-[calc(100%+8px)] z-50 w-55 rounded-xl border border-white/10 bg-[#0f1520] py-1.5 shadow-[0_20px_40px_rgba(0,0,0,0.5)]">
-                        <div className="border-b border-white/6 px-3 pb-2.5 pt-1.5">
-                          <div className="text-[13px] font-semibold text-white">{profileName}</div>
-                          <div className="mt-0.5 truncate text-[11px] text-slate-500">{session?.user?.email || ""}</div>
-                        </div>
-                        <Link href="/profile" onClick={() => setProfileMenuOpen(false)} className="flex items-center gap-2 px-3 py-2 text-[13px] text-slate-300 transition hover:bg-white/5 hover:text-white">
-                          <UserRound className="h-3.5 w-3.5 text-slate-500" /> Profile
-                        </Link>
-                        <Link href="/settings" onClick={() => setProfileMenuOpen(false)} className="flex items-center gap-2 px-3 py-2 text-[13px] text-slate-300 transition hover:bg-white/5 hover:text-white">
-                          <Settings className="h-3.5 w-3.5 text-slate-500" /> Settings
-                        </Link>
-                        <div className="my-1 h-px bg-white/6" />
-                        <button type="button" onClick={() => signOut({ callbackUrl: "/" })} className="flex w-full items-center gap-2 px-3 py-2 text-[13px] text-slate-300 transition hover:bg-white/5 hover:text-white">
-                          <LogOut className="h-3.5 w-3.5 text-slate-500" /> Log out
-                        </button>
-                      </div>
-                    ) : null}
-                  </>
-                ) : null /* loading — render nothing to avoid flash */}
-              </div>
 
               {plusOpen ? plusMenu : null}
             </div>

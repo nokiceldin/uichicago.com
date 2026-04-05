@@ -1,13 +1,42 @@
 import { NextRequest, NextResponse } from "next/server";
-import { normalizeTranscript } from "@/lib/study/ai";
+import { normalizeTranscript, transcribeAudioRecording } from "@/lib/study/ai";
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
-    const payload = await normalizeTranscript({
-      transcriptText: body.transcriptText || "",
-      title: body.title,
-    });
+    const contentType = request.headers.get("content-type") || "";
+    let payload;
+
+    if (contentType.includes("multipart/form-data")) {
+      const formData = await request.formData();
+      const audioFile = formData.get("audioFile");
+      const transcriptText = formData.get("transcriptText");
+      const titleValue = formData.get("title");
+      const title = typeof titleValue === "string" ? titleValue : undefined;
+
+      if (typeof transcriptText === "string" && transcriptText.trim()) {
+        payload = await normalizeTranscript({
+          transcriptText,
+          title,
+        });
+      } else if (audioFile instanceof File) {
+        payload = await transcribeAudioRecording({
+          audioFile,
+          title,
+        });
+      } else {
+        payload = await normalizeTranscript({
+          transcriptText: typeof transcriptText === "string" ? transcriptText : "",
+          title,
+        });
+      }
+    } else {
+      const body = await request.json();
+      payload = await normalizeTranscript({
+        transcriptText: body.transcriptText || "",
+        title: body.title,
+      });
+    }
+
     return NextResponse.json(payload);
   } catch (error) {
     return NextResponse.json(

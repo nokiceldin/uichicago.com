@@ -16,7 +16,7 @@ It combines structured academic data, professor rankings, campus knowledge, and 
 
 - `Courses`: searchable course explorer with GPA, easiness, Gen Ed, and requirement filters
 - `Professors`: professor rankings with department filters, reviews, course history, and profile pages
-- `Sparky AI`: UIC-focused chat for planning, comparisons, campus questions, and recommendations
+- `Sparky`: UIC-focused chat for planning, comparisons, campus questions, and recommendations
 - `My School`: a personal study workspace for flashcards, quizzes, notes, exam prep, progress tracking, and planning
 
 ### Student-facing features
@@ -43,7 +43,7 @@ It combines structured academic data, professor rankings, campus knowledge, and 
 - `Tailwind CSS 4`
 - `Prisma` with `PostgreSQL`
 - `NextAuth` with Google sign-in
-- `Anthropic` for Sparky AI
+- `Anthropic` for Sparky
 - `PostHog` for analytics
 - `Vercel Analytics`
 - `Resend` for email/contact workflows
@@ -53,7 +53,7 @@ It combines structured academic data, professor rankings, campus knowledge, and 
 ```text
 app/
   api/                 API routes for courses, professors, chat, study, auth, feedback, cron jobs
-  chat/                Sparky AI UI
+  chat/                Sparky UI
   courses/             Course explorer and course detail pages
   professors/          Professor ranking pages and professor detail pages
   study/               Study workspace, planner, notes, and set pages

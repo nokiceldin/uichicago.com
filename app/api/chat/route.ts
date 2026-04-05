@@ -546,7 +546,7 @@ function getProductAnswer(lower: string) {
   }
 
   if (/\bwhat is (this website|atlas|sparky|uic chicago)\b/i.test(lower)) {
-    return "UIChicago is a student-built platform made by a software engineering team from UIC. It is open and free for all students, and Sparky is the AI part inside it.";
+    return "UIChicago is a student-built platform made by a software engineering team from UIC. It is open and free for all students, and Sparky is the AI part inside it. Sparky is currently in beta.";
   }
 
   return "UIChicago was made by a software engineering team from UIC. It is student-built, open, and free for all students to use — from students to students.";
@@ -1139,7 +1139,7 @@ function makeChunk(domain: Domain, content: string, baseConfidence: number, quer
   };
   
   const prefix = contextPrefix[domain];
-  if (prefix && !finalContent.startsWith("[")) {
+  if (prefix && !finalContent.startsWith("[") && !finalContent.startsWith("===")) {
     finalContent = `${prefix}\n${finalContent}`;
   }
   if (query.isFact) {
@@ -2649,6 +2649,17 @@ async function retrieveAthletics(query: QueryAnalysis): Promise<RetrievedChunk[]
   try {
     const ath = athleticsData as any;
     const lower = query.rawQuery.toLowerCase();
+    const normalizeAthleticsText = (value: string) =>
+      value
+        .toLowerCase()
+        .replace(/women's|womens/g, "women")
+        .replace(/men's|mens/g, "men")
+        .replace(/swimming and diving/g, "swimming diving")
+        .replace(/track and field/g, "track field")
+        .replace(/[^a-z0-9\s]/g, " ")
+        .replace(/\s+/g, " ")
+        .trim();
+    const lowerNormalized = normalizeAthleticsText(lower);
     const normalizedQueryWords = lower
       .replace(/[^a-z0-9\s'-]/g, " ")
       .split(/\s+/)
@@ -2665,6 +2676,142 @@ async function retrieveAthletics(query: QueryAnalysis): Promise<RetrievedChunk[]
     // ── Person lookup: player or coach name mentioned ──────────────────────
     const allTeams = [...ath.teams.mens, ...ath.teams.womens];
     const allRosters: Record<string, string[]> = ath.current_rosters_2025_2026 ?? {};
+    const getTeamGenderLabel = (team: any) => (ath.teams.mens.includes(team) ? "Men's" : "Women's");
+    const getBaseSportName = (team: any) =>
+      team.sport
+        .replace(/^men's\s+/i, "")
+        .replace(/^women's\s+/i, "")
+        .trim();
+    const normalizeRosterKeyPart = (value: string) =>
+      value
+        .toLowerCase()
+        .replace(/women's/g, "womens")
+        .replace(/men's/g, "mens")
+        .replace(/\s+/g, "_")
+        .replace(/[^\w]/g, "");
+    const getTeamLabel = (team: any) => `${getTeamGenderLabel(team)} ${getBaseSportName(team)}`;
+    const getTeamRosterKey = (team: any) => {
+      const genderPrefix = ath.teams.mens.includes(team) ? "mens" : "womens";
+      const baseSportKey = normalizeRosterKeyPart(getBaseSportName(team));
+      const explicitSportKey = normalizeRosterKeyPart(team.sport);
+      const candidates = [
+        `${genderPrefix}_${baseSportKey}`,
+        explicitSportKey,
+        baseSportKey,
+      ];
+      return candidates.find((key) => Array.isArray(allRosters[key])) ?? candidates[0];
+    };
+    const getTeamKeywords = (team: any) => {
+      const sportNormalized = normalizeAthleticsText(getBaseSportName(team));
+      const fullSportNormalized = normalizeAthleticsText(team.sport);
+      const keywords = new Set<string>([
+        ...sportNormalized.split(" ").filter((word) => word.length >= 3),
+        ...fullSportNormalized.split(" ").filter((word) => word.length >= 3),
+      ]);
+      keywords.add(sportNormalized);
+      keywords.add(fullSportNormalized);
+
+      if (sportNormalized.includes("basketball")) keywords.add("basketball");
+      if (sportNormalized.includes("soccer")) keywords.add("soccer");
+      if (sportNormalized.includes("baseball")) keywords.add("baseball");
+      if (sportNormalized.includes("softball")) keywords.add("softball");
+      if (sportNormalized.includes("volleyball")) keywords.add("volleyball");
+      if (sportNormalized.includes("tennis")) keywords.add("tennis");
+      if (sportNormalized.includes("golf")) keywords.add("golf");
+      if (sportNormalized.includes("swimming")) {
+        keywords.add("swim");
+        keywords.add("swimming");
+        keywords.add("diving");
+        keywords.add("swimming diving");
+      }
+      if (sportNormalized.includes("cross country")) {
+        keywords.add("cross country");
+        keywords.add("xc");
+      }
+      if (sportNormalized.includes("track")) {
+        keywords.add("track");
+        keywords.add("track field");
+      }
+
+      if (ath.teams.mens.includes(team)) {
+        keywords.add("men");
+        keywords.add("mens");
+        keywords.add("male");
+        if (sportNormalized.includes("basketball")) keywords.add("mbb");
+      } else {
+        keywords.add("women");
+        keywords.add("womens");
+        keywords.add("female");
+        if (sportNormalized.includes("basketball")) keywords.add("wbb");
+      }
+
+      return [...keywords];
+    };
+    const teamMatchesQuery = (team: any) => {
+      const keywords = getTeamKeywords(team);
+      const genericGenderKeywords = new Set(["men", "mens", "male", "women", "womens", "female"]);
+      const hasSportMatch = keywords
+        .filter((keyword) => !genericGenderKeywords.has(keyword))
+        .some((keyword) => lowerNormalized.includes(keyword));
+      if (!hasSportMatch) return false;
+
+      const mentionsMen = /\bmen('|’)s\b|\bmens\b|\bmen\b|\bmbb\b/.test(lowerNormalized);
+      const mentionsWomen = /\bwomen('|’)s\b|\bwomens\b|\bwomen\b|\bwbb\b/.test(lowerNormalized);
+      if (mentionsMen && !ath.teams.mens.includes(team)) return false;
+      if (mentionsWomen && ath.teams.mens.includes(team)) return false;
+      return true;
+    };
+    const matchedTeams = allTeams.filter((team: any) => teamMatchesQuery(team));
+    const directRosterQuery = /\b(players?|roster|lineup|squad|team members|full team|entire team|who plays|who is on|who's on|list (?:the )?(?:players?|roster|team)|name (?:the )?(?:players?|roster|team)|name all|all the names|all of them|everyone on)\b/.test(lower);
+    const allSportsRosterQuery =
+      directRosterQuery &&
+      /\b(all sports|every sport|all teams|every team|each team|any sport)\b/.test(lower);
+    const formatRosterResponse = (teams: any[]) =>
+      teams
+        .map((team: any) => {
+          const label = getTeamLabel(team);
+          const roster = allRosters[getTeamRosterKey(team)] as string[] | undefined;
+          if (!roster?.length) {
+            return `${label}: I have the team info, but I don't have a current player list in the local athletics dataset yet.`;
+          }
+          return `${label} roster (${roster.length} players):\n${roster.map((name) => `- ${name}`).join("\n")}`;
+        })
+        .join("\n\n");
+
+    if (allSportsRosterQuery) {
+      const teamsWithRosters = allTeams.filter((team: any) => {
+        const roster = allRosters[getTeamRosterKey(team)] as string[] | undefined;
+        return Boolean(roster?.length);
+      });
+      if (teamsWithRosters.length > 0) {
+        return [makeChunk(
+          "athletics",
+          `=== DETERMINISTIC FACT ===\n${formatRosterResponse(teamsWithRosters)}`,
+          1,
+          query
+        )];
+      }
+    }
+
+    if (directRosterQuery) {
+      const rosterRelevantTeams = matchedTeams.length > 0
+        ? matchedTeams
+        : allTeams.filter((team: any) => {
+            const roster = allRosters[getTeamRosterKey(team)] as string[] | undefined;
+            if (!roster?.length) return false;
+            const keywords = getTeamKeywords(team);
+            return keywords.some((keyword) => lowerNormalized.includes(keyword));
+          });
+
+      if (rosterRelevantTeams.length > 0) {
+        return [makeChunk(
+          "athletics",
+          `=== DETERMINISTIC FACT ===\n${formatRosterResponse(rosterRelevantTeams)}`,
+          1,
+          query
+        )];
+      }
+    }
 
     const matchesPersonName = (candidate: string) => {
       const candidateLower = candidate.toLowerCase();
@@ -2716,10 +2863,9 @@ async function retrieveAthletics(query: QueryAnalysis): Promise<RetrievedChunk[]
       for (const team of allTeams) {
         const coachName = team.coach ?? "";
         if (!coachName || !matchesPersonName(coachName)) continue;
-        const gender = ath.teams.mens.includes(team) ? "Men's" : "Women's";
         return [makeChunk(
           "athletics",
-          `${coachName} is the head coach of UIC Flames ${gender} ${team.sport}.${team.conference ? ` Conference: ${team.conference}.` : ""}${team.venue ? ` Venue: ${team.venue}.` : ""}${team.notes ? ` ${team.notes}` : ""}`,
+          `${coachName} is the head coach of UIC Flames ${getTeamLabel(team)}.${team.conference ? ` Conference: ${team.conference}.` : ""}${team.venue ? ` Venue: ${team.venue}.` : ""}${team.notes ? ` ${team.notes}` : ""}`,
           1,
           query
         )];
@@ -2728,21 +2874,10 @@ async function retrieveAthletics(query: QueryAnalysis): Promise<RetrievedChunk[]
 
     // ── Fast-path: specific coach query ───────────────────────────────────
     if (lower.match(/\bcoach\b|\bhead coach\b|\bwho coach/)) {
-      const coachSportMatch = allTeams.find((t: any) =>
-        lower.includes(t.sport.toLowerCase()) ||
-        (t.sport.toLowerCase().includes("volleyball") && lower.includes("volleyball")) ||
-        (t.sport.toLowerCase().includes("basketball") && lower.match(/basketball|mbb|wbb/)) ||
-        (t.sport.toLowerCase().includes("soccer") && lower.includes("soccer")) ||
-        (t.sport.toLowerCase().includes("baseball") && lower.includes("baseball")) ||
-        (t.sport.toLowerCase().includes("softball") && lower.includes("softball")) ||
-        (t.sport.toLowerCase().includes("tennis") && lower.includes("tennis")) ||
-        (t.sport.toLowerCase().includes("swimming") && lower.match(/swim|diving/)) ||
-        (t.sport.toLowerCase().includes("golf") && lower.includes("golf")) ||
-        (t.sport.toLowerCase().includes("cross country") && lower.match(/cross country|track/)));
+      const coachSportMatch = matchedTeams[0];
       if (coachSportMatch) {
-        const gender = ath.teams.mens.includes(coachSportMatch) ? "Men's" : "Women's";
         return [makeChunk("athletics",
-          `${gender} ${coachSportMatch.sport}: Head Coach ${coachSportMatch.coach}${coachSportMatch.venue ? ` | Venue: ${coachSportMatch.venue}` : ""}${coachSportMatch.notes ? `\n${coachSportMatch.notes}` : ""}`,
+          `${getTeamLabel(coachSportMatch)}: Head Coach ${coachSportMatch.coach}${coachSportMatch.venue ? ` | Venue: ${coachSportMatch.venue}` : ""}${coachSportMatch.notes ? `\n${coachSportMatch.notes}` : ""}`,
           0.99, query)];
       }
       // No specific sport — return all coaches list
@@ -2757,14 +2892,8 @@ async function retrieveAthletics(query: QueryAnalysis): Promise<RetrievedChunk[]
 
     // ── Fast-path: walk-on / tryout queries ───────────────────────────────
     if (lower.match(/walk.?on|tryout|try out|how.*(make|join).*(team)/)) {
-      const sportTeam = allTeams.find((t: any) =>
-        lower.includes(t.sport.toLowerCase()) ||
-        (t.sport.toLowerCase().includes("basketball") && lower.match(/basketball|mbb|wbb/)) ||
-        (t.sport.toLowerCase().includes("soccer") && lower.includes("soccer")) ||
-        (t.sport.toLowerCase().includes("baseball") && lower.includes("baseball")) ||
-        (t.sport.toLowerCase().includes("softball") && lower.includes("softball")) ||
-        (t.sport.toLowerCase().includes("volleyball") && lower.includes("volleyball")));
-      const teamName = sportTeam ? `${ath.teams.mens.includes(sportTeam) ? "Men's" : "Women's"} ${sportTeam.sport}` : "the team";
+      const sportTeam = matchedTeams[0];
+      const teamName = sportTeam ? getTeamLabel(sportTeam) : "the team";
       const coachName = sportTeam?.coach ?? "the coaching staff";
       return [makeChunk("athletics",
         `UIC WALK-ON / TRYOUT INFO:\n` +
@@ -2812,47 +2941,19 @@ async function retrieveAthletics(query: QueryAnalysis): Promise<RetrievedChunk[]
       const notesLower = (team.notes ?? "").toLowerCase();
       if (lower.includes(coachLower.split(" ").pop() ?? "__") ||
           (isPersonQuery && (notesLower.split(/\s+/).some((w: string) => w.length > 4 && lower.includes(w))))) {
-        const gender = ath.teams.mens.includes(team) ? "Men's" : "Women's";
         chunks.push(makeChunk("athletics",
-          `${gender} ${team.sport}: Coach ${team.coach}${team.conference ? ` | Conference: ${team.conference}` : ""}${team.venue ? ` | Venue: ${team.venue}` : ""}${team.notes ? `\n${team.notes}` : ""}`,
+          `${getTeamLabel(team)}: Coach ${team.coach}${team.conference ? ` | Conference: ${team.conference}` : ""}${team.venue ? ` | Venue: ${team.venue}` : ""}${team.notes ? `\n${team.notes}` : ""}`,
           0.99, query));
       }
     }
 
     // ── Sport-specific query ───────────────────────────────────────────────
-    const sportMatch = allTeams.find((t: any) => lower.includes(t.sport.toLowerCase()) ||
-      (t.sport.toLowerCase().includes("tennis") && lower.includes("tennis")) ||
-      (t.sport.toLowerCase().includes("basketball") && lower.match(/basketball|mbb|wbb/)) ||
-      (t.sport.toLowerCase().includes("soccer") && lower.includes("soccer")) ||
-      (t.sport.toLowerCase().includes("baseball") && lower.includes("baseball")) ||
-      (t.sport.toLowerCase().includes("softball") && lower.includes("softball")) ||
-      (t.sport.toLowerCase().includes("volleyball") && lower.includes("volleyball")));
-
-    // ── Fast-path: direct roster / player list requests should stay concise ──
-    if (
-      sportMatch &&
-      lower.match(/\b(players?|roster|who plays|who is on|who's on|some .*players?|show .*players?)\b/)
-    ) {
-      const gender = ath.teams.mens.includes(sportMatch) ? "Men's" : "Women's";
-      const rosterKey = `${gender.toLowerCase().replace("'s","")}_${sportMatch.sport.toLowerCase().replace(/\s/g,"_")}`;
-      const roster = allRosters[rosterKey] as string[] | undefined;
-
-      if (roster && roster.length > 0) {
-        const samplePlayers = roster.slice(0, 6);
-        return [makeChunk(
-          "athletics",
-          `Here are some players on the 2025-2026 UIC Flames ${gender} ${sportMatch.sport} roster:\n${samplePlayers.map((name) => `- ${name}`).join("\n")}`,
-          1,
-          query
-        )];
-      }
-    }
+    const sportMatch = matchedTeams[0];
 
     if (sportMatch && chunks.length === 0) {
-      const gender = ath.teams.mens.includes(sportMatch) ? "Men's" : "Women's";
-      const roster = allRosters[`${gender.toLowerCase().replace("'s","")}_${sportMatch.sport.toLowerCase().replace(/\s/g,"_")}`] as string[] | undefined;
+      const roster = allRosters[getTeamRosterKey(sportMatch)] as string[] | undefined;
       chunks.push(makeChunk("athletics",
-        `${gender} ${sportMatch.sport}: Coach ${sportMatch.coach}${sportMatch.conference ? ` | Conference: ${sportMatch.conference}` : ""}${sportMatch.venue ? ` | Venue: ${sportMatch.venue}` : ""}${sportMatch.notes ? `\n${sportMatch.notes}` : ""}${roster ? `\nRoster: ${roster.join(", ")}` : ""}`,
+        `${getTeamLabel(sportMatch)}: Coach ${sportMatch.coach}${sportMatch.conference ? ` | Conference: ${sportMatch.conference}` : ""}${sportMatch.venue ? ` | Venue: ${sportMatch.venue}` : ""}${sportMatch.notes ? `\n${sportMatch.notes}` : ""}${roster ? `\nRoster: ${roster.join(", ")}` : ""}`,
         0.97, query));
     }
 

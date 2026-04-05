@@ -141,6 +141,15 @@ function formatDuration(ms: number) {
   return `${minutes}:${seconds.toString().padStart(2, "0")}`;
 }
 
+function getRecordingMimeType() {
+  if (typeof MediaRecorder === "undefined" || typeof MediaRecorder.isTypeSupported !== "function") {
+    return undefined;
+  }
+
+  const candidates = ["audio/webm;codecs=opus", "audio/webm", "audio/mp4"];
+  return candidates.find((candidate) => MediaRecorder.isTypeSupported(candidate));
+}
+
 function formatNoteDate(date: string) {
   if (!date) return "No date";
   const parsed = new Date(`${date}T12:00:00`);
@@ -156,6 +165,15 @@ function notesSearchText(note: StudyNote) {
   return [note.title, note.course, note.subject, note.tags.join(" "), note.rawContent, note.transcriptContent]
     .join(" ")
     .toLowerCase();
+}
+
+function noteHasMeaningfulContent(note: StudyNote, audioSessionNoteIds: Set<string>) {
+  return Boolean(
+    note.title.trim() ||
+      note.rawContent.trim() ||
+      note.transcriptContent.trim() ||
+      audioSessionNoteIds.has(note.id),
+  );
 }
 
 export default function NotesWorkspace({ library, onLibraryChange, onCreateFlashcardSet, showToast, externalQuery = "", folderFilter = "" }: Props) {
@@ -189,6 +207,7 @@ export default function NotesWorkspace({ library, onLibraryChange, onCreateFlash
   const transcriptSegmentsRef = useRef<string[]>([]);
   const recordingElapsedRef = useRef(0);
   const recordingStartedAtRef = useRef<number | null>(null);
+  const recordingNoteIdRef = useRef<string>("");
   const saveTimerRef = useRef<number | null>(null);
   const lastOpenedNoteIdRef = useRef<string | null>(null);
   const autoCreatedRouteRef = useRef(false);
@@ -219,14 +238,15 @@ export default function NotesWorkspace({ library, onLibraryChange, onCreateFlash
       mediaStreamRef.current?.getTracks().forEach((track) => track.stop());
       speechRecognitionRef.current?.stop?.();
       // On unmount, remove any notes that have no content (title, body, or transcript)
+      const audioSessionNoteIds = new Set(library.noteAudioSessions.map((session) => session.noteId));
       onLibraryChangeRef.current((current) => ({
         ...current,
         notes: current.notes.filter(
-          (note) => note.title.trim() || note.rawContent.trim() || note.transcriptContent.trim(),
+          (note) => noteHasMeaningfulContent(note, audioSessionNoteIds),
         ),
       }));
     };
-  }, []);
+  }, [library.noteAudioSessions]);
 
   // When transitioning from note editor back to library view, prune empty notes
   const prevIsLibraryViewRef = useRef(isLibraryView);
@@ -234,13 +254,14 @@ export default function NotesWorkspace({ library, onLibraryChange, onCreateFlash
     const wasNote = !prevIsLibraryViewRef.current;
     prevIsLibraryViewRef.current = isLibraryView;
     if (!isLibraryView || !wasNote) return;
+    const audioSessionNoteIds = new Set(library.noteAudioSessions.map((session) => session.noteId));
     onLibraryChange((current) => ({
       ...current,
       notes: current.notes.filter(
-        (note) => note.title.trim() || note.rawContent.trim() || note.transcriptContent.trim(),
+        (note) => noteHasMeaningfulContent(note, audioSessionNoteIds),
       ),
     }));
-  }, [isLibraryView, onLibraryChange]);
+  }, [isLibraryView, library.noteAudioSessions, onLibraryChange]);
 
   const visibleNotes = useMemo(() => {
     const normalized = search.trim().toLowerCase();
@@ -586,17 +607,21 @@ export default function NotesWorkspace({ library, onLibraryChange, onCreateFlash
     transcriptSegmentsRef.current = [];
     recordingElapsedRef.current = 0;
     recordingStartedAtRef.current = null;
+    recordingNoteIdRef.current = activeNote.id;
 
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       mediaStreamRef.current = stream;
       const chunks: Blob[] = [];
-      const recorder = new MediaRecorder(stream);
+      const recorder = new MediaRecorder(
+        stream,
+        getRecordingMimeType() ? { mimeType: getRecordingMimeType() } : undefined,
+      );
       recorder.ondataavailable = (event) => {
         if (event.data.size > 0) chunks.push(event.data);
       };
       recorder.onstop = async () => {
-        const audioBlob = new Blob(chunks, { type: "audio/webm" });
+        const audioBlob = new Blob(chunks, { type: recorder.mimeType || "audio/webm" });
         const audioRef = URL.createObjectURL(audioBlob);
         const sessionId = createStudyId("audio-session");
         const durationMs = recordingElapsedRef.current;
@@ -608,26 +633,32 @@ export default function NotesWorkspace({ library, onLibraryChange, onCreateFlash
               noteId: activeNote.id,
               audioRef,
               durationMs,
-              transcriptStatus: transcriptRef.current ? "processing" : "error",
-              aiStatus: transcriptRef.current ? "processing" : "idle",
+              transcriptStatus:
+                transcriptRef.current.trim() || audioBlob.size > 0 ? "processing" : "error",
+              aiStatus: transcriptRef.current.trim() || audioBlob.size > 0 ? "processing" : "idle",
               createdAt: new Date().toISOString(),
             },
             ...current.noteAudioSessions,
           ],
         }));
 
-        if (!transcriptRef.current.trim()) {
-          updateNote(activeNote.id, { status: "error" });
-          showToast("No transcript was captured from this recording.", "error");
-          return;
-        }
-
         updateNote(activeNote.id, { status: "processing", sourceType: "audio" });
         try {
+          const formData = new FormData();
+          formData.set("title", activeNote.title);
+          if (transcriptRef.current.trim()) {
+            formData.set("transcriptText", transcriptRef.current);
+          }
+          formData.set(
+            "audioFile",
+            new File([audioBlob], `microphone-lecture.${audioBlob.type.includes("mp4") ? "m4a" : "webm"}`, {
+              type: audioBlob.type || "audio/webm",
+            }),
+          );
+
           const transcriptResponse = await fetch("/api/study/notes/transcribe", {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ transcriptText: transcriptRef.current, title: activeNote.title }),
+            body: formData,
           });
           const transcriptPayload = await transcriptResponse.json();
           if (!transcriptResponse.ok) throw new Error(transcriptPayload.error || "Failed to process transcript.");
@@ -651,16 +682,53 @@ export default function NotesWorkspace({ library, onLibraryChange, onCreateFlash
             rawContent: activeNote.rawContent || structuredPayload.summary,
             status: "ready",
           });
+          onLibraryChange((current) => ({
+            ...current,
+            noteAudioSessions: current.noteAudioSessions.map((session) =>
+              session.id === sessionId
+                ? { ...session, transcriptStatus: "ready", aiStatus: "ready" }
+                : session,
+            ),
+          }));
           appendLog(activeNote.id, "lecture_notes", "success", "Lecture notes created from recording.");
           setActiveTab("structured");
           showToast("Lecture organized into clean study notes.", "reward");
         } catch (error) {
-          updateNote(activeNote.id, { transcriptContent: transcriptRef.current, status: "error" });
+          const fallbackTranscript =
+            transcriptRef.current.trim() ||
+            `Recording saved, but audio could not be transcribed. ${
+              error instanceof Error ? error.message : "Please try again."
+            }`;
+          updateNote(activeNote.id, {
+            transcriptContent: fallbackTranscript,
+            rawContent:
+              activeNote.rawContent ||
+              "Recording saved, but transcription could not be generated from this capture.",
+            status: "error",
+          });
+          onLibraryChange((current) => ({
+            ...current,
+            noteAudioSessions: current.noteAudioSessions.map((session) =>
+              session.id === sessionId
+                ? { ...session, transcriptStatus: "error", aiStatus: "error" }
+                : session,
+            ),
+          }));
           appendLog(activeNote.id, "lecture_notes", "error", error instanceof Error ? error.message : "Failed to process audio.");
           showToast(error instanceof Error ? error.message : "Lecture processing failed.", "error");
+        } finally {
+          mediaStreamRef.current?.getTracks().forEach((track) => track.stop());
+          mediaStreamRef.current = null;
         }
       };
       recorderRef.current = recorder;
+      stream.getTracks().forEach((track) => {
+        track.addEventListener("ended", () => {
+          if (recorder.state !== "inactive") {
+            stopRecording();
+          }
+        });
+      });
       recorder.start();
       setIsRecording(true);
       setIsPaused(false);
@@ -673,14 +741,18 @@ export default function NotesWorkspace({ library, onLibraryChange, onCreateFlash
       }, 250);
 
       startLiveTranscription();
-    } catch {
-      setRecordingError("Microphone access was denied. You can still type or paste notes manually.");
-      showToast("Microphone permission was denied.", "error");
+    } catch (error) {
+      setRecordingError(error instanceof Error ? error.message : "Microphone access was denied. You can still type or paste notes manually.");
+      showToast(
+        error instanceof Error ? error.message : "Microphone permission was denied.",
+        "error",
+      );
     }
   };
 
   const pauseRecording = () => {
-    recorderRef.current?.pause();
+    if (!recorderRef.current || recorderRef.current.state !== "recording") return;
+    recorderRef.current.pause();
     speechRecognitionRef.current?.stop?.();
     if (recordingStartedAtRef.current) {
       recordingElapsedRef.current += Date.now() - recordingStartedAtRef.current;
@@ -695,7 +767,8 @@ export default function NotesWorkspace({ library, onLibraryChange, onCreateFlash
   };
 
   const resumeRecording = () => {
-    recorderRef.current?.resume();
+    if (!recorderRef.current || recorderRef.current.state !== "paused") return;
+    recorderRef.current.resume();
     startLiveTranscription();
     recordingStartedAtRef.current = Date.now();
     timerRef.current = window.setInterval(() => {
@@ -707,19 +780,20 @@ export default function NotesWorkspace({ library, onLibraryChange, onCreateFlash
   };
 
   const stopRecording = () => {
+    if (!recorderRef.current || recorderRef.current.state === "inactive") return;
     if (recordingStartedAtRef.current) {
       recordingElapsedRef.current += Date.now() - recordingStartedAtRef.current;
       recordingStartedAtRef.current = null;
     }
     setRecordingMs(recordingElapsedRef.current);
-    if (selectedNote) {
-      updateNote(selectedNote.id, { status: "processing", sourceType: "audio" });
+    if (recordingNoteIdRef.current) {
+      updateNote(recordingNoteIdRef.current, { status: "processing", sourceType: "audio" });
     }
     setCaptureOpen(true);
-    recorderRef.current?.stop();
+    recorderRef.current.stop();
     speechRecognitionRef.current?.stop?.();
-    mediaStreamRef.current?.getTracks().forEach((track) => track.stop());
     if (timerRef.current) window.clearInterval(timerRef.current);
+    timerRef.current = null;
     setIsRecording(false);
     setIsPaused(false);
   };
@@ -1051,7 +1125,7 @@ export default function NotesWorkspace({ library, onLibraryChange, onCreateFlash
                       <div className="mt-1 text-sm text-zinc-400">
                         {selectedNote.status === "processing"
                           ? "Your recording was saved. AI is transcribing it and building a clean lecture summary now."
-                          : "Record, transcribe, and turn the lecture into clean study notes."}
+                          : "Record from your microphone, transcribe it, and turn it into clean study notes."}
                       </div>
                     </div>
                     <div className="flex flex-wrap items-center gap-2">

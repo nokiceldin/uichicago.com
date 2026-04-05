@@ -229,7 +229,7 @@ export interface StudyPlanPayload {
   summary: string;
 }
 
-export interface StructuredLectureNotesPayload extends StructuredLectureNotes {}
+export type StructuredLectureNotesPayload = StructuredLectureNotes;
 
 export interface NoteActionPayload {
   action: NoteActionType;

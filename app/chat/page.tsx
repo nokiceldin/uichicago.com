@@ -2936,7 +2936,7 @@ const handleKey = useCallback((e: React.KeyboardEvent<HTMLTextAreaElement>) => {
                   />
 
                   <p className="text-center text-[11.5px] leading-none tracking-wide text-zinc-400 dark:text-zinc-600">
-                    Sparky can make mistakes. Verify important information.
+                    Sparky is in beta and can make mistakes. Verify important information.
                   </p>
                 </div>
               </div>

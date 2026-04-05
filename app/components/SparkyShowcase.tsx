@@ -129,7 +129,7 @@ export default function SparkyShowcase() {
               <div className="mt-1 text-sm font-semibold text-zinc-900 dark:text-white">Real student questions</div>
             </div>
             <div className="rounded-full border border-red-300/45 bg-red-50 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-red-600 dark:border-red-500/20 dark:bg-red-500/10 dark:text-red-400">
-              Sparky AI
+              Sparky
             </div>
           </div>
           <div className="space-y-4 px-5 py-5">

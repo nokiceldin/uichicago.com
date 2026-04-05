@@ -133,7 +133,7 @@ export default function Navbar() {
                 <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-400 opacity-75" />
                 <span className="relative inline-flex h-2 w-2 rounded-full bg-red-500" />
               </span>
-              <span>OpenSparky AI</span>
+              <span>Sparky AI (BETA)</span>
             </Link>
           </div>
 
@@ -208,7 +208,7 @@ export default function Navbar() {
                 <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-400 opacity-75" />
                 <span className="relative inline-flex h-2 w-2 rounded-full bg-red-500" />
               </span>
-              <span>OpenSparky AI</span>
+              <span>Sparky AI (BETA)</span>
             </Link>
           </div>
         </div>
@@ -267,7 +267,7 @@ export default function Navbar() {
                 <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-400 opacity-75" />
                 <span className="relative inline-flex h-2 w-2 rounded-full bg-red-500" />
               </span>
-              <span>OpenSparky AI</span>
+              <span>Sparky AI (BETA)</span>
             </Link>
 
             <NavbarAuthControls />

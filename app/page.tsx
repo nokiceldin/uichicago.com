@@ -24,7 +24,7 @@ const productPillars = [
     border: "hover:border-sky-400/50",
   },
   {
-    eyebrow: "Sparky AI",
+    eyebrow: "Sparky AI (BETA)",
     title: "Ask one question and get the full picture",
     description:
       "Use Sparky for plans, comparisons, campus questions, and quick recommendations when browsing alone is not enough.",
@@ -114,7 +114,7 @@ export default function Home() {
               </h1>
 
               <p className="mt-5 max-w-2xl text-base leading-7 text-zinc-600 dark:text-zinc-300 sm:mt-6 sm:text-lg sm:leading-8 md:text-xl">
-                Explore courses, compare professors, and ask OpenSparky AI when you want answers fast.
+                Explore courses, compare professors, and ask Sparky when you want answers fast.
               </p>
 
               <div className="mt-10">
@@ -148,7 +148,7 @@ export default function Home() {
                 >
                   <span className="inline-flex items-center gap-2">
                     <span className="inline-flex h-2.5 w-2.5 rounded-full bg-red-400 shadow-[0_0_16px_rgba(248,113,113,0.58)]" />
-                    OpenSparky AI
+                    Sparky
                   </span>
                   <span className="text-red-200 transition group-hover:translate-x-0.5 group-hover:text-white">→</span>
                 </Link>
@@ -195,7 +195,7 @@ export default function Home() {
                           My School
                         </span>
                         <span className="rounded-full border border-red-100 bg-white px-2 py-2 text-center text-[12px] font-semibold leading-tight text-zinc-900 dark:border-white/10 dark:bg-white/5 dark:text-zinc-100">
-                          OpenSparky AI
+                          Sparky
                         </span>
                       </div>
                     </div>
@@ -207,7 +207,7 @@ export default function Home() {
                     {[
                       ["Search courses", "Structured data"],
                       ["Compare professors", "Rankings and history"],
-                      ["Ask OpenSparky AI", "Instant answers"],
+                      ["Ask Sparky", "Instant answers"],
                     ].map(([title, body]) => (
                       <div
                         key={title}
@@ -284,7 +284,7 @@ export default function Home() {
                       ? "Structured data"
                       : pillar.eyebrow === "Professors"
                       ? "Real comparisons"
-                      : pillar.eyebrow === "Sparky AI"
+                      : pillar.eyebrow === "Sparky AI (BETA)"
                       ? "Fast synthesis"
                       : "Active recall"}
                   </div>

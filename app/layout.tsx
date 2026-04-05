@@ -22,7 +22,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "UIChicago",
-  description: "Explore UIC courses, professors, campus life, and Sparky AI in one student-built platform.",
+  description: "Explore UIC courses, professors, campus life, and Sparky in one student-built platform.",
   icons: {
     icon: "/icon.png",
     shortcut: "/icon.png",

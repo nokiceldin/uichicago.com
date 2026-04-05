@@ -6,6 +6,7 @@ import { validateGeneratedExam, validateGeneratedFlashcards, validateGeneratedQu
 import type { GeneratedExamPayload, GeneratedFlashcardPayload, GeneratedQuizPayload, NoteActionPayload, StructuredLectureNotesPayload, StudyPlanPayload, StudySet } from "./types";
 
 const anthropic = process.env.ANTHROPIC_API_KEY ? new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY }) : null;
+const openaiApiKey = process.env.OPENAI_API_KEY?.trim() || "";
 
 async function requestJson(prompt: string) {
   if (!anthropic) return null;
@@ -198,6 +199,46 @@ export async function normalizeTranscript(input: {
   const transcript = (input.transcriptText || "").trim();
   if (!transcript) {
     throw new Error("Transcript text is required.");
+  }
+
+  return {
+    title: input.title?.trim() || "Lecture capture",
+    transcript,
+  };
+}
+
+export async function transcribeAudioRecording(input: {
+  audioFile: File;
+  title?: string;
+}) {
+  if (!openaiApiKey) {
+    throw new Error("Audio transcription is not configured yet. Add OPENAI_API_KEY to enable device or tab capture transcripts.");
+  }
+
+  const formData = new FormData();
+  formData.set("file", input.audioFile, input.audioFile.name || "lecture-recording.webm");
+  formData.set("model", "gpt-4o-mini-transcribe");
+
+  const response = await fetch("https://api.openai.com/v1/audio/transcriptions", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${openaiApiKey}`,
+    },
+    body: formData,
+  });
+
+  const payload = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    const message =
+      typeof payload?.error?.message === "string"
+        ? payload.error.message
+        : "Audio transcription failed.";
+    throw new Error(message);
+  }
+
+  const transcript = typeof payload?.text === "string" ? payload.text.trim() : "";
+  if (!transcript) {
+    throw new Error("The recording did not contain any transcribable speech.");
   }
 
   return {

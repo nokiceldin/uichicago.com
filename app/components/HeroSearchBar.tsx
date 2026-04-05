@@ -134,7 +134,7 @@ export default function HeroSearchBar() {
           />
           <div className="min-w-0 flex-1 text-left">
             <div className="mb-1 text-[11px] font-bold uppercase tracking-[0.2em] text-red-500 dark:text-red-300">
-              OpenSparky AI
+              Sparky AI (BETA)
             </div>
             <span className="block text-sm text-zinc-500 dark:text-zinc-300">
             {displayed ? (
@@ -143,7 +143,7 @@ export default function HeroSearchBar() {
                 <span className="inline-block w-0.5 h-3.5 bg-red-500 ml-0.5 align-middle animate-pulse" />
               </span>
             ) : (
-              <span className="italic text-zinc-500 dark:text-zinc-300">Search courses or chat with OpenSparky AI...</span>
+              <span className="italic text-zinc-500 dark:text-zinc-300">Search courses or chat with Sparky...</span>
             )}
             </span>
           </div>

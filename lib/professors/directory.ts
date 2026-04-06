@@ -1,6 +1,10 @@
 import fs from "node:fs";
 import path from "node:path";
 import prisma from "@/lib/prisma";
+import {
+  generateProfessorSummary,
+  type CourseRankSnippet,
+} from "@/lib/generateProfessorSummary";
 import { PROFESSOR_COURSE_MAP_FILE } from "@/lib/professors/course-map-config";
 
 export type ProfessorDirectoryEntry = {
@@ -52,11 +56,46 @@ type NameParts = {
   first: string;
   last: string;
   middle: string[];
+  sourceLastTokens: string[];
 };
 
 const C = 20;
 const M = 4.0;
 const SYNTHETIC_SCHOOL = "University of Illinois Chicago";
+
+const COURSE_DEPARTMENT_ALIASES: Record<string, string[]> = {
+  ACTG: ["accounting"],
+  ANTH: ["anthropology"],
+  ARCH: ["architecture"],
+  BIOS: ["biological sciences", "biology"],
+  CD: ["urban planning"],
+  CHEM: ["chemistry"],
+  CLJ: ["criminal justice"],
+  COMM: ["communication"],
+  CS: ["computer science"],
+  DES: ["design"],
+  ECE: ["electrical engineering"],
+  ECON: ["economics"],
+  ENGL: ["english"],
+  FIN: ["finance"],
+  HIST: ["history"],
+  HN: ["nutrition"],
+  IDS: ["information science"],
+  JD: ["law"],
+  KN: ["kinesiology"],
+  LAW: ["law"],
+  MATH: ["mathematics"],
+  MGMT: ["management"],
+  MKTG: ["marketing"],
+  MUS: ["music"],
+  PHIL: ["philosophy"],
+  PHYS: ["physics"],
+  POLS: ["political science"],
+  PSCH: ["psychology"],
+  SOC: ["sociology"],
+  SPAN: ["spanish"],
+  UPP: ["urban planning"],
+};
 
 const HONORIFICS = new Set([
   "dr",
@@ -79,7 +118,11 @@ const SUFFIXES = new Set([
 
 const NICKNAMES: Record<string, string[]> = {
   alex: ["alexander", "alexandra"],
+  alexander: ["alex"],
+  alexandra: ["alex"],
   andy: ["andrew"],
+  andrew: ["andy", "drew", "andruid"],
+  andruid: ["andrew"],
   bill: ["william"],
   bob: ["robert"],
   brad: ["bradley"],
@@ -95,10 +138,13 @@ const NICKNAMES: Record<string, string[]> = {
   gabe: ["gabriel"],
   jack: ["john", "jackson"],
   jake: ["jacob"],
+  james: ["jim", "jimmy", "jamie"],
   jay: ["jason"],
   jeff: ["jeffrey"],
   jen: ["jennifer"],
   jess: ["jessica"],
+  jim: ["james"],
+  jimmy: ["james"],
   joe: ["joseph"],
   jon: ["jonathan"],
   josh: ["joshua"],
@@ -114,6 +160,8 @@ const NICKNAMES: Record<string, string[]> = {
   marc: ["mark"],
   matt: ["matthew"],
   mike: ["michael"],
+  nate: ["nathan"],
+  nathan: ["nate"],
   nick: ["nicholas"],
   pat: ["patrick", "patricia"],
   pete: ["peter"],
@@ -121,7 +169,9 @@ const NICKNAMES: Record<string, string[]> = {
   rob: ["robert"],
   ron: ["ronald"],
   sam: ["samuel", "samantha"],
+  stephen: ["steve"],
   steve: ["steven", "stephen"],
+  steven: ["steve"],
   sue: ["susan"],
   ted: ["theodore"],
   tim: ["timothy"],
@@ -137,6 +187,7 @@ const globalForDirectory = globalThis as unknown as {
 
 if (process.env.NODE_ENV !== "production") {
   globalForDirectory.__uicProfessorDirectoryPromise = undefined;
+  globalForDirectory.__uicProfessorDirectoryCache = undefined;
 }
 
 function normalizeWhitespace(value: string) {
@@ -172,6 +223,9 @@ function normalizeProfessorName(raw: string) {
 }
 
 function getNameParts(raw: string): NameParts {
+  const sourceLastTokens = raw.includes(",")
+    ? normalizeProfessorName(raw.split(",")[0] ?? "").split(" ").filter(Boolean)
+    : [];
   const normalized = normalizeProfessorName(raw);
   const tokens = normalized.split(" ").filter(Boolean);
   return {
@@ -180,6 +234,7 @@ function getNameParts(raw: string): NameParts {
     first: tokens[0] ?? "",
     last: tokens[tokens.length - 1] ?? "",
     middle: tokens.slice(1, -1),
+    sourceLastTokens,
   };
 }
 
@@ -207,6 +262,29 @@ function firstNameMatches(a: string, b: string) {
   const aExpanded = expandNickname(a);
   const bExpanded = expandNickname(b);
   return aExpanded.includes(b) || bExpanded.includes(a);
+}
+
+function editDistance(a: string, b: string) {
+  if (a === b) return 0;
+  if (!a) return b.length;
+  if (!b) return a.length;
+
+  const previous = Array.from({ length: b.length + 1 }, (_, index) => index);
+  const current = Array(b.length + 1).fill(0);
+
+  for (let i = 1; i <= a.length; i += 1) {
+    current[0] = i;
+    for (let j = 1; j <= b.length; j += 1) {
+      current[j] = Math.min(
+        previous[j] + 1,
+        current[j - 1] + 1,
+        previous[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1)
+      );
+    }
+    for (let j = 0; j <= b.length; j += 1) previous[j] = current[j];
+  }
+
+  return previous[b.length];
 }
 
 function overlapCount(a: string[], b: string[]) {
@@ -237,6 +315,11 @@ function courseLabelFromItem(item: string) {
   return value;
 }
 
+function courseTitleFromItem(item: string) {
+  const parts = (item || "").trim().split("|").map((part) => part.trim());
+  return parts.length >= 2 ? parts.slice(1).join(" | ") : "";
+}
+
 function uniqueSorted(values: string[]) {
   return [...new Set(values.filter(Boolean))].sort((a, b) => a.localeCompare(b));
 }
@@ -257,20 +340,47 @@ function deriveDepartmentFromCourses(courseItems: string[]) {
   return `${ranked[0][0]} / ${ranked[1][0]}`;
 }
 
-function createSyntheticSlug(name: string, used: Set<string>) {
-  const base = normalizeProfessorName(name)
-    .replace(/\s+/g, "-")
-    .replace(/-+/g, "-")
-    .replace(/^-|-$/g, "") || "uic-instructor";
+function isCourseDepartmentCompatible(courseItems: string[], department: string) {
+  const normalizedDepartment = normalizeProfessorName(department);
+  if (!normalizedDepartment) return false;
 
-  let slug = `uic-${base}`;
+  for (const item of courseItems) {
+    const subject = courseLabelFromItem(item).match(/^([A-Z&]+)/)?.[1] ?? "";
+    const aliases = COURSE_DEPARTMENT_ALIASES[subject] ?? [];
+    if (aliases.some((alias) => normalizedDepartment.includes(normalizeProfessorName(alias)))) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+function createSyntheticSlug(name: string, used: Set<string>) {
+  const base = createSyntheticSlugBase(name);
+
+  let slug = base;
   let counter = 2;
   while (used.has(slug)) {
-    slug = `uic-${base}-${counter}`;
+    slug = `${base}-${counter}`;
     counter += 1;
   }
   used.add(slug);
   return slug;
+}
+
+function createSyntheticSlugBase(name: string) {
+  return `uic-${normalizeProfessorName(name)
+    .replace(/\s+/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "") || "instructor"}`;
+}
+
+function displayNameFromCourseMapKey(rawKey: string) {
+  return normalizeWhitespace(
+    rawKey.includes(",")
+      ? rawKey.split(",").map((part) => part.trim()).filter(Boolean).slice(1).join(" ") + ` ${rawKey.split(",")[0].trim()}`
+      : rawKey
+  );
 }
 
 function loadProfCourseMap(): ProfCoursesMap {
@@ -281,14 +391,83 @@ function loadProfCourseMap(): ProfCoursesMap {
   return JSON.parse(raw) as ProfCoursesMap;
 }
 
+function withGeneratedSummaries(entries: ProfessorDirectoryEntry[]) {
+  const overallRanked = entries.filter((entry) => entry.isRated);
+  const coursePeers = new Map<string, ProfessorDirectoryEntry[]>();
+
+  for (const entry of entries) {
+    for (const label of entry.courseLabels) {
+      const peers = coursePeers.get(label) ?? [];
+      peers.push(entry);
+      coursePeers.set(label, peers);
+    }
+  }
+
+  for (const peers of coursePeers.values()) {
+    peers.sort((a, b) => {
+      if (a.isRated !== b.isRated) return a.isRated ? -1 : 1;
+      if (b.score !== a.score) return b.score - a.score;
+      if (b.ratingsCount !== a.ratingsCount) return b.ratingsCount - a.ratingsCount;
+      return a.name.localeCompare(b.name);
+    });
+  }
+
+  return entries.map((entry) => {
+    if (!entry.isRated || entry.aiSummary.trim()) return entry;
+
+    const departmentRanked = overallRanked.filter((candidate) => candidate.department === entry.department);
+    const topCourseRanks: CourseRankSnippet[] = entry.courseItems
+      .flatMap((item) => {
+        const courseLabel = courseLabelFromItem(item);
+        const peers = coursePeers.get(courseLabel) ?? [];
+        const rank = peers.findIndex((candidate) => candidate.slug === entry.slug) + 1;
+        if (!courseLabel || rank <= 0) return [];
+
+        return [{
+          courseLabel,
+          courseTitle: courseTitleFromItem(item),
+          rank,
+          total: peers.length,
+        }];
+      })
+      .sort((a, b) => {
+        const aPct = a.total ? a.rank / a.total : 1;
+        const bPct = b.total ? b.rank / b.total : 1;
+        if (aPct !== bPct) return aPct - bPct;
+        return a.courseLabel.localeCompare(b.courseLabel);
+      })
+      .slice(0, 3);
+
+    return {
+      ...entry,
+      aiSummary: generateProfessorSummary({
+        slug: entry.slug,
+        name: entry.name,
+        department: entry.department,
+        school: entry.school,
+        quality: entry.quality,
+        ratingsCount: entry.ratingsCount,
+        score: entry.score,
+        overallRank: overallRanked.findIndex((candidate) => candidate.slug === entry.slug) + 1,
+        overallTotal: overallRanked.length,
+        deptRank: departmentRanked.findIndex((candidate) => candidate.slug === entry.slug) + 1,
+        deptTotal: departmentRanked.length,
+        coursesTaughtCount: entry.courseLabels.length,
+        topCourseRanks,
+      }),
+    };
+  });
+}
+
 function buildDbIndexes(rows: DbProfessorRow[]) {
   const byNormalized = new Map<string, DbProfessorRow[]>();
   const byMiddleInsensitive = new Map<string, DbProfessorRow[]>();
   const byInitialLast = new Map<string, DbProfessorRow[]>();
+  const byFirst = new Map<string, DbProfessorRow[]>();
   const byLast = new Map<string, DbProfessorRow[]>();
 
   for (const row of rows) {
-    const parts = getNameParts(row.nameNormalized || row.name);
+    const parts = getNameParts(row.name);
     if (!parts.normalized) continue;
 
     const normalizedBucket = byNormalized.get(parts.normalized) ?? [];
@@ -309,6 +488,12 @@ function buildDbIndexes(rows: DbProfessorRow[]) {
       byInitialLast.set(initialLast, bucket);
     }
 
+    if (parts.first) {
+      const bucket = byFirst.get(parts.first) ?? [];
+      bucket.push(row);
+      byFirst.set(parts.first, bucket);
+    }
+
     if (parts.last) {
       const bucket = byLast.get(parts.last) ?? [];
       bucket.push(row);
@@ -316,11 +501,12 @@ function buildDbIndexes(rows: DbProfessorRow[]) {
     }
   }
 
-  return { byNormalized, byMiddleInsensitive, byInitialLast, byLast };
+  return { byNormalized, byMiddleInsensitive, byInitialLast, byFirst, byLast };
 }
 
 function chooseBestDbProfessor(
   sourceName: string,
+  courseItems: string[],
   indexes: ReturnType<typeof buildDbIndexes>
 ) {
   const source = getNameParts(sourceName);
@@ -331,6 +517,7 @@ function chooseBestDbProfessor(
     indexes.byNormalized.get(source.normalized) ?? [],
     indexes.byMiddleInsensitive.get(middleInsensitiveKey(source)) ?? [],
     indexes.byInitialLast.get(firstInitialLastKey(source)) ?? [],
+    source.sourceLastTokens.length > 1 ? indexes.byFirst.get(source.first) ?? [] : [],
     indexes.byLast.get(source.last) ?? [],
   ];
 
@@ -342,9 +529,8 @@ function chooseBestDbProfessor(
   let secondBestScore = -Infinity;
 
   for (const row of candidateMap.values()) {
-    const candidate = getNameParts(row.nameNormalized || row.name);
+    const candidate = getNameParts(row.name);
     if (!candidate.first || !candidate.last) continue;
-    if (candidate.last !== source.last) continue;
 
     let score = -1;
 
@@ -352,13 +538,35 @@ function chooseBestDbProfessor(
       score = 1000;
     } else if (middleInsensitiveKey(candidate) === middleInsensitiveKey(source)) {
       score = 900;
-    } else if (firstNameMatches(candidate.first, source.first)) {
+    } else if (candidate.last === source.last && firstNameMatches(candidate.first, source.first)) {
       score = 800 + overlapCount(candidate.middle, source.middle) * 5;
     } else if (
+      candidate.last === source.last &&
+      source.middle.includes(candidate.first) &&
+      isCourseDepartmentCompatible(courseItems, row.department)
+    ) {
+      score = 790 + overlapCount(candidate.middle, source.middle) * 5;
+    } else if (
+      candidate.last === source.last &&
+      source.first.length >= 4 &&
+      candidate.first.length >= 4 &&
+      editDistance(candidate.first, source.first) <= 2 &&
+      isCourseDepartmentCompatible(courseItems, row.department)
+    ) {
+      score = 780 + overlapCount(candidate.middle, source.middle) * 5;
+    } else if (
+      candidate.last === source.last &&
       candidate.first[0] === source.first[0] &&
       (candidate.first.length === 1 || source.first.length === 1)
     ) {
       score = 720 + overlapCount(candidate.middle, source.middle) * 5;
+    } else if (
+      source.sourceLastTokens.length > 1 &&
+      firstNameMatches(candidate.first, source.first) &&
+      source.sourceLastTokens.includes(candidate.last) &&
+      candidate.tokens.every((token) => source.tokens.includes(token))
+    ) {
+      score = 760 + overlapCount(candidate.middle, source.middle) * 5;
     }
 
     if (score < 0) continue;
@@ -375,7 +583,7 @@ function chooseBestDbProfessor(
   if (!best) return null;
 
   const sourceFull = source.normalized;
-  const candidateFull = getNameParts(best.row.nameNormalized || best.row.name).normalized;
+  const candidateFull = getNameParts(best.row.name).normalized;
   if (sourceFull !== candidateFull && best.score - secondBestScore < 5) {
     return null;
   }
@@ -384,6 +592,10 @@ function chooseBestDbProfessor(
 }
 
 export async function getProfessorDirectory() {
+  if (process.env.NODE_ENV !== "production") {
+    return buildProfessorDirectory();
+  }
+
   if (globalForDirectory.__uicProfessorDirectoryCache) {
     return globalForDirectory.__uicProfessorDirectoryCache;
   }
@@ -432,7 +644,7 @@ async function buildProfessorDirectory(): Promise<ProfessorDirectoryEntry[]> {
 
   for (const [rawKey, rawCourses] of Object.entries(courseMap)) {
     const courses = uniqueSorted((rawCourses || []).map((item) => item.trim()).filter(Boolean));
-    const matchedDb = chooseBestDbProfessor(rawKey, indexes);
+    const matchedDb = chooseBestDbProfessor(rawKey, courses, indexes);
     const stableKey = matchedDb ? `db:${matchedDb.id}` : `uic:${normalizeProfessorName(rawKey)}`;
 
     const existing = byStableKey.get(stableKey);
@@ -470,11 +682,7 @@ async function buildProfessorDirectory(): Promise<ProfessorDirectoryEntry[]> {
       continue;
     }
 
-    const displayName = normalizeWhitespace(
-      rawKey.includes(",")
-        ? rawKey.split(",").map((part) => part.trim()).filter(Boolean).slice(1).join(" ") + ` ${rawKey.split(",")[0].trim()}`
-        : rawKey
-    );
+    const displayName = displayNameFromCourseMapKey(rawKey);
 
     byStableKey.set(stableKey, {
       id: stableKey,
@@ -501,7 +709,7 @@ async function buildProfessorDirectory(): Promise<ProfessorDirectoryEntry[]> {
     });
   }
 
-  return [...byStableKey.values()]
+  const entries = [...byStableKey.values()]
     .filter((entry) => entry.isRated || entry.courseLabels.length > 0)
     .sort((a, b) => {
       if (a.isRated !== b.isRated) return a.isRated ? -1 : 1;
@@ -509,11 +717,18 @@ async function buildProfessorDirectory(): Promise<ProfessorDirectoryEntry[]> {
       if (b.ratingsCount !== a.ratingsCount) return b.ratingsCount - a.ratingsCount;
       return a.name.localeCompare(b.name);
     });
+
+  return withGeneratedSummaries(entries);
 }
 
 export async function getProfessorDirectoryBySlug(slug: string) {
   const directory = await getProfessorDirectory();
-  return directory.find((entry) => entry.slug === slug) ?? null;
+  const exact = directory.find((entry) => entry.slug === slug);
+  if (exact) return exact;
+
+  return directory.find((entry) =>
+    entry.rawCourseMapKeys.some((key) => createSyntheticSlugBase(displayNameFromCourseMapKey(key)) === slug)
+  ) ?? null;
 }
 
 export async function findProfessorDirectorySlugForUicName(uicName: string) {

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
   BookOpen,
@@ -25,6 +25,8 @@ import type { StudyLibraryState } from "@/lib/study/types";
 const STORAGE_KEY = "uic-atlas-study-library-v1";
 const CUSTOM_FOLDERS_KEY = "uic-atlas-study-custom-folders-v1";
 const SIDEBAR_EXPANDED_KEY = "uic-atlas-study-sidebar-expanded-v1";
+const LIBRARY_SYNC_EVENT = "uic-atlas-study-library-sync";
+const FOLDERS_SYNC_EVENT = "uic-atlas-study-folders-sync";
 
 function normalizeFolderPath(value: string) {
   return value
@@ -69,11 +71,55 @@ export default function StudyLayout({ children }: { children: React.ReactNode })
   const [library, setLibrary] = useState<StudyLibraryState>(DEFAULT_STUDY_LIBRARY);
   const [customFolders, setCustomFolders] = useState<string[]>([]);
   const [folderMenuOpen, setFolderMenuOpen] = useState<string | null>(null);
+  const [storageHydrated, setStorageHydrated] = useState(false);
+  const lastLibrarySerializedRef = useRef("");
+  const lastFoldersSerializedRef = useRef("");
+
+  const syncLibraryFromStorage = () => {
+    try {
+      const raw = window.localStorage.getItem(STORAGE_KEY);
+      if (!raw || raw === lastLibrarySerializedRef.current) return;
+      const parsed = JSON.parse(raw) as StudyLibraryState;
+      lastLibrarySerializedRef.current = raw;
+      setLibrary({
+        sets: parsed.sets ?? DEFAULT_STUDY_LIBRARY.sets,
+        groups: parsed.groups ?? DEFAULT_STUDY_LIBRARY.groups,
+        notes: parsed.notes ?? DEFAULT_STUDY_LIBRARY.notes,
+        noteAudioSessions: parsed.noteAudioSessions ?? DEFAULT_STUDY_LIBRARY.noteAudioSessions,
+        noteAiLogs: parsed.noteAiLogs ?? DEFAULT_STUDY_LIBRARY.noteAiLogs,
+        progress: parsed.progress ?? DEFAULT_STUDY_LIBRARY.progress,
+        sessions: parsed.sessions ?? DEFAULT_STUDY_LIBRARY.sessions,
+        quizResults: parsed.quizResults ?? DEFAULT_STUDY_LIBRARY.quizResults,
+      });
+    } catch {
+      lastLibrarySerializedRef.current = "";
+      setLibrary(DEFAULT_STUDY_LIBRARY);
+    }
+  };
+
+  const syncFoldersFromStorage = () => {
+    try {
+      const rawFolders = window.localStorage.getItem(CUSTOM_FOLDERS_KEY);
+      const serializedFolders = rawFolders ?? "[]";
+      if (serializedFolders === lastFoldersSerializedRef.current) return;
+      const parsedFolders = rawFolders ? JSON.parse(rawFolders) : [];
+      lastFoldersSerializedRef.current = serializedFolders;
+      setCustomFolders(
+        Array.isArray(parsedFolders)
+          ? parsedFolders.map((entry) => normalizeFolderPath(String(entry))).filter(Boolean)
+          : [],
+      );
+    } catch {
+      lastFoldersSerializedRef.current = "[]";
+      setCustomFolders([]);
+    }
+  };
 
   useEffect(() => {
     try {
       const raw = window.localStorage.getItem(STORAGE_KEY);
       if (!raw) return;
+      lastLibrarySerializedRef.current = raw;
       const parsed = JSON.parse(raw) as StudyLibraryState;
       setLibrary({
         sets: parsed.sets ?? DEFAULT_STUDY_LIBRARY.sets,
@@ -91,8 +137,8 @@ export default function StudyLayout({ children }: { children: React.ReactNode })
 
     try {
       const rawFolders = window.localStorage.getItem(CUSTOM_FOLDERS_KEY);
-      if (!rawFolders) return;
-      const parsedFolders = JSON.parse(rawFolders);
+      const parsedFolders = rawFolders ? JSON.parse(rawFolders) : [];
+      lastFoldersSerializedRef.current = rawFolders ?? "[]";
       setCustomFolders(
         Array.isArray(parsedFolders)
           ? parsedFolders.map((entry) => normalizeFolderPath(String(entry))).filter(Boolean)
@@ -110,16 +156,51 @@ export default function StudyLayout({ children }: { children: React.ReactNode })
       // If no preference stored yet, keep the default (true = open)
     } catch {
       setSidebarExpanded(true);
+    } finally {
+      setStorageHydrated(true);
     }
   }, []);
 
   useEffect(() => {
-    window.localStorage.setItem(CUSTOM_FOLDERS_KEY, JSON.stringify(customFolders));
-  }, [customFolders]);
+    if (!storageHydrated) return;
+    const serialized = JSON.stringify(customFolders);
+    if (serialized === lastFoldersSerializedRef.current) return;
+    window.localStorage.setItem(CUSTOM_FOLDERS_KEY, serialized);
+    lastFoldersSerializedRef.current = serialized;
+    window.dispatchEvent(new CustomEvent(FOLDERS_SYNC_EVENT));
+  }, [customFolders, storageHydrated]);
 
   useEffect(() => {
+    if (!storageHydrated) return;
+    const serialized = JSON.stringify(library);
+    if (serialized === lastLibrarySerializedRef.current) return;
+    window.localStorage.setItem(STORAGE_KEY, serialized);
+    lastLibrarySerializedRef.current = serialized;
+    window.dispatchEvent(new CustomEvent(LIBRARY_SYNC_EVENT));
+  }, [library, storageHydrated]);
+
+  useEffect(() => {
+    if (!storageHydrated) return;
     window.localStorage.setItem(SIDEBAR_EXPANDED_KEY, String(sidebarExpanded));
-  }, [sidebarExpanded]);
+  }, [sidebarExpanded, storageHydrated]);
+
+  useEffect(() => {
+    const handleStorage = (event: StorageEvent) => {
+      if (event.key === STORAGE_KEY) syncLibraryFromStorage();
+      if (event.key === CUSTOM_FOLDERS_KEY) syncFoldersFromStorage();
+    };
+    const handleLibrarySync = () => syncLibraryFromStorage();
+    const handleFoldersSync = () => syncFoldersFromStorage();
+
+    window.addEventListener("storage", handleStorage);
+    window.addEventListener(LIBRARY_SYNC_EVENT, handleLibrarySync);
+    window.addEventListener(FOLDERS_SYNC_EVENT, handleFoldersSync);
+    return () => {
+      window.removeEventListener("storage", handleStorage);
+      window.removeEventListener(LIBRARY_SYNC_EVENT, handleLibrarySync);
+      window.removeEventListener(FOLDERS_SYNC_EVENT, handleFoldersSync);
+    };
+  }, []);
 
   useEffect(() => {
     const close = () => setPlusOpen(false);
@@ -217,6 +298,17 @@ export default function StudyLayout({ children }: { children: React.ReactNode })
       );
       return Array.from(new Set(updated.map((entry) => normalizeFolderPath(entry)).filter(Boolean)));
     });
+    setLibrary((current) => ({
+      ...current,
+      sets: current.sets.map((set) => {
+        const folder = resolveSetFolder(set);
+        return isFolderOrDescendant(path, folder) ? { ...set, folder: `${nextPath}${folder.slice(path.length)}` } : set;
+      }),
+      notes: current.notes.map((note) => {
+        const folder = resolveNoteFolder(note);
+        return isFolderOrDescendant(path, folder) ? { ...note, folder: `${nextPath}${folder.slice(path.length)}` } : note;
+      }),
+    }));
 
     if (selectedFolder && isFolderOrDescendant(path, selectedFolder)) {
       const nextSelected = `${nextPath}${selectedFolder.slice(path.length)}`;
@@ -229,6 +321,17 @@ export default function StudyLayout({ children }: { children: React.ReactNode })
     if (!customFolderSet.has(path)) return;
     if (!window.confirm(`Delete "${folderLabelFromPath(path)}" and its subfolders?`)) return;
     setCustomFolders((current) => current.filter((entry) => !isFolderOrDescendant(path, entry)));
+    setLibrary((current) => ({
+      ...current,
+      sets: current.sets.map((set) => {
+        const folder = resolveSetFolder(set);
+        return isFolderOrDescendant(path, folder) ? { ...set, folder: "" } : set;
+      }),
+      notes: current.notes.map((note) => {
+        const folder = resolveNoteFolder(note);
+        return isFolderOrDescendant(path, folder) ? { ...note, folder: "" } : note;
+      }),
+    }));
     if (selectedFolder && isFolderOrDescendant(path, selectedFolder)) {
       router.push("/study?view=library");
     }
@@ -384,7 +487,11 @@ export default function StudyLayout({ children }: { children: React.ReactNode })
                           <MoreHorizontal className="h-3.5 w-3.5" />
                         </button>
                         {folderMenuOpen === folder ? (
-                          <div className="absolute right-0 top-8 z-20 w-44 rounded-xl border border-white/10 bg-[#0f1520] py-1 shadow-[0_16px_32px_rgba(0,0,0,0.5)]">
+                          <div
+                            className="absolute right-0 top-8 z-20 w-44 rounded-xl border border-white/10 bg-[#0f1520] py-1 shadow-[0_16px_32px_rgba(0,0,0,0.5)]"
+                            onClick={(e) => e.stopPropagation()}
+                            onPointerDown={(e) => e.stopPropagation()}
+                          >
                             <button type="button" onClick={() => openCreateFolder(folder)} className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-slate-300 hover:bg-white/6">
                               <Folder className="h-3.5 w-3.5 text-slate-500" /> Add subfolder
                             </button>

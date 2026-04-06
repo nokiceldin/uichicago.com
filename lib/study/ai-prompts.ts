@@ -5,7 +5,7 @@ export function flashcardGenerationPrompt(input: {
   sourceMaterial: string;
   desiredCount?: number;
 }) {
-  return `You are generating academically useful study flashcards.
+  return `You are generating academically useful study flashcards from notes, readings, or lecture slides.
 
 Return JSON only with this shape:
 {
@@ -27,6 +27,12 @@ Rules:
 - Avoid duplicates and filler.
 - Prefer terms, processes, definitions, and causal relationships students actually get tested on.
 - If the source already contains explicit flashcard-style question and answer pairs, preserve them as one card per pair instead of merging them into summary cards.
+- Make the front short and scannable, usually a term, concept, theorem, process, symbol, or direct study question.
+- Make the back a crisp answer a student could memorize, usually 1-3 sentences or a short semicolon-separated list.
+- Do not add numbering, markdown, labels like "Front:" or "Back:", or any commentary.
+- When the source is slide-like, infer the implied concept being defined instead of copying fragmented bullets verbatim.
+- Prefer one concept per card. Split overloaded bullets into separate cards instead of making vague backs.
+- If a concept appears multiple times, keep only the clearest version.
 - Generate ${input.desiredCount ?? 12} cards.
 
 Context:

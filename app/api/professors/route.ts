@@ -121,6 +121,8 @@ export async function GET(req: Request) {
     url: entry.url,
     isRated: entry.isRated,
     isSynthetic: entry.isSynthetic,
+    courseItems: entry.courseItems,
+    courseLabels: entry.courseLabels,
   }));
 
   return NextResponse.json({

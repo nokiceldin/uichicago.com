@@ -3,7 +3,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
-  AudioLines,
   BookPlus,
   Check,
   ChevronLeft,
@@ -389,24 +388,33 @@ export default function NotesWorkspace({ library, onLibraryChange, onCreateFlash
     }
   }, [requestedNoteId]);
 
-  // No ?note= in URL → create a brand-new empty note, but only when we're
-  // actually in notes mode (guards against firing during navigation away).
+  // No ?note= in URL -> open the newest note, or create one if none exist.
   useEffect(() => {
     if (!isNotesMode || requestedNoteId || isLibraryView || autoCreatedRouteRef.current) return;
     autoCreatedRouteRef.current = true;
+    const nextNote = visibleNotes[0] || notesRef.current[0];
+    if (nextNote) {
+      openNote(nextNote.id, nextNote.structuredContent ? "structured" : "note");
+      return;
+    }
     createNote("manual");
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isNotesMode, isLibraryView, requestedNoteId]);
+  }, [isNotesMode, isLibraryView, requestedNoteId, visibleNotes]);
 
-  // ?note= in URL but note doesn't exist (stale URL) → create a new one.
+  // ?note= in URL but note doesn't exist -> open another note, or create one.
   useEffect(() => {
     if (!isNotesMode || !requestedNoteId || requestedNoteId === "create" || isLibraryView) return;
     const exists = notesRef.current.some((n) => n.id === requestedNoteId);
     if (exists) return;
     autoCreatedRouteRef.current = false;
+    const nextNote = visibleNotes[0] || notesRef.current[0];
+    if (nextNote) {
+      openNote(nextNote.id, nextNote.structuredContent ? "structured" : "note");
+      return;
+    }
     createNote("manual");
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isNotesMode, requestedNoteId, isLibraryView]);
+  }, [isNotesMode, requestedNoteId, isLibraryView, visibleNotes]);
 
   const startLiveTranscription = useCallback(() => {
     const recognitionWindow = window as typeof window & {
@@ -919,43 +927,7 @@ export default function NotesWorkspace({ library, onLibraryChange, onCreateFlash
         )}
 
         <section className="space-y-5">
-          {!selectedNote ? (
-            <div className="study-premium-panel rounded-[1.6rem] p-8 text-center">
-              <div className="mx-auto inline-flex h-14 w-14 items-center justify-center rounded-2xl border border-white/10 bg-white/5">
-                <FileText className="h-6 w-6 text-zinc-300" />
-              </div>
-              <h2 className="mt-4 text-2xl font-semibold text-white">
-                {visibleNotes.length ? "Open a note to start writing." : "Start your first note."}
-              </h2>
-              <p className="mt-2 text-sm leading-6 text-zinc-400">
-                {visibleNotes.length
-                  ? "Choose a note from My notes on the left, or create a new one to open a clean dedicated note page."
-                  : "Create a clean note, or record a lecture and let AI turn it into organized notes automatically."}
-              </p>
-              <div className="mt-5 flex flex-wrap items-center justify-center gap-3">
-                <button
-                  onClick={() => createNote("manual")}
-                  {...magneticHoverProps}
-                  className="study-premium-button inline-flex items-center gap-2 rounded-2xl bg-linear-to-b from-red-500 to-red-600 px-4 py-3 text-sm font-bold text-white"
-                >
-                  <BookPlus className="h-4 w-4" />
-                  Start a note
-                </button>
-                <button
-                  onClick={() => {
-                    const created = createNote("audio");
-                    setCaptureOpen(true);
-                    void startRecording(created);
-                  }}
-                  {...magneticHoverProps}
-                  className="study-premium-button inline-flex items-center gap-2 rounded-2xl border border-white/10 bg-white/4 px-4 py-3 text-sm font-semibold text-zinc-100"
-                >
-                  <AudioLines className="h-4 w-4" />
-                  Record and let AI make notes
-                </button>
-              </div>
-            </div>
-          ) : (
+          {!selectedNote ? null : (
             <>
                   {isFocusedNoteView && (
                 <div className="study-appear flex items-center justify-between gap-3">

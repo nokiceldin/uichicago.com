@@ -7,6 +7,7 @@ import { Analytics } from "@vercel/analytics/react"
 import Navbar from "./components/Navbar"
 import ThemeInit from "./components/ThemeInit"
 import AuthProvider from "./components/auth/AuthProvider"
+import WebsiteFeedbackPrompt from "./components/WebsiteFeedbackPrompt"
 import { Inter } from "next/font/google";
 const inter = Inter({ subsets: ["latin"] });
 
@@ -40,6 +41,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <Navbar />
           </Suspense>
           {children}
+          <WebsiteFeedbackPrompt />
           <Analytics />
         </AuthProvider>
       </body>

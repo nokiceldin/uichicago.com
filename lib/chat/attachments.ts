@@ -1,4 +1,9 @@
 import Anthropic from "@anthropic-ai/sdk";
+import { execFile } from "node:child_process";
+import { mkdtemp, rm, writeFile } from "node:fs/promises";
+import os from "node:os";
+import path from "node:path";
+import { promisify } from "node:util";
 
 export type UploadedFile = {
   name: string;
@@ -13,6 +18,8 @@ type UploadedFileSupport = {
   fallbackUserPrompt: string;
   extractedText: string;
 };
+
+const execFileAsync = promisify(execFile);
 
 function cleanExtractedText(text: string) {
   return text
@@ -53,10 +60,18 @@ function guessDocumentKind(name: string) {
 }
 
 async function extractPdfTextFromBase64(data: string) {
-  const pdfModule = await import("pdf-parse");
-  const pdfParse = ("default" in pdfModule ? pdfModule.default : pdfModule) as (buf: Buffer) => Promise<{ text?: string | null }>;
-  const parsed = await pdfParse(Buffer.from(data, "base64"));
-  return cleanExtractedText(parsed.text ?? "");
+  const tmpDir = await mkdtemp(path.join(os.tmpdir(), "uic-study-pdf-"));
+  const pdfPath = path.join(tmpDir, "upload.pdf");
+  try {
+    await writeFile(pdfPath, Buffer.from(data, "base64"));
+    const scriptPath = path.join(process.cwd(), "scripts", "extract-pdf-text.mjs");
+    const { stdout } = await execFileAsync(process.execPath, [scriptPath, pdfPath], {
+      maxBuffer: 10 * 1024 * 1024,
+    });
+    return cleanExtractedText(stdout ?? "");
+  } finally {
+    await rm(tmpDir, { recursive: true, force: true });
+  }
 }
 
 export async function extractReadableTextFromUploadedFile(uploadedFile: UploadedFile) {

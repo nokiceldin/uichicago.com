@@ -7,6 +7,7 @@ import type { GeneratedExamPayload, GeneratedFlashcardPayload, GeneratedQuizPayl
 
 const anthropic = process.env.ANTHROPIC_API_KEY ? new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY }) : null;
 const openaiApiKey = process.env.OPENAI_API_KEY?.trim() || "";
+const openaiStudyModel = process.env.OPENAI_STUDY_MODEL?.trim() || process.env.OPENAI_MODEL?.trim() || "gpt-4.1-mini";
 
 async function requestJson(prompt: string) {
   if (!anthropic) return null;
@@ -30,6 +31,50 @@ async function requestJson(prompt: string) {
   }
 
   return JSON.parse(text.slice(jsonStart, jsonEnd + 1));
+}
+
+async function requestJsonWithOpenAI(prompt: string) {
+  if (!openaiApiKey) return null;
+
+  const response = await fetch("https://api.openai.com/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${openaiApiKey}`,
+    },
+    body: JSON.stringify({
+      model: openaiStudyModel,
+      temperature: 0.3,
+      response_format: { type: "json_object" },
+      messages: [
+        {
+          role: "system",
+          content:
+            "You generate structured study content. Return only valid JSON with no markdown, no explanation, and no surrounding text.",
+        },
+        {
+          role: "user",
+          content: prompt,
+        },
+      ],
+    }),
+  });
+
+  const payload = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    const message =
+      typeof payload?.error?.message === "string"
+        ? payload.error.message
+        : "OpenAI flashcard generation failed.";
+    throw new Error(message);
+  }
+
+  const rawText = payload?.choices?.[0]?.message?.content;
+  if (typeof rawText !== "string" || !rawText.trim()) {
+    throw new Error("OpenAI did not return valid JSON.");
+  }
+
+  return JSON.parse(rawText);
 }
 
 export async function generateFlashcardsFromText(input: {
@@ -62,6 +107,16 @@ export async function generateFlashcardsFromText(input: {
 
   if (anthropic) {
     const raw = await requestJson(
+      flashcardGenerationPrompt({
+        ...input,
+        desiredCount,
+      }),
+    );
+    return validateGeneratedFlashcards(raw);
+  }
+
+  if (openaiApiKey) {
+    const raw = await requestJsonWithOpenAI(
       flashcardGenerationPrompt({
         ...input,
         desiredCount,

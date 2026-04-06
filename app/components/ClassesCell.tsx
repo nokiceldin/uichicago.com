@@ -343,13 +343,15 @@ function getCoursesFuzzy(map: Record<string, string[]>, profName: string) {
 export function ClassesCell({
   profName,
   map,
+  courses: providedCourses,
   onPickCourse,
 }: {
   profName: string;
   map: Record<string, string[]>;
+  courses?: string[];
   onPickCourse?: (courseLabel: string) => void;
 }) {
-  const coursesRaw = getCoursesFuzzy(map, profName);
+  const coursesRaw = providedCourses?.length ? providedCourses : getCoursesFuzzy(map, profName);
 
   const courses = useMemo(() => {
     const labels = coursesRaw.map(formatCourseLabel);
@@ -368,7 +370,7 @@ export function ClassesCell({
   }, [coursesRaw]);
 
   const firstThree = courses.slice(0, 2);
-  const rest = courses.slice(3);
+  const rest = courses.slice(2);
   const extra = rest.length;
 
   const [open, setOpen] = useState(false);

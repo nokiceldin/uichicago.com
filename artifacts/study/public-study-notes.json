@@ -1,1 +1,109 @@
-[]
+[
+  {
+    "id": "note-5got2la8",
+    "title": "Turing Machines (Part I)",
+    "folder": "",
+    "course": "CS 301",
+    "noteDate": "2026-04-06",
+    "subject": "General",
+    "tags": [],
+    "rawContent": "Source file: CS 301 - Lecture Slides 19 - Turing Machines (Part I) (Notes).pdf\nTuring Machines (I)\nCS 301. Languages and Automata\n© 2026 by Gonzalo A. Bello\n03/13/2026\n\nCS 301\n\n-\n\nLecture 19: Turing Machines (I)\n\n1\n\n03/13/2026\nIntroduction\nLanguages and Automata (I)\nCS 301\n\n-\n\nLecture 19: Turing Machines (I)\n•\n\nRegular\n\nlanguages\n.\n•\n\nRecognized\n\nby\n\nfinite\n\nautomata\n\n(DFAs,\n\nNFAs)\n.\n•\n\nContext\n-\nfree\n\nlanguages\n\n(CFLs)\n.\n•\n\nRecognized\n\nby\n\npushdown\n\nautomata\n\n(PDAs)\n.\nCFLs\nRegular\nlanguages\n{\n𝐚\n∗\n𝐛\n∗\n}\n{\n𝐚\n𝐧\n𝐛\n𝐧\n}\n2\n\n•\n\nExample\n:\n\n𝐿\n\n=\n\n𝑤\n#\n𝑤\n\n𝑤\n\n∈\n\n0\n,\n1\n\n∗\n}\n•\n\nCan\n\nwe\n\nconstruct\n\na\n\nDFA\n\nor\n\nNFA\n\nfor\n\nthis\n\nlanguage?\n→\n\nNo\n.\n\n𝑳\n\nis\n\nnot\n\nregular\n.\n•\n\nCan\n\nwe\n\nconstruct\n\na\n\nPDA\n\nfor\n\nthis\n\nlanguage?\n→\n\nNo\n.\n\n𝑳\n\nis\n\nnot\n\ncontext\n-\nfree\n.\n•\n\nHow\n\ncan\n\nwe\n\nprove\n\nthat\n\nthis\n\nlanguage\n\nis\n\nnot\n\ncontext\n-\nfree?\n→\n\nUse\n\nthe\n\npumping\n\nlemma\n\nfor\n\ncontext\n-\nfree\n\nlanguages\n.\n•\n\nIs\n\nthere\n\na\n\nmore\n\npowerful\n\nclass\n\nof\n\nmachines\n\nthat\n\nrecognize\nlanguages\n\nthat\n\nare\n\nnot\n\ncontext\n-\nfree\n?\n→\n\nYes\n.\n\nTuring\n\nmachines\n.\n03/13/2026\nIntroduction\nLanguages and Automata (II)\nCS 301\n\n-\n\nLecture 19: Turing Machines (I)\n\n3\n\n•\n\nAlan\n\nTuring\n\n(\n1912\n-\n1954\n)\n\nwas\n\nan\n\nEnglish\n\nmathematician,\n\nwidely\nconsidered\n\nto\n\nbe\n\nthe\n\n“father\n\nof\n\ncomputer\n\nscience\n\nand\n\nartificial\nintelligence\n.\n”\n•\n\nMany\n\nthings\n\nin\n\ncomputer\n\nscience\n\nare\n\nnamed\n\nafter\n\nAlan\n\nTuring,\nincluding\n\nthe\n\nTuring\n\nAward,\n\nthe\n\nTuring\n\ntest,\n\nand\n\nTuring\n\nmachines\n.\n03/13/2026\nIntroduction\nAlan Turing\nCS 301\n\n-\n\nLecture 19: Turing Machines (I)\n\n4\nIn 2021, the Bank of\nEngland released a\nnew £50 banknote\nfeaturing Alan Turing\n\n•\n\nA\n\nTuring\n\nmachine\n\n(TM)\n\nis\n\nan\n\nabstract\n\nmodel\n\nof\n\na\n\ncomputer\n\nfirst\nproposed\n\nby\n\nAlan\n\nTuring\n\nin\n\n1936\n.\n•\n\nA\n\nTuring\n\nmachine\n\ncan\n\ndo\n\neverything\n\nthat\n\na\n\nreal\n\ncomputer\n\ncan\n\ndo\n.\n•\n\nA\n\nTuring\n\nmachine\n\nis\n\nsimilar\n\nto\n\na\n\nfinite\n\nautomaton\n\nbut\n\nwith\n\nan\nunlimited\n\nand\n\nunrestricted\n\nmemory\n\nin\n\nthe\n\nform\n\nof\n\na\n\ntape\n.\n•\n\nThe\n\ntape\n\nis\n\ninfinite\n.\n•\n\nThe\n\nmachine\n\ncan\n\nboth\n\nwrite\n\non\n\nthe\n\ntape\n\nand\n\nread\n\nfrom\n\nit\n.\n•\n\nThe\n\nread\n-\nwrite\n\nhead\n\ncan\n\nmove\n\nto\n\nthe\n\nleft\n\nand\n\nto\n\nthe\n\nright\n.\n03/13/2026\nIntroduction\nTuring Machines (I)\nCS 301\n\n-\n\nLecture 19: Turing Machines (I)\nState\nControl\nOutput\n\nTape\n5\n\n•\n\nHow\n\ndoes\n\na\n\nTuring\n\nmachine\n\nwork?\n•\n\nIt\n\nuses\n\nan\n\ninfinite\n\ntape\n\nas\n\nits\n\nunlimited\n\nmemory\n.\n•\n\nIt\n\nhas\n\na\n\nhead\n\nthat\n\ncan\n\nread\n\nand\n\nwrite\n\nsymbols\n\nand\n\nmove\n\naround\n\nthe\n\ntape\n.\n•\n\nInitially,\n\nthe\n\nhead\n\nis\n\nat\n\nthe\n\nstart\n\nof\n\nthe\n\ntape\n\nand\n\nthe\n\ntape\n\ncontains\n\nonly\n\nthe\ninput\n\nstring\n\nand\n\nis\n\nblank\n\neverywhere\n\nelse\n.\n•\n\nIf\n\nthe\n\nmachine\n\nneeds\n\nto\n\nstore\n\ninformation,\n\nit\n\nmay\n\nwrite\n\nit\n\non\n\nthe\n\ntape\n.\n•\n\nThe\n\nmachine\n\nimmediately\n\naccepts\n\nif\n\nit\n\nenters\n\nthe\n\naccept\n\nstate\n\nand\n\nit\nimmediately\n\nrejects\n\nif\n\nit\n\nenters\n\nthe\n\nreject\n\nstate\n.\n•\n\nIf\n\nthe\n\nmachine\n\ndoesn’t\n\nenter\n\nthe\n\naccept\n\nor\n\nreject\n\nstate\n,\n\nit\n\nwill\n\nloop\n\nforever\n.\n03/13/2026\nIntroduction\nTuring Machines (II)\nCS 301\n\n-\n\nLecture 19: Turing Machines (I)\nState\nControl\nOutput\n\nTape\n6\n\n03/13/2026\nTuring Machines\nvs. FA and PDAs\nCS 301\n\n-\n\nLecture 19: Turing Machines (I)\n•\n\nTuring machine:\n•\n\nUnlimited\n\nmemory (\ntape\n).\n•\n\nRead and\n\nwrites\n.\n•\n\nMove\n\nleft and right\n.\nState\nControl\nInput\nOutput\nState\nControl\nInput\nOutput\nStack\nState\nControl\nOutput\n\nTape\n•\n\nFinite automata:\n•\n\nLimited\n\nmemory.\n•\n\nRead only,\n\nno writes\n.\n•\n\nMove\n\nright only\n, no\nbackward moves.\n•\n\nPushdown automata:\n•\n\nUnlimited\n\nmemory (\nstack\n).\n•\n\nRead only,\n\nno writes\n.\n•\n\nMove\n\nright only\n, no\nbackward moves.\n7\n\n•\n\nA\n\nTuring\n\nmachine\n\nis\n\na\n\n7\n-\ntuple\n\n(\n𝑸\n,\n\n𝚺\n,\n\n𝚪\n,\n\n𝜹\n,\n\n𝒒\n𝟎\n,\n\n𝒒\n𝒂𝒄𝒄𝒆𝒑𝒕\n,\n\n𝒒\n𝒓𝒆𝒋𝒆𝒄𝒕\n)\n,\n\nwhere\n:\n•\n\n𝑸\n\nis\n\na\n\nfinite\n\nset\n\nof\n\nstates\n.\n•\n\n𝚺\n\nis\n\na\n\nfinite\n\nset\n\nof\n\ninput\n\nsymbols\n\n(\ninput\n\nalphabet\n)\n.\n•\n\nΣ\n\ndoes\n\nnot\n\ncontain\n\nthe\n\nblank\n\nsymbol\n\n(\n⊔\n)\n.\n•\n\n𝚪\n\nis\n\na\n\nfinite\n\nset\n\nof\n\ntape\n\nsymbols\n\n(\ntape\n\nalphabet\n)\n.\n•\n\n⊔\n\n∈\n\nΓ\n\nand\n\nΣ\n\n⊆\n\nΓ\n.\n•\n\n𝜹\n:\n\n𝑸\n′\n\n×\n\n𝚪\n\n→\n\n𝑸\n\n×\n\n𝚪\n\n×\n\n{\n𝑳\n,\n\n𝑹\n}\n\nis\n\nthe\n\ntransition\n\nfunction\n.\n•\n\n𝑄\n′\n\n=\n\n𝑄\n\n−\n\n{\n𝑞\n𝑎𝑐𝑐𝑒𝑝𝑡\n,\n\n𝑞\n𝑟𝑒𝑗𝑒𝑐𝑡\n}\n•\n\n𝒒\n𝟎\n\n∈\n\n𝑸\n\nis\n\nthe\n\nstart\n\nstate\n.\n•\n\n𝒒\n𝒂𝒄𝒄𝒆𝒑𝒕\n\n∈\n\n𝑸\n\nis\n\nthe\n\naccept\n\nstate\n.\n•\n\n𝒒\n𝒓𝒆𝒋𝒆𝒄𝒕\n\n∈\n\n𝑸\n\nis\n\nthe\n\nreject\n\nstate\n.\n•\n\n𝑞\n𝑎𝑐𝑐𝑒𝑝𝑡\n\n≠\n\n𝑞\n𝑟𝑒𝑗𝑒𝑐𝑡\n03/13/2026\nTuring Machines\nFormal Definition (I)\nCS 301\n\n-\n\nLecture 19: Turing Machines (I)\n\n8\n\n•\n\nEach\n\nmove\n\nmade\n\nby\n\na\n\nTM\n\ndepends\n\non\n\nthe\n\ncurrent\n\nstate\n\nand\n\nthe\ncurrent\n\nsymbol\n\non\n\nthe\n\ntape\n.\n•\n\nEach\n\nmove\n\nmade\n\nby\n\na\n\nTM\n\nchanges\n\nthe\n\ncurrent\n\nstate\n,\n\nthe\n\ncurrent\nsymbol\n\non\n\nthe\n\ntape\n\nand\n\nthe\n\nposition\n\nof\n\nthe\n\nhead\n.\n•\n\nA\n\nstate\n\ntransition\n\nin\n\na\n\nTM\n\nmust\n\nshow\n:\n•\n\nSymbol\n\n𝐚\n\nto\n\nbe\n\nread\n\nfrom\n\nthe\n\ntape\n.\n•\n\nSymbol\n\n𝐛\n\nto\n\nbe\n\nwritten\n\non\n\nthe\n\ntape\n.\n•\n\nWhether\n\nthe\n\nhead\n\nmoves\n\nto\n\nthe\n\nleft\n\n(\n𝑳\n)\n\nor\n\nright\n\n(\n𝑹\n)\n\nafter\n\nwriting\n.\n03/13/2026\nTuring Machines\nTransitions\nCS 301\n\n-\n\nLecture 19: Turing Machines (I)\n𝒒\n\n𝒓\n𝐚\n\n→\n\n𝐛\n,\n\n𝑹\n\nIf\n\nthe\n\nTM\n\nis\n\nin\n\nstate\n\n𝒒\n\nand\n\nthe\n\nhead\n\nis\n\nover\na\n\ntape\n\nsquare\n\ncontaining\n\nsymbol\n\n𝐚\n,\n\nthen\nthe\n\nTM\n\nwrites\n\nsymbol\n\n𝐛\n\non\n\nthe\n\ntape\n(replacing\n\na\n),\n\ngoes\n\nto\n\nstate\n\n𝒓\n\nand\n\nmoves\nthe\n\nhead\n\none\n\nsquare\n\nto\n\nthe\n\nright\n.\n𝜹\n\n𝒒\n,\n\n𝐚\n\n=\n\n(\n𝒓\n,\n\n𝐛\n,\n\n𝑹\n)\n9\n\n03/13/2026\nTuring Machines\nExercise 19.1\nCS 301\n\n-\n\nLecture 19: Turing Machines (I)\nIf a TM is in state\n\n𝒒\n𝟏\n\nand the head is over a tape\nsquare containing a\n\n𝟎\n, then it goes to state\n\n𝒒\n𝟐\n\nand\nmoves the head to the left without changing the tape.\nHow can we represent this transition?\nA.\nB.\n𝒒\n𝟏\n\n𝒒\n𝟐\n𝟎\n,\n\n𝑳\n\n→\n\n𝟎\n𝒒\n𝟏\n\n𝒒\n𝟐\n𝟎\n\n←\n\n𝟎\n𝒒\n𝟏\n\n𝒒\n𝟐\n𝟎\n,\n\n𝟎\n\n→\n\n𝑳\nC.\nD.\n𝒒\n𝟏\n\n𝒒\n𝟐\n𝟎\n\n→\n\n𝟎\n,\n\n𝑳\n𝟎\n\n→\n\n𝑳\n10\n\n03/13/2026\nTuring Machines\nExercise 19.2\nCS 301\n\n-\n\nLecture 19: Turing Machines (I)\nIf a TM is in state\n\n𝒒\n𝟏\n\nand the head is over an empty tape\nsquare, then it writes a\n\n𝟏\n, goes to state\n\n𝒒\n𝟐\n\nand\nmoves the head to the right.\nHow can we represent this transition?\nA.\nB.\n𝒒\n𝟏\n\n𝒒\n𝟐\n⊔\n\n→\n\n𝟏\n,\n\n𝑹\n𝒒\n𝟏\n\n𝒒\n𝟐\n𝜺\n\n→\n\n𝟏\n𝒒\n𝟏\n\n𝒒\n𝟐\n𝜺\n\n→\n\n𝟏\n,\n\n𝑹\nC.\nD.\n𝒒\n𝟏\n\n𝒒\n𝟐\n𝟏\n\n→\n\n𝟏\n,\n\n𝑹\n⊔\n\nis the blank symbol\n11\n\n•\n\nA\n\nTuring\n\nmachine\n\naccepts\n\nan\n\ninput\n\nif\n\nit\n\nenters\n\nthe\n\naccept\n\nstate\n.\n•\n\nThe\n\nfinal\n\ncontents\n\nof\n\nthe\n\ntape\n\nand\n\nthe\n\nfinal\n\nposition\n\nof\n\nthe\n\nhead\n\ndo\n\nnot\n\nmatter\n.\n•\n\nIt\n\ndoesn’t\n\neven\n\nhave\n\nto\n\nfinish\n\nreading\n\nthe\n\ninput\n.\n•\n\nSimilarly,\n\na\n\nmachine\n\nrejects\n\nan\n\ninput\n\nif\n\nit\n\nenters\n\nthe\n\nreject\n\nstate\n.\n•\n\nPossible\n\noutcomes\n\nof\n\na\n\ncomputation\n\nwith\n\na\n\nTuring\n\nmachine\n:\n•\n\nThe\n\ncomputation\n\nhalts\n.\n•\n\nIt\n\nenters\n\nthe\n\naccept\n\nstate\n\nand\n\naccepts\n.\n•\n\nIt\n\nenters\n\nthe\n\nreject\n\nstate\n\nand\n\nrejects\n.\n•\n\nThe\n\ncomputation\n\ndoes\n\nnot\n\nhalt\n\n(i\n.\ne\n.\n,\n\nit\n\nloops\n\nforever\n)\n.\n•\n\nIt\n\nnever\n\nenters\n\nthe\n\naccept\n\nor\n\nreject\n\nstate\n.\n03/13/2026\nTuring Machines\nAcceptance Conditions\nCS 301\n\n-\n\nLecture 19: Turing Machines (I)\n\n12\n\n03/13/2026\nTuring Machines\nExercise 19.3 (I)\nCS 301\n\n-\n\nLecture 19: Turing Machines (I)\nWhat is the outcome of this TM on input\n\n𝐚𝐚𝐛𝐚𝐛\n?\nA.\n\nIt\n\naccepts\n.\nB.\n\nIt\n\nrejects\n.\nC.\n\nIt\n\nruns\n\nforever\n.\n𝒒\n𝟏\n\n𝒒\n𝟐\n𝐛\n\n→\n\n𝑹\n\n𝒒\n𝒂\n𝒒\n𝒓\n⊔\n\n→\n\n𝑹\n𝐛\n\n→\n\n𝑹\n𝐚\n\n→\n\n𝑳\n𝐚\n\n→\n\n𝑹\n⊔\n\n→\n\n𝑹\na\n\na\n\nb\n\na\n\nb\n13\n\n03/13/2026\nTuring Machines\nExercise 19.3 (II)\nCS 301\n\n-\n\nLecture 19: Turing Machines (I)\nWhich of the following strings is accepted by this TM?\nA.\n\n𝛆\nB.\n\n𝐚𝐚𝐚𝐛\n𝒒\n𝟏\n\n𝒒\n𝟐\n𝐛\n\n→\n\n𝑹\n\n𝒒\n𝒂\n𝒒\n𝒓\n⊔\n\n→\n\n𝑹\n𝐛\n\n→\n\n𝑹\n𝐚\n\n→\n\n𝑳\n𝐚\n\n→\n\n𝑹\n⊔\n\n→\n\n𝑹\nC.\n\n𝐛𝐛𝐚𝐛\nD.\n\n𝐛𝐚𝐛𝐛\n14\n\n•\n\nA\n\nconfiguration\n\nof\n\na\n\nTuring\n\nmachine\n\nindicates\n\nthe\n\ncurrent\n\nsetting\nof\n\nthe\n\nmachine\n\nand\n\nis\n\nrepresented\n\nas\n\n𝒖𝒒𝒗\n,\n\nwhere\n:\n•\n\n𝒖\n\n∈\n\n𝚪\n∗\n\nare\n\nthe\n\ncontents\n\nof\n\nthe\n\ntape\n\nto\n\nthe\n\nleft\n\nof\n\nthe\n\nhead\n.\n•\n\n𝒒\n\n∈\n\n𝑸\n\nis\n\nthe\n\ncurrent\n\nstate\n.\n•\n\n𝒗\n\n∈\n\n𝚪\n∗\n\nare\n\nthe\n\ncontents\n\nof\n\nthe\n\ntape\n\nunder\n\nand\n\nto\n\nthe\n\nright\n\nof\n\nthe\n\nhead\n\nuntil\nthe\n\nlast\n\nnonblank\n\ntape\n\nsquare\n.\n•\n\nExample\n:\n03/13/2026\nTuring Machines\nFormal Definition (II)\nCS 301\n\n-\n\nLecture 19: Turing Machines (I)\n𝒒\n\n𝒓\n𝐚\n\n→\n\n𝐛\n,\n\n𝑹\n\n𝒒\n\n𝒓\n𝐚\n\n→\n\n𝐛\n,\n\n𝑹\n𝐚\n\na\n\nb\n\nb\n\nb\n\na\n\nb\n\nb\nWhat is the configuration of the TM?\n𝒒\n𝐚𝐚𝐛𝐛\n15\n\n03/13/2026\nTuring Machines\nExercise 19.4 (I)\nCS 301\n\n-\n\nLecture 19: Turing Machines (I)\nWhat is the initial configuration of this TM\non input\n\n𝐚𝐚𝐛𝐚\n?\nA.\n\n𝐚𝐚𝐛𝐚\nB.\n\n𝒒\n𝟏\n𝐚𝐛𝐚\nC.\n\n𝒒\n𝟏\n𝐚𝐚𝐛𝐚\nD.\n\n𝐚\n𝒒\n𝟏\n𝐚𝐛𝐚\n𝒒\n𝟏\n\n𝒒\n𝟐\n𝐛\n\n→\n\n𝑹\n\n𝒒\n𝒂\n𝒒\n𝒓\n⊔\n\n→\n\n𝑹\n𝐛\n\n→\n\n𝑹\n𝐚\n\n→\n\n𝑳\n𝐚\n\n→\n\n𝑹\n⊔\n\n→\n\n𝑹\na\n\na\n\nb\n\na\n16\n\n03/13/2026\nTuring Machines\nExercise 19.4 (II)\nCS 301\n\n-\n\nLecture 19: Turing Machines (I)\nWhat is the configuration of this TM on input\n\n𝐚𝐚𝐛𝐚\n\nif the TM\nis in state\n\n𝒒\n𝟏\n\nand its head is over the third tape square?\nA.\n\n𝒒\n𝟏\n𝐚𝐚𝐛𝐚\nB.\n\n𝐚\n𝐚\n𝒒\n𝟏\n𝐚\nC.\n\n𝐚𝐚\n𝒒\n𝟏\n𝐛𝐚\nD.\n\n𝐚𝐚𝐛\n𝒒\n𝟏\n𝐚\n𝒒\n𝟏\n\n𝒒\n𝟐\n𝐛\n\n→\n\n𝑹\n\n𝒒\n𝒂\n𝒒\n𝒓\n⊔\n\n→\n\n𝑹\n𝐛\n\n→\n\n𝑹\n𝐚\n\n→\n\n𝑳\n𝐚\n\n→\n\n𝑹\n⊔\n\n→\n\n𝑹\na\n\na\n\nb\n\na\n17\n\n•\n\nA\n\nTuring\n\nmachine\n\n𝑀\n\naccepts\n\nan\n\ninput\n\n𝑤\n\nif\n\nthere\n\nis\n\na\n\nsequence\n\nof\nconfigurations\n\n𝑪\n𝟎\n,\n\n𝑪\n𝟏\n,\n\n…\n\n,\n\n𝑪\n𝒌\n\nsuch\n\nthat\n:\n•\n\n𝐶\n0\n\nis\n\nthe\n\nstart\n\nconfiguration\n\nof\n\n𝑀\n\non\n\ninput\n\n𝑤\n.\n•\n\n𝐶\n0\n\n=\n\n𝑞\n0\n𝑤\n\nwhere\n\n𝑞\n0\n\nis\n\nthe\n\nstart\n\nstate\n.\n•\n\nEvery\n\nconfiguration\n\n𝐶\n𝑖\n\nyields\n\n𝐶\n𝑖\n+\n1\n.\n•\n\nThat\n\nis,\n\nwe\n\ncan\n\ngo\n\nfrom\n\nconfiguration\n\n𝐶\n𝑖\n\nto\n\nconfiguration\n\n𝐶\n𝑖\n+\n1\n\nin\n\na\n\nsingle\nstep\n\nfollowing\n\nthe\n\ntransition\n\nfunction\n\n𝛿\n.\n•\n\n𝐶\n𝑘\n\nis\n\nan\n\naccepting\n\nconfiguration\n.\n•\n\nThe\n\nstate\n\nof\n\n𝐶\n𝑘\n\nis\n\nthe\n\naccepting\n\nstate\n.\n•\n\nExample\n:\n\n𝑤\n\n=\n\na\n.\n03/13/2026\nTuring Machines\nFormal Definition (III)\nCS 301\n\n-\n\nLecture 19: Turing Machines (I)\n𝒒\n\n𝒓\n𝐚\n\n→\n\n𝐛\n,\n\n𝑹\nWhat is the start configuration?\nWhat configuration does it yield?\nIs this an accepting configuration?\n18\n\nTuring Machines\nReferences\n•\n\nMichael\n\nSipser\n.\n\nIntroduction\n\nto\n\nthe\n\nTheory\n\nof\n\nComputation\n.\n•\n\nElaine\n\nA\n.\n\nRich\n.\n\nAutomata,\n\nComputability,\n\nand\n\nComplexity\n:\n\nTheory\nand\n\nApplications\n.\n•\n\nPeter\n\nLinz\n.\n\nAn\n\nIntroduction\n\nto\n\nFormal\n\nLanguages\n\nand\n\nAutomata\n.\n•\n\nAdam\n\nB\n.\n\nWebber\n.\n\nFormal\n\nLanguage\n:\n\nA\n\nPractical\n\nIntroduction\n.\n03/13/2026\n\nCS 301\n\n-\n\nLecture 19: Turing Machines (I)\n\n19",
+    "structuredContent": {
+      "title": "Turing Machines (Part I)",
+      "summary": "Introduction to Turing machines as the most powerful class of automata, capable of recognizing languages beyond regular and context-free languages. Covers formal definition, components, transitions, and acceptance conditions.",
+      "sections": [
+        {
+          "heading": "Language Hierarchy",
+          "items": [
+            "Regular languages: recognized by DFAs/NFAs",
+            "Context-free languages: recognized by PDAs",
+            "Beyond CFLs: require Turing machines",
+            "Example: L = {w#w | w ∈ {0,1}*} is neither regular nor context-free"
+          ]
+        },
+        {
+          "heading": "Turing Machine Components",
+          "items": [
+            "Infinite tape (unlimited memory)",
+            "Read-write head that moves left and right",
+            "State control unit",
+            "Can read, write, and move in both directions",
+            "Initially: head at start, tape contains input + blanks"
+          ]
+        },
+        {
+          "heading": "Formal Definition",
+          "items": [
+            "TM is 7-tuple: (Q, Σ, Γ, δ, q₀, qₐccₑₚₜ, qᵣₑⱼₑcₜ)",
+            "Q: finite set of states",
+            "Σ: input alphabet (no blank symbol ⊔)",
+            "Γ: tape alphabet (⊔ ∈ Γ, Σ ⊆ Γ)",
+            "δ: Q' × Γ → Q × Γ × {L,R} (transition function)",
+            "Q' = Q - {qₐccₑₚₜ, qᵣₑⱼₑcₜ}",
+            "qₐccₑₚₜ ≠ qᵣₑⱼₑcₜ"
+          ]
+        },
+        {
+          "heading": "Transitions",
+          "items": [
+            "Format: q → r on a→b,R",
+            "Read symbol a, write symbol b, move right (R) or left (L)",
+            "δ(q,a) = (r,b,R) means: state q reading a → state r, write b, move right",
+            "Each move changes: current state, tape symbol, head position"
+          ]
+        },
+        {
+          "heading": "Acceptance Conditions",
+          "items": [
+            "Accept: enters qₐccₑₚₜ state",
+            "Reject: enters qᵣₑⱼₑcₜ state",
+            "Loop forever: never enters accept/reject states",
+            "Final tape contents and head position don't matter for acceptance"
+          ]
+        },
+        {
+          "heading": "Configurations",
+          "items": [
+            "Format: uqv where u is left of head, q is state, v is head+right",
+            "Start configuration: q₀w (w is input)",
+            "Accepting configuration: contains qₐccₑₚₜ state",
+            "Configuration sequence shows computation path"
+          ]
+        }
+      ],
+      "keyTerms": [
+        "Turing machine",
+        "Tape alphabet (Γ)",
+        "Input alphabet (Σ)",
+        "Blank symbol (⊔)",
+        "Transition function (δ)",
+        "Configuration (uqv)",
+        "Accept state (qₐccₑₚₜ)",
+        "Reject state (qᵣₑⱼₑcₜ)",
+        "Read-write head"
+      ],
+      "questionsToReview": [
+        "How do you represent a transition where TM reads 0, writes 1, moves left?",
+        "What are the three possible outcomes of a TM computation?",
+        "Given a TM diagram, trace through execution on a specific input",
+        "What is the start configuration for input 'aaba'?",
+        "How does TM power compare to DFA and PDA capabilities?",
+        "Why can't DFAs or PDAs recognize L = {w#w | w ∈ {0,1}*}?"
+      ],
+      "confidenceNotes": [
+        "Exercise solutions not provided in transcript - would need to work through TM execution examples",
+        "Pumping lemma for CFLs mentioned but not explained",
+        "Alan Turing biographical details (1912-1954, father of CS/AI)"
+      ]
+    },
+    "transcriptContent": "",
+    "sourceType": "imported",
+    "visibility": "public",
+    "status": "ready",
+    "createdAt": "2026-04-06T01:10:24.919Z",
+    "updatedAt": "2026-04-06T01:13:26.331Z",
+    "lastOpenedAt": "2026-04-06T01:13:20.801Z",
+    "pinned": false,
+    "favorite": false
+  }
+]

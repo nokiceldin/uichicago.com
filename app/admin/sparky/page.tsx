@@ -7,6 +7,15 @@ import { getSparkyAnalytics } from "@/lib/sparky-analytics";
 
 type SearchParamsValue = string | string[] | undefined;
 
+type WebsiteFeedbackItem = {
+  id: string;
+  createdAt: Date;
+  score: number | null;
+  comment: string;
+  page: string;
+  timeOnSiteMs: number | null;
+};
+
 function pickFirst(value: SearchParamsValue) {
   return Array.isArray(value) ? value[0] : value;
 }
@@ -36,6 +45,43 @@ function formatDate(value: Date) {
 function truncate(value: string | null | undefined, max = 180) {
   if (!value) return "";
   return value.length > max ? `${value.slice(0, max).trimEnd()}...` : value;
+}
+
+function formatDurationMs(value: number | null) {
+  if (!value || value < 0) return "Unknown";
+  const minutes = Math.max(1, Math.round(value / 60_000));
+  if (minutes < 60) return `${minutes} min`;
+  const hours = Math.floor(minutes / 60);
+  const remainingMinutes = minutes % 60;
+  return remainingMinutes ? `${hours} hr ${remainingMinutes} min` : `${hours} hr`;
+}
+
+function parseWebsiteFeedback(row: { id: string; message: string; createdAt: Date }): WebsiteFeedbackItem | null {
+  try {
+    const payload = JSON.parse(row.message) as {
+      type?: unknown;
+      score?: unknown;
+      comment?: unknown;
+      page?: unknown;
+      timeOnSiteMs?: unknown;
+    };
+
+    if (payload.type !== "website") return null;
+
+    const score = Number(payload.score);
+    const timeOnSiteMs = Number(payload.timeOnSiteMs);
+
+    return {
+      id: row.id,
+      createdAt: row.createdAt,
+      score: Number.isInteger(score) && score >= 1 && score <= 5 ? score : null,
+      comment: typeof payload.comment === "string" ? payload.comment : "",
+      page: typeof payload.page === "string" && payload.page.trim() ? payload.page : "Unknown page",
+      timeOnSiteMs: Number.isFinite(timeOnSiteMs) ? timeOnSiteMs : null,
+    };
+  } catch {
+    return null;
+  }
 }
 
 function withAdminNotice(
@@ -146,6 +192,25 @@ export default async function SparkyAdminPage({
   const groupError = pickFirst(resolved.groupError) ?? "";
 
   const analytics = await getSparkyAnalytics(filters);
+  const websiteFeedbackRows = await prisma.feedback.findMany({
+    where: { rating: "website" },
+    orderBy: { createdAt: "desc" },
+    take: 50,
+    select: {
+      id: true,
+      message: true,
+      createdAt: true,
+    },
+  });
+  const websiteFeedback = websiteFeedbackRows.flatMap((row) => {
+    const parsed = parseWebsiteFeedback(row);
+    return parsed ? [parsed] : [];
+  });
+  const websiteRatingScores = websiteFeedback.flatMap((item) => (item.score ? [item.score] : []));
+  const averageWebsiteRating =
+    websiteRatingScores.length > 0
+      ? websiteRatingScores.reduce((total, score) => total + score, 0) / websiteRatingScores.length
+      : null;
   const exportQuery = buildQueryString({
     q: analytics.filters.q,
     responseKind: analytics.filters.responseKind,
@@ -363,7 +428,7 @@ export default async function SparkyAdminPage({
             <div className="mt-5 space-y-3">
               {groupMatches.length === 0 ? (
                 <div className="rounded-2xl border border-dashed border-zinc-200 px-4 py-6 text-sm text-zinc-500 dark:border-white/10 dark:text-zinc-400">
-                  No study groups matched "{groupQuery}".
+                  No study groups matched &quot;{groupQuery}&quot;.
                 </div>
               ) : groupMatches.map((group) => (
                 <div
@@ -396,6 +461,57 @@ export default async function SparkyAdminPage({
               ))}
             </div>
           ) : null}
+        </section>
+
+        <section className="rounded-[1.8rem] border border-zinc-200 bg-white p-6 shadow-[0_18px_55px_rgba(15,23,42,0.06)] dark:border-white/10 dark:bg-[rgba(18,18,23,0.94)]">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+            <div>
+              <h2 className="text-lg font-semibold">Website feedback</h2>
+              <p className="mt-1 max-w-3xl text-sm leading-6 text-zinc-500 dark:text-zinc-400">
+                Ratings and comments from the optional 30-minute site feedback prompt.
+              </p>
+            </div>
+            <div className="grid grid-cols-2 gap-3 text-sm sm:min-w-72">
+              <div className="rounded-2xl border border-zinc-200 px-4 py-3 dark:border-white/10">
+                <div className="text-xs font-semibold uppercase tracking-[0.18em] text-zinc-500 dark:text-zinc-400">Total</div>
+                <div className="mt-1 text-2xl font-semibold">{formatNumber(websiteFeedback.length)}</div>
+              </div>
+              <div className="rounded-2xl border border-zinc-200 px-4 py-3 dark:border-white/10">
+                <div className="text-xs font-semibold uppercase tracking-[0.18em] text-zinc-500 dark:text-zinc-400">Avg rating</div>
+                <div className="mt-1 text-2xl font-semibold">
+                  {averageWebsiteRating === null ? "No ratings" : `${averageWebsiteRating.toFixed(1)} / 5`}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-5 space-y-3">
+            {websiteFeedback.length === 0 ? (
+              <div className="rounded-2xl border border-dashed border-zinc-200 px-4 py-6 text-sm text-zinc-500 dark:border-white/10 dark:text-zinc-400">
+                No website feedback has been submitted yet.
+              </div>
+            ) : websiteFeedback.map((item) => (
+              <div key={item.id} className="rounded-[1.4rem] border border-zinc-200 px-4 py-4 dark:border-white/10">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                  <div>
+                    <div className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+                      {item.score ? `Rating ${item.score} / 5` : "Comment only"}
+                    </div>
+                    <div className="mt-1 text-xs uppercase tracking-[0.16em] text-zinc-500 dark:text-zinc-400">
+                      {formatDate(item.createdAt)} • {item.page} • {formatDurationMs(item.timeOnSiteMs)} on site
+                    </div>
+                  </div>
+                </div>
+                {item.comment ? (
+                  <p className="mt-3 whitespace-pre-wrap text-sm leading-6 text-zinc-700 dark:text-zinc-300">
+                    {item.comment}
+                  </p>
+                ) : (
+                  <p className="mt-3 text-sm text-zinc-500 dark:text-zinc-400">No written comment.</p>
+                )}
+              </div>
+            ))}
+          </div>
         </section>
 
         <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">

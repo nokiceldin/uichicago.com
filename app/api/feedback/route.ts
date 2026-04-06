@@ -7,10 +7,65 @@ import { getPostHogClient } from "@/app/lib/posthog-server";
 
 const FEEDBACK_LOG_DIR = path.join(process.cwd(), "artifacts", "feedback");
 const BAD_RESPONSES_LOG_PATH = path.join(FEEDBACK_LOG_DIR, "bad-chat-responses.jsonl");
+const WEBSITE_FEEDBACK_LOG_PATH = path.join(FEEDBACK_LOG_DIR, "website-feedback.jsonl");
 
 export async function POST(req: NextRequest) {
   try {
-    const { question, answer, rating } = await req.json();
+    const body = await req.json();
+    const { question, answer, rating, type } = body;
+
+    if (type === "website") {
+      const score = Number(body.score);
+      const comment = String(body.comment ?? "").trim().slice(0, 3000);
+      const page = String(body.page ?? "unknown").slice(0, 500);
+      const timeOnSiteMs = Number(body.timeOnSiteMs ?? 0);
+      const submittedAt = new Date().toISOString();
+
+      if ((!Number.isInteger(score) || score < 1 || score > 5) && !comment) {
+        return NextResponse.json({ error: "Invalid payload" }, { status: 400 });
+      }
+
+      const message = JSON.stringify({
+        type: "website",
+        score: Number.isInteger(score) && score >= 1 && score <= 5 ? score : null,
+        comment,
+        page,
+        timeOnSiteMs: Number.isFinite(timeOnSiteMs) ? Math.max(0, Math.round(timeOnSiteMs)) : 0,
+        submittedAt,
+      });
+
+      await mkdir(FEEDBACK_LOG_DIR, { recursive: true });
+      await appendFile(WEBSITE_FEEDBACK_LOG_PATH, `${message}\n`, "utf8");
+
+      try {
+        await prisma.feedback.create({
+          data: {
+            message,
+            rating: "website",
+          },
+        });
+      } catch (dbErr) {
+        console.error("[feedback POST][website][db]", dbErr);
+      }
+
+      try {
+        const posthog = getPostHogClient();
+        posthog.capture({
+          distinctId: "anonymous",
+          event: "website_feedback_submitted",
+          properties: {
+            score: Number.isInteger(score) && score >= 1 && score <= 5 ? score : null,
+            has_comment: !!comment,
+            page,
+          },
+        });
+      } catch (posthogErr) {
+        console.error("[feedback POST][website][posthog]", posthogErr);
+      }
+
+      return NextResponse.json({ ok: true });
+    }
+
     if (!question || !answer || !["good", "bad"].includes(rating)) {
       return NextResponse.json({ error: "Invalid payload" }, { status: 400 });
     }
@@ -71,6 +126,11 @@ export async function POST(req: NextRequest) {
 export async function GET() {
   try {
     const rows = await prisma.feedback.findMany({
+      where: {
+        rating: {
+          in: ["good", "bad"],
+        },
+      },
       orderBy: { createdAt: "desc" },
       take: 40,
       select: { message: true, rating: true },

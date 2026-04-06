@@ -55,6 +55,8 @@ import { estimateFlashcardCountFromText, parseExplicitFlashcardsFromText } from 
 const STORAGE_KEY = "uic-atlas-study-library-v1";
 const MATCH_BESTS_KEY = "uic-atlas-study-match-bests-v1";
 const CUSTOM_FOLDERS_KEY = "uic-atlas-study-custom-folders-v1";
+const LIBRARY_SYNC_EVENT = "uic-atlas-study-library-sync";
+const FOLDERS_SYNC_EVENT = "uic-atlas-study-folders-sync";
 
 /**
  * Speak `text` using a natural English voice.
@@ -199,6 +201,10 @@ type DraftGuideErrors = {
   content?: string;
   guide?: string;
 };
+type ImportedSourceFile = {
+  name: string;
+  kind: "pdf" | "text";
+};
 
 type StudyWorkspaceProps = {
   forcedSetId?: string;
@@ -209,6 +215,7 @@ type SaveDestinationDialogState = {
   afterSave: "overview" | "learn";
   folder: string;
   newFolderName: string;
+  isEditing: boolean;
 } | null;
 
 type TriviaQuestion = {
@@ -362,6 +369,7 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
   const isCreateRoute = pathname === "/study/create";
   const createType = searchParams.get("type") === "guide" ? "guide" : "flashcards";
   const isGuideCreateRoute = isCreateRoute && createType === "guide";
+  const editSetId = isCreateRoute && !isGuideCreateRoute ? searchParams.get("edit") : null;
   const [hydrated, setHydrated] = useState(false);
   const [library, setLibrary] = useState<StudyLibraryState>(DEFAULT_STUDY_LIBRARY);
   const [surface, setSurface] = useState<StudySurface>("home");
@@ -399,7 +407,10 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
   const [draggingCardId, setDraggingCardId] = useState<string | null>(null);
   const [toast, setToast] = useState<StudyToast>(null);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isImportingFiles, setIsImportingFiles] = useState(false);
+  const [importedSourceFiles, setImportedSourceFiles] = useState<ImportedSourceFile[]>([]);
   const [generatedGuide, setGeneratedGuide] = useState<StructuredLectureNotes | null>(null);
+  const [shouldCreateGuideFlashcards, setShouldCreateGuideFlashcards] = useState(true);
   const [triviaSessionQuestions] = useState<TriviaQuestion[]>(() => {
     const shuffled = [...HOME_TRIVIA_QUESTIONS].sort(() => Math.random() - 0.5);
     return shuffled.slice(0, 10);
@@ -409,11 +420,55 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
   const [triviaCorrectCount, setTriviaCorrectCount] = useState(0);
   const [triviaSessionDone, setTriviaSessionDone] = useState(false);
   const [libraryItemMenuOpen, setLibraryItemMenuOpen] = useState<string | null>(null);
+  const lastLibrarySerializedRef = useRef("");
+  const lastFoldersSerializedRef = useRef("");
+  const isEditingFlashcardSet = Boolean(editSetId && library.sets.some((set) => set.id === editSetId));
+
+  const syncLibraryFromStorage = () => {
+    try {
+      const raw = window.localStorage.getItem(STORAGE_KEY);
+      if (!raw || raw === lastLibrarySerializedRef.current) return;
+      const parsed = JSON.parse(raw) as StudyLibraryState;
+      lastLibrarySerializedRef.current = raw;
+      setLibrary({
+        sets: parsed.sets ?? DEFAULT_STUDY_LIBRARY.sets,
+        groups: parsed.groups ?? DEFAULT_STUDY_LIBRARY.groups,
+        notes: parsed.notes ?? DEFAULT_STUDY_LIBRARY.notes,
+        noteAudioSessions: parsed.noteAudioSessions ?? DEFAULT_STUDY_LIBRARY.noteAudioSessions,
+        noteAiLogs: parsed.noteAiLogs ?? DEFAULT_STUDY_LIBRARY.noteAiLogs,
+        progress: parsed.progress ?? {},
+        sessions: parsed.sessions ?? [],
+        quizResults: parsed.quizResults ?? [],
+      });
+    } catch {
+      lastLibrarySerializedRef.current = "";
+      setLibrary(DEFAULT_STUDY_LIBRARY);
+    }
+  };
+
+  const syncFoldersFromStorage = () => {
+    try {
+      const rawFolders = window.localStorage.getItem(CUSTOM_FOLDERS_KEY);
+      const serializedFolders = rawFolders ?? "[]";
+      if (serializedFolders === lastFoldersSerializedRef.current) return;
+      const parsedFolders = rawFolders ? JSON.parse(rawFolders) : [];
+      lastFoldersSerializedRef.current = serializedFolders;
+      setCustomFolders(
+        Array.isArray(parsedFolders)
+          ? parsedFolders.map((entry) => normalizeFolderPath(String(entry))).filter(Boolean)
+          : [],
+      );
+    } catch {
+      lastFoldersSerializedRef.current = "[]";
+      setCustomFolders([]);
+    }
+  };
 
   useEffect(() => {
     try {
       const raw = window.localStorage.getItem(STORAGE_KEY);
       if (raw) {
+        lastLibrarySerializedRef.current = raw;
         const parsed = JSON.parse(raw) as StudyLibraryState;
         setLibrary({
           sets: parsed.sets ?? DEFAULT_STUDY_LIBRARY.sets,
@@ -429,14 +484,13 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
       }
 
       const rawFolders = window.localStorage.getItem(CUSTOM_FOLDERS_KEY);
-      if (rawFolders) {
-        const parsedFolders = JSON.parse(rawFolders);
-        setCustomFolders(
-          Array.isArray(parsedFolders)
-            ? parsedFolders.map((entry) => normalizeFolderPath(String(entry))).filter(Boolean)
-            : [],
-        );
-      }
+      const parsedFolders = rawFolders ? JSON.parse(rawFolders) : [];
+      lastFoldersSerializedRef.current = rawFolders ?? "[]";
+      setCustomFolders(
+        Array.isArray(parsedFolders)
+          ? parsedFolders.map((entry) => normalizeFolderPath(String(entry))).filter(Boolean)
+          : [],
+      );
     } catch {
       setLibrary(DEFAULT_STUDY_LIBRARY);
       setCustomFolders([]);
@@ -599,7 +653,11 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
 
   useEffect(() => {
     if (!hydrated) return;
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(library));
+    const serialized = JSON.stringify(library);
+    if (serialized === lastLibrarySerializedRef.current) return;
+    window.localStorage.setItem(STORAGE_KEY, serialized);
+    lastLibrarySerializedRef.current = serialized;
+    window.dispatchEvent(new CustomEvent(LIBRARY_SYNC_EVENT));
   }, [hydrated, library]);
 
   useEffect(() => {
@@ -651,8 +709,31 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
   }, [toast]);
 
   useEffect(() => {
-    window.localStorage.setItem(CUSTOM_FOLDERS_KEY, JSON.stringify(customFolders));
-  }, [customFolders]);
+    if (!hydrated) return;
+    const serialized = JSON.stringify(customFolders);
+    if (serialized === lastFoldersSerializedRef.current) return;
+    window.localStorage.setItem(CUSTOM_FOLDERS_KEY, serialized);
+    lastFoldersSerializedRef.current = serialized;
+    window.dispatchEvent(new CustomEvent(FOLDERS_SYNC_EVENT));
+  }, [customFolders, hydrated]);
+
+  useEffect(() => {
+    const handleStorage = (event: StorageEvent) => {
+      if (event.key === STORAGE_KEY) syncLibraryFromStorage();
+      if (event.key === CUSTOM_FOLDERS_KEY) syncFoldersFromStorage();
+    };
+    const handleLibrarySync = () => syncLibraryFromStorage();
+    const handleFoldersSync = () => syncFoldersFromStorage();
+
+    window.addEventListener("storage", handleStorage);
+    window.addEventListener(LIBRARY_SYNC_EVENT, handleLibrarySync);
+    window.addEventListener(FOLDERS_SYNC_EVENT, handleFoldersSync);
+    return () => {
+      window.removeEventListener("storage", handleStorage);
+      window.removeEventListener(LIBRARY_SYNC_EVENT, handleLibrarySync);
+      window.removeEventListener(FOLDERS_SYNC_EVENT, handleFoldersSync);
+    };
+  }, []);
 
   const activeTriviaQuestion = triviaSessionQuestions[triviaIndex] ?? triviaSessionQuestions[0];
 
@@ -1035,10 +1116,12 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
   };
 
   const openSaveDestinationDialog = (afterSave: "overview" | "learn") => {
+    const editSetId = searchParams.get("edit");
     setSaveDestinationDialog({
       afterSave,
       folder: normalizeFolderPath(draftSet.folder || ""),
       newFolderName: "",
+      isEditing: Boolean(editSetId && library.sets.some((set) => set.id === editSetId)),
     });
   };
 
@@ -1461,20 +1544,55 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
     }
   };
 
-  const importPdfFile = async (file: File) => {
-    const formData = new FormData();
-    formData.append("file", file);
+  const importPdfFiles = async (files: File[]) => {
+    if (!files.length) return;
+
+    setIsImportingFiles(true);
     try {
-      const response = await fetch("/api/study/parse-pdf", {
-        method: "POST",
-        body: formData,
+      const importedTexts: string[] = [];
+      const importedFiles: ImportedSourceFile[] = [];
+
+      for (const file of files) {
+        const formData = new FormData();
+        formData.append("file", file);
+
+        const response = await fetch("/api/study/parse-pdf", {
+          method: "POST",
+          body: formData,
+        });
+        const payload = await response.json();
+        if (!response.ok) throw new Error(payload.error || `Could not read ${file.name}.`);
+
+        if (typeof payload.text === "string" && payload.text.trim()) {
+          importedTexts.push(`Source file: ${file.name}\n${payload.text.trim()}`);
+          importedFiles.push({
+            name: file.name,
+            kind: file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf") ? "pdf" : "text",
+          });
+        }
+      }
+
+      setImportText((current) => [current, ...importedTexts].filter(Boolean).join("\n\n").trim());
+      setImportedSourceFiles((current) => {
+        const seen = new Set(current.map((file) => `${file.kind}:${file.name.toLowerCase()}`));
+        const next = [...current];
+        for (const file of importedFiles) {
+          const key = `${file.kind}:${file.name.toLowerCase()}`;
+          if (seen.has(key)) continue;
+          seen.add(key);
+          next.push(file);
+        }
+        return next;
       });
-      const payload = await response.json();
-      if (!response.ok) throw new Error(payload.error || "Could not read that file.");
-      setImportText((current) => [current, payload.text].filter(Boolean).join("\n\n").trim());
-      showToast(file.type === "application/pdf" ? "PDF text added." : "File text added.");
+      showToast(
+        importedFiles.length === 1
+          ? `${importedFiles[0]?.kind === "pdf" ? "PDF" : "File"} added.`
+          : `${importedFiles.length} files added.`,
+      );
     } catch (error) {
-      showToast(error instanceof Error ? error.message : "Could not import that file.", "error");
+      showToast(error instanceof Error ? error.message : "Could not import those files.", "error");
+    } finally {
+      setIsImportingFiles(false);
     }
   };
 
@@ -1510,6 +1628,7 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
       createdAt: draftGuide.createdAt || now,
       lastOpenedAt: now,
     };
+    let generatedSetTitle = "";
 
     if (nextGuide.visibility === "public") {
       try {
@@ -1549,13 +1668,110 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
       };
     });
 
+    if (shouldCreateGuideFlashcards) {
+      try {
+        const explicitCards = parseExplicitFlashcardsFromText(importText);
+        const flashcardResponse = await fetch("/api/study/generate-flashcards", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            sourceMaterial: importText,
+            course: nextGuide.course,
+            topic: nextGuide.subject || nextGuide.title,
+            desiredCount: explicitCards.length || estimateFlashcardCountFromText(importText),
+            difficultyTarget: "medium",
+          }),
+        });
+        const flashcardPayload = await flashcardResponse.json();
+        if (!flashcardResponse.ok) {
+          throw new Error(flashcardPayload.error || "Failed to generate flashcards.");
+        }
+
+        const nextSet: StudySet = {
+          id: createStudyId("set"),
+          title:
+            typeof flashcardPayload.setTitle === "string" && flashcardPayload.setTitle.trim()
+              ? flashcardPayload.setTitle.trim()
+              : `${nextGuide.title} Flashcards`,
+          description: `Generated from ${nextGuide.title}.`,
+          folder: normalizeFolderPath(nextGuide.folder || ""),
+          course: nextGuide.course,
+          subject: nextGuide.subject || "General",
+          tags: Array.from(new Set([...(nextGuide.tags || []), "study-guide"])),
+          difficulty: "medium",
+          visibility: nextGuide.visibility,
+          createdAt: now,
+          updatedAt: now,
+          cards: (Array.isArray(flashcardPayload.cards) ? flashcardPayload.cards : [])
+            .map((card: GeneratedCardPayload, index: number) => ({
+              ...emptyDraftCard(index),
+              front: card.front?.trim() || "",
+              back: card.back?.trim() || "",
+              hint: card.hint || "",
+              difficulty: card.difficulty || "medium",
+              tags: Array.isArray(card.tags) ? card.tags : [],
+            }))
+            .filter((card) => card.front && card.back),
+        };
+
+        if (!nextSet.cards.length) {
+          throw new Error("The guide was saved, but no flashcards could be generated from that material.");
+        }
+
+        if (nextSet.visibility === "public") {
+          try {
+            const publishResponse = await fetch("/api/study/public-sets", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ set: nextSet }),
+            });
+            const publishPayload = await publishResponse.json();
+            if (!publishResponse.ok) {
+              nextSet.visibility = "private";
+              showToast(publishPayload.error || "The flashcard set was saved privately instead.", "error");
+            }
+          } catch {
+            nextSet.visibility = "private";
+            showToast("Could not publish the flashcard set, so it was saved privately instead.", "error");
+          }
+        }
+
+        setLibrary((current) => ({
+          ...current,
+          sets: [nextSet, ...current.sets],
+        }));
+
+        if (isSignedIn) {
+          try {
+            await fetch("/api/study/sets", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ set: nextSet }),
+            });
+          } catch {
+            showToast("Guide saved locally, but flashcard sync failed.", "error");
+          }
+        }
+
+        generatedSetTitle = nextSet.title;
+      } catch (error) {
+        showToast(error instanceof Error ? error.message : "The guide was saved, but flashcard generation failed.", "error");
+      }
+    }
+
     if (nextGuide.visibility !== "public") {
-      showToast("Study guide saved.");
+      showToast(
+        shouldCreateGuideFlashcards && generatedSetTitle
+          ? `Study guide saved. Flashcards created in "${generatedSetTitle}".`
+          : "Study guide saved.",
+      );
     }
 
     setDraftGuide(emptyDraftGuide());
     setGeneratedGuide(null);
     setImportText("");
+    setImportedSourceFiles([]);
+    setShouldCreateGuideFlashcards(true);
     router.push(`/study?mode=notes&note=${encodeURIComponent(nextGuide.id)}`);
   };
 
@@ -1872,7 +2088,11 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
           <div className="study-appear mb-8 flex items-center justify-between gap-4">
             <div>
               <h1 className="text-[2rem] font-bold tracking-[-0.04em] text-white">
-                {isGuideCreateRoute ? "Create a new study guide" : "Create a new flashcard set"}
+                {isGuideCreateRoute
+                  ? "Create a new study guide"
+                  : isEditingFlashcardSet
+                    ? "Edit flashcard set"
+                    : "Create a new flashcard set"}
               </h1>
             </div>
             <button
@@ -1893,24 +2113,30 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
               courseSuggestions={courseSuggestions}
               importText={importText}
               isGenerating={isGenerating}
+              isImportingFiles={isImportingFiles}
+              importedSourceFiles={importedSourceFiles}
               draftGuideErrors={draftGuideErrors}
               onDraftGuideChange={setDraftGuide}
               onImportTextChange={setImportText}
               onGenerate={generateStudyGuide}
-              onImportPdfFile={importPdfFile}
+              onImportPdfFiles={importPdfFiles}
               onSave={saveStudyGuide}
+              shouldCreateFlashcards={shouldCreateGuideFlashcards}
+              onShouldCreateFlashcardsChange={setShouldCreateGuideFlashcards}
             />
           ) : (
             <CreateView
               draftSet={draftSet}
               importText={importText}
               isGenerating={isGenerating}
+              isImportingFiles={isImportingFiles}
+              importedSourceFiles={importedSourceFiles}
               draggingCardId={draggingCardId}
-              isEditing={Boolean(searchParams.get("edit"))}
+              isEditing={isEditingFlashcardSet}
               onDraftSetChange={setDraftSet}
               onImportTextChange={setImportText}
               onGenerateWithAi={generateWithAi}
-              onImportPdfFile={importPdfFile}
+              onImportPdfFiles={importPdfFiles}
               onImportFromText={importFromText}
               onRequestSave={openSaveDestinationDialog}
               onDeleteSet={deleteDraftSet}
@@ -3953,13 +4179,15 @@ function CreateView({
   draftSet,
   importText,
   isGenerating,
+  isImportingFiles,
+  importedSourceFiles,
   draftSetErrors,
   draggingCardId,
   isEditing,
   onDraftSetChange,
   onImportTextChange,
   onGenerateWithAi,
-  onImportPdfFile,
+  onImportPdfFiles,
   onImportFromText,
   onRequestSave,
   onDeleteSet,
@@ -3970,13 +4198,15 @@ function CreateView({
   draftSet: StudySet;
   importText: string;
   isGenerating: boolean;
+  isImportingFiles: boolean;
+  importedSourceFiles: ImportedSourceFile[];
   draftSetErrors: DraftSetErrors;
   draggingCardId: string | null;
   isEditing: boolean;
   onDraftSetChange: React.Dispatch<React.SetStateAction<StudySet>>;
   onImportTextChange: (value: string) => void;
   onGenerateWithAi: () => void;
-  onImportPdfFile: (file: File) => Promise<void>;
+  onImportPdfFiles: (files: File[]) => Promise<void>;
   onImportFromText: () => void;
   onRequestSave: (afterSave: "overview" | "learn") => void;
   onDeleteSet: () => void;
@@ -3986,6 +4216,8 @@ function CreateView({
 }) {
   const [cardSearchOpen, setCardSearchOpen] = useState(false);
   const [cardSearchQuery, setCardSearchQuery] = useState("");
+  const primarySaveLabel = isEditing ? "Save" : "Create";
+  const practiceSaveLabel = isEditing ? "Save and practice" : "Create and practice";
 
   const visibleCards = useMemo(() => {
     const query = cardSearchQuery.trim().toLowerCase();
@@ -4033,14 +4265,14 @@ function CreateView({
                 {...magneticHoverProps}
                 className="study-premium-button rounded-full bg-white/16 px-5 py-2.5 text-sm font-semibold text-white"
               >
-                Create
+                {primarySaveLabel}
               </button>
               <button
                 onClick={() => onRequestSave("learn")}
                 {...magneticHoverProps}
                 className="study-premium-button rounded-full bg-[#5561ff] px-5 py-2.5 text-sm font-semibold text-white shadow-[0_12px_24px_rgba(85,97,255,0.24)]"
               >
-                Create and practice
+                {practiceSaveLabel}
               </button>
             </div>
           </div>
@@ -4225,14 +4457,14 @@ function CreateView({
               {...magneticHoverProps}
               className="study-premium-button rounded-full bg-white/12 px-5 py-2.5 text-sm font-semibold text-white"
             >
-              Create
+              {primarySaveLabel}
             </button>
             <button
               onClick={() => onRequestSave("learn")}
               {...magneticHoverProps}
               className="study-premium-button rounded-full bg-[#5561ff] px-5 py-2.5 text-sm font-semibold text-white"
             >
-              Create and practice
+              {practiceSaveLabel}
             </button>
           </div>
         </div>
@@ -4263,6 +4495,19 @@ function CreateView({
               placeholder="Enter a prompt (e.g. “summarize photosynthesis”), paste notes or upload a document to create flashcards."
               className="w-full rounded-xl border border-white/10 bg-[#3b446a] px-4 py-4 text-sm leading-7 text-white outline-none placeholder:text-zinc-200"
             />
+            {importedSourceFiles.length ? (
+              <div className="mt-3 flex flex-wrap gap-2">
+                {importedSourceFiles.map((file) => (
+                  <span
+                    key={`${file.kind}:${file.name}`}
+                    className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/8 px-3 py-1 text-xs font-medium text-zinc-100"
+                  >
+                    <FileText className="h-3.5 w-3.5 text-[#9cd0ff]" />
+                    {file.name}
+                  </span>
+                ))}
+              </div>
+            ) : null}
             <div className="mt-2 text-right text-xs text-zinc-300">
               {importText.length.toLocaleString()}/100,000 characters
             </div>
@@ -4271,22 +4516,23 @@ function CreateView({
           <div className="mt-6 flex items-center gap-3">
             <label className="inline-flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-full bg-white/12 px-4 py-3 text-sm font-semibold text-white transition hover:bg-white/16">
               <Plus className="h-4 w-4" />
-              Upload
+              {isImportingFiles ? "Uploading..." : "Upload PDFs"}
               <input
                 type="file"
                 accept=".pdf,.txt,text/plain,application/pdf"
+                multiple
                 className="hidden"
                 onChange={(event) => {
-                  const file = event.target.files?.[0];
-                  if (!file) return;
-                  void onImportPdfFile(file);
+                  const files = Array.from(event.target.files ?? []);
+                  if (!files.length) return;
+                  void onImportPdfFiles(files);
                   event.currentTarget.value = "";
                 }}
               />
             </label>
             <button
               onClick={onGenerateWithAi}
-              disabled={isGenerating}
+              disabled={isGenerating || isImportingFiles}
               {...magneticHoverProps}
               className="study-premium-button flex-1 rounded-full bg-[#2f355a] px-4 py-3 text-sm font-semibold text-white disabled:opacity-50"
             >
@@ -4314,10 +4560,12 @@ function SaveSetDialog({
 }) {
   return (
     <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/20 px-4 pt-16 backdrop-blur-[2px]">
-      <div className="w-full max-w-120 rounded-[1.7rem] border border-white/10 bg-[#171b42] p-6 shadow-[0_28px_80px_rgba(0,0,0,0.42)]">
+        <div className="w-full max-w-120 rounded-[1.7rem] border border-white/10 bg-[#171b42] p-6 shadow-[0_28px_80px_rgba(0,0,0,0.42)]">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <div className="text-[1.55rem] font-bold tracking-[-0.04em] text-white">Save flashcard set</div>
+            <div className="text-[1.55rem] font-bold tracking-[-0.04em] text-white">
+              {dialog.isEditing ? "Save flashcard set" : "Create flashcard set"}
+            </div>
             <div className="mt-2 text-sm leading-6 text-zinc-300">
               Choose a folder, or leave it without one. You can also create a new folder right now.
             </div>
@@ -4381,7 +4629,9 @@ function SaveSetDialog({
             onClick={onConfirm}
             className="rounded-full bg-[#5561ff] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#6570ff]"
           >
-            {dialog.afterSave === "learn" ? "Create and practice" : "Create"}
+            {dialog.afterSave === "learn"
+              ? dialog.isEditing ? "Save and practice" : "Create and practice"
+              : dialog.isEditing ? "Save" : "Create"}
           </button>
         </div>
       </div>
@@ -4396,12 +4646,16 @@ function GuideCreateView({
   courseSuggestions,
   importText,
   isGenerating,
+  isImportingFiles,
+  importedSourceFiles,
   draftGuideErrors,
   onDraftGuideChange,
   onImportTextChange,
   onGenerate,
-  onImportPdfFile,
+  onImportPdfFiles,
   onSave,
+  shouldCreateFlashcards,
+  onShouldCreateFlashcardsChange,
 }: {
   draftGuide: StudyNote;
   generatedGuide: StructuredLectureNotes | null;
@@ -4409,225 +4663,312 @@ function GuideCreateView({
   courseSuggestions: StudyCourseSuggestion[];
   importText: string;
   isGenerating: boolean;
+  isImportingFiles: boolean;
+  importedSourceFiles: ImportedSourceFile[];
   draftGuideErrors: DraftGuideErrors;
   onDraftGuideChange: React.Dispatch<React.SetStateAction<StudyNote>>;
   onImportTextChange: (value: string) => void;
   onGenerate: () => void;
-  onImportPdfFile: (file: File) => Promise<void>;
+  onImportPdfFiles: (files: File[]) => Promise<void>;
   onSave: () => void;
+  shouldCreateFlashcards: boolean;
+  onShouldCreateFlashcardsChange: React.Dispatch<React.SetStateAction<boolean>>;
 }) {
+  const [folderPickerOpen, setFolderPickerOpen] = useState(false);
+
   return (
-    <div className="grid gap-5 2xl:grid-cols-[minmax(0,1fr)_360px]">
-      <div className="space-y-5">
-        <div className="study-premium-panel study-appear rounded-3xl p-5 backdrop-blur-xl">
-          <div className="flex items-center justify-between gap-4 border-b border-white/10 pb-4">
-            <div className="text-sm font-semibold text-white">Paste text or upload a PDF</div>
-            <label className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-semibold text-zinc-100 transition hover:bg-white/8">
-              <FileText className="h-4 w-4" />
-              Upload PDF
-              <input
-                type="file"
-                accept=".pdf,.txt,text/plain,application/pdf"
-                className="hidden"
-                onChange={(event) => {
-                  const file = event.target.files?.[0];
-                  if (!file) return;
-                  void onImportPdfFile(file);
-                  event.currentTarget.value = "";
-                }}
-              />
-            </label>
+    <div className="study-premium-panel study-appear rounded-[2rem] p-5 backdrop-blur-xl sm:p-6">
+      <div className="flex flex-col gap-5 border-b border-white/10 pb-6">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+          <div className="max-w-2xl">
+            <div className="text-xs font-bold uppercase tracking-[0.22em] text-zinc-500">Study guide builder</div>
+            <h2 className="mt-2 text-[1.55rem] font-semibold tracking-[-0.03em] text-white">Everything in one place</h2>
+            <p className="mt-2 text-sm leading-6 text-zinc-400">
+              Add your title, paste notes or upload PDFs, then generate the guide. Flashcards are created too unless you turn that off.
+            </p>
           </div>
 
-          <div className="mt-4">
-            <textarea
-              value={importText}
-              onChange={(event) => onImportTextChange(event.target.value)}
-              rows={10}
-              placeholder="Paste the text you want turned into a study guide."
-              className={`w-full rounded-xl border px-4 py-4 text-sm leading-7 text-white outline-none placeholder:text-zinc-300 ${
-                draftGuideErrors.content ? "border-red-400/40 bg-[#4c3554]" : "border-white/10 bg-[#49527a]"
-              }`}
-            />
-            <div className="mt-2 flex items-center justify-between gap-3">
-              {draftGuideErrors.content ? <span className="text-xs text-red-300">{draftGuideErrors.content}</span> : <span />}
-              <div className="text-right text-xs text-zinc-500">
-                {importText.length.toLocaleString()}/100,000 characters
-              </div>
-            </div>
-          </div>
-
-          <div className="mt-10 flex items-center justify-between gap-4">
-            <div className="max-w-md text-xs leading-6 text-zinc-500">
-              Study guides stay separate from flashcards here. This flow only creates a structured guide from your text.
-            </div>
+          <div className="flex flex-wrap items-center gap-2">
             <button
-              onClick={onGenerate}
-              disabled={isGenerating}
-              {...magneticHoverProps}
-              className="study-premium-button rounded-full bg-white/10 px-5 py-3 text-sm font-semibold text-white disabled:opacity-50"
+              type="button"
+              onClick={() =>
+                onDraftGuideChange((current) => ({
+                  ...current,
+                  visibility: current.visibility === "public" ? "private" : "public",
+                }))
+              }
+              className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/6 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/10"
             >
-              {isGenerating ? "Generating..." : "Generate guide"}
+              <VisibilityIcon visibility={draftGuide.visibility} />
+              {draftGuide.visibility === "public" ? "Public" : "Private"}
             </button>
+
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => setFolderPickerOpen((current) => !current)}
+                className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/6 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/10"
+              >
+                <Folder className="h-4 w-4" />
+                {draftGuide.folder ? folderLabelFromPath(draftGuide.folder) : "Folder"}
+                <ChevronDown className="h-3.5 w-3.5 text-zinc-400" />
+              </button>
+
+              {folderPickerOpen ? (
+                <div className="absolute right-0 z-20 mt-2 w-72 rounded-[1.4rem] border border-white/10 bg-[#171b42] p-4 shadow-[0_24px_60px_rgba(0,0,0,0.35)]">
+                  <div className="text-xs font-semibold uppercase tracking-[0.18em] text-zinc-500">Save in folder</div>
+                  <input
+                    value={draftGuide.folder || ""}
+                    onChange={(event) =>
+                      onDraftGuideChange((current) => ({
+                        ...current,
+                        folder: normalizeFolderPath(event.target.value),
+                      }))
+                    }
+                    placeholder="Type a new folder name"
+                    className="mt-3 h-11 w-full rounded-xl border border-white/10 bg-white/5 px-4 text-sm text-white outline-none placeholder:text-zinc-500"
+                  />
+                  {availableFolders.length ? (
+                    <div className="mt-3 flex max-h-40 flex-wrap gap-2 overflow-y-auto">
+                      {availableFolders.map((folder) => (
+                        <button
+                          key={folder}
+                          type="button"
+                          onClick={() => {
+                            onDraftGuideChange((current) => ({ ...current, folder }));
+                            setFolderPickerOpen(false);
+                          }}
+                          className="rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-medium text-zinc-200 transition hover:bg-white/10"
+                        >
+                          {folder}
+                        </button>
+                      ))}
+                    </div>
+                  ) : null}
+                </div>
+              ) : null}
+            </div>
           </div>
         </div>
 
-        <div className="study-premium-panel study-appear rounded-3xl p-5 backdrop-blur-xl">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-            <div>
-              <div className="text-xs font-bold uppercase tracking-[0.22em] text-zinc-500">Guide details</div>
-              <h2 className="mt-2 max-w-lg text-[1.45rem] font-semibold tracking-[-0.03em] text-white">Review and save</h2>
-            </div>
-            <button onClick={onSave} {...magneticHoverProps} className="study-premium-button self-start rounded-xl border border-white/10 bg-white/6 px-4 py-2.5 text-sm font-semibold text-white">
-              Save guide
-            </button>
-          </div>
+        <div className="grid gap-4 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,0.85fr)]">
+          <label className="grid gap-2">
+            <span className="text-xs font-bold uppercase tracking-[0.18em] text-zinc-500">Guide title <span className="text-red-400">*</span></span>
+            <input
+              value={draftGuide.title}
+              onChange={(event) => onDraftGuideChange((current) => ({ ...current, title: event.target.value }))}
+              placeholder="Midterm 2 study guide"
+              className={`study-premium-input rounded-2xl border bg-white/5 px-4 py-3 text-lg font-semibold text-white outline-none placeholder:text-zinc-500 ${
+                draftGuideErrors.title ? "border-red-400/40" : "border-white/10"
+              }`}
+            />
+            {draftGuideErrors.title ? <span className="text-xs text-red-300">{draftGuideErrors.title}</span> : null}
+          </label>
 
-          <div className="mt-6 grid gap-4">
+          <div className="grid gap-4 sm:grid-cols-2">
             <label className="grid gap-2">
-              <span className="text-xs font-bold uppercase tracking-[0.18em] text-zinc-500">Guide title <span className="text-red-400">*</span></span>
+              <span className="text-xs font-bold uppercase tracking-[0.18em] text-zinc-500">Course <span className="text-red-400">*</span></span>
               <input
-                value={draftGuide.title}
-                onChange={(event) => onDraftGuideChange((current) => ({ ...current, title: event.target.value }))}
-                placeholder="Study guide title"
-                className={`study-premium-input rounded-2xl border bg-white/5 px-4 py-3 text-lg font-semibold text-white outline-none placeholder:text-zinc-500 ${
-                  draftGuideErrors.title ? "border-red-400/40" : "border-white/10"
+                list="study-guide-course-suggestions"
+                value={draftGuide.course}
+                onChange={(event) => onDraftGuideChange((current) => ({ ...current, course: event.target.value }))}
+                placeholder="CS 301"
+                className={`study-premium-input rounded-2xl border bg-white/5 px-4 py-3 text-sm text-white outline-none placeholder:text-zinc-500 ${
+                  draftGuideErrors.course ? "border-red-400/40" : "border-white/10"
                 }`}
               />
-              {draftGuideErrors.title ? <span className="text-xs text-red-300">{draftGuideErrors.title}</span> : null}
-            </label>
-
-            <div className="grid gap-3 md:grid-cols-2">
-              <label className="grid gap-2">
-                <span className="text-xs font-bold uppercase tracking-[0.18em] text-zinc-500">Course <span className="text-red-400">*</span></span>
-                <input
-                  list="study-guide-course-suggestions"
-                  value={draftGuide.course}
-                  onChange={(event) => onDraftGuideChange((current) => ({ ...current, course: event.target.value }))}
-                  placeholder="Choose a course like CS 211"
-                  className={`study-premium-input rounded-2xl border bg-white/5 px-4 py-3 text-sm text-white outline-none placeholder:text-zinc-500 ${
-                    draftGuideErrors.course ? "border-red-400/40" : "border-white/10"
-                  }`}
-                />
-                <datalist id="study-guide-course-suggestions">
-                  {courseSuggestions.map((course) => (
-                    <option key={course.id} value={course.code}>
-                      {course.title}
-                    </option>
-                  ))}
-                </datalist>
-                {draftGuideErrors.course ? <span className="text-xs text-red-300">{draftGuideErrors.course}</span> : null}
-              </label>
-              <label className="grid gap-2">
-                <span className="text-xs font-bold uppercase tracking-[0.18em] text-zinc-500">Subject</span>
-                <input
-                  value={draftGuide.subject}
-                  onChange={(event) => onDraftGuideChange((current) => ({ ...current, subject: event.target.value }))}
-                  placeholder="Subject"
-                  className="study-premium-input rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white outline-none placeholder:text-zinc-500"
-                />
-              </label>
-            </div>
-
-            <label className="grid gap-2">
-              <span className="text-xs font-bold uppercase tracking-[0.18em] text-zinc-500">Folder</span>
-              <select
-                value={draftGuide.folder || ""}
-                onChange={(event) => onDraftGuideChange((current) => ({ ...current, folder: event.target.value }))}
-                className="study-premium-input rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white outline-none"
-              >
-                <option value="">No folder</option>
-                {availableFolders.map((folder) => (
-                  <option key={folder} value={folder}>
-                    {folder}
+              <datalist id="study-guide-course-suggestions">
+                {courseSuggestions.map((course) => (
+                  <option key={course.id} value={course.code}>
+                    {course.title}
                   </option>
                 ))}
-              </select>
-              <span className="text-xs text-zinc-500">Choose where this guide should appear in your library.</span>
+              </datalist>
+              {draftGuideErrors.course ? <span className="text-xs text-red-300">{draftGuideErrors.course}</span> : null}
             </label>
-          </div>
 
-          {draftGuideErrors.guide ? (
-            <div className="mt-4 rounded-2xl border border-red-400/20 bg-red-500/8 px-4 py-3 text-sm text-red-200">
-              {draftGuideErrors.guide}
-            </div>
-          ) : null}
-
-          <div className="mt-6">
-            {generatedGuide ? (
-              <div className="space-y-4">
-                <div className="rounded-[1.2rem] border border-emerald-400/10 bg-emerald-500/5 p-4">
-                  <div className="text-xs font-bold uppercase tracking-[0.18em] text-emerald-200/80">Summary</div>
-                  <div className="mt-2 text-sm leading-7 text-zinc-200">{generatedGuide.summary}</div>
-                </div>
-
-                <div className="grid gap-4 md:grid-cols-2">
-                  {generatedGuide.sections.map((section) => (
-                    <div key={section.heading} className="rounded-[1.2rem] border border-white/8 bg-white/3 p-4">
-                      <div className="text-sm font-semibold text-white">{section.heading}</div>
-                      <ul className="mt-3 space-y-2 text-sm leading-6 text-zinc-300">
-                        {section.items.length ? (
-                          section.items.map((item) => <li key={item} className="flex gap-2"><span className="mt-2 h-1.5 w-1.5 rounded-full bg-red-400" /><span>{item}</span></li>)
-                        ) : (
-                          <li className="text-zinc-500">Nothing extracted yet.</li>
-                        )}
-                      </ul>
-                    </div>
-                  ))}
-                </div>
-
-                <div className="grid gap-4 md:grid-cols-2">
-                  <div className="rounded-[1.2rem] border border-white/8 bg-white/3 p-4">
-                    <div className="text-sm font-semibold text-white">Key terms</div>
-                    <div className="mt-3 flex flex-wrap gap-2">
-                      {generatedGuide.keyTerms.length ? generatedGuide.keyTerms.map((term) => (
-                        <span key={term} className="rounded-full border border-white/10 bg-white/4 px-3 py-1.5 text-xs text-zinc-200">
-                          {term}
-                        </span>
-                      )) : <span className="text-sm text-zinc-500">No key terms yet.</span>}
-                    </div>
-                  </div>
-                  <div className="rounded-[1.2rem] border border-white/8 bg-white/3 p-4">
-                    <div className="text-sm font-semibold text-white">Questions to review</div>
-                    <ul className="mt-3 space-y-2 text-sm leading-6 text-zinc-300">
-                      {generatedGuide.questionsToReview.length ? generatedGuide.questionsToReview.map((item) => (
-                        <li key={item} className="flex gap-2"><span className="mt-2 h-1.5 w-1.5 rounded-full bg-sky-400" /><span>{item}</span></li>
-                      )) : <li className="text-zinc-500">No review questions yet.</li>}
-                    </ul>
-                  </div>
-                </div>
-              </div>
-            ) : (
-              <div className="rounded-[1.2rem] border border-dashed border-white/10 bg-white/3 px-5 py-8 text-sm leading-6 text-zinc-400">
-                Generate a study guide to preview the structured summary here before saving.
-              </div>
-            )}
+            <label className="grid gap-2">
+              <span className="text-xs font-bold uppercase tracking-[0.18em] text-zinc-500">Subject</span>
+              <input
+                value={draftGuide.subject}
+                onChange={(event) => onDraftGuideChange((current) => ({ ...current, subject: event.target.value }))}
+                placeholder="Turing Machines"
+                className="study-premium-input rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white outline-none placeholder:text-zinc-500"
+              />
+            </label>
           </div>
         </div>
       </div>
 
-      <div className="space-y-5 2xl:sticky 2xl:top-6 2xl:self-start">
-        <div className="study-premium-panel study-appear rounded-3xl p-5 backdrop-blur-xl">
-          <div className="text-xs font-bold uppercase tracking-[0.22em] text-zinc-500">Publishing</div>
-          <div className="mt-4 grid gap-3">
-            <label className="grid gap-2">
-              <span className="text-xs font-bold uppercase tracking-[0.18em] text-zinc-500">Visibility</span>
-              <select
-                value={draftGuide.visibility}
-                onChange={(event) => onDraftGuideChange((current) => ({ ...current, visibility: event.target.value as StudyNote["visibility"] }))}
-                className="study-premium-input rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white outline-none"
+      <div className="mt-6 grid gap-4">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <div className="text-sm font-semibold text-white">Source material</div>
+            <div className="mt-1 text-sm text-zinc-400">Paste your notes or upload one or more PDFs.</div>
+          </div>
+          <label className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-semibold text-zinc-100 transition hover:bg-white/8">
+            <FileText className="h-4 w-4" />
+            {isImportingFiles ? "Uploading..." : "Upload PDFs"}
+            <input
+              type="file"
+              accept=".pdf,.txt,text/plain,application/pdf"
+              multiple
+              className="hidden"
+              onChange={(event) => {
+                const files = Array.from(event.target.files ?? []);
+                if (!files.length) return;
+                void onImportPdfFiles(files);
+                event.currentTarget.value = "";
+              }}
+            />
+          </label>
+        </div>
+
+        <textarea
+          value={importText}
+          onChange={(event) => onImportTextChange(event.target.value)}
+          rows={11}
+          placeholder="Paste the text you want turned into a study guide."
+          className={`w-full rounded-[1.6rem] border px-4 py-4 text-sm leading-7 text-white outline-none placeholder:text-zinc-300 ${
+            draftGuideErrors.content ? "border-red-400/40 bg-[#4c3554]" : "border-white/10 bg-[#49527a]"
+          }`}
+        />
+
+        {importedSourceFiles.length ? (
+          <div className="flex flex-wrap gap-2">
+            {importedSourceFiles.map((file) => (
+              <span
+                key={`${file.kind}:${file.name}`}
+                className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/8 px-3 py-1 text-xs font-medium text-zinc-100"
               >
-                <option value="private">Private</option>
-                <option value="public">Public</option>
-              </select>
-            </label>
-            <div className="text-xs leading-6 text-zinc-500">
-              {draftGuide.visibility === "public"
-                ? "Public guides are searchable by course for other students."
-                : "Private guides stay in your own library only."}
+                <FileText className="h-3.5 w-3.5 text-[#9cd0ff]" />
+                {file.name}
+              </span>
+            ))}
+          </div>
+        ) : null}
+
+        <div className="flex flex-col gap-3 rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-4 sm:flex-row sm:items-center sm:justify-between">
+          <label className="inline-flex cursor-pointer items-center gap-3 text-sm text-zinc-200">
+            <button
+              type="button"
+              onClick={() => onShouldCreateFlashcardsChange((current) => !current)}
+              className={`flex h-6 w-11 items-center rounded-full border px-1 transition ${
+                shouldCreateFlashcards ? "border-[#6f78ff] bg-[#5964ff]" : "border-white/10 bg-white/10"
+              }`}
+              aria-pressed={shouldCreateFlashcards}
+            >
+              <span
+                className={`h-4 w-4 rounded-full bg-white transition ${shouldCreateFlashcards ? "translate-x-5" : "translate-x-0"}`}
+              />
+            </button>
+            <span>
+              Generate flashcards too
+              <span className="ml-2 text-xs text-zinc-400">On by default</span>
+            </span>
+          </label>
+
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="text-right text-xs text-zinc-500">
+              {draftGuideErrors.content ? <span className="mr-3 text-red-300">{draftGuideErrors.content}</span> : null}
+              {importText.length.toLocaleString()}/100,000 characters
             </div>
+            <button
+              onClick={generatedGuide ? onSave : onGenerate}
+              disabled={isGenerating || isImportingFiles}
+              {...magneticHoverProps}
+              className="study-premium-button rounded-full bg-white/10 px-5 py-3 text-sm font-semibold text-white disabled:opacity-50"
+            >
+              {isGenerating ? "Generating..." : generatedGuide ? "Save guide" : "Generate guide"}
+            </button>
           </div>
         </div>
+
+        <div className="text-xs leading-6 text-zinc-500">
+          {draftGuide.visibility === "public"
+            ? "This guide is set to public. If flashcards are generated too, that set will follow the same visibility unless publishing fails."
+            : "This guide will stay private in your library. If flashcards are generated too, they will be saved privately as well."}
+        </div>
+
+        {draftGuideErrors.guide ? (
+          <div className="rounded-2xl border border-red-400/20 bg-red-500/8 px-4 py-3 text-sm text-red-200">
+            {draftGuideErrors.guide}
+          </div>
+        ) : null}
+      </div>
+
+      <div className="mt-6 border-t border-white/10 pt-6">
+        {generatedGuide ? (
+          <div className="space-y-4">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <div className="text-xs font-bold uppercase tracking-[0.18em] text-zinc-500">Preview</div>
+                <div className="mt-1 text-lg font-semibold text-white">{generatedGuide.title || draftGuide.title || "Generated guide"}</div>
+              </div>
+              <button
+                type="button"
+                onClick={onGenerate}
+                disabled={isGenerating || isImportingFiles}
+                className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-semibold text-zinc-200 transition hover:bg-white/10 disabled:opacity-50"
+              >
+                Regenerate
+              </button>
+            </div>
+
+            <div className="rounded-[1.2rem] border border-emerald-400/10 bg-emerald-500/5 p-4">
+              <div className="text-xs font-bold uppercase tracking-[0.18em] text-emerald-200/80">Summary</div>
+              <div className="mt-2 text-sm leading-7 text-zinc-200">{generatedGuide.summary}</div>
+            </div>
+
+            <div className="grid gap-4 md:grid-cols-2">
+              {generatedGuide.sections.map((section) => (
+                <div key={section.heading} className="rounded-[1.2rem] border border-white/8 bg-white/3 p-4">
+                  <div className="text-sm font-semibold text-white">{section.heading}</div>
+                  <ul className="mt-3 space-y-2 text-sm leading-6 text-zinc-300">
+                    {section.items.length ? (
+                      section.items.map((item) => (
+                        <li key={item} className="flex gap-2">
+                          <span className="mt-2 h-1.5 w-1.5 rounded-full bg-red-400" />
+                          <span>{item}</span>
+                        </li>
+                      ))
+                    ) : (
+                      <li className="text-zinc-500">Nothing extracted yet.</li>
+                    )}
+                  </ul>
+                </div>
+              ))}
+            </div>
+
+            <div className="grid gap-4 md:grid-cols-2">
+              <div className="rounded-[1.2rem] border border-white/8 bg-white/3 p-4">
+                <div className="text-sm font-semibold text-white">Key terms</div>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {generatedGuide.keyTerms.length ? generatedGuide.keyTerms.map((term) => (
+                    <span key={term} className="rounded-full border border-white/10 bg-white/4 px-3 py-1.5 text-xs text-zinc-200">
+                      {term}
+                    </span>
+                  )) : <span className="text-sm text-zinc-500">No key terms yet.</span>}
+                </div>
+              </div>
+              <div className="rounded-[1.2rem] border border-white/8 bg-white/3 p-4">
+                <div className="text-sm font-semibold text-white">Questions to review</div>
+                <ul className="mt-3 space-y-2 text-sm leading-6 text-zinc-300">
+                  {generatedGuide.questionsToReview.length ? generatedGuide.questionsToReview.map((item) => (
+                    <li key={item} className="flex gap-2">
+                      <span className="mt-2 h-1.5 w-1.5 rounded-full bg-sky-400" />
+                      <span>{item}</span>
+                    </li>
+                  )) : <li className="text-zinc-500">No review questions yet.</li>}
+                </ul>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="rounded-[1.2rem] border border-dashed border-white/10 bg-white/3 px-5 py-8 text-sm leading-6 text-zinc-400">
+            Generate the guide to preview the summary, sections, key terms, and review questions here before saving.
+          </div>
+        )}
       </div>
     </div>
   );
@@ -4675,6 +5016,8 @@ function OverviewView({
   const [previewMotion, setPreviewMotion] = useState<"idle" | "next" | "prev">("idle");
   const previewMotionTimeoutRef = useRef<number | null>(null);
   const [trackPreviewProgress, setTrackPreviewProgress] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const panelRef = useRef<HTMLDivElement | null>(null);
   const previewIndex = previewState.setId === set.id ? previewState.index : 0;
   const previewFlipped = previewState.setId === set.id ? previewState.flipped : false;
   const previewCard = set.cards[previewIndex] ?? set.cards[0];
@@ -4714,6 +5057,14 @@ function OverviewView({
     return () => document.removeEventListener("mousedown", handler);
   }, [menuOpen]);
 
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(document.fullscreenElement === panelRef.current);
+    };
+    document.addEventListener("fullscreenchange", handleFullscreenChange);
+    return () => document.removeEventListener("fullscreenchange", handleFullscreenChange);
+  }, []);
+
   const modeTiles = [
     { label: "Flashcards", icon: <Copy className="h-4 w-4" />, active: true, onClick: () => onModeChange("flashcards") },
     { label: "Learn", icon: <Brain className="h-4 w-4" />, active: false, onClick: () => onModeChange("learn") },
@@ -4735,6 +5086,15 @@ function OverviewView({
       const nextFlipped = typeof updater === "function" ? updater(currentFlipped) : updater;
       return { setId: set.id, index: previewIndex, flipped: nextFlipped };
     });
+  };
+
+  const toggleFullscreen = async () => {
+    if (!panelRef.current) return;
+    if (document.fullscreenElement === panelRef.current) {
+      await document.exitFullscreen?.();
+      return;
+    }
+    await panelRef.current.requestFullscreen?.();
   };
 
   const triggerPreviewMotion = (direction: "next" | "prev") => {
@@ -4947,7 +5307,12 @@ function OverviewView({
             ) : null}
           </div>
 
-          <div className="rounded-[1.7rem] border border-white/10 bg-[#444d74] p-6 shadow-[0_24px_60px_rgba(0,0,0,0.24)]">
+          <div
+            ref={panelRef}
+            className={`rounded-[1.7rem] border border-white/10 bg-[#444d74] p-6 shadow-[0_24px_60px_rgba(0,0,0,0.24)] ${
+              isFullscreen ? "study-flashcards-fullscreen min-h-screen overflow-auto p-8" : ""
+            }`}
+          >
             <div className="flex items-center justify-between text-sm text-zinc-200">
               <div className="inline-flex items-center gap-2">
                 <Sparkles className="h-3.5 w-3.5" />
@@ -4990,11 +5355,27 @@ function OverviewView({
             <button
               type="button"
               onClick={() => setPreviewFlipped((current) => !current)}
-              className="relative mt-5 h-72.5 w-full cursor-pointer select-none rounded-3xl perspective-[1400px] outline-none focus:outline-none"
+              className={`relative mt-5 w-full cursor-pointer select-none rounded-3xl perspective-[1400px] outline-none focus:outline-none ${
+                isFullscreen ? "h-[68vh] max-h-190 min-h-130" : "h-72.5"
+              }`}
             >
               <div
                 key={`${previewCard.id}-${previewIndex}`}
-                className={`relative h-full w-full transform-gpu rounded-3xl transition-transform duration-420 ease-[cubic-bezier(0.22,1,0.36,1)] will-change-transform ${previewMotion === "next" ? "study-card-enter-next" : previewMotion === "prev" ? "study-card-enter-prev" : ""}`}
+                className={`relative h-full w-full transform-gpu rounded-3xl will-change-transform ${
+                  isFullscreen
+                    ? "transition-transform duration-1020 ease-[cubic-bezier(0.16,1,0.3,1)]"
+                    : "transition-transform duration-420 ease-[cubic-bezier(0.22,1,0.36,1)]"
+                } ${
+                  previewMotion === "next"
+                    ? isFullscreen
+                      ? "study-card-enter-next-full"
+                      : "study-card-enter-next"
+                    : previewMotion === "prev"
+                      ? isFullscreen
+                        ? "study-card-enter-prev-full"
+                        : "study-card-enter-prev"
+                      : ""
+                }`}
                 style={{
                   transformStyle: "preserve-3d",
                   WebkitTransformStyle: "preserve-3d",
@@ -5061,8 +5442,13 @@ function OverviewView({
               <button onClick={() => onModeChange("match")} className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/8 text-zinc-100">
                 <Shuffle className="h-4 w-4" />
               </button>
-              <button className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/8 text-zinc-100">
-                <Maximize2 className="h-4 w-4" />
+              <button
+                onClick={toggleFullscreen}
+                aria-label={isFullscreen ? "Exit full screen" : "Full screen"}
+                title={isFullscreen ? "Exit full screen" : "Full screen"}
+                className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/8 text-zinc-100"
+              >
+                {isFullscreen ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
               </button>
             </div>
           </div>

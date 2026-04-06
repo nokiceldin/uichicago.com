@@ -26,6 +26,8 @@ type Prof = {
   slug: string;
   isRated?: boolean;
   isSynthetic?: boolean;
+  courseItems?: string[];
+  courseLabels?: string[];
 };
 
 function ratingConfig(v: number, isRated: boolean) {
@@ -310,7 +312,7 @@ export default function Page() {
 
                 <div data-tour={idx === 0 ? "professors-classes" : undefined} className="mt-4">
                   <div className="mb-1 text-[10px] font-bold uppercase tracking-widest text-zinc-400 dark:text-zinc-600">Classes</div>
-                  <ClassesCell profName={p.name} map={courseMap} />
+                  <ClassesCell profName={p.name} map={courseMap} courses={p.courseItems} />
                 </div>
 
                 <div className="mt-4 flex items-center justify-between">
@@ -371,7 +373,7 @@ export default function Page() {
                       <div className="col-span-3 pr-3">
                         <span className="inline-flex items-center rounded-lg bg-zinc-100 dark:bg-white/5 px-2.5 py-1 text-xs font-medium text-zinc-600 dark:text-zinc-400 ring-1 ring-zinc-200 dark:ring-white/8">{p.department}</span>
                       </div>
-                      <div data-tour={idx === 0 ? "professors-classes" : undefined} className="col-span-2 pr-3"><ClassesCell profName={p.name} map={courseMap} /></div>
+                      <div data-tour={idx === 0 ? "professors-classes" : undefined} className="col-span-2 pr-3"><ClassesCell profName={p.name} map={courseMap} courses={p.courseItems} /></div>
                       <div className="col-span-1 flex justify-end">
                         <span className={`inline-flex flex-col items-center rounded-lg px-2.5 py-1.5 text-xs font-black tabular-nums ring-1 ${rc.bg} ${rc.text} ${rc.ring}`}>
                           <span className="text-sm">{p.isRated ? (Number(p.quality) || 0).toFixed(1) : "NR"}</span>

@@ -35,6 +35,36 @@ function slugify(s) {
     .replace(/(^-|-$)/g, "");
 }
 
+function ratingsCountOf(p) {
+  return toInt(p.ratingsCount ?? p["Ratings Count"]) ?? 0;
+}
+
+function qualityOf(p) {
+  return toFloat(p.quality ?? p.Quality) ?? 0;
+}
+
+function dedupeBySlug(arr) {
+  const bySlug = new Map();
+
+  for (const p of arr) {
+    const name = String(p.name ?? p.Name ?? "");
+    const department = String(p.department ?? p.Department ?? "");
+    if (!name || !department) continue;
+
+    const slug = slugify(String(p.slug ?? `${name}-${department}`));
+    const existing = bySlug.get(slug);
+    if (
+      !existing ||
+      ratingsCountOf(p) > ratingsCountOf(existing) ||
+      (ratingsCountOf(p) === ratingsCountOf(existing) && qualityOf(p) > qualityOf(existing))
+    ) {
+      bySlug.set(slug, p);
+    }
+  }
+
+  return [...bySlug.values()];
+}
+
 // Mirrors the SQL backfill logic in the migration.
 // RMP names are "First Last" (no comma), so this just lowercases and strips non-alphanumeric.
 function computeNameNormalized(name) {
@@ -51,15 +81,11 @@ function computeNameNormalized(name) {
 
 async function main() {
   const raw = fs.readFileSync("./public/data/uic_rmp_professors_fixed.json", "utf8");
-  const arr = JSON.parse(raw);
+  const rawArr = JSON.parse(raw);
+  const arr = dedupeBySlug(rawArr);
 
-  console.log("Loaded JSON:", arr.length);
-
-  const existingProfessors = await prisma.professor.findMany({
-    select: { slug: true },
-  });
-
-  const existingSlugs = new Set(existingProfessors.map((p) => p.slug));
+  console.log("Loaded JSON:", rawArr.length);
+  console.log("Unique professor slugs:", arr.length);
 
   let created = 0;
   let skipped = 0;

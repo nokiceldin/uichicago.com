@@ -1711,7 +1711,7 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
               difficulty: card.difficulty || "medium",
               tags: Array.isArray(card.tags) ? card.tags : [],
             }))
-            .filter((card) => card.front && card.back),
+            .filter((card: StudyCard) => card.front && card.back),
         };
 
         if (!nextSet.cards.length) {
@@ -3137,12 +3137,14 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
                 draftSet={draftSet}
                 importText={importText}
                 isGenerating={isGenerating}
+                isImportingFiles={isImportingFiles}
+                importedSourceFiles={importedSourceFiles}
                 draggingCardId={draggingCardId}
                 isEditing={Boolean(searchParams.get("edit"))}
                 onDraftSetChange={setDraftSet}
                 onImportTextChange={setImportText}
                 onGenerateWithAi={generateWithAi}
-                onImportPdfFile={importPdfFile}
+                onImportPdfFiles={importPdfFiles}
                 onImportFromText={importFromText}
                 onRequestSave={openSaveDestinationDialog}
                 onDeleteSet={deleteDraftSet}

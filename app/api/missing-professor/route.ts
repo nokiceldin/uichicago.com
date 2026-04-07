@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { Resend } from "resend"
-import { getPostHogClient } from "@/app/lib/posthog-server"
+import { capturePostHogEvent } from "@/app/lib/posthog-server"
 
 const resend = new Resend(process.env.RESEND_API_KEY)
 
@@ -48,8 +48,7 @@ export async function POST(req: Request) {
         `User-Agent: ${userAgent ?? "N/A"}\n`,
     })
 
-    const posthog = getPostHogClient();
-    posthog.capture({
+    await capturePostHogEvent({
       distinctId: "anonymous",
       event: "missing_professor_api_received",
       properties: {

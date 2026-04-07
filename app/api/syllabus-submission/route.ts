@@ -6,7 +6,6 @@ import { prisma } from "@/lib/prisma";
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 const ALLOWED_FILE_TYPES = [
-  "application/pdf",
   "image/png",
   "image/jpeg",
   "image/webp",
@@ -36,7 +35,7 @@ export async function POST(req: Request) {
     }
 
     if (!ALLOWED_FILE_TYPES.includes(file.type)) {
-      return NextResponse.json({ error: "Unsupported file type. Please upload a PDF, image, text file, or doc." }, { status: 400 });
+      return NextResponse.json({ error: "Unsupported file type. Please use an image, text file, or doc." }, { status: 400 });
     }
 
     if (file.size > 15 * 1024 * 1024) {
@@ -52,11 +51,9 @@ export async function POST(req: Request) {
       mimeType: lowerMimeType,
       data: buffer.toString("base64"),
       fileType:
-        lowerMimeType === "application/pdf"
-          ? "pdf"
-          : lowerMimeType.startsWith("text/")
-            ? "text"
-            : "image",
+        lowerMimeType.startsWith("text/")
+          ? "text"
+          : "image",
     }).catch(() => "");
 
     const submission = await prisma.syllabusSubmission.create({

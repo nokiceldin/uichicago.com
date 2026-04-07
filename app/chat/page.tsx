@@ -1265,9 +1265,7 @@ function ChatInput({
   inputRef,
   variant = "floating",
   attachedFile,
-  onAttach,
   onRemoveAttachment,
-  fileInputRef,
 }: {
   value: string;
   onChange: (v: string) => void;
@@ -1278,28 +1276,12 @@ function ChatInput({
   inputRef: React.RefObject<HTMLTextAreaElement | null>;
   variant?: "floating" | "fixed";
   attachedFile: AttachedFile | null;
-  onAttach: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onRemoveAttachment: () => void;
-  fileInputRef: React.RefObject<HTMLInputElement | null>;
 }) {
   const isFloating = variant === "floating";
-  const [menuOpen, setMenuOpen] = useState(false);
-  const menuRef = useRef<HTMLDivElement>(null);
   const [recording, setRecording] = useState(false);
   const [speechError, setSpeechError] = useState<string | null>(null);
   const recognitionRef = useRef<any>(null);
-
-  // Close menu on outside click
-  useEffect(() => {
-    if (!menuOpen) return;
-    const handler = (e: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
-        setMenuOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, [menuOpen]);
 
   // Stop recognition on unmount
   useEffect(() => {
@@ -1343,27 +1325,7 @@ function ChatInput({
   };
 
   return (
-    // Outer wrapper is relative but NOT overflow-hidden so the popup can escape
-    <div ref={menuRef} className="relative">
-      {/* Popup menu — rendered outside overflow-hidden so it's not clipped */}
-      {menuOpen && (
-        <div
-          className="absolute bottom-[calc(100%+8px)] left-0 z-50 w-60 rounded-2xl bg-zinc-900 dark:bg-zinc-800 border border-zinc-700/60 shadow-[0_8px_32px_rgba(0,0,0,0.5)] overflow-hidden"
-          style={{ animation: "fadeSlideUp 0.15s ease forwards" }}
-        >
-          <button
-            type="button"
-            onClick={() => { setMenuOpen(false); fileInputRef.current?.click(); }}
-            className="flex items-center gap-3 w-full px-4 py-3.5 text-[14px] text-zinc-100 hover:bg-zinc-700/60 transition-colors text-left"
-          >
-            <svg className="w-5 h-5 text-zinc-300 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
-            </svg>
-            Add photos and files
-          </button>
-        </div>
-      )}
-
+    <div className="relative">
       <div
         className={`overflow-hidden border transition-all duration-200 ${
           isFloating
@@ -1395,33 +1357,6 @@ function ChatInput({
       )}
 
       <div className="flex min-h-[50px] items-end">
-        {/* Hidden file input */}
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept="image/*,application/pdf,text/*,.txt,.md"
-          className="hidden"
-          onChange={onAttach}
-        />
-
-        {/* Left: attach button */}
-        <div className="flex items-end pb-3 pl-2.5 sm:pl-3">
-          <button
-            type="button"
-            onClick={() => setMenuOpen(o => !o)}
-            className={`flex items-center justify-center w-9 h-9 rounded-full transition-all duration-150 ${
-              menuOpen
-                ? "bg-zinc-300 dark:bg-zinc-600 text-zinc-900 dark:text-white"
-                : "bg-zinc-200 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-300 dark:hover:bg-zinc-700 hover:text-zinc-900 dark:hover:text-white"
-            }`}
-            aria-label="Attach file or image"
-          >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M12 5v14M5 12h14" />
-            </svg>
-          </button>
-        </div>
-
         {/* Textarea */}
         <textarea
           ref={inputRef}
@@ -1572,9 +1507,7 @@ function EmptyState({
   loading,
   inputRef,
   attachedFile,
-  onAttach,
   onRemoveAttachment,
-  fileInputRef,
 }: {
   activeTopic: number;
   setActiveTopic: (i: number) => void;
@@ -1586,9 +1519,7 @@ function EmptyState({
   loading: boolean;
   inputRef: React.RefObject<HTMLTextAreaElement | null>;
   attachedFile: AttachedFile | null;
-  onAttach: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onRemoveAttachment: () => void;
-  fileInputRef: React.RefObject<HTMLInputElement | null>;
 }){
 const topic = TOPICS[activeTopic];
 const visiblePrompts = useMemo(() => getRandomItems(topic.items, 4), [topic.items]);
@@ -1631,9 +1562,7 @@ const visiblePrompts = useMemo(() => getRandomItems(topic.items, 4), [topic.item
           inputRef={inputRef}
           variant="floating"
           attachedFile={attachedFile}
-          onAttach={onAttach}
           onRemoveAttachment={onRemoveAttachment}
-          fileInputRef={fileInputRef}
         />
       </div>
 
@@ -2042,49 +1971,6 @@ function ChatContent() {
   const activeConversationIdRef = useRef<string | null>(null);
   const searchConversationId = searchParams.get("c");
 
-// ── File attachment handler ────────────────────────────────────────────────
-const handleFileSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-  const file = e.target.files?.[0];
-  if (!e.target) return;
-  (e.target as HTMLInputElement).value = "";
-  if (!file) return;
-
-  const MAX_IMAGE = 4 * 1024 * 1024;  // 4 MB
-  const MAX_DOC   = 10 * 1024 * 1024; // 10 MB
-
-  const isImage = file.type.startsWith("image/");
-  const isPDF   = file.type === "application/pdf";
-  const isText  = file.type.startsWith("text/") || file.name.endsWith(".txt") || file.name.endsWith(".md");
-
-  if (!isImage && !isPDF && !isText) {
-    alert("Supported formats: images (JPG, PNG, GIF, WEBP), PDFs, and text files.");
-    return;
-  }
-  if (isImage && file.size > MAX_IMAGE) { alert("Image must be under 4 MB."); return; }
-  if ((isPDF || isText) && file.size > MAX_DOC) { alert("Document must be under 10 MB."); return; }
-
-  const fileType: AttachedFile["fileType"] = isImage ? "image" : isPDF ? "pdf" : "text";
-  const sizeLabel = file.size < 1024 * 1024
-    ? `${(file.size / 1024).toFixed(0)} KB`
-    : `${(file.size / 1024 / 1024).toFixed(1)} MB`;
-
-  const reader = new FileReader();
-  reader.onload = (ev) => {
-    const result = ev.target?.result as string;
-    // result is a data-URL like "data:image/png;base64,..."
-    const base64 = result.split(",")[1];
-    setAttachedFile({
-      name: file.name,
-      mimeType: file.type || "application/octet-stream",
-      data: base64,
-      fileType,
-      preview: isImage ? result : undefined,
-      sizeLabel,
-    });
-  };
-  reader.readAsDataURL(file);
-}, []);
-
 const handleStop = useCallback(() => {
   stopRef.current?.();
   stopRef.current = null;
@@ -2098,7 +1984,6 @@ const [loading, setLoading] = useState(false);
 const [activeTopic, setActiveTopic] = useState(0);
 const [chipRefreshKey, setChipRefreshKey] = useState<number>(0);
 const [attachedFile, setAttachedFile] = useState<AttachedFile | null>(null);
-const fileInputRef = useRef<HTMLInputElement>(null);
 
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const hasSentInitial = useRef(false);
@@ -2895,9 +2780,7 @@ const handleKey = useCallback((e: React.KeyboardEvent<HTMLTextAreaElement>) => {
                 loading={loading}
                 inputRef={inputRef}
                 attachedFile={attachedFile}
-                onAttach={handleFileSelect}
                 onRemoveAttachment={() => setAttachedFile(null)}
-                fileInputRef={fileInputRef}
               />
             ) : (
               <ConversationView
@@ -2930,9 +2813,7 @@ const handleKey = useCallback((e: React.KeyboardEvent<HTMLTextAreaElement>) => {
                     inputRef={inputRef}
                     variant="fixed"
                     attachedFile={attachedFile}
-                    onAttach={handleFileSelect}
                     onRemoveAttachment={() => setAttachedFile(null)}
-                    fileInputRef={fileInputRef}
                   />
 
                   <p className="text-center text-[11.5px] leading-none tracking-wide text-zinc-400 dark:text-zinc-600">

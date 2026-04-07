@@ -3,7 +3,7 @@ export const runtime = "nodejs";
 export const revalidate = 0;
 import { NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
-import { getPostHogClient } from "@/app/lib/posthog-server";
+import { capturePostHogEvent } from "@/app/lib/posthog-server";
 import { detectIntent, detectCampusIntent } from "@/lib/chat/intent";
 import { classifyIntent } from "@/lib/chat/classify";
 import { vectorSearch, rerankChunks } from "@/lib/chat/vectors";
@@ -3824,7 +3824,6 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Malformed request" }, { status: 400 });
   }
 
-  const posthog = getPostHogClient();
   const authSession = await getCurrentSession().catch(() => null);
   let preferredSessionId: string | null = null;
 
@@ -3841,7 +3840,7 @@ export async function POST(req: Request) {
     }
   }
 
-  posthog.capture({
+  await capturePostHogEvent({
     distinctId: authSession?.user?.id ?? "anonymous",
     event: "chat_api_request",
     properties: {

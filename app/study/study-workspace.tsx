@@ -201,10 +201,6 @@ type DraftGuideErrors = {
   content?: string;
   guide?: string;
 };
-type ImportedSourceFile = {
-  name: string;
-  kind: "pdf" | "text";
-};
 
 type StudyWorkspaceProps = {
   forcedSetId?: string;
@@ -407,8 +403,6 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
   const [draggingCardId, setDraggingCardId] = useState<string | null>(null);
   const [toast, setToast] = useState<StudyToast>(null);
   const [isGenerating, setIsGenerating] = useState(false);
-  const [isImportingFiles, setIsImportingFiles] = useState(false);
-  const [importedSourceFiles, setImportedSourceFiles] = useState<ImportedSourceFile[]>([]);
   const [generatedGuide, setGeneratedGuide] = useState<StructuredLectureNotes | null>(null);
   const [shouldCreateGuideFlashcards, setShouldCreateGuideFlashcards] = useState(true);
   const [triviaSessionQuestions] = useState<TriviaQuestion[]>(() => {
@@ -1544,58 +1538,6 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
     }
   };
 
-  const importPdfFiles = async (files: File[]) => {
-    if (!files.length) return;
-
-    setIsImportingFiles(true);
-    try {
-      const importedTexts: string[] = [];
-      const importedFiles: ImportedSourceFile[] = [];
-
-      for (const file of files) {
-        const formData = new FormData();
-        formData.append("file", file);
-
-        const response = await fetch("/api/study/parse-pdf", {
-          method: "POST",
-          body: formData,
-        });
-        const payload = await response.json();
-        if (!response.ok) throw new Error(payload.error || `Could not read ${file.name}.`);
-
-        if (typeof payload.text === "string" && payload.text.trim()) {
-          importedTexts.push(`Source file: ${file.name}\n${payload.text.trim()}`);
-          importedFiles.push({
-            name: file.name,
-            kind: file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf") ? "pdf" : "text",
-          });
-        }
-      }
-
-      setImportText((current) => [current, ...importedTexts].filter(Boolean).join("\n\n").trim());
-      setImportedSourceFiles((current) => {
-        const seen = new Set(current.map((file) => `${file.kind}:${file.name.toLowerCase()}`));
-        const next = [...current];
-        for (const file of importedFiles) {
-          const key = `${file.kind}:${file.name.toLowerCase()}`;
-          if (seen.has(key)) continue;
-          seen.add(key);
-          next.push(file);
-        }
-        return next;
-      });
-      showToast(
-        importedFiles.length === 1
-          ? `${importedFiles[0]?.kind === "pdf" ? "PDF" : "File"} added.`
-          : `${importedFiles.length} files added.`,
-      );
-    } catch (error) {
-      showToast(error instanceof Error ? error.message : "Could not import those files.", "error");
-    } finally {
-      setIsImportingFiles(false);
-    }
-  };
-
   const saveStudyGuide = async () => {
     const nextErrors: DraftGuideErrors = {};
     if (!draftGuide.title.trim()) nextErrors.title = "Enter a guide title.";
@@ -1770,7 +1712,6 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
     setDraftGuide(emptyDraftGuide());
     setGeneratedGuide(null);
     setImportText("");
-    setImportedSourceFiles([]);
     setShouldCreateGuideFlashcards(true);
     router.push(`/study?mode=notes&note=${encodeURIComponent(nextGuide.id)}`);
   };
@@ -2113,13 +2054,10 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
               courseSuggestions={courseSuggestions}
               importText={importText}
               isGenerating={isGenerating}
-              isImportingFiles={isImportingFiles}
-              importedSourceFiles={importedSourceFiles}
               draftGuideErrors={draftGuideErrors}
               onDraftGuideChange={setDraftGuide}
               onImportTextChange={setImportText}
               onGenerate={generateStudyGuide}
-              onImportPdfFiles={importPdfFiles}
               onSave={saveStudyGuide}
               shouldCreateFlashcards={shouldCreateGuideFlashcards}
               onShouldCreateFlashcardsChange={setShouldCreateGuideFlashcards}
@@ -2129,14 +2067,11 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
               draftSet={draftSet}
               importText={importText}
               isGenerating={isGenerating}
-              isImportingFiles={isImportingFiles}
-              importedSourceFiles={importedSourceFiles}
               draggingCardId={draggingCardId}
               isEditing={isEditingFlashcardSet}
               onDraftSetChange={setDraftSet}
               onImportTextChange={setImportText}
               onGenerateWithAi={generateWithAi}
-              onImportPdfFiles={importPdfFiles}
               onImportFromText={importFromText}
               onRequestSave={openSaveDestinationDialog}
               onDeleteSet={deleteDraftSet}
@@ -3137,14 +3072,11 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
                 draftSet={draftSet}
                 importText={importText}
                 isGenerating={isGenerating}
-                isImportingFiles={isImportingFiles}
-                importedSourceFiles={importedSourceFiles}
                 draggingCardId={draggingCardId}
                 isEditing={Boolean(searchParams.get("edit"))}
                 onDraftSetChange={setDraftSet}
                 onImportTextChange={setImportText}
                 onGenerateWithAi={generateWithAi}
-                onImportPdfFiles={importPdfFiles}
                 onImportFromText={importFromText}
                 onRequestSave={openSaveDestinationDialog}
                 onDeleteSet={deleteDraftSet}
@@ -4181,15 +4113,12 @@ function CreateView({
   draftSet,
   importText,
   isGenerating,
-  isImportingFiles,
-  importedSourceFiles,
   draftSetErrors,
   draggingCardId,
   isEditing,
   onDraftSetChange,
   onImportTextChange,
   onGenerateWithAi,
-  onImportPdfFiles,
   onImportFromText,
   onRequestSave,
   onDeleteSet,
@@ -4200,15 +4129,12 @@ function CreateView({
   draftSet: StudySet;
   importText: string;
   isGenerating: boolean;
-  isImportingFiles: boolean;
-  importedSourceFiles: ImportedSourceFile[];
   draftSetErrors: DraftSetErrors;
   draggingCardId: string | null;
   isEditing: boolean;
   onDraftSetChange: React.Dispatch<React.SetStateAction<StudySet>>;
   onImportTextChange: (value: string) => void;
   onGenerateWithAi: () => void;
-  onImportPdfFiles: (files: File[]) => Promise<void>;
   onImportFromText: () => void;
   onRequestSave: (afterSave: "overview" | "learn") => void;
   onDeleteSet: () => void;
@@ -4494,47 +4420,18 @@ function CreateView({
               value={importText}
               onChange={(event) => onImportTextChange(event.target.value)}
               rows={15}
-              placeholder="Enter a prompt (e.g. “summarize photosynthesis”), paste notes or upload a document to create flashcards."
+              placeholder="Enter a prompt (e.g. “summarize photosynthesis”) or paste notes to create flashcards."
               className="w-full rounded-xl border border-white/10 bg-[#3b446a] px-4 py-4 text-sm leading-7 text-white outline-none placeholder:text-zinc-200"
             />
-            {importedSourceFiles.length ? (
-              <div className="mt-3 flex flex-wrap gap-2">
-                {importedSourceFiles.map((file) => (
-                  <span
-                    key={`${file.kind}:${file.name}`}
-                    className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/8 px-3 py-1 text-xs font-medium text-zinc-100"
-                  >
-                    <FileText className="h-3.5 w-3.5 text-[#9cd0ff]" />
-                    {file.name}
-                  </span>
-                ))}
-              </div>
-            ) : null}
             <div className="mt-2 text-right text-xs text-zinc-300">
               {importText.length.toLocaleString()}/100,000 characters
             </div>
           </div>
 
           <div className="mt-6 flex items-center gap-3">
-            <label className="inline-flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-full bg-white/12 px-4 py-3 text-sm font-semibold text-white transition hover:bg-white/16">
-              <Plus className="h-4 w-4" />
-              {isImportingFiles ? "Uploading..." : "Upload PDFs"}
-              <input
-                type="file"
-                accept=".pdf,.txt,text/plain,application/pdf"
-                multiple
-                className="hidden"
-                onChange={(event) => {
-                  const files = Array.from(event.target.files ?? []);
-                  if (!files.length) return;
-                  void onImportPdfFiles(files);
-                  event.currentTarget.value = "";
-                }}
-              />
-            </label>
             <button
               onClick={onGenerateWithAi}
-              disabled={isGenerating || isImportingFiles}
+              disabled={isGenerating}
               {...magneticHoverProps}
               className="study-premium-button flex-1 rounded-full bg-[#2f355a] px-4 py-3 text-sm font-semibold text-white disabled:opacity-50"
             >
@@ -4648,13 +4545,10 @@ function GuideCreateView({
   courseSuggestions,
   importText,
   isGenerating,
-  isImportingFiles,
-  importedSourceFiles,
   draftGuideErrors,
   onDraftGuideChange,
   onImportTextChange,
   onGenerate,
-  onImportPdfFiles,
   onSave,
   shouldCreateFlashcards,
   onShouldCreateFlashcardsChange,
@@ -4665,13 +4559,10 @@ function GuideCreateView({
   courseSuggestions: StudyCourseSuggestion[];
   importText: string;
   isGenerating: boolean;
-  isImportingFiles: boolean;
-  importedSourceFiles: ImportedSourceFile[];
   draftGuideErrors: DraftGuideErrors;
   onDraftGuideChange: React.Dispatch<React.SetStateAction<StudyNote>>;
   onImportTextChange: (value: string) => void;
   onGenerate: () => void;
-  onImportPdfFiles: (files: File[]) => Promise<void>;
   onSave: () => void;
   shouldCreateFlashcards: boolean;
   onShouldCreateFlashcardsChange: React.Dispatch<React.SetStateAction<boolean>>;
@@ -4686,7 +4577,7 @@ function GuideCreateView({
             <div className="text-xs font-bold uppercase tracking-[0.22em] text-zinc-500">Study guide builder</div>
             <h2 className="mt-2 text-[1.55rem] font-semibold tracking-[-0.03em] text-white">Everything in one place</h2>
             <p className="mt-2 text-sm leading-6 text-zinc-400">
-              Add your title, paste notes or upload PDFs, then generate the guide. Flashcards are created too unless you turn that off.
+              Add your title, paste notes, then generate the guide. Flashcards are created too unless you turn that off.
             </p>
           </div>
 
@@ -4806,24 +4697,8 @@ function GuideCreateView({
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <div className="text-sm font-semibold text-white">Source material</div>
-            <div className="mt-1 text-sm text-zinc-400">Paste your notes or upload one or more PDFs.</div>
+            <div className="mt-1 text-sm text-zinc-400">Paste your notes below.</div>
           </div>
-          <label className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-semibold text-zinc-100 transition hover:bg-white/8">
-            <FileText className="h-4 w-4" />
-            {isImportingFiles ? "Uploading..." : "Upload PDFs"}
-            <input
-              type="file"
-              accept=".pdf,.txt,text/plain,application/pdf"
-              multiple
-              className="hidden"
-              onChange={(event) => {
-                const files = Array.from(event.target.files ?? []);
-                if (!files.length) return;
-                void onImportPdfFiles(files);
-                event.currentTarget.value = "";
-              }}
-            />
-          </label>
         </div>
 
         <textarea
@@ -4835,20 +4710,6 @@ function GuideCreateView({
             draftGuideErrors.content ? "border-red-400/40 bg-[#4c3554]" : "border-white/10 bg-[#49527a]"
           }`}
         />
-
-        {importedSourceFiles.length ? (
-          <div className="flex flex-wrap gap-2">
-            {importedSourceFiles.map((file) => (
-              <span
-                key={`${file.kind}:${file.name}`}
-                className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/8 px-3 py-1 text-xs font-medium text-zinc-100"
-              >
-                <FileText className="h-3.5 w-3.5 text-[#9cd0ff]" />
-                {file.name}
-              </span>
-            ))}
-          </div>
-        ) : null}
 
         <div className="flex flex-col gap-3 rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-4 sm:flex-row sm:items-center sm:justify-between">
           <label className="inline-flex cursor-pointer items-center gap-3 text-sm text-zinc-200">
@@ -4877,7 +4738,7 @@ function GuideCreateView({
             </div>
             <button
               onClick={generatedGuide ? onSave : onGenerate}
-              disabled={isGenerating || isImportingFiles}
+              disabled={isGenerating}
               {...magneticHoverProps}
               className="study-premium-button rounded-full bg-white/10 px-5 py-3 text-sm font-semibold text-white disabled:opacity-50"
             >
@@ -4910,7 +4771,7 @@ function GuideCreateView({
               <button
                 type="button"
                 onClick={onGenerate}
-                disabled={isGenerating || isImportingFiles}
+                disabled={isGenerating}
                 className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-semibold text-zinc-200 transition hover:bg-white/10 disabled:opacity-50"
               >
                 Regenerate

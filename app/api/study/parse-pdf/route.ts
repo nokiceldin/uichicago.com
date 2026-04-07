@@ -10,12 +10,16 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Missing file." }, { status: 400 });
     }
 
+    if (file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf")) {
+      return NextResponse.json({ error: "That file type is temporarily unavailable. Please use a text file instead." }, { status: 400 });
+    }
+
     const data = Buffer.from(await file.arrayBuffer()).toString("base64");
     const cleaned = await extractReadableTextFromUploadedFile({
       name: file.name,
       mimeType: file.type || "application/octet-stream",
       data,
-      fileType: file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf") ? "pdf" : "text",
+      fileType: "text",
     });
 
     if (!cleaned) {

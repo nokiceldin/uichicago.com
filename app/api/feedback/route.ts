@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { appendFile, mkdir } from "fs/promises";
 import path from "path";
 import { prisma } from "@/lib/prisma";
-import { getPostHogClient } from "@/app/lib/posthog-server";
+import { capturePostHogEvent } from "@/app/lib/posthog-server";
 
 const FEEDBACK_LOG_DIR = path.join(process.cwd(), "artifacts", "feedback");
 const BAD_RESPONSES_LOG_PATH = path.join(FEEDBACK_LOG_DIR, "bad-chat-responses.jsonl");
@@ -49,10 +49,9 @@ export async function POST(req: NextRequest) {
       }
 
       try {
-        const posthog = getPostHogClient();
-        posthog.capture({
+        await capturePostHogEvent({
           distinctId: "anonymous",
-          event: "website_feedback_submitted",
+          event: "website_feedback_received",
           properties: {
             score: Number.isInteger(score) && score >= 1 && score <= 5 ? score : null,
             has_comment: !!comment,
@@ -101,10 +100,9 @@ export async function POST(req: NextRequest) {
     }
 
     try {
-      const posthog = getPostHogClient();
-      posthog.capture({
+      await capturePostHogEvent({
         distinctId: "anonymous",
-        event: "chat_response_feedback",
+        event: "chat_response_feedback_received",
         properties: { rating },
       });
     } catch (posthogErr) {

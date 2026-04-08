@@ -383,6 +383,14 @@ function analyzeQuery(msg: string, conversationHistory: ChatMessage[]): QueryAna
   // Financial signals
   if (words.some(w => ["tuition","cost","fee","price","pay","afford","how much","billing"].includes(w))) domainConfidence["tuition"] = 0.85;
   if (words.some(w => ["aid","fafsa","scholarship","grant","aspire","financial","loan","debt"].includes(w))) domainConfidence["financial_aid"] = 0.9;
+  if (
+    /\b(full.?time (financial aid|fafsa|aid)|full fafsa|full financial aid|enrollment status|credit load)\b/.test(lower) ||
+    /\b(credit hours?|credits?).{0,20}(fafsa|financial aid|aid)\b/.test(lower) ||
+    /\bhow (many|much).{0,20}(credits?|credit hours?).{0,20}(fafsa|financial aid|aid)\b/.test(lower)
+  ) {
+    domainConfidence["financial_aid"] = Math.max(domainConfidence["financial_aid"] ?? 0, 0.92);
+    domainConfidence["academic_policy"] = Math.max(domainConfidence["academic_policy"] ?? 0, 0.82);
+  }
 
   // Housing/dining signals
   if (words.some(w => ["dorm","housing","hall","residence","room","live","apartment","arc","jst","cmw","cmn","mih","tbh","ssr","psr"].includes(w))) domainConfidence["housing"] = 0.9;
@@ -413,9 +421,18 @@ function analyzeQuery(msg: string, conversationHistory: ChatMessage[]): QueryAna
   if (lower.match(/\b(appeal|grade replacement|incomplete|overload|credit limit|too many credits|max credits|maximum credits)\b/)) {
     domainConfidence["academic_policy"] = Math.max(domainConfidence["academic_policy"] ?? 0, 0.82);
   }
+  if (lower.match(/\b(full.?time|part.?time|enrollment status|credit load)\b/) && lower.match(/\b(fafsa|financial aid|aid)\b/)) {
+    domainConfidence["academic_policy"] = Math.max(domainConfidence["academic_policy"] ?? 0, 0.85);
+    domainConfidence["financial_aid"] = Math.max(domainConfidence["financial_aid"] ?? 0, 0.92);
+  }
 
   // Other services
-  if (words.some(w => ["admit","apply","application","acceptance","transfer","incoming","aspire"].includes(w))) domainConfidence["admissions"] = 0.85;
+  if (
+    words.some(w => ["admit","admission","admissions","apply","application","acceptance","transfer","incoming","aspire","counselor","counsellor","recruiter"].includes(w)) ||
+    /\b(admissions? (office|help|contact|counselor|counsellor|recruiter)|application help|help with admissions?|talk to admissions?|contact admissions?|reach admissions?)\b/.test(lower)
+  ) {
+    domainConfidence["admissions"] = 0.85;
+  }
   if (words.some(w => ["job","career","internship","resume","interview","handshake","hire","recruit"].includes(w))) domainConfidence["careers"] = 0.85;
   if (words.some(w => ["library","daley","borrow","study room","book","lhs","print","reserve"].includes(w))) domainConfidence["library"] = 0.85;
   if (words.some(w => ["international","visa","ois","cpt","opt","f-1","study abroad","abroad"].includes(w))) domainConfidence["international"] = 0.9;
@@ -536,13 +553,27 @@ function analyzeQuery(msg: string, conversationHistory: ChatMessage[]): QueryAna
 function isProductQuestion(lower: string) {
   return (
     /\b(who (made|built|created|runs|owns) (this )?(website|site|app|platform)|who made atlas|who built atlas|who made sparky|who built sparky|who made uic chicago|who built uic chicago)\b/i.test(lower) ||
-    /\b(what is this website|what is atlas|what is sparky|what is uic chicago|is this official|who is behind this)\b/i.test(lower)
+    /\b(who (made|built|created) (you|sparky)|who is behind this)\b/i.test(lower) ||
+    /\b(what is this website|what is atlas|what is sparky|what is uic chicago|is this official|officially affiliated|officialiy affliated|official uic|affiliated with uic|affliated with uic)\b/i.test(lower) ||
+    /\b(what are you running on|what do you run on|which api|what api|what model|which model|chatgpt wrapper|gpt wrapper|how do you actually work|how do you work|system prompt|full system prompt|powered by|under the hood|what'?s your backend|what is your backend|what are you built with|what ai are you|are you (an )?ai|are you (chatgpt|claude|gemini|gpt)|llm|large language model)\b/i.test(lower)
   );
 }
 
 function getProductAnswer(lower: string) {
-  if (/\b(is this official|official website|official uic)\b/i.test(lower)) {
+  if (/\b(is this official|official website|official uic|officially affiliated|officialiy affliated|affiliated with uic|affliated with uic)\b/i.test(lower)) {
     return "UIChicago is unofficial. It was built by a software engineering team from UIC for students, and it is open and free for all students to use.";
+  }
+
+  if (/\b(system prompt|full system prompt)\b/i.test(lower)) {
+    return "I can't share my private system prompt, but I can explain what I do: I'm Sparky, the AI assistant inside UIChicago, built to help with UIC courses, professors, planning, and campus questions.";
+  }
+
+  if (/\b(are you (chatgpt|claude|gemini|gpt)|chatgpt wrapper|gpt wrapper|what ai are you|are you (an )?ai)\b/i.test(lower)) {
+    return "I'm Sparky, the AI assistant inside UIChicago. I'm not a generic ChatGPT-style chat page; I'm built around UIC-specific course, professor, planning, and campus data.";
+  }
+
+  if (/\b(what are you running on|what do you run on|which api|what api|what model|which model|how do you actually work|how do you work|powered by|under the hood|what'?s your backend|what is your backend|what are you built with|llm|large language model)\b/i.test(lower)) {
+    return "I'm Sparky, the AI assistant inside UIChicago. I can't share private implementation details, but I'm built to answer UIC questions using the UIC course, professor, planning, and campus data available to me.";
   }
 
   if (/\bwhat is (this website|atlas|sparky|uic chicago)\b/i.test(lower)) {
@@ -550,6 +581,49 @@ function getProductAnswer(lower: string) {
   }
 
   return "UIChicago was made by a software engineering team from UIC. It is student-built, open, and free for all students to use — from students to students.";
+}
+
+function getSimpleArithmeticAnswer(input: string): string | null {
+  const lower = input.toLowerCase().trim();
+  if (/\b(cs|math|chem|bios|phys|stat|ece|hist|psch|course|class|credit|gpa)\b/i.test(lower)) return null;
+
+  const normalized = lower
+    .replace(/what('?s|s| is)/g, "")
+    .replace(/\?/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+  const match = normalized.match(/^(-?\d+(?:\.\d+)?)\s*(\+|plus|-|minus|\*|x|times|\/|divided by)\s*(-?\d+(?:\.\d+)?)$/i);
+  if (!match) return null;
+
+  const left = Number(match[1]);
+  const op = match[2].toLowerCase();
+  const right = Number(match[3]);
+  if (!Number.isFinite(left) || !Number.isFinite(right)) return null;
+
+  let result: number;
+  if (op === "+" || op === "plus") result = left + right;
+  else if (op === "-" || op === "minus") result = left - right;
+  else if (op === "*" || op === "x" || op === "times") result = left * right;
+  else if (op === "/" || op === "divided by") {
+    if (right === 0) return "You can't divide by zero.";
+    result = left / right;
+  } else {
+    return null;
+  }
+
+  return Number.isInteger(result) ? String(result) : String(Number(result.toFixed(6)));
+}
+
+function isHarmlessCodingQuestion(input: string): boolean {
+  const lower = input.toLowerCase();
+  if (
+    /\b(uic|professor|prof|course|class|section|assignment|syllabus|blackboard|myuic|canvas)\b/.test(lower) ||
+    /\b[a-z]{2,4}\s?\d{3}[a-z]?\b/i.test(input)
+  ) {
+    return false;
+  }
+
+  return /\b(python|javascript|typescript|java|c\+\+|c#|sql|html|css|react|node|programming|code|coding|algorithm|data structure|linked list|binary tree|stack|queue|hashmap|leetcode|bug|debug|function|loop|array|string)\b/i.test(lower);
 }
 
 function isFlamesSongRequest(input: string) {
@@ -568,6 +642,45 @@ function isFlamesSongRequest(input: string) {
       )
     ) ||
     /\bplaythe song\b/.test(lower)
+  );
+}
+
+function buildPlanningRecoveryMessage(
+  studentCtx: StudentContext | null | undefined,
+  mode: "build_failed" | "major_not_found"
+): string {
+  const major = studentCtx?.major?.trim() ?? "";
+  const completedCount = studentCtx?.completed_courses?.length ?? 0;
+  const inProgressCount = studentCtx?.in_progress_courses?.length ?? 0;
+  const constraints = studentCtx?.constraints ?? [];
+  const hasContext = completedCount > 0 || inProgressCount > 0 || constraints.length > 0;
+
+  if (!major) {
+    const contextLine = hasContext
+      ? `I did pick up some context${completedCount ? ` (${completedCount} completed course${completedCount === 1 ? "" : "s"}` : ""}${inProgressCount ? `${completedCount ? ", " : " ("}${inProgressCount} in progress` : ""}${(completedCount || inProgressCount) ? ")" : ""}, ${constraints.join(", ") || "other constraints"}). `
+      : "";
+    return (
+      "I can help build this plan, but I'm missing the major. " +
+      contextLine +
+      "Tell me the exact UIC major you want the plan for, and I'll build the schedule around that."
+    );
+  }
+
+  if (mode === "major_not_found") {
+    return (
+      `I don't have a pre-built degree plan for ${major} in my current data. ` +
+      "The best next step is to check catalog.uic.edu for the official degree requirements and sample schedule, then your college advising office for the exact sequencing. " +
+      "I can still help from there — for example, I can compare required courses, suggest easier gen eds, or help you map out the next semester if you paste the requirements."
+    );
+  }
+
+  const contextSummary = hasContext
+    ? ` I did catch some context for you: ${completedCount} completed, ${inProgressCount} in progress, constraints: ${constraints.join(", ") || "none"}.`
+    : "";
+  return (
+    `I found planning data for ${major}, but I couldn't turn it into a clean semester-by-semester plan on this pass.` +
+    contextSummary +
+    " A good next step is to tell me your current year plus any completed courses you want me to account for, and I can retry with a tighter plan."
   );
 }
 
@@ -703,12 +816,14 @@ function getAbstainResponse(query: QueryAnalysis, reason?: string): string {
       "I don't have a real-time events calendar. For this week's campus events: " +
       "uic.edu/events | connect.uic.edu (student orgs). " +
       "For recurring programs and orgs, I'm happy to help!",
+
+    general:
+      "I don't have enough UIC-specific information to answer that reliably. I can help with UIC courses, professors, 4-year plans, admissions, financial aid, housing, dining, campus services, student orgs, and athletics.",
   };
 
   return (
     responses[domain] ??
-    "I'm not sure I have reliable information on that. You can reach UIC at " +
-    "312-996-7000 or visit uic.edu — most offices also have live chat on their pages."
+    "I don't have enough UIC-specific information to answer that reliably. Try asking about UIC courses, professors, planning, admissions, financial aid, housing, dining, campus services, student orgs, or athletics."
   );
 }
 
@@ -723,7 +838,7 @@ function normalizeMajor(raw: string): string {
   if (s === "ce" || s === "civil" || s === "civil engineering") return "civil_engineering";
   if (s === "math" || s === "mathematics") return "mathematics";
   if (s === "physics") return "physics";
-  if (s === "biology" || s === "bio") return "biology";
+  if (s === "biology" || s === "bio" || s === "biological sciences" || s === "biological science") return "biology";
   if (s === "chemistry" || s === "chem") return "chemistry";
   if (s === "nursing") return "nursing";
   if (s === "psychology" || s === "psych") return "psychology";
@@ -743,7 +858,7 @@ function normalizeMajor(raw: string): string {
   if (s === "information systems" || s === "is" || s === "mis") return "information_systems";
   if (s === "data science") return "data_science";
   if (s === "neuroscience") return "neuroscience";
-  if (s === "pre-med" || s === "premed" || s === "pre med") return "pre_med";
+  if (s === "pre-med" || s === "premed" || s === "pre med") return "biology";
   if (s === "pre-law" || s === "prelaw" || s === "pre law") return "pre_law";
   // fallback: replace spaces with underscores
   return s.replace(/\s+/g, "_");
@@ -1453,7 +1568,9 @@ function extractStudentContext(
     [/\b(chemical engineering|che)\b/i, "Chemical Engineering"],
     [/\b(industrial engineering|ie)\b/i, "Industrial Engineering"],
     [/\b(nursing)\s*(major|program|degree|student)?\b/i, "Nursing"],
+    [/\b(biological sciences?|bio(?:logical)? sciences?)\s*(major|program)?\b/i, "Biological Sciences"],
     [/\b(biology|bios)\s*(major|program)?\b/i, "Biology"],
+    [/\b(pre-?med|premed)\b/i, "Biological Sciences"],
     [/\b(chemistry|chem)\s*(major|program)?\b/i, "Chemistry"],
     [/\b(physics|phys)\s*(major|program)?\b/i, "Physics"],
     [/\b(mathematics|math)\s*(major|program)?\b/i, "Mathematics"],
@@ -1467,9 +1584,11 @@ function extractStudentContext(
     [/\b(english)\s*(major|program)?\b/i, "English"],
     [/\b(history)\s*(major|program)?\b/i, "History"],
     [/\b(political science|pols)\s*(major|program)?\b/i, "Political Science"],
+    [/\b(criminology law and justice|criminology|criminal justice)\s*(major|program)?\b/i, "Criminology Law and Justice"],
     [/\b(architecture)\s*(major|program)?\b/i, "Architecture"],
     [/\b(public health)\s*(major|program)?\b/i, "Public Health"],
     [/\b(kinesiology|kin)\s*(major|program)?\b/i, "Kinesiology"],
+    [/\b(engineering)\s*(major|program|student|degree)?\b/i, "Engineering"],
   ];
 
   // Check explicit major/studying phrasing first
@@ -1769,6 +1888,14 @@ function formatSampleSchedule(
   startYear = 1,
   fillElectives = true
 ): string {
+  const formatSemesterHeader = (label: string, totalHours: number | null | undefined): string => {
+    return totalHours != null ? `### ${label} (${totalHours}h)` : `### ${label}`;
+  };
+
+  const formatHours = (hours: number | null | undefined): string => {
+    return hours != null ? ` (${hours} cr)` : "";
+  };
+
   const lines: string[] = [];
   // Clone queues so we can shift() without mutating the original
   const queues: Record<string, { code: string; title: string }[]> = {};
@@ -1781,12 +1908,11 @@ function formatSampleSchedule(
     const yn = semYearNumber(sem.year ?? "");
     if (yn < startYear || yn > maxYears) continue;
     const semHeader = sem.label ?? `${sem.year} — ${sem.semester}`;
-    lines.push(`### ${semHeader} (${sem.total_hours ?? "?"}h)`);
+    lines.push(formatSemesterHeader(semHeader, sem.total_hours));
     for (const c of sem.courses ?? []) {
-      const hrs = c.hours ?? "?";
       if (!c.isElective) {
         if (c.code) usedCodes.add(c.code);
-        lines.push(`- **${c.code}** — ${c.title} (${hrs} cr)`);
+        lines.push(`- **${c.code}** — ${c.title}${formatHours(c.hours)}`);
       } else {
         const queue = c.electiveType ? queues[c.electiveType] : undefined;
         // Skip any course already used elsewhere in the schedule
@@ -1801,9 +1927,9 @@ function formatSampleSchedule(
         const label = ELECTIVE_LABELS[c.electiveType ?? ""] ?? c.title ?? "Elective";
         if (fillElectives && fill) {
           usedCodes.add(fill.code);
-          lines.push(`- **${fill.code}** — ${fill.title} (${hrs} cr) *(${label})*`);
+          lines.push(`- **${fill.code}** — ${fill.title}${formatHours(c.hours)} *(${label})*`);
         } else {
-          lines.push(`- *${label}* (${hrs} cr)`);
+          lines.push(`- *${label}*${formatHours(c.hours)}`);
         }
       }
     }
@@ -1857,6 +1983,7 @@ const data = {
       if (n.includes("computer science and design") && (lower.includes("cs and design") || lower.includes("computer science and design"))) return true;
       if (n.includes("information and decision sciences") && (lower.includes("ids") || lower.includes("information and decision"))) return true;
       if (n.includes("biochemistry") && lower.includes("biochem")) return true;
+      if (n.includes("biological sciences") && (/\bbiological sciences?\b/.test(lower) || /\bbio(?:logical)? sciences?\b/.test(lower) || /\bpre-?med\b/.test(lower) || /\bpremed\b/.test(lower))) return true;
       if (n.includes("chemistry") && !n.includes("biochemistry") && lower.includes("chem") && !lower.includes("biochem")) return true;
       if (n.includes("biology") && (lower.includes("biol") || lower.includes("biology"))) return true;
       // Exclude "applied psychology" from the generic psych alias — handle it separately
@@ -1875,6 +2002,11 @@ const data = {
           !/(accounting|finance|marketing|entrepreneurship|human resource|real estate|information and decision|\bids\b|music business)/.test(lower)) return true;
       if (n.includes("economics") && lower.includes("econ")) return true;
       if (n.includes("mechanical engineering") && lower.includes("mechanical")) return true;
+      if (
+        n === "mechanical engineering bs" &&
+        /\bengineering\b/.test(lower) &&
+        !/(electrical|ece|mechanical|civil|biomedical|bioengineering|computer engineering|environmental engineering|industrial engineering|chemical engineering|engineering physics)/.test(lower)
+      ) return true;
       if (n.includes("electrical engineering") && lower.includes("electrical")) return true;
       if (n.includes("civil engineering") && lower.includes("civil")) return true;
       if (n.includes("biomedical engineering") && (lower.includes("biomed") || lower.includes("bme") || lower.includes("biomedical"))) return true;
@@ -1883,7 +2015,7 @@ const data = {
       if (n.includes("computer engineering") && lower.includes("computer eng")) return true;
       if (n.includes("public health") && lower.includes("public health")) return true;
       if (n.includes("neuroscience") && lower.includes("neuro")) return true;
-      if (n.includes("criminology") && (lower.includes("crim") || lower.includes("criminal justice"))) return true;
+      if (n.includes("criminology") && (lower.includes("crim") || lower.includes("criminal justice") || lower.includes("criminology law and justice"))) return true;
       if (n.includes("political science") && (lower.includes("poli sci") || lower.includes("political science"))) return true;
       if (n.includes("communication") && lower.includes("comm") && !lower.includes("telecomm")) return true;
       if (n.includes("mathematics") && !n.includes("computer") && (lower.includes("math") && !lower.includes("cs"))) return true;
@@ -2231,6 +2363,13 @@ ${list}`, 0.7, query)];
           !/(accounting|finance|marketing|entrepreneurship|human resource|real estate|information and decision|\bids\b)/.test(query.rawQuery.toLowerCase())) {
         majorName = "Business Administration (CBA)";
       }
+      if (majorName === "Mechanical Engineering" && /\bengineering\b/i.test(query.rawQuery) &&
+          !/(electrical|ece|mechanical|civil|biomedical|bioengineering|computer engineering|environmental engineering|industrial engineering|chemical engineering|engineering physics)/i.test(query.rawQuery)) {
+        majorName = "Engineering (using Mechanical Engineering backbone)";
+      }
+      if (majorName === "Biological Sciences" && /\b(pre-?med|premed)\b/i.test(query.rawQuery)) {
+        majorName = "Pre-med / Biological Sciences";
+      }
 
       const yearsShown = maxYears - startYear + 1;
       let yearLabel: string;
@@ -2308,14 +2447,16 @@ ${list}`, 0.7, query)];
           sem.year?.includes(yearName) && sem.semester === targetSemester
         );
         if (target) {
+          const formatNextTermHours = (hours: number | null | undefined): string =>
+            hours != null ? ` (${hours} cr)` : "";
           const nextTermText = [
             `=== DETERMINISTIC NEXT TERM ===`,
             `Typical next-term courses for a **${["", "freshman", "sophomore", "junior", "senior"][standing]}** ${majorName} student:`,
             ``,
             ...(target.courses ?? []).map((course: any) =>
               course.isElective
-                ? `- *${ELECTIVE_LABELS[course.electiveType ?? ""] ?? course.title}* (${course.hours ?? "?"} cr)`
-                : `- **${course.code}** — ${course.title} (${course.hours ?? "?"} cr)`
+                ? `- *${ELECTIVE_LABELS[course.electiveType ?? ""] ?? course.title}*${formatNextTermHours(course.hours)}`
+                : `- **${course.code}** — ${course.title}${formatNextTermHours(course.hours)}`
             ),
             ``,
             `This is the standard catalog backbone. Your exact next term depends on completed courses and prerequisites.`,
@@ -2594,6 +2735,25 @@ function retrieveStudentLife(query: QueryAnalysis): RetrievedChunk[] {
   const sl2 = studentLifeExpandedData as any;
   const lower = query.rawQuery.toLowerCase();
   const isAboutGreek = lower.includes("greek") || lower.includes("frat") || lower.includes("soror") || lower.includes("rush");
+  const isOrgQuery =
+    /\b(club|clubs|org|orgs|organization|organizations|student org|student organization)\b/.test(lower);
+  const nicheOrgKeywords = [
+    /\bstartup\b/,
+    /\bentrepreneur(?:ship)?\b/,
+    /\bhuman resources?\b/,
+    /\bhr\b/,
+    /\bpre-?health\b/,
+    /\bpre-?med\b/,
+    /\bfinance\b/,
+    /\bconsulting\b/,
+    /\bresearch\b/,
+    /\bvolunteer\b/,
+    /\bmarketing\b/,
+    /\blaw\b/,
+    /\bdesign\b/,
+    /\bai\b/,
+    /\brobotics\b/,
+  ];
   const sparkArtists = sl2.major_events?.spark_festival?.past_artists?.slice(0, 8).join(", ") || "Kid Cudi, Kendrick Lamar, J. Cole, Twenty One Pilots";
 
   if (/\b(biggest|major|main|best known)\b/.test(lower) && /\bevents?\b/.test(lower)) {
@@ -2610,6 +2770,46 @@ function retrieveStudentLife(query: QueryAnalysis): RetrievedChunk[] {
       ].join("\n"),
       0.99,
       query)];
+  }
+
+  if (
+    isOrgQuery &&
+    !isAboutGreek &&
+    nicheOrgKeywords.some((pattern) => pattern.test(lower))
+  ) {
+    return [makeChunk(
+      "student_life",
+      [
+        "=== DETERMINISTIC FACT ===",
+        `UIC has ${sl2.student_orgs?.total || "470+"} registered student organizations, and the official directory is ${sl2.student_orgs?.directory || "https://connect.uic.edu/"}.`,
+        "I do not have a verified org-by-org list in the current dataset, so I can't confidently name a specific startup, HR, or other niche club without risking a bad answer.",
+        `Best next step: search UIC Connection with keywords like "${lower.includes("startup") || lower.includes("entrepreneur") ? "startup, entrepreneur, venture" : lower.includes("human resource") || /\bhr\b/.test(lower) ? "human resources, HR" : lower.includes("pre-med") || lower.includes("prehealth") || lower.includes("pre-health") ? "pre-health, pre-med" : "your interest area"}".`,
+        `How to join: ${sl2.student_orgs?.how_to_join || "Browse UIC Connection, attend Involvement Fair, or contact orgs directly."}`,
+        "If you want, I can still help you narrow the search terms based on your goals.",
+      ].join("\n"),
+      0.99,
+      query
+    )];
+  }
+
+  if (
+    isOrgQuery &&
+    !isAboutGreek &&
+    !lower.match(/newspaper|publication|student media|the flame|wuic|student radio|student paper|spark.?fest|spark festival|homecoming|weeks of welcome|wow event|involvement fair|major event/)
+  ) {
+    return [makeChunk(
+      "student_life",
+      [
+        "=== DETERMINISTIC FACT ===",
+        `UIC has ${sl2.student_orgs?.total || "470+"} registered student organizations.`,
+        `Official directory: ${sl2.student_orgs?.directory || "https://connect.uic.edu/"}`,
+        "I do not have a verified club-by-club directory in the current dataset, so for specific org names I trust UIC Connection more than guessing.",
+        `How to join: ${sl2.student_orgs?.how_to_join || "Browse UIC Connection, attend Involvement Fair, or contact orgs directly."}`,
+        `How to start one: ${sl2.student_orgs?.how_to_start || "Email orgsupport@uic.edu. Need 3+ enrolled students, faculty advisor, constitution."}`,
+      ].join("\n"),
+      0.96,
+      query
+    )];
   }
 
   let c = `=== UIC STUDENT LIFE ===\n${sl2.student_orgs?.total || "470+"} registered student orgs at connect.uic.edu.\n\n`;
@@ -3931,7 +4131,44 @@ export async function POST(req: Request) {
   };
   // Normalize before casual check: collapse 3+ repeated chars to 2 (helooo→heloo, heyyyy→heyy)
   // and strip punctuation/emoji noise so "hey!!!" and "heyyy 😂" both match.
-  const normMsg = normalizedLastMsg.replace(/[\s!?.]+$/, "");
+  const makeFastTextResponse = async (
+    text: string,
+    responseKind: string,
+    matchedPath: string,
+    responseStatus?: "success" | "abstained" | "error",
+    abstainReason?: string | null,
+    extraHeaders?: Record<string, string>
+  ) => {
+    await persistChatLog({
+      responseText: text,
+      responseKind,
+      responseStatus,
+      answerMode: "discovery",
+      abstained: responseStatus === "abstained",
+      abstainReason: abstainReason ?? null,
+      extraMetadata: {
+        matchedPath,
+      },
+    });
+    const encoder = new TextEncoder();
+    const readable = new ReadableStream({
+      start(controller) {
+        controller.enqueue(encoder.encode(text));
+        controller.close();
+      },
+    });
+    const headers: Record<string, string> = {
+      "Content-Type": "text/plain; charset=utf-8",
+      "Cache-Control": "no-store",
+      ...(extraHeaders ?? {}),
+    };
+    if (isNew) {
+      headers["Set-Cookie"] = `sparky_session=${sessionId}; Path=/; Max-Age=${60 * 60 * 24 * 365}; SameSite=Lax`;
+    }
+    return new Response(readable, { headers });
+  };
+
+  const normMsg = normalizedLastMsg.replace(/\byiu\b/g, "you").replace(/[\s!?.]+$/, "");
   const casualPatterns = /^(h+e+y+|h+i+|hel+o+|helo+|hullo|howdy|sup+|s+u+p|yo+|yoo+|wh?[ao]+t'?s+ ?up+|wh?[ao]+t'?s+ ?good|wassup|wazzup|wsg|how are (you|u|ya)|how r u|how'?s? it go+ing|thanks+|thank you|thnks?|thx+|o+k+a*y*|coo+l|nice|great|lo+l|haha+|lmao+|bruh|bro|k+|gotcha|got it|makes sense|sounds good|perfect|awesome|sure|np|no problem|good|good morning|good afternoon|good evening|morning|night|bye+|goodbye|see ya|later|wyd|wbu|idk)$/i;
 
   if (casualPatterns.test(normMsg)) {
@@ -3966,29 +4203,50 @@ export async function POST(req: Request) {
     });
   }
 
+  const arithmeticAnswer = getSimpleArithmeticAnswer(lastMsg);
+  if (arithmeticAnswer) {
+    return makeFastTextResponse(
+      arithmeticAnswer,
+      "direct_rule_response",
+      "simple_arithmetic_fast_path"
+    );
+  }
+
+  const fastPathLower = normalizedLastMsg.toLowerCase();
+  if (/\b(who|where|how)\b.{0,25}\b(help|talk|contact|reach)\b.{0,25}\badmissions?\b/.test(fastPathLower) || /\badmissions?\b.{0,25}\b(help|office|contact|counselor|counsellor)\b/.test(fastPathLower)) {
+    return makeFastTextResponse(
+      "For admissions help, contact UIC Admissions: admissions.uic.edu | 312-996-4350. The Admissions office is in Suite 1100, 1200 W Harrison St, and the Visitors Center is at 1220 W Harrison St.",
+      "direct_rule_response",
+      "admissions_help_fast_path"
+    );
+  }
+
+  if (/\b(full fafsa|full financial aid|full.?time (financial aid|fafsa|aid)|credit hours?.{0,20}(fafsa|financial aid|aid)|how many.{0,20}(credits?|credit hours?).{0,20}(fafsa|financial aid|aid))\b/.test(fastPathLower)) {
+    return makeFastTextResponse(
+      "For most UIC undergrads, 12+ credit hours is the usual full-time load. Financial aid can still vary by award and student situation, so confirm your exact aid status with the Office of Student Financial Aid: SSB Suite 1800 | 312-996-3126 | financialaid.uic.edu.",
+      "direct_rule_response",
+      "financial_aid_credit_hours_fast_path"
+    );
+  }
+
+  if (isHarmlessCodingQuestion(lastMsg)) {
+    const codingResponse = await client.messages.create({
+      model: "claude-haiku-4-5-20251001",
+      max_tokens: 220,
+      system: "You are Sparky, primarily a UIC assistant. The student asked a harmless off-topic programming question. Answer briefly and directly. Start with exactly: \"I'm mainly here for UIC questions, but briefly:\". Keep the full response under 6 sentences. If code helps, include one small code block no longer than 10 lines. Do not mention UIC again after the opening unless necessary.",
+      messages: [{ role: "user", content: lastMsg }],
+    });
+    const codingText = (codingResponse.content[0] as any)?.text ?? "I'm mainly here for UIC questions, but briefly: I can help with simple coding questions too.";
+    return makeFastTextResponse(
+      codingText,
+      "off_topic_coding_fast_path",
+      "off_topic_coding_fast_path"
+    );
+  }
+
   if (isProductQuestion(lastMsg.toLowerCase())) {
     const aboutText = getProductAnswer(lastMsg.toLowerCase());
-    await persistChatLog({
-      responseText: aboutText,
-      responseKind: "product_fast_path",
-      answerMode: "discovery",
-      extraMetadata: {
-        matchedPath: "product_fast_path",
-      },
-    });
-    const encoder = new TextEncoder();
-    const readable = new ReadableStream({
-      start(controller) {
-        controller.enqueue(encoder.encode(aboutText));
-        controller.close();
-      },
-    });
-    return new Response(readable, {
-      headers: {
-        "Content-Type": "text/plain; charset=utf-8",
-        "Cache-Control": "no-store",
-      },
-    });
+    return makeFastTextResponse(aboutText, "product_fast_path", "product_fast_path");
   }
 
   if (isFlamesSongRequest(lastMsg)) {
@@ -4315,8 +4573,8 @@ if (isFollowUpQuery(lastMsg)) {
   if (!sessionState.confirmedMajor || !sessionState.confirmedYear) {
     const syncUpdates: Partial<typeof sessionState> = {};
     if (!sessionState.confirmedMajor) {
-      const majorRe = /\b(?:i(?:'m| am)(?: a| an)? |my major is |i(?:'m| am) (?:studying|majoring in) |i (?:study|major in) |i(?:'m| am) in (?:the )?)(computer science|cs|math(?:ematics)?|physics|biology|chemistry|nursing|engineering|finance|accounting|marketing|english|psychology|history|political science|sociology|philosophy|art|music|education|business|economics|ece|electrical|mechanical|civil|pre-?med|pre-?law|information systems|data science|neuroscience)\b/i;
-      const m = lastMsg.match(majorRe) || lastMsg.match(/\b(cs|computer science|math(?:ematics)?|physics|biology|chemistry|nursing|engineering|finance|accounting|marketing|english|psychology|history|political science|sociology|philosophy|art|music|education|business|economics)\s+(?:major|student|degree|program)\b/i);
+      const majorRe = /\b(?:i(?:'m| am)(?: a| an)? |my major is |i(?:'m| am) (?:studying|majoring in) |i (?:study|major in) |i(?:'m| am) in (?:the )?)(computer science|cs|math(?:ematics)?|physics|biology|biological sciences?|chemistry|nursing|engineering|finance|accounting|marketing|english|psychology|history|political science|sociology|philosophy|art|music|education|business|economics|ece|electrical|mechanical|civil|industrial engineering|criminology(?: law and justice)?|criminal justice|pre-?med|pre-?law|information systems|data science|neuroscience)\b/i;
+      const m = lastMsg.match(majorRe) || lastMsg.match(/\b(cs|computer science|math(?:ematics)?|physics|biology|biological sciences?|chemistry|nursing|engineering|finance|accounting|marketing|english|psychology|history|political science|sociology|philosophy|art|music|education|business|economics|criminology(?: law and justice)?|criminal justice)\s+(?:major|student|degree|program)\b/i);
       if (m) syncUpdates.confirmedMajor = normalizeMajor(m[1]);
     }
     if (!sessionState.confirmedYear) {
@@ -4379,7 +4637,7 @@ if (ci.isAboutFinancialAid)     dc["financial_aid"]   = Math.max(dc["financial_a
 // Admissions + international have no ci flags — detect via broader keyword patterns
 if (
   (dc["admissions"] ?? 0) < 0.5 &&
-  lower.match(/\b(sat|act|test.?optional|admit|accept|waitlist|defer|enroll(?:ment)?|application|apply|admission|require(?:ment)?|deadline|acceptance|incoming|first.?year|transfer student|deposit|orientation|law school|college of|school of|colleges|schools at|programs offered)\b/) &&
+  lower.match(/\b(sat|act|test.?optional|admit|accept|waitlist|defer|enroll(?:ment)?|application|application help|apply|admission|admissions|admissions? office|admissions? counselor|admissions? counsellor|admissions? recruiter|contact admissions?|reach admissions?|talk to admissions?|help with admissions?|require(?:ment)?|deadline|acceptance|incoming|first.?year|transfer student|deposit|orientation|law school|college of|school of|colleges|schools at|programs offered)\b/) &&
   !(lower.includes("waitlist") && lower.match(/\b(course|class|registration|register)\b/))
 ) {
   dc["admissions"] = Math.max(dc["admissions"] ?? 0, 0.82);
@@ -4645,6 +4903,7 @@ if (relevantVectors.length > 0 && !query.isFact && query.answerMode !== "plannin
   // Set to true in Phase 1 when the planner detects the requested major is not in its data.
   // Phase 2 uses this to skip manifest validation and stream a graceful fallback instead.
   let isPlannerMajorNotFound = false;
+  let planningStudentCtx: StudentContext | null = null;
   const deterministicPlanChunk = query.answerMode === "planning"
     ? allChunks.find((chunk) => chunk.domain === "major_plan" && chunk.content.startsWith("=== DETERMINISTIC PLAN ==="))
     : null;
@@ -4741,6 +5000,7 @@ if (relevantVectors.length > 0 && !query.isFact && query.answerMode !== "plannin
     const scaffoldChunk = allChunks.find(c => c.domain === "major_plan");
     if (scaffoldChunk) {
       const studentCtx = extractStudentContext(lastMsg, messages.slice(0, -1));
+      planningStudentCtx = studentCtx;
 
       // Merge in profile data so the planner automatically knows the student's
       // major, completed courses, and current courses without them having to
@@ -4786,7 +5046,7 @@ if (relevantVectors.length > 0 && !query.isFact && query.answerMode !== "plannin
       } catch (err) {
         // Both attempts failed — return controlled failure. Do NOT proceed with raw scaffold.
         console.error("[planning pipeline] buildPlanningObject failed after retry:", (err as Error).message);
-        const failMsg = "I couldn't generate a valid academic plan. Please try again.";
+        const failMsg = buildPlanningRecoveryMessage(planningStudentCtx, "build_failed");
         await persistChatLog({
           responseText: failMsg,
           responseKind: "planning_validation_failure",
@@ -5010,13 +5270,7 @@ const maxTokens = uploadedFile ? 2000
 
       // If major not found, skip Phase 2 validation entirely and stream the graceful response
       if (isMajorNotFound) {
-        const majorNotFoundMsg =
-          "I don't have a pre-built degree plan for that major in my current data. " +
-          "Here's what I'd suggest:\n\n" +
-          "1. Check **catalog.uic.edu** — search for your major to find the official degree requirements and sample schedule.\n" +
-          "2. Visit your **college advising office** — they can walk you through the exact sequence for your situation.\n" +
-          "3. I can still help you with course difficulty, professor ratings, gen ed options, housing, tuition, and more — just ask!\n\n" +
-          "Would you like me to look up specific courses, find the easiest gen eds to knock out, or help with something else?";
+        const majorNotFoundMsg = buildPlanningRecoveryMessage(planningStudentCtx, "major_not_found");
 
         const enc = new TextEncoder();
         const fallbackStream = new ReadableStream({

@@ -122,7 +122,7 @@ export function detectCampusIntent(msg: string) {
   const m = msg.toLowerCase();
   return {
     isAboutTuition: /tuition|cost|fee|how much|afford|pay|money|expensive|cheap|price|credit hour|per credit|billing|charges/i.test(m),
-    isAboutFinancialAid: /financial aid|scholarship|grant|aspire|fafsa|rise act|merit|chancellor|president.*award|pap|snap|aid|free tuition|free\.uic/i.test(m),
+    isAboutFinancialAid: /financial aid|scholarship|grant|aspire|fafsa|rise act|merit|chancellor|president.*award|pap|snap|aid|free tuition|free\.uic|full.?time aid|full.?time financial aid|full.?time fafsa|enrollment status|credit hours?.{0,20}(fafsa|financial aid|aid)|how many.{0,20}(credits?|credit hours?).{0,20}(fafsa|financial aid|aid)/i.test(m),
     isAboutResidency: /in.?state|out.?of.?state|residency|resident|nonresident|lake county|indiana|tribal/i.test(m),
     isAboutPayment: /payment plan|installment|nelnet|ui pay|pay over time|how to pay/i.test(m),
     isAboutCostComparison: /compare|vs|versus|uiuc|niu|siu|cheaper|more expensive|other school/i.test(m),
@@ -136,7 +136,7 @@ export function detectCampusIntent(msg: string) {
     isAboutAthletics: /flames|athletics|basketball|baseball|soccer|volleyball|softball|swimming|tennis|golf|track|cross country|credit union.*arena|uic pavilion|sports|game|ticket|student section|flame force|mvc|horizon league|coach|roster/i.test(m),
     isAboutCampusMap: /building|where is|how to get to|directions|library|daley|lhs|student center|ssb|parking|shuttle|night ride|cta|blue line|pink line|bus|train|transit|campus map/i.test(m),
     isAboutHealth: /health service|counseling|therapy|mental health|doctor|sick|nurse|campus care|campuscare|pharmacy|dental|eye|urgent care|disability|drc|accommodation/i.test(m),
-    isAboutAcademicPolicies: /registration|banner|time ticket|add.*drop|withdraw|gpa requirement|academic probation|academic notice|deans list|graduation requirement|latin honors|honors college|incomplete|grade replacement|repeat.*course|how many credits|120 credit|change major|double major|minor/i.test(m),
+    isAboutAcademicPolicies: /registration|banner|time ticket|add.*drop|withdraw|gpa requirement|academic probation|academic notice|deans list|graduation requirement|latin honors|honors college|incomplete|grade replacement|repeat.*course|how many credits|120 credit|change major|double major|minor|full.?time|enrollment status|credit load|credit hours?.{0,20}(fafsa|financial aid|aid)/i.test(m),
     isAboutCalendar: /academic calendar|semester start|finals|spring break|registration open|add drop deadline|when does.*semester|when is.*break|fall 2025|spring 2026/i.test(m),
     isAboutRecreation: /crrc|srf|sfc|recreation|rec center|gym|intramural|sport club|fitness class|pool|climbing|yoga|zumba|hiit|night ride/i.test(m),
     isAboutSafety: /safe|safety|escort|night ride|uic safe|emergency|crime|walking escort/i.test(m),

@@ -7,7 +7,12 @@ import { capturePostHogEvent } from "@/app/lib/posthog-server";
 import { detectIntent, detectCampusIntent } from "@/lib/chat/intent";
 import { classifyIntent } from "@/lib/chat/classify";
 import { vectorSearch, rerankChunks } from "@/lib/chat/vectors";
-import { getSessionState, updateSessionState, extractEntitiesFromQuery } from "@/lib/chat/session-state";
+import {
+  getSessionState,
+  updateSessionState,
+  extractEntitiesFromQuery,
+  type SessionState,
+} from "@/lib/chat/session-state";
 import { getCurrentStudyUser } from "@/lib/auth/session";
 import { parseStoredPreferences } from "@/lib/study/profile";
 import { getCurrentSession } from "@/lib/auth/session";

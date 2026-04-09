@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import { useProfCoursesMap } from "@/app/hooks/useProfCoursesMap";
 import { ClassesCell } from "@/app/components/ClassesCell";
 import FeatureTour from "@/app/components/onboarding/FeatureTour";
@@ -53,7 +53,7 @@ function ratingConfig(v: number, isRated: boolean) {
   return { text: "text-red-700 dark:text-red-400", bg: "bg-red-50 dark:bg-red-500/15", ring: "ring-red-200 dark:ring-red-500/25" };
 }
 
-export default function Page() {
+function ProfessorsPageContent() {
   const nf = useMemo(() => new Intl.NumberFormat("en-US"), []);
   const pathname = usePathname();
   const router = useRouter();
@@ -436,5 +436,13 @@ export default function Page() {
 
       <SiteFooter className="mt-12" />
     </main>
+  );
+}
+
+export default function Page() {
+  return (
+    <Suspense fallback={<main className="min-h-screen bg-zinc-50 dark:bg-zinc-950" />}>
+      <ProfessorsPageContent />
+    </Suspense>
   );
 }

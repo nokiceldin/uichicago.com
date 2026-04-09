@@ -871,5 +871,179 @@
     "lastRunScore": 1,
     "lastRunAt": "2026-03-17T01:00:46.119Z",
     "lastRunAnswer": "I don't have that athletics detail. Check UICFlames.com for schedules, rosters, and ticket information."
+  },
+  {
+    "id": "eval_051",
+    "question": "2+2?",
+    "category": "regression_fixes",
+    "expectedBehavior": "direct_fast_path",
+    "shouldAbstain": false,
+    "groundTruth": {
+      "mustContain": [
+        "4"
+      ],
+      "mustNotContain": [
+        "312-996-7000",
+        "visit uic.edu",
+        "I'm not sure I have reliable information on that"
+      ],
+      "scoringMethod": "exact_string_ci"
+    },
+    "lastRunScore": 1,
+    "lastRunAt": "2026-04-09T03:00:08.250Z",
+    "lastRunAnswer": "4"
+  },
+  {
+    "id": "eval_052",
+    "question": "how are yiu",
+    "category": "regression_fixes",
+    "expectedBehavior": "casual_fast_path",
+    "shouldAbstain": false,
+    "groundTruth": {
+      "judgePrompt": "Pass if the answer responds casually like a normal chat reply and does not redirect the user to a UIC office, phone number, or website. Fail if it gives a generic UIC fallback.",
+      "scoringMethod": "haiku_judge"
+    },
+    "lastRunScore": 1,
+    "lastRunAt": "2026-04-09T03:00:13.617Z",
+    "lastRunAnswer": "Hey there! I'm doing great, thanks for asking - how are you doing today?"
+  },
+  {
+    "id": "eval_053",
+    "question": "what are you running on",
+    "category": "regression_fixes",
+    "expectedBehavior": "product_fast_path",
+    "shouldAbstain": false,
+    "groundTruth": {
+      "judgePrompt": "Pass if the answer gives a safe product or implementation explanation about Sparky or UIChicago and avoids the generic UIC office fallback. Fail if it tells the user to call UIC or visit uic.edu.",
+      "scoringMethod": "haiku_judge"
+    },
+    "lastRunScore": 1,
+    "lastRunAt": "2026-04-09T03:00:15.684Z",
+    "lastRunAnswer": "I'm Sparky, the AI assistant inside UIChicago. I can't share private implementation details, but I'm built to answer UIC questions using the UIC course, professor, planning, and campus data available "
+  },
+  {
+    "id": "eval_054",
+    "question": "are you officially affiliated with UIC?",
+    "category": "regression_fixes",
+    "expectedBehavior": "product_fast_path",
+    "shouldAbstain": false,
+    "groundTruth": {
+      "mustContain": [
+        "unofficial",
+        "student-built"
+      ],
+      "mustNotContain": [
+        "312-996-7000",
+        "visit uic.edu"
+      ],
+      "scoringMethod": "exact_string_ci"
+    },
+    "lastRunScore": 0,
+    "lastRunAt": "2026-04-09T03:00:16.581Z",
+    "lastRunAnswer": "UIChicago is unofficial. It was built by a software engineering team from UIC for students, and it is open and free for all students to use."
+  },
+  {
+    "id": "eval_055",
+    "question": "who can help with admissions",
+    "category": "regression_fixes",
+    "expectedBehavior": "domain_specific_abstain",
+    "shouldAbstain": false,
+    "groundTruth": {
+      "mustContain": [
+        "admissions.uic.edu",
+        "312-996-4350"
+      ],
+      "mustNotContain": [
+        "312-996-7000"
+      ],
+      "scoringMethod": "exact_string_ci"
+    },
+    "lastRunScore": 1,
+    "lastRunAt": "2026-04-09T03:00:17.476Z",
+    "lastRunAnswer": "For admissions help, contact UIC Admissions: admissions.uic.edu | 312-996-4350. The Admissions office is in Suite 1100, 1200 W Harrison St, and the Visitors Center is at 1220 W Harrison St."
+  },
+  {
+    "id": "eval_056",
+    "question": "How many credit hours for full fafsa",
+    "category": "regression_fixes",
+    "expectedBehavior": "full_answer",
+    "shouldAbstain": false,
+    "groundTruth": {
+      "mustContain": [
+        "12",
+        "financial aid"
+      ],
+      "mustNotContain": [
+        "UICFlames",
+        "athletics detail"
+      ],
+      "scoringMethod": "exact_string_ci"
+    },
+    "lastRunScore": 1,
+    "lastRunAt": "2026-04-09T03:00:18.367Z",
+    "lastRunAnswer": "For most UIC undergrads, 12+ credit hours is the usual full-time load. Financial aid can still vary by award and student situation, so confirm your exact aid status with the Office of Student Financia"
+  },
+  {
+    "id": "eval_057",
+    "question": "Can I get a 4 year plan for pre med",
+    "category": "regression_fixes",
+    "expectedBehavior": "full_answer",
+    "shouldAbstain": false,
+    "groundTruth": {
+      "judgePrompt": "Pass if the answer treats this as a workable planning request and routes it through a Biological Sciences or pre-med planning answer rather than flatly saying no pre-built plan exists. Fail if it dead-ends with a generic plan failure or major-not-found message.",
+      "scoringMethod": "haiku_judge"
+    },
+    "lastRunScore": 1,
+    "lastRunAt": "2026-04-09T03:00:27.842Z",
+    "lastRunAnswer": "I can help build this plan, but I'm missing the major. I did pick up some context, pre-professional track). Tell me the exact UIC major you want the plan for, and I'll build the schedule around that."
+  },
+  {
+    "id": "eval_058",
+    "question": "make me a 4 year engineering plan",
+    "category": "regression_fixes",
+    "expectedBehavior": "full_answer",
+    "shouldAbstain": false,
+    "groundTruth": {
+      "judgePrompt": "Pass if the answer gives a usable engineering planning response or clearly says it is using an engineering backbone instead of failing with 'couldn't generate a valid academic plan'. Fail on raw planner failure text.",
+      "scoringMethod": "haiku_judge"
+    },
+    "lastRunScore": 1,
+    "lastRunAt": "2026-04-09T03:00:34.096Z",
+    "lastRunAnswer": "Typical Engineering (using Mechanical Engineering backbone) plan at UIC (128 total credits):\n\n### Freshman Year — First Semester (18h)\n- **ENGR 100** — Engineering Success Seminar for Freshmen a (1 cr"
+  },
+  {
+    "id": "eval_059",
+    "question": "Does uic have startup related student orgs?",
+    "category": "regression_fixes",
+    "expectedBehavior": "hedged_answer",
+    "shouldAbstain": false,
+    "groundTruth": {
+      "mustContain": [
+        "connect.uic.edu",
+        "verified"
+      ],
+      "mustNotContain": [
+        "The startup club is",
+        "definitely"
+      ],
+      "scoringMethod": "exact_string_ci"
+    },
+    "lastRunScore": 1,
+    "lastRunAt": "2026-04-09T03:00:38.669Z",
+    "lastRunAnswer": "UIC has 470+ registered student organizations, and the official directory is https://connect.uic.edu/.\nI do not have a verified org-by-org list in the current dataset, so I can't confidently name a sp"
+  },
+  {
+    "id": "eval_060",
+    "question": "im done with all gen eds except understanding the natural world",
+    "category": "regression_fixes",
+    "expectedBehavior": "planning_clarification",
+    "shouldAbstain": false,
+    "groundTruth": {
+      "judgePrompt": "Pass if the answer asks for or points out the missing major cleanly and offers to build the next-step plan from there. Fail if it shows raw planning failure text like 'I couldn't generate a valid academic plan' or acts like the user already supplied a major when they did not.",
+      "scoringMethod": "haiku_judge"
+    },
+    "lastRunScore": 0,
+    "lastRunAt": "2026-04-09T03:00:51.296Z",
+    "lastRunAnswer": "Since you're a senior and just need **Understanding the Natural World**, you have tons of options to finish up! This is one of the larger gen ed categories, so you can pick something that fits your sc"
   }
 ]

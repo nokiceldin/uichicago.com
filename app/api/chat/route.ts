@@ -721,104 +721,80 @@ function getAbstainResponse(query: QueryAnalysis, reason?: string): string {
 
   const responses: Partial<Record<string, string>> = {
     registration:
-      "I don't have that registration detail. For course credit limits and " +
-      "overload approvals, contact your college advising office or the Registrar: " +
-      "registrar.uic.edu.",
+      "I can't confirm that registration detail from my current data. For credit limits, overload approvals, or registration rules, the best next step is your college advising office or the Registrar: registrar.uic.edu.",
     personal_data:
       "I can't access your personal student records like GPA, grades, billing, or visa status. Check your myUIC portal or contact the relevant UIC office directly for your account-specific information.",
     course_specific_policy:
-      "I can't see individual course syllabi or professor-specific policies. Check Blackboard or the syllabus your professor posted, or email your instructor directly to confirm the late-work or makeup policy.",
+      "I can't see your specific syllabus or professor-only policies from here. The best next step is Blackboard, the posted syllabus, or a quick email to your instructor to confirm the exact late-work, attendance, or makeup rule.",
     external_transfer:
-      "I can't reliably confirm transfer GPA requirements for another university. Check the target school's transfer admissions page or speak with that school's admissions office for the current requirement.",
+      "I can't reliably confirm another school's transfer requirement from UIC-side data. The best next step is the target school's transfer admissions page or admissions office for the current GPA and credit policy.",
     dining_live:
-      "I don't have real-time dining menus for today. Check dining.uic.edu for today's menus and locations, or contact UIC Dining for the most current vegan and dietary option details.",
+      "I don't have live dining menus or same-day availability from here. The best next step is dining.uic.edu for today's menus and open locations, especially for current vegan or dietary options.",
     transportation_live:
-      "I don't have real-time transit tracking. Check the CTA Bus Tracker, Ventra app, or transitchicago.com for current arrivals and delays.",
+      "I don't have live CTA tracking from here. The best next step is the CTA Bus Tracker, the Ventra app, or transitchicago.com for current arrivals, delays, and reroutes.",
     athletics_live:
-      "I don't have live or last-night game results in my data. Check uicflames.com, the official UIC Flames social accounts, or ESPN for the latest score.",
+      "I don't have live or last-night game results in my data. The best next step is uicflames.com, the official UIC Flames social accounts, or ESPN for the latest score.",
     live_status:
-      "I don't have reliable real-time status data for that. Check the official live source for the office, service, or event you need to confirm.",
+      "I don't have a reliable live status feed for that. The best next step is the official live source for that office, service, or event so you can confirm the current status directly.",
     courses:
-      "I don't have reliable data to answer that question. For course information, " +
-      "check the UIC Schedule of Classes at registrar.uic.edu or the course catalog " +
-      "at catalog.uic.edu.",
+      "I can't confirm that course detail reliably from the current data I have. The best next step is the UIC Schedule of Classes at registrar.uic.edu for current sections and catalog.uic.edu for official course descriptions and requirements.",
 
     professors:
-      "I don't have enough information to answer that reliably. For professor reviews, " +
-      "check RateMyProfessors.com. For office hours and contact info, check the " +
-      "department's website or your course's Blackboard page.",
+      "I don't have enough verified professor data to answer that confidently. The best next step is RateMyProfessors for student reviews, plus the department site or Blackboard for office hours and contact info.",
 
     gen_ed:
-      "I couldn't find clear data for that Gen Ed question. The full Gen Ed course list " +
-      "is at catalog.uic.edu — search by category under General Education requirements.",
+      "I couldn't confirm that Gen Ed detail clearly from the current data. The best next step is catalog.uic.edu under General Education requirements, where you can search by category and approved course list.",
 
     major_plan:
-      "I don't have a complete answer for that major or program. Contact your college " +
-      "advising office, or see the official degree requirements at catalog.uic.edu.",
+      "I don't have enough major-plan data to answer that cleanly. The best next step is catalog.uic.edu for the official degree requirements and your college advising office for exact sequencing.",
 
     housing:
-      "I don't have the specific housing information you need. Contact UIC Housing " +
-      "directly: housing.uic.edu | 312-413-5255 | housing@uic.edu.",
+      "I can't confirm that housing detail from the data I have. The best next step is UIC Housing directly: housing.uic.edu | 312-413-5255 | housing@uic.edu.",
 
     dining:
-      "I don't have current dining details for that. Check dining.uic.edu for menus, " +
-      "hours, and meal plan information.",
+      "I can't confirm that dining detail reliably from my current data. The best next step is dining.uic.edu for current menus, hours, and meal plan details.",
 
     tuition:
-      "I can't confirm that tuition or billing detail. See current figures at " +
-      "bursar.uic.edu or call the Bursar's Office: 312-996-8574.",
+      "I can't confirm that tuition or billing detail from here. The best next step is bursar.uic.edu for current figures or the Bursar's Office at 312-996-8574.",
 
     financial_aid:
-      "I can't confirm that financial aid detail. Contact the Office of Student " +
-      "Financial Aid: SSB Suite 1800 | 312-996-3126 | financialaid.uic.edu.",
+      "I can't confirm that financial aid detail from my current data. The best next step is the Office of Student Financial Aid: SSB Suite 1800 | 312-996-3126 | financialaid.uic.edu.",
 
     health:
-      "I don't have that health services information. For the health clinic: " +
-      "campuscare.uic.edu | 312-996-7420. For counseling: 312-996-3490.",
+      "I can't confirm that health-services detail from here. The best next step is campuscare.uic.edu or 312-996-7420 for the clinic, and 312-996-3490 for counseling.",
 
     calendar:
-      "I don't have that academic calendar detail. See the official calendar at " +
-      "registrar.uic.edu/calendars.",
+      "I can't confirm that calendar or deadline detail from my current data. The best next step is the official academic calendar at registrar.uic.edu/calendars.",
 
     academic_policy:
-      "I don't have a reliable answer for that policy question. Contact the " +
-      "Registrar's Office at registrar.uic.edu or your college advising office.",
+      "I don't have a reliable answer for that policy question from the current data. The best next step is the Registrar at registrar.uic.edu or your college advising office.",
 
     admissions:
-      "I don't have that admissions detail. Contact Admissions: " +
-      "admissions.uic.edu | 312-996-4350.",
+      "I can't confirm that admissions detail confidently from here. The best next step is Admissions: admissions.uic.edu | 312-996-4350.",
 
     careers:
-      "I don't have that career services detail. Contact Career Services: " +
-      "SSB Suite 3050 | 312-996-2300 | uic.joinhandshake.com.",
+      "I can't confirm that career-services detail from my current data. The best next step is Career Services: SSB Suite 3050 | 312-996-2300 | uic.joinhandshake.com.",
 
     international:
-      "I don't have that international student detail. Contact the Office of " +
-      "International Services: SSB 2160 | 312-996-3121 | ois.uic.edu.",
+      "I can't confirm that international-student detail confidently from here. The best next step is the Office of International Services: SSB 2160 | 312-996-3121 | ois.uic.edu.",
 
     safety:
-      "I don't have that policy detail. For campus safety: police.uic.edu | " +
-      "Emergency: 312-996-2830. For Title IX: oae.uic.edu | 312-996-8670.",
+      "I can't confirm that safety or policy detail from the current data. The best next step is police.uic.edu for campus safety, 312-996-2830 for emergencies, or oae.uic.edu | 312-996-8670 for Title IX support.",
 
     library:
-      "I don't have that library detail. Contact Daley Library: " +
-      "library.uic.edu | 312-996-2726.",
+      "I can't confirm that library detail from here. The best next step is library.uic.edu or Daley Library at 312-996-2726.",
 
     athletics:
-      "I don't have that athletics detail. Check UICFlames.com for schedules, " +
-      "rosters, and ticket information.",
+      "I can't confirm that athletics detail from my current data. The best next step is UICFlames.com for schedules, rosters, and ticket info.",
 
     transportation:
-      "I don't have current transit details. Check transitchicago.com for CTA " +
-      "schedules or transportation.uic.edu for campus shuttles.",
+      "I can't confirm that transportation detail reliably from here. The best next step is transitchicago.com for CTA service or transportation.uic.edu for campus shuttle info.",
 
     student_life:
-      "I don't have a real-time events calendar. For this week's campus events: " +
-      "uic.edu/events | connect.uic.edu (student orgs). " +
-      "For recurring programs and orgs, I'm happy to help!",
+      "I don't have a live campus-events feed from here. The best next step is uic.edu/events for current events and connect.uic.edu for student orgs. For recurring programs or campus-life questions, I can still help.",
 
     general:
-      "I don't have enough UIC-specific information to answer that reliably. I can help with UIC courses, professors, 4-year plans, admissions, financial aid, housing, dining, campus services, student orgs, and athletics.",
+      "I don't have enough UIC-specific information to answer that reliably from the current data. I can still help with UIC courses, professors, 4-year plans, admissions, financial aid, housing, dining, campus services, student orgs, and athletics.",
   };
 
   return (
@@ -2698,13 +2674,13 @@ function retrieveDining(ci: any, query: QueryAnalysis): RetrievedChunk[] {
   const lower = query.rawQuery.toLowerCase();
   if ((/\b24 ?hours?\b/.test(lower) || /\bopen all night\b/.test(lower)) && /\b(food|eat|dining|restaurant|market|snack)\b/.test(lower)) {
     chunks.push(makeChunk("dining",
-      `=== DETERMINISTIC FACT ===\nThe main on-campus food option open **24 hours** is **Market at Halsted** in **Student Center East**. It is listed as **open 24 hours daily** in the current dining data.`,
+      `=== DETERMINISTIC FACT ===\nThe main on-campus food option open **24 hours** is **Market at Halsted** in **Student Center East**. It is listed as **open 24 hours daily** in the current dining data.\nVerify current hours at dining.uic.edu before you go, since dining hours can change by term or break schedule.`,
       0.99,
       query));
   }
   if (/\bstarbucks\b/.test(lower)) {
     chunks.push(makeChunk("dining",
-      `STARBUCKS LOCATIONS: Student Center West (SCW) — 7AM-4PM. Starbucks at ARC — Mon-Thu 7AM-7PM, Fri 7AM-5PM, Sat-Sun 9AM-3PM. I do not see a Starbucks listed inside the engineering building in the current dining data.`,
+      `STARBUCKS LOCATIONS (from the current dining data): Student Center West (SCW) — 7AM-4PM. Starbucks at ARC — Mon-Thu 7AM-7PM, Fri 7AM-5PM, Sat-Sun 9AM-3PM. I do not see a Starbucks listed inside the engineering building in the current dining data.\nVerify current hours at dining.uic.edu before heading over.`,
       0.98, query));
   }
   if (ci.isAboutDining) {
@@ -2715,7 +2691,8 @@ function retrieveDining(ci: any, query: QueryAnalysis): RetrievedChunk[] {
       `SCW: Starbucks (7AM-4PM) | Harold's Chicken | Lotus Cafe | Mex Sabor | Wild Blue Sushi\n` +
       `Other: Starbucks ARC (7AM-7PM) | Market at Morgan (8AM-6PM)\n` +
       `24-hour: Market at Halsted | Halal: Halal Shack SCE\n` +
-      `Off-campus: Al's Italian Beef (1079 W Taylor) | Mario's Italian Lemonade (1068 W Taylor) | Pompei (1531 W Taylor)`;
+      `Off-campus: Al's Italian Beef (1079 W Taylor) | Mario's Italian Lemonade (1068 W Taylor) | Pompei (1531 W Taylor)\n\n` +
+      `These hours are from the current dining data and can change during breaks, summer, or by semester. Verify current hours and open locations at dining.uic.edu.`;
     chunks.push(makeChunk("dining", content, 0.95, query));
   }
   if (ci.isAboutMealPlan) {
@@ -2725,7 +2702,8 @@ function retrieveDining(ci: any, query: QueryAnalysis): RetrievedChunk[] {
       `Ignite 15: $2,060/sem — 15 swipes/week + $50 Flames Fare\n` +
       `Ignite 160: $2,350/sem — 160 swipes + $750 Flames Fare + 30 exchanges\n` +
       `Blaze 160 (commuters): $2,260/sem | Blaze 80: $1,150/sem | Blaze 30: $370/sem\n` +
-      `Flames Fare rolls fall->spring->summer. Plan changes: first 10-14 days only.`;
+      `Flames Fare rolls fall->spring->summer. Plan changes: first 10-14 days only.\n\n` +
+      `Meal plan pricing and change windows can change by academic year. Verify the current plan sheet at dining.uic.edu before making a decision.`;
     chunks.push(makeChunk("dining", content, 0.95, query));
   }
   return chunks;
@@ -3312,13 +3290,13 @@ Questions: transportation.uic.edu | CTA: 888-968-7282`,
       ? `\n\nFROM O'HARE AIRPORT: Take the Blue Line (Forest Park direction) → ride to UIC-Halsted station (~45 min, $2.50 fare or use U-Pass). UIC-Halsted is the main east campus stop.\nFROM MIDWAY AIRPORT: Take Orange Line → transfer at Harold Washington Library or Roosevelt → connect to Pink Line → Polk station (west campus). Or take the #60 bus to UIC.`
       : "";
     chunks.push(makeChunk("transportation",
-      `CTA TO UIC:\n${trains}\n\nKEY BUSES:\n${buses}${airportDirections}`,
+      `CTA TO UIC:\n${trains}\n\nKEY BUSES:\n${buses}${airportDirections}\n\nRoute details and service patterns can change. For current arrivals, reroutes, and delays, verify with Ventra or transitchicago.com.`,
       0.97, query));
   }
   if (lower.match(/shuttle|night ride|intracampus/)) {
     const s = b.transportation.shuttles;
     chunks.push(makeChunk("transportation",
-      `SHUTTLES:\nIntracampus (east↔west): ${s.intracampus_route.hours}\nNight Ride: ${s.night_ride.hours} — ${s.night_ride.description} — Use UIC Ride app. Coverage: ${s.night_ride.coverage}`,
+      `SHUTTLES:\nIntracampus (east↔west): ${s.intracampus_route.hours}\nNight Ride: ${s.night_ride.hours} — ${s.night_ride.description} — Use UIC Ride app. Coverage: ${s.night_ride.coverage}\n\nShuttle and Night Ride hours can change, especially around breaks or special schedules. Verify the current schedule at transportation.uic.edu or in the UIC Ride app.`,
       0.97, query));
   }
   if (lower.match(/\bparking\b|garage|permit/)) {
@@ -3544,6 +3522,8 @@ Contact: Registrar's Office, SSB Suite 1200 | registrar.uic.edu | 312-996-4350`;
     c += `\nACADEMIC POLICIES:\nGrading: A=4.0, B=3.0, C=2.0, D=1.0, F=0.0\nGPA floor: 2.00 | Graduation: 120+ hrs, 2.00 GPA, 24+ gen ed hrs, last 30 at UIC\nLatin Honors: Cum Laude 3.50+ | Magna 3.75+ | Summa 3.90+`;
   }
 
+  c += `\n\nCalendar dates and registration deadlines can change by term. Verify the current academic calendar at registrar.uic.edu/calendars before acting on a deadline.`;
+
   return [makeChunk("calendar", c, 0.95, query)];
 }
 
@@ -3616,9 +3596,28 @@ function retrieveAdmissions(query: QueryAnalysis): RetrievedChunk[] {
   const tr = adm.transfer;
   const sc = adm.scholarships;
   const lower = query.rawQuery.toLowerCase();
+  const readmissionProcess = adm.readmission?.process ?? "See UIC readmission instructions";
+  const readmissionDeadline = adm.readmission?.deadline ?? "See admissions.uic.edu for current readmission deadlines";
 
   // ── Fast-path: English proficiency / Duolingo queries ─────────────────────
   const chunks: RetrievedChunk[] = [];
+  if (
+    /\btransfer\b/.test(lower) &&
+    /\b(common app|common application|apply|application|platform|web application|portal)\b/.test(lower)
+  ) {
+    return [makeChunk("admissions",
+      `UIC admissions data clearly says **first-year applicants use the Common Application**. For **transfer applicants**, the current transfer section in my data lists the deadline, credit minimum, and GPA guidance, but it does **not explicitly name the application platform**. Separate from transfer, **readmission** is listed as: ${readmissionProcess}.\nVerify the current transfer application process at admissions.uic.edu or with the Office of Admissions before you apply.`,
+      0.99,
+      query)];
+  }
+
+  if (/\btransfer\b/.test(lower) && /\bdeadline|deadlines|when due|due date|last day\b/.test(lower)) {
+    return [makeChunk("admissions",
+      `UIC's current transfer data lists a **fall transfer deadline of ${tr.regular_deadline}**. The **spring transfer deadline is not clearly labeled in the current transfer dataset**, so I don't want to guess. Separate from transfer, the current **readmission** deadline is listed as ${readmissionDeadline}.\nVerify the current transfer deadline at admissions.uic.edu before you apply.`,
+      0.99,
+      query)];
+  }
+
   if (lower.match(/duolingo|english proficiency|toefl|ielts|language test|esl|english.*test|test.*english/)) {
     const intl = (admissionsData as any).international ?? {};
     return [makeChunk("admissions",
@@ -3641,10 +3640,13 @@ function retrieveAdmissions(query: QueryAnalysis): RetrievedChunk[] {
   }
 
   const content = `=== UIC ADMISSIONS 2025-2026 ===\n` +
-    `Platform: ${fy.application_platform} | Test policy: ${fy.test_policy} | ${fy.no_enrollment_deposit}\n` +
+    `First-Year application platform: ${fy.application_platform} | Test policy: ${fy.test_policy} | ${fy.no_enrollment_deposit}\n` +
     `First-Year deadlines: Priority ${fy.deadlines.priority} | Regular ${fy.deadlines.regular} | Spring ${fy.deadlines.spring}\n` +
-    `Transfer: Fall ${tr.regular_deadline} | Spring ${adm.readmission?.deadline?.split(",")[1]?.trim() ?? "Oct 15"} | Min ${tr.minimum_credits} | GPA: ${tr.minimum_gpa}\n` +
+    `Transfer: Fall ${tr.regular_deadline} | Spring deadline not clearly listed in the current transfer data | Min ${tr.minimum_credits} | GPA: ${tr.minimum_gpa}\n` +
     `Guaranteed Transfer: ${tr.community_college_pathway}\n\n` +
+    `READMISSION:\n` +
+    `${readmissionProcess}\n` +
+    `Deadlines: ${readmissionDeadline}\n\n` +
     `SCHOLARSHIPS:\n` +
     `Aspire Grant: ${sc.aspire_grant.amount}. Deadline ${sc.aspire_grant.deadline}\n` +
     `Chancellor's Fellows: ${sc.chancellors_fellows.amount}. Deadline ${sc.chancellors_fellows.deadline}\n` +
@@ -3652,7 +3654,8 @@ function retrieveAdmissions(query: QueryAnalysis): RetrievedChunk[] {
     `Merit Tuition Award: ${sc.merit_tuition_award.amount}\n\n` +
     `AFTER ADMISSION: Activate NetID | Placement tests by June 30 | Apply housing (housing.uic.edu) | File FAFSA | Register orientation\n` +
     `Visits: ${adm.campus_visits.url} | Admitted hub: ${adm.campus_visits.admitted_students}\n\n` +
-      `UIC COLLEGES & SCHOOLS: Liberal Arts and Sciences (LAS) | Engineering | Business Administration | Architecture Design and the Arts (CADA) | Education | Applied Health Sciences | Nursing | Public Health | Pharmacy | Medicine | Dentistry | Social Work | Urban Planning and Public Affairs | School of Law (formerly John Marshall Law School) | Honors College`;
+      `UIC COLLEGES & SCHOOLS: Liberal Arts and Sciences (LAS) | Engineering | Business Administration | Architecture Design and the Arts (CADA) | Education | Applied Health Sciences | Nursing | Public Health | Pharmacy | Medicine | Dentistry | Social Work | Urban Planning and Public Affairs | School of Law (formerly John Marshall Law School) | Honors College\n\n` +
+      `Admissions platforms, deadlines, and scholarship details can change by cycle. Verify the current version at admissions.uic.edu and financialaid.uic.edu before you apply.`;
 
   return [makeChunk("admissions", content, 0.97, query)];
 }
@@ -3664,7 +3667,8 @@ function retrieveCareers(query: QueryAnalysis): RetrievedChunk[] {
     `Services: Resume/CV, cover letters, mock interviews, salary negotiation\n\n` +
     `CAREER FAIRS: Fall Internship & Career | Winter Internship | Spring Internship & Career | Post-Graduation | Grad/Professional School\n\n` +
     `CAMPUS JOBS: $16-$21.51/hr (FY2026). F-1: up to 20hr/week on-campus (no authorization needed).\n` +
-    `Graduate assistantships: 25-67% appointment = tuition waiver. Contact your dept DGS.`;
+    `Graduate assistantships: 25-67% appointment = tuition waiver. Contact your dept DGS.\n\n` +
+    `Drop-in hours, career fair timing, and campus job pay ranges can shift. Verify the current schedule in Handshake or with Career Services.`;
   return [makeChunk("careers", content, 0.9, query)];
 }
 
@@ -3687,7 +3691,8 @@ function retrieveLibrary(query: QueryAnalysis): RetrievedChunk[] {
     `Fines: ${borrowing?.fines ?? "No fines until 39 days past due"}. Lost item: ${borrowing?.lost_item_fee ?? "$125+"}\n` +
     `PRINTING: Wepa stations campus-wide\n` +
     `ILL: I-Share 3-5 days | ILLiad 7-10 days\n` +
-    `Research help: ask.library.uic.edu | Guides: researchguides.uic.edu`;
+    `Research help: ask.library.uic.edu | Guides: researchguides.uic.edu\n\n` +
+    `Library hours change during finals, breaks, and summer. Verify current hours at library.uic.edu/hours before you go.`;
   return [makeChunk("library", content, 0.9, query)];
 }
 
@@ -3728,7 +3733,8 @@ function retrieveRecreation(query: QueryAnalysis): RetrievedChunk[] {
     `Facilities: 18,000 sq ft gym, pool, sauna, steam, track, racquetball, climbing wall\n` +
     `INTRAMURALS (free): Basketball, Soccer, Volleyball, Flag Football, Pickleball, Dodgeball — IMLeagues.com\n` +
     `SPORT CLUBS: Boxing, Cricket, Fencing, Rugby, Taekwondo, Ultimate Frisbee + more\n` +
-    `FITNESS CLASSES: Yoga, Zumba, HIIT, Spin, Boxing, Pilates, Bollywood, F45`;
+    `FITNESS CLASSES: Yoga, Zumba, HIIT, Spin, Boxing, Pilates, Bollywood, F45\n\n` +
+    `Rec center hours and class schedules can change during breaks and by semester. Verify the current schedule with Campus Recreation or IMLeagues.`;
   return [makeChunk("recreation", content, 0.9, query)];
 }
 
@@ -3889,10 +3895,10 @@ function buildSystemPrompt(
     (answerPack?.rankedEvidence.some((e) => e.source === "major_plan") ?? false);
 
   const modeInstructions: Record<AnswerMode, string> = {
-    ranking: "RANKING: Lead with the top options. Use real GPA numbers, scores, prices to justify rankings. Name a clear winner. Don't hedge — students want a decisive answer.",
+    ranking: "RANKING: Lead with the top options. Use real GPA numbers, scores, prices to justify rankings. Name a clear winner. Don't hedge — students want a decisive answer. If the question is about professors or classes, keep the answer useful for grades but add one short line acknowledging fit, teaching style, or learning value when the evidence supports it.",
     discovery: "DISCOVERY: If this is a simple or casual question, answer briefly and directly. Only give a rich overview if the student is genuinely exploring a broad topic.",
     comparison: "COMPARISON: Structure as clear A vs B with parallel criteria. Acknowledge the real tradeoffs. End with a concrete recommendation tailored to the implied student profile.",
-    recommendation: "RECOMMENDATION: You detected specific constraints about this student. Use them. Give a direct, personalized answer — not 'it depends,' but 'given that you care about X and Y, here is what I recommend and why.'",
+    recommendation: "RECOMMENDATION: You detected specific constraints about this student. Use them. Give a direct, personalized answer — not 'it depends,' but 'given that you care about X and Y, here is what I recommend and why.' If the student is choosing professors or classes, mention the strongest option for grades and briefly note any tradeoff in workload, teaching style, or learning fit.",
     logistics: "LOGISTICS: Be precise. Lead with exact addresses, phone numbers, deadlines, URLs, hours. Zero editorializing. Students need to act — give them exactly what they need.",
 planning: `PLANNING: The retrieved data contains a PLANNING OBJECT — a pre-validated JSON structure. Your ONLY job is to render it as a readable semester-by-semester plan for the student. NEVER use your training knowledge about course sequences.
 
@@ -3940,6 +3946,7 @@ STRICT OUTPUT RULES:
 - STOP WHEN THE QUESTION IS ANSWERED: for direct asks like "who is", "give me some players", "what is", "where is", or "when is", answer the asked thing first and do not tack on extra trivia, history, ticket info, or side notes unless the user asked for that broader context
 - Zero filler phrases — students want answers, not preamble
 - Read between the lines: if a student seems stressed or implicitly needs an easier path, address that directly
+- GRADE-SHOPPING TONE RULE: It is fine to use GPA, A-rate, and easiness data when the student asks for the easiest option or best shot at an A. But do not sound cynical or one-note. When recommending a professor or course, avoid framing it like "easy A at all costs." Give the strongest grades-based answer, then add one brief reality check about fit, teaching quality, workload, or what the course is actually good for.
 - ATHLETICS PERSON RULE: never call someone a coach unless the retrieved data explicitly says they are a coach. If a name appears on a roster, describe them as a player or roster member, and mention the coach separately if helpful.
 - If memory shows the student's major/year, tailor the answer to their situation`;
 

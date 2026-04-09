@@ -2214,5 +2214,283 @@
         "runAt": "2026-03-17T01:00:46.119Z"
       }
     ]
+  },
+  {
+    "runAt": "2026-04-09T03:00:52.098Z",
+    "totalPass": 8,
+    "totalFail": 2,
+    "totalQuestions": 10,
+    "passPct": 80,
+    "filterCategory": "regression_fixes",
+    "filterId": null,
+    "categoryStats": {
+      "regression_fixes": {
+        "pass": 8,
+        "fail": 2
+      }
+    },
+    "behaviorStats": {
+      "direct_fast_path": {
+        "pass": 1,
+        "fail": 0
+      },
+      "casual_fast_path": {
+        "pass": 1,
+        "fail": 0
+      },
+      "product_fast_path": {
+        "pass": 1,
+        "fail": 1
+      },
+      "domain_specific_abstain": {
+        "pass": 1,
+        "fail": 0
+      },
+      "full_answer": {
+        "pass": 3,
+        "fail": 0
+      },
+      "hedged_answer": {
+        "pass": 1,
+        "fail": 0
+      },
+      "planning_clarification": {
+        "pass": 0,
+        "fail": 1
+      }
+    },
+    "results": [
+      {
+        "id": "eval_051",
+        "category": "regression_fixes",
+        "expectedBehavior": "direct_fast_path",
+        "question": "2+2?",
+        "shouldAbstain": false,
+        "pass": true,
+        "failedToAbstain": false,
+        "answer": "4",
+        "scoreDetail": {
+          "mustContainChecks": [
+            {
+              "term": "4",
+              "found": true
+            }
+          ],
+          "mustNotContainChecks": [
+            {
+              "term": "312-996-7000",
+              "found": false
+            },
+            {
+              "term": "visit uic.edu",
+              "found": false
+            },
+            {
+              "term": "I'm not sure I have reliable information on that",
+              "found": false
+            }
+          ]
+        },
+        "runAt": "2026-04-09T03:00:08.250Z"
+      },
+      {
+        "id": "eval_052",
+        "category": "regression_fixes",
+        "expectedBehavior": "casual_fast_path",
+        "question": "how are yiu",
+        "shouldAbstain": false,
+        "pass": true,
+        "failedToAbstain": false,
+        "answer": "Hey there! I'm doing great, thanks for asking - how are you doing today?",
+        "scoreDetail": {
+          "reason": "Sparky responded casually and conversationally to the greeting without redirecting to any UIC resources or generic fallback responses."
+        },
+        "runAt": "2026-04-09T03:00:13.617Z"
+      },
+      {
+        "id": "eval_053",
+        "category": "regression_fixes",
+        "expectedBehavior": "product_fast_path",
+        "question": "what are you running on",
+        "shouldAbstain": false,
+        "pass": true,
+        "failedToAbstain": false,
+        "answer": "I'm Sparky, the AI assistant inside UIChicago. I can't share private implementation details, but I'm built to answer UIC questions using the UIC course, professor, planning, and campus data available to me.",
+        "scoreDetail": {
+          "reason": "The answer provides a specific explanation of Sparky's purpose and capabilities (built on UIC-specific data) without defaulting to generic office contact information or website referrals."
+        },
+        "runAt": "2026-04-09T03:00:15.684Z"
+      },
+      {
+        "id": "eval_054",
+        "category": "regression_fixes",
+        "expectedBehavior": "product_fast_path",
+        "question": "are you officially affiliated with UIC?",
+        "shouldAbstain": false,
+        "pass": false,
+        "failedToAbstain": false,
+        "answer": "UIChicago is unofficial. It was built by a software engineering team from UIC for students, and it is open and free for all students to use.",
+        "scoreDetail": {
+          "mustContainChecks": [
+            {
+              "term": "unofficial",
+              "found": true
+            },
+            {
+              "term": "student-built",
+              "found": false
+            }
+          ],
+          "mustNotContainChecks": [
+            {
+              "term": "312-996-7000",
+              "found": false
+            },
+            {
+              "term": "visit uic.edu",
+              "found": false
+            }
+          ]
+        },
+        "runAt": "2026-04-09T03:00:16.581Z"
+      },
+      {
+        "id": "eval_055",
+        "category": "regression_fixes",
+        "expectedBehavior": "domain_specific_abstain",
+        "question": "who can help with admissions",
+        "shouldAbstain": false,
+        "pass": true,
+        "failedToAbstain": false,
+        "answer": "For admissions help, contact UIC Admissions: admissions.uic.edu | 312-996-4350. The Admissions office is in Suite 1100, 1200 W Harrison St, and the Visitors Center is at 1220 W Harrison St.",
+        "scoreDetail": {
+          "mustContainChecks": [
+            {
+              "term": "admissions.uic.edu",
+              "found": true
+            },
+            {
+              "term": "312-996-4350",
+              "found": true
+            }
+          ],
+          "mustNotContainChecks": [
+            {
+              "term": "312-996-7000",
+              "found": false
+            }
+          ]
+        },
+        "runAt": "2026-04-09T03:00:17.476Z"
+      },
+      {
+        "id": "eval_056",
+        "category": "regression_fixes",
+        "expectedBehavior": "full_answer",
+        "question": "How many credit hours for full fafsa",
+        "shouldAbstain": false,
+        "pass": true,
+        "failedToAbstain": false,
+        "answer": "For most UIC undergrads, 12+ credit hours is the usual full-time load. Financial aid can still vary by award and student situation, so confirm your exact aid status with the Office of Student Financial Aid: SSB Suite 1800 | 312-996-3126 | financialaid.uic.edu.",
+        "scoreDetail": {
+          "mustContainChecks": [
+            {
+              "term": "12",
+              "found": true
+            },
+            {
+              "term": "financial aid",
+              "found": true
+            }
+          ],
+          "mustNotContainChecks": [
+            {
+              "term": "UICFlames",
+              "found": false
+            },
+            {
+              "term": "athletics detail",
+              "found": false
+            }
+          ]
+        },
+        "runAt": "2026-04-09T03:00:18.367Z"
+      },
+      {
+        "id": "eval_057",
+        "category": "regression_fixes",
+        "expectedBehavior": "full_answer",
+        "question": "Can I get a 4 year plan for pre med",
+        "shouldAbstain": false,
+        "pass": true,
+        "failedToAbstain": false,
+        "answer": "I can help build this plan, but I'm missing the major. I did pick up some context, pre-professional track). Tell me the exact UIC major you want the plan for, and I'll build the schedule around that.",
+        "scoreDetail": {
+          "reason": "Sparky appropriately recognizes this as a workable planning request and asks for clarification on the specific major rather than rejecting the pre-med planning inquiry outright."
+        },
+        "runAt": "2026-04-09T03:00:27.842Z"
+      },
+      {
+        "id": "eval_058",
+        "category": "regression_fixes",
+        "expectedBehavior": "full_answer",
+        "question": "make me a 4 year engineering plan",
+        "shouldAbstain": false,
+        "pass": true,
+        "failedToAbstain": false,
+        "answer": "Typical Engineering (using Mechanical Engineering backbone) plan at UIC (128 total credits):\n\n### Freshman Year — First Semester (18h)\n- **ENGR 100** — Engineering Success Seminar for Freshmen a (1 cr)\n- **ENGL 160** — Academic Writing I: Writing in Academic and Public Contexts (3 cr)\n- **MATH 180** — Calculus I (4 cr)\n- **CHEM 122** — Matter and Energy (3 cr)\n- **CHEM 123** — Foundations of Chemical Inquiry I (2 cr)\n- **ME 250** — Introduction to Engineering Design and Graphics (3 cr)\n- *Gen Ed",
+        "scoreDetail": {
+          "reason": "Sparky provided a detailed, structured 4-year engineering plan with specific courses, credit hours, and a disclaimer to verify against the official catalog, which constitutes a usable planning response rather than a failure message."
+        },
+        "runAt": "2026-04-09T03:00:34.096Z"
+      },
+      {
+        "id": "eval_059",
+        "category": "regression_fixes",
+        "expectedBehavior": "hedged_answer",
+        "question": "Does uic have startup related student orgs?",
+        "shouldAbstain": false,
+        "pass": true,
+        "failedToAbstain": false,
+        "answer": "UIC has 470+ registered student organizations, and the official directory is https://connect.uic.edu/.\nI do not have a verified org-by-org list in the current dataset, so I can't confidently name a specific startup, HR, or other niche club without risking a bad answer.\nBest next step: search UIC Connection with keywords like \"startup, entrepreneur, venture\".\nHow to join: Browse UIC Connection, attend Involvement Fair at semester start, or contact orgs directly.\nIf you want, I can still help you ",
+        "scoreDetail": {
+          "mustContainChecks": [
+            {
+              "term": "connect.uic.edu",
+              "found": true
+            },
+            {
+              "term": "verified",
+              "found": true
+            }
+          ],
+          "mustNotContainChecks": [
+            {
+              "term": "The startup club is",
+              "found": false
+            },
+            {
+              "term": "definitely",
+              "found": false
+            }
+          ]
+        },
+        "runAt": "2026-04-09T03:00:38.669Z"
+      },
+      {
+        "id": "eval_060",
+        "category": "regression_fixes",
+        "expectedBehavior": "planning_clarification",
+        "question": "im done with all gen eds except understanding the natural world",
+        "shouldAbstain": false,
+        "pass": false,
+        "failedToAbstain": false,
+        "answer": "Since you're a senior and just need **Understanding the Natural World**, you have tons of options to finish up! This is one of the larger gen ed categories, so you can pick something that fits your schedule and interests.\n\nGiven your pre-med track, you might already be taking natural science courses that could double-count here. Many biology, chemistry, physics, and earth science courses satisfy this requirement. The category includes everything from intro science courses to more specialized top",
+        "scoreDetail": {
+          "reason": "Sparky assumes the user is a senior and pre-med without any information provided by the user, making unfounded assumptions rather than asking for the missing major and other critical details needed to build an accurate next-step plan."
+        },
+        "runAt": "2026-04-09T03:00:51.296Z"
+      }
+    ]
   }
 ]

@@ -215,6 +215,7 @@ let passed      = 0;
 let failed      = 0;
 let errorCount  = 0;
 const categoryStats = {};
+const behaviorStats = {};
 
 for (const q of questions) {
   const label = `[${q.id}] ${q.category}`;
@@ -269,9 +270,16 @@ for (const q of questions) {
   if (pass) categoryStats[q.category].pass++;
   else      categoryStats[q.category].fail++;
 
+  if (q.expectedBehavior) {
+    if (!behaviorStats[q.expectedBehavior]) behaviorStats[q.expectedBehavior] = { pass: 0, fail: 0 };
+    if (pass) behaviorStats[q.expectedBehavior].pass++;
+    else      behaviorStats[q.expectedBehavior].fail++;
+  }
+
   results.push({
     id:              q.id,
     category:        q.category,
+    expectedBehavior: q.expectedBehavior ?? null,
     question:        q.question,
     shouldAbstain:   q.shouldAbstain,
     pass,
@@ -318,6 +326,18 @@ for (const cat of allCategories) {
   console.log(`  ${cat.padEnd(28)} ${bar} ${catPct.padStart(3)}%  (${s.pass}/${catTotal})`);
 }
 
+if (Object.keys(behaviorStats).length > 0) {
+  console.log(`\n  By expected behavior:`);
+  for (const behavior of Object.keys(behaviorStats)) {
+    const s = behaviorStats[behavior];
+    const behaviorTotal = s.pass + s.fail;
+    const behaviorPct = behaviorTotal > 0 ? ((s.pass / behaviorTotal) * 100).toFixed(0) : "0";
+    const filled = Math.round((s.pass / behaviorTotal) * 12);
+    const bar = "█".repeat(filled) + "░".repeat(12 - filled);
+    console.log(`  ${behavior.padEnd(28)} ${bar} ${behaviorPct.padStart(3)}%  (${s.pass}/${behaviorTotal})`);
+  }
+}
+
 // Failed questions detail
 const failedResults = results.filter(r => !r.pass && !r.error);
 if (failedResults.length > 0) {
@@ -326,6 +346,7 @@ if (failedResults.length > 0) {
   for (const r of failedResults) {
     const flag = r.failedToAbstain ? `${WARN} Failed to abstain` : `${FAIL} Wrong answer`;
     console.log(`  ${r.id} — ${r.question}`);
+    if (r.expectedBehavior) console.log(`  Expected behavior: ${r.expectedBehavior}`);
     console.log(`  ${flag}`);
     console.log(`  Answer: "${truncate(r.answer, 120)}"`);
     if (r.scoreDetail?.mustContainChecks) {
@@ -350,6 +371,7 @@ const runRecord = {
   filterCategory: filterCategory ?? null,
   filterId:       filterId ?? null,
   categoryStats,
+  behaviorStats,
   results,
 };
 

@@ -15,6 +15,7 @@
     "start": "next start",
 
     "lint": "eslint",
+    "eval:regressions": "node --env-file=.env scripts/run-eval.mjs --category regression_fixes",
 
     "syllabus:review": "node --env-file=.env scripts/review-syllabus-submissions.mjs",
 

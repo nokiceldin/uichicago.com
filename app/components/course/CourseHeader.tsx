@@ -12,6 +12,12 @@ type CourseHeaderProps = {
     totalRegsAllTime: number | null;
     isGenEd: boolean;
     genEdCategory: string | null;
+    metaV2?: {
+      creditHours: number | null;
+      offeredFall: boolean;
+      offeredSpring: boolean;
+      offeredSummer: boolean;
+    } | null;
   };
   actions?: ReactNode;
 };
@@ -51,8 +57,19 @@ function statPill(label: string, value: string, valueClass?: string) {
   );
 }
 
+function formatTermAvailability(course: CourseHeaderProps["course"]) {
+  const terms = [
+    course.metaV2?.offeredFall ? "Fall" : null,
+    course.metaV2?.offeredSpring ? "Spring" : null,
+    course.metaV2?.offeredSummer ? "Summer" : null,
+  ].filter(Boolean);
+
+  return terms.length > 0 ? terms.join(", ") : null;
+}
+
 export default function CourseHeader({ course, actions }: CourseHeaderProps) {
   const totalRegs = course.totalRegsAllTime ?? 0;
+  const termAvailability = formatTermAvailability(course);
 
   return (
     <section className="rounded-3xl border border-zinc-200 bg-white/70 p-4 shadow-lg backdrop-blur dark:border-white/10 dark:bg-zinc-950/40 dark:shadow-xl sm:p-6">
@@ -83,6 +100,18 @@ export default function CourseHeader({ course, actions }: CourseHeaderProps) {
           <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
             {course.deptName || "Department not available"}
           </p>
+          <div className="mt-4 flex flex-wrap gap-2">
+            {course.metaV2?.creditHours != null ? (
+              <span className="inline-flex items-center rounded-full border border-zinc-200 bg-zinc-50 px-3 py-1 text-xs font-semibold text-zinc-700 dark:border-white/10 dark:bg-white/5 dark:text-zinc-200">
+                {course.metaV2.creditHours} credit hour{course.metaV2.creditHours === 1 ? "" : "s"}
+              </span>
+            ) : null}
+            {termAvailability ? (
+              <span className="inline-flex items-center rounded-full border border-zinc-200 bg-zinc-50 px-3 py-1 text-xs font-semibold text-zinc-700 dark:border-white/10 dark:bg-white/5 dark:text-zinc-200">
+                Usually offered: {termAvailability}
+              </span>
+            ) : null}
+          </div>
           {actions ? <div className="mt-4">{actions}</div> : null}
         </div>
 

@@ -7,7 +7,6 @@ import CourseHeader from "../../../components/course/CourseHeader";
 import GradeDistributionCard from "../../../components/course/GradeDistributionCard";
 import CourseInsightCards from "../../../components/course/CourseInsightCards";
 import CourseGpaByProfessor from "../../../components/course/CourseGpaByProfessor";
-import SyllabusSubmissionCard from "../../../components/course/SyllabusSubmissionCard";
 import SiteFooter from "@/app/components/SiteFooter";
 import SaveCourseControl from "@/app/components/saved/SaveCourseControl";
 
@@ -31,6 +30,15 @@ export default async function CourseDetailPage({
       deptCode: true, deptName: true, avgGpa: true,
       difficultyScore: true, totalRegsAllTime: true,
       isGenEd: true, genEdCategory: true,
+      metaV2: {
+        select: {
+          creditHours: true,
+          description: true,
+          offeredFall: true,
+          offeredSpring: true,
+          offeredSummer: true,
+        },
+      },
     },
   });
 
@@ -148,18 +156,21 @@ export default async function CourseDetailPage({
         </div>
 
         <div className="mt-6">
-          <SyllabusSubmissionCard
-            courseCode={`${course.subject} ${course.number}`}
-            courseTitle={course.title}
-            department={course.deptName || course.deptCode}
-          />
-        </div>
-
-        <div className="mt-6">
           <CourseGpaByProfessor
             professors={professorGpas}
             courseLabel={`${course.subject} ${course.number}`}
           />
+        </div>
+
+        <div className="mt-6">
+          <section className="rounded-3xl border border-zinc-200 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-zinc-900/40 sm:p-6">
+            <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-zinc-500 dark:text-zinc-400">
+              About This Class
+            </div>
+            <p className="mt-3 max-w-4xl text-sm leading-7 text-zinc-700 dark:text-zinc-300 sm:text-[15px]">
+              {course.metaV2?.description?.trim() || "No catalog description is available for this course yet."}
+            </p>
+          </section>
         </div>
 
       </div>

@@ -23,15 +23,6 @@ type CourseRow = {
   isGenEd: boolean; genEdCategory: string | null;
 };
 
-function getPageButtons(current: number, total: number) {
-  const maxButtons = 3;
-  if (total <= maxButtons) return Array.from({ length: total }, (_, i) => i + 1);
-  let start = Math.max(1, current - Math.floor(maxButtons / 2));
-  let end = start + maxButtons - 1;
-  if (end > total) { end = total; start = end - maxButtons + 1; }
-  return Array.from({ length: maxButtons }, (_, i) => start + i);
-}
-
 export default function CoursesTable({ courses, total, page, pageSize, sort, dept, q, subjects, gened, genedCategory, major, majorCategory, savedOnly }: {
   courses: CourseRow[]; total: number; page: number; pageSize: number;
   sort: "difficultyDesc" | "difficultyAsc"; dept: string; q: string; subjects: string[];
@@ -84,8 +75,6 @@ export default function CoursesTable({ courses, total, page, pageSize, sort, dep
   const effectiveTotal = savedOnly && !loading ? saved.courses.length : total;
   const totalPages = Math.max(1, Math.ceil(effectiveTotal / pageSize));
   const start = (page - 1) * pageSize;
-  const pageButtons = useMemo(() => getPageButtons(page, totalPages), [page, totalPages]);
-  const middle = pageButtons.filter((n) => n !== 1 && n !== totalPages);
   const selectedMajor = majorRequirements.find((m) => m.key === major);
   const majorCategories = selectedMajor?.categories ?? [];
   const hasAnyFilters = !!q.trim() || !!dept || gened || !!genedCategory || !!major || !!majorCategory || savedOnly || sort !== "difficultyDesc";
@@ -94,7 +83,6 @@ export default function CoursesTable({ courses, total, page, pageSize, sort, dep
   const inputBase = "h-10 w-full rounded-xl border border-zinc-200 bg-white px-4 text-sm text-zinc-900 outline-none placeholder:text-zinc-400 focus:border-red-500 focus:ring-2 focus:ring-red-900/30 transition-colors dark:border-white/10 dark:bg-zinc-900 dark:text-zinc-200 dark:placeholder:text-zinc-600 dark:focus:border-red-500/50 dark:focus:ring-red-500/10";
   const chipBase = "inline-flex items-center gap-1.5 rounded-full border border-zinc-200 bg-zinc-100 px-3 py-1 text-xs font-medium text-zinc-700 hover:bg-zinc-200 transition-colors cursor-pointer dark:border-white/10 dark:bg-white/5 dark:text-zinc-300 dark:hover:bg-white/10";
   const navBtn = "h-9 px-4 rounded-xl border border-zinc-200 bg-white text-sm font-medium text-zinc-700 hover:bg-zinc-50 transition-colors disabled:opacity-30 disabled:cursor-not-allowed dark:border-white/10 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-white/10";
-  const pageBtn = (active: boolean) => "h-9 min-w-9 px-3 rounded-xl border text-sm font-medium transition-all flex items-center justify-center tabular-nums " + (active ? "border-zinc-300 bg-zinc-100 text-zinc-900 pointer-events-none dark:border-white/12 dark:bg-white/10 dark:text-white" : "border-zinc-200 bg-white text-zinc-700 hover:bg-zinc-50 dark:border-white/10 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-white/10");
 
   async function handleCourseSaveToggle(event: React.MouseEvent<HTMLButtonElement>, courseId: string) {
     event.preventDefault();
@@ -167,7 +155,7 @@ export default function CoursesTable({ courses, total, page, pageSize, sort, dep
             <svg className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z" />
             </svg>
-            <input className={inputBase + " pl-10"} placeholder="Search by course title or code — try CS 211" value={qDraft} onChange={(e) => setQDraft(e.target.value)} />
+            <input className={inputBase + " pl-10"} placeholder="Search by course title, code, or topic — try calculus or hash tables" value={qDraft} onChange={(e) => setQDraft(e.target.value)} />
           </div>
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-5">
             <div>
@@ -234,17 +222,11 @@ export default function CoursesTable({ courses, total, page, pageSize, sort, dep
             <button data-tour="courses-sort" onClick={() => setSort(sort === "difficultyDesc" ? "difficultyAsc" : "difficultyDesc")} className="inline-flex h-10 items-center justify-center gap-1.5 rounded-xl border border-zinc-200 bg-white px-4 text-sm font-medium text-zinc-700 hover:bg-zinc-50 transition-colors dark:border-white/10 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-white/10">
               {sort === "difficultyDesc" ? <><span className="text-emerald-500">↓</span> Easiest first</> : <><span className="text-red-500">↑</span> Hardest first</>}
             </button>
-            <div className="flex items-center gap-2 overflow-x-auto pb-1 sm:overflow-visible">
+            <div className="flex items-center gap-3 overflow-x-auto pb-1 sm:overflow-visible">
               <button className={navBtn} onClick={() => setPage(Math.max(1, page - 1))} disabled={page === 1}>← Prev</button>
-              <button className={pageBtn(page === 1)} onClick={() => setPage(1)}>1</button>
-              {middle.length > 0 && middle[0] > 2 && <span className="text-zinc-400 text-sm">…</span>}
-              {middle.map((n) => <button key={n} className={pageBtn(page === n)} onClick={() => setPage(n)}>{n}</button>)}
-              {totalPages > 1 && (
-                <>
-                  {middle.length > 0 && middle[middle.length - 1] < totalPages - 1 && <span className="text-zinc-400 text-sm">…</span>}
-                  <button className={pageBtn(page === totalPages)} onClick={() => setPage(totalPages)}>{totalPages}</button>
-                </>
-              )}
+              <div className="inline-flex h-9 items-center rounded-xl border border-zinc-200 bg-white px-4 text-sm font-medium text-zinc-600 dark:border-white/10 dark:bg-zinc-900 dark:text-zinc-300">
+                Page {page} of {totalPages}
+              </div>
               <button className={navBtn} onClick={() => setPage(Math.min(totalPages, page + 1))} disabled={page === totalPages}>Next →</button>
             </div>
           </div>

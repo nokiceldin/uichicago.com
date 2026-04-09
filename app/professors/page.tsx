@@ -38,15 +38,6 @@ function ratingConfig(v: number, isRated: boolean) {
   return { text: "text-red-700 dark:text-red-400", bg: "bg-red-50 dark:bg-red-500/15", ring: "ring-red-200 dark:ring-red-500/25" };
 }
 
-function getPageButtons(current: number, total: number) {
-  const maxButtons = 3;
-  if (total <= maxButtons) return Array.from({ length: total }, (_, i) => i + 1);
-  let start = Math.max(1, current - Math.floor(maxButtons / 2));
-  let end = start + maxButtons - 1;
-  if (end > total) { end = total; start = end - maxButtons + 1; }
-  return Array.from({ length: maxButtons }, (_, i) => start + i);
-}
-
 export default function Page() {
   const nf = useMemo(() => new Intl.NumberFormat("en-US"), []);
   const pathname = usePathname();
@@ -72,15 +63,12 @@ export default function Page() {
   const visibleData = savedOnly && !savedLoading ? data.filter((professor) => savedProfessorSlugs.has(professor.slug)) : data;
   const effectiveTotal = savedOnly && !savedLoading ? saved.professors.length : total;
   const totalPages = Math.max(1, Math.ceil(effectiveTotal / pageSize));
-  const pageButtons = useMemo(() => getPageButtons(page, totalPages), [page, totalPages]);
-  const middle = pageButtons.filter((n) => n !== 1 && n !== totalPages);
   const start = (page - 1) * pageSize;
 
   const selectBase = "h-9 w-full cursor-pointer rounded-xl border border-zinc-200 bg-white px-3 text-sm text-zinc-900 outline-none focus:border-red-500 focus:ring-2 focus:ring-red-900/20 transition-colors dark:border-white/10 dark:bg-zinc-900 dark:text-zinc-200 dark:focus:border-red-500/50 dark:focus:ring-red-500/10";
   const inputBase = "h-10 w-full rounded-xl border border-zinc-200 bg-white px-4 text-sm text-zinc-900 outline-none placeholder:text-zinc-400 focus:border-red-500 focus:ring-2 focus:ring-red-900/20 transition-colors dark:border-white/10 dark:bg-zinc-900 dark:text-zinc-200 dark:placeholder:text-zinc-600 dark:focus:border-red-500/50 dark:focus:ring-red-500/10";
   const chipBase = "inline-flex items-center gap-1.5 rounded-full border border-zinc-200 bg-zinc-100 px-3 py-1 text-xs font-medium text-zinc-700 hover:bg-zinc-200 transition-colors cursor-pointer dark:border-white/10 dark:bg-white/5 dark:text-zinc-300 dark:hover:bg-white/10";
   const navBtn = "h-9 px-4 rounded-xl border border-zinc-200 bg-white text-sm font-medium text-zinc-700 hover:bg-zinc-50 transition-colors disabled:opacity-30 disabled:cursor-not-allowed dark:border-white/10 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-white/10";
-  const pageBtn = (active: boolean) => "h-9 min-w-9 px-3 rounded-xl border text-sm font-medium transition-all flex items-center justify-center tabular-nums " + (active ? "border-zinc-300 bg-zinc-100 text-zinc-900 pointer-events-none dark:border-white/12 dark:bg-white/10 dark:text-white" : "border-zinc-200 bg-white text-zinc-700 hover:bg-zinc-50 dark:border-white/10 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-white/10");
   const hasAnyFilters = query.trim() || dept !== "All" || minRatings !== 0 || minStars !== 0 || savedOnly || sort !== "best";
 
   function clearAll() { setQuery(""); setDept("All"); setSavedOnly(false); setMinRatings(0); setMinStars(0); setSort("best"); setPage(1); }
@@ -274,15 +262,11 @@ export default function Page() {
             Showing <span className="text-zinc-700 dark:text-zinc-300 font-medium">{effectiveTotal === 0 ? 0 : nf.format(start + 1)}–{nf.format(Math.min(start + pageSize, effectiveTotal))}</span> of <span className="text-zinc-700 dark:text-zinc-300 font-medium">{nf.format(effectiveTotal)}</span>
             {loading && <span className="ml-2 text-zinc-400">Loading…</span>}
           </p>
-          <div className="flex items-center gap-2 overflow-x-auto pb-1 sm:flex-wrap sm:overflow-visible">
+          <div className="flex items-center gap-3 overflow-x-auto pb-1 sm:flex-wrap sm:overflow-visible">
             <button className={navBtn} onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1 || loading}>← Prev</button>
-            <button className={pageBtn(page === 1)} onClick={() => setPage(1)}>1</button>
-            {middle.length > 0 && middle[0] > 2 && <span className="text-zinc-400 text-sm">…</span>}
-            {middle.map((n) => <button key={n} className={pageBtn(page === n)} onClick={() => setPage(n)}>{n}</button>)}
-            {totalPages > 1 && (<>
-              {middle.length > 0 && middle[middle.length - 1] < totalPages - 1 && <span className="text-zinc-400 text-sm">…</span>}
-              <button className={pageBtn(page === totalPages)} onClick={() => setPage(totalPages)}>{totalPages}</button>
-            </>)}
+            <div className="inline-flex h-9 items-center rounded-xl border border-zinc-200 bg-white px-4 text-sm font-medium text-zinc-600 dark:border-white/10 dark:bg-zinc-900 dark:text-zinc-300">
+              Page {page} of {totalPages}
+            </div>
             <button className={navBtn} onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page === totalPages || loading}>Next →</button>
           </div>
         </div>

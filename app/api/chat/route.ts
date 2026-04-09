@@ -903,6 +903,60 @@ function isFollowUpQuery(msg: string): boolean {
   return /^(tell me more|more info|more details?|elaborate|explain more|expand on that|can you elaborate|what else|any other|go on|continue|what about (that|this|him|her|it|them)|and (him|her|it|them|that|this)|what does that mean|how so|why\s*so?|really\??|interesting|and that class|and that course|what about his|what about her|what about their|more about (him|her|it|that|this))[\s?!.]*$/i.test(msg.trim());
 }
 
+function buildSmartFollowUpInstruction(
+  lastMsg: string,
+  query: QueryAnalysis,
+  sessionState?: SessionState | null
+): string {
+  const lower = lastMsg.toLowerCase().trim();
+
+  if (
+    /^(thanks+|thank you|thx+|got it|gotcha|makes sense|sounds good|perfect|awesome|cool|nice|ok|okay|bye+|goodbye|see ya|later|night)[\s!?.]*$/i.test(lower)
+  ) {
+    return "FOLLOW-UP QUESTION RULE: The student is wrapping up or acknowledging. Do not ask a follow-up question. End cleanly.";
+  }
+
+  const majorHint = sessionState?.confirmedMajor ? `major=${sessionState.confirmedMajor}` : null;
+  const yearHint = sessionState?.confirmedYear ? `year=${sessionState.confirmedYear}` : null;
+  const contextHints = [majorHint, yearHint].filter(Boolean).join(", ");
+
+  if (query.isFact || query.answerMode === "logistics") {
+    return "FOLLOW-UP QUESTION RULE: This is a direct factual/logistics answer. Do not force a question just to keep the conversation going. Only ask one if it unlocks an immediate next step, otherwise end after the answer.";
+  }
+
+  if (query.answerMode === "planning") {
+    return `FOLLOW-UP QUESTION RULE: After the answer, ask exactly one short next-step question if it helps refine the student's plan. Prioritize questions about completed courses, current year, transfer/AP credit, workload, or career goal. Keep it under 14 words.${contextHints ? ` Known context: ${contextHints}.` : ""}`;
+  }
+
+  if (query.answerMode === "recommendation" || query.answerMode === "comparison") {
+    return `FOLLOW-UP QUESTION RULE: End with exactly one short, tailored question that helps personalize the next recommendation. Good angles are workload, easy-A preference, commute, schedule, budget, or learning style. Keep it under 14 words.${contextHints ? ` Known context: ${contextHints}.` : ""}`;
+  }
+
+  if (query.answerMode === "ranking") {
+    return "FOLLOW-UP QUESTION RULE: Only add a follow-up question if it would narrow the ranking in a useful way, like by major, Gen Ed category, difficulty, or professor preference. If you ask one, keep it to a single short sentence. Otherwise end cleanly.";
+  }
+
+  return `FOLLOW-UP QUESTION RULE: If it fits naturally, end with exactly one short, smart question that opens the most useful next turn. It should feel specific to the student's topic, not generic small talk like "Anything else?" or "Want more help?". Keep it under 14 words.${contextHints ? ` Known context: ${contextHints}.` : ""}`;
+}
+
+function buildCasualReplySystemPrompt(normMsg: string): string {
+  const lower = normMsg.toLowerCase().trim();
+  const isWrapUp =
+    /^(thanks+|thank you|thx+|ok|okay|got it|gotcha|makes sense|sounds good|perfect|awesome|cool|nice|bye+|goodbye|see ya|later|night)[\s!?.]*$/i.test(lower);
+  const isGreetingOrCheckIn =
+    /^(h+e+y+|h+i+|hel+o+|helo+|hullo|howdy|sup+|s+u+p|yo+|yoo+|wh?[ao]+t'?s+ ?up+|wh?[ao]+t'?s+ ?good|wassup|wazzup|wsg|how are (you|u|ya)|how r u|how'?s? it go+ing|good morning|good afternoon|good evening|morning|wyd|wbu)[\s!?.]*$/i.test(lower);
+
+  if (isWrapUp) {
+    return "You are Sparky, a friendly UIC assistant. The student just sent a casual wrap-up or acknowledgment. Reply casually and briefly like a friend would in 1 sentence max. No UIC data, no lists, no preamble, and do not ask a follow-up question.";
+  }
+
+  if (isGreetingOrCheckIn) {
+    return "You are Sparky, a friendly UIC assistant. The student just sent a casual greeting or check-in. Reply casually and briefly like a friend would in 1 sentence max. No UIC data, no lists, no preamble. If it fits naturally, ask one short question back to keep the conversation going.";
+  }
+
+  return "You are Sparky, a friendly UIC assistant. The student just sent a casual message. Reply casually and briefly like a friend would in 1 sentence max. No UIC data, no lists, no preamble. Be natural and warm.";
+}
+
 function detectAnswerMode(lower: string): AnswerMode {
   if (isMajorRequirementsLookupQuery(lower)) return "discovery";
   if (isPlanningQuery(lower)) return "planning";
@@ -3887,7 +3941,8 @@ function buildSystemPrompt(
   isFact: boolean,
   answerPack?: AnswerPack,
   trustInstruction?: string,
-  isFinancialQuery = false
+  isFinancialQuery = false,
+  smartFollowUpInstruction?: string
 ): string {
   const answerMode: AnswerMode = answerPack?.answerMode ?? "discovery";
   const isMajorRequirementsAnswer =
@@ -3984,6 +4039,7 @@ ${modeInstructions[answerMode]}
 
 ${corePrinciples}
 ${financialRule}${majorRequirementsRule}${trustLine}
+${smartFollowUpInstruction ? `\n${smartFollowUpInstruction}\n` : ""}
 UIC: Chicago's only public Research I university. ~33,000 students. ~91% commuters. Majority-minority. Mascot: Sparky the Dragon. Navy and Flames Red. Missouri Valley Conference (MVC). Go Flames!
 ${memoryContext ? "\n" + memoryContext + "\n" : ""}
 ${answerPack ? `
@@ -4182,7 +4238,7 @@ export async function POST(req: Request) {
     const casualResponse = await client.messages.create({
       model: "claude-sonnet-4-20250514",
       max_tokens: 100,
-      system: `You are Sparky, a friendly UIC assistant. The student just sent a casual message. Reply casually and briefly like a friend would — 1 sentence max. No UIC data, no lists, no preamble. Just be natural and warm.`,
+      system: buildCasualReplySystemPrompt(normMsg),
       messages: messages.map(m => ({ role: m.role, content: m.content })),
     });
 
@@ -5221,7 +5277,16 @@ if (uploadedFile) {
   uploadedFileFallbackPrompt = uploadedFileSupport.fallbackUserPrompt;
 }
 
-const systemPrompt = buildSystemPrompt(memoryContext, context, query.isFact, answerPack, trustInstruction, isFinancialQuery) + uploadedFileContext;
+const smartFollowUpInstruction = buildSmartFollowUpInstruction(lastMsg, query, sessionState);
+const systemPrompt = buildSystemPrompt(
+  memoryContext,
+  context,
+  query.isFact,
+  answerPack,
+  trustInstruction,
+  isFinancialQuery,
+  smartFollowUpInstruction
+) + uploadedFileContext;
 const maxTokens = uploadedFile ? 2000
   : query.answerMode === "planning" ? 2800
   : query.answerMode === "hybrid" ? 1800

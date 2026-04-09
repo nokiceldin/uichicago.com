@@ -16,6 +16,12 @@
 
     "lint": "eslint",
     "eval:regressions": "node --env-file=.env scripts/run-eval.mjs --category regression_fixes",
+    "improve:sparky": "node --env-file=.env scripts/run-self-improvement-loop.mjs",
+    "improve:sparky:execute": "node --env-file=.env scripts/execute-self-improvement-candidate.mjs",
+    "improve:sparky:apply": "node --env-file=.env scripts/execute-self-improvement-candidate.mjs --auto-apply",
+    "improve:sparky:feedback-evals": "node --env-file=.env scripts/run-generated-feedback-evals.mjs",
+    "improve:sparky:worktree": "node --env-file=.env scripts/run-candidate-in-worktree.mjs",
+    "make:sparky:smarter": "node --env-file=.env scripts/make-sparky-smarter.mjs",
 
     "syllabus:review": "node --env-file=.env scripts/review-syllabus-submissions.mjs",
 

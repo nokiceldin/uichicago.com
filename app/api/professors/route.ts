@@ -16,6 +16,26 @@ function sortDirectory(
 ) {
   const items = [...entries];
 
+  if (sort === "salary_high" || sort === "salary_low") {
+    items.sort((a, b) => {
+      const aSalary = Number(a.salary ?? 0);
+      const bSalary = Number(b.salary ?? 0);
+      const aHasSalary = Number.isFinite(aSalary) && aSalary > 0;
+      const bHasSalary = Number.isFinite(bSalary) && bSalary > 0;
+
+      if (aHasSalary !== bHasSalary) return aHasSalary ? -1 : 1;
+      if (!aHasSalary && !bHasSalary) return a.name.localeCompare(b.name);
+
+      if (aSalary !== bSalary) {
+        return sort === "salary_high" ? bSalary - aSalary : aSalary - bSalary;
+      }
+
+      if (b.ratingsCount !== a.ratingsCount) return b.ratingsCount - a.ratingsCount;
+      return a.name.localeCompare(b.name);
+    });
+    return items;
+  }
+
   if (sort === "most") {
     items.sort((a, b) => {
       if (b.ratingsCount !== a.ratingsCount) return b.ratingsCount - a.ratingsCount;

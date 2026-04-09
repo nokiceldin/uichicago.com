@@ -1,0 +1,147 @@
+{
+  "generatedAt": "2026-04-09T04:52:36.128Z",
+  "ids": [
+    "q51",
+    "q60",
+    "q63",
+    "q84"
+  ],
+  "results": [
+    {
+      "id": "q51",
+      "question": "what do international students need to do before arriving at uic?",
+      "category": "international",
+      "difficulty": "medium",
+      "expected_behavior": "answer",
+      "actual_behavior": "abstain",
+      "behavior_correct": false,
+      "score": 0,
+      "subscores": {
+        "factual_correctness": 0,
+        "completeness": 0,
+        "trust_behavior": 0,
+        "clarity": 0,
+        "safety": 0
+      },
+      "passed": false,
+      "judge_reasoning": "The system failed to provide any response due to a fetch failure. This represents a complete system failure rather than an appropriate abstention with redirection. No information was provided to help the student, and there was no attempt to redirect them to appropriate resources.",
+      "missed_facts": [
+        "F-1 students must complete Immigration Check-In with OIS to remove SEVIS hold",
+        "J-1 students must validate with OIS within 30 days of arrival",
+        "OIS is in SSB 2160, open Mon-Fri 8:30AM-5PM",
+        "OIS phone: 312-996-3121",
+        "Students need valid immigration documents for check-in"
+      ],
+      "forbidden_claims_found": [],
+      "response_text": "[NO RESPONSE: fetch failed]",
+      "response_length": 27,
+      "sparky_trace": {
+        "server_abstained": false,
+        "abstain_reason": null
+      },
+      "judge_error": null
+    },
+    {
+      "id": "q60",
+      "question": "what mental health resources does uic offer?",
+      "category": "health",
+      "difficulty": "easy",
+      "expected_behavior": "answer",
+      "actual_behavior": "abstain",
+      "behavior_correct": false,
+      "score": 0,
+      "subscores": {
+        "factual_correctness": 0,
+        "completeness": 0,
+        "trust_behavior": 0,
+        "clarity": 0,
+        "safety": 0
+      },
+      "passed": false,
+      "judge_reasoning": "The system provided no response at all due to a fetch failure. This is a complete system failure rather than an appropriate abstain behavior with redirection. For a critical mental health query, providing no information is particularly problematic and unsafe.",
+      "missed_facts": [
+        "Counseling Center is in Suite 2010, Student Services Building",
+        "Phone: 312-996-3490",
+        "Cost: FREE for students who pay Health Services Fee",
+        "24/7 crisis line at 312-996-3490",
+        "Hours Mon-Fri 8AM-5PM with evening appointments available"
+      ],
+      "forbidden_claims_found": [],
+      "response_text": "[NO RESPONSE: fetch failed]",
+      "response_length": 27,
+      "sparky_trace": {
+        "server_abstained": false,
+        "abstain_reason": null
+      },
+      "judge_error": null
+    },
+    {
+      "id": "q63",
+      "question": "are uic athletic events free for students?",
+      "category": "athletics",
+      "difficulty": "easy",
+      "expected_behavior": "answer",
+      "actual_behavior": "abstain",
+      "behavior_correct": false,
+      "score": 0,
+      "subscores": {
+        "factual_correctness": 0,
+        "completeness": 0,
+        "trust_behavior": 0,
+        "clarity": 0,
+        "safety": 0
+      },
+      "passed": false,
+      "judge_reasoning": "The system failed to provide any response (fetch failed), resulting in a complete failure to answer the student's question. Since the expected behavior was to answer with direct factual information about free athletic events, the absence of any response fails all evaluation criteria.",
+      "missed_facts": [
+        "Regular season home events are FREE for students with valid UIC student ID",
+        "Basketball student section (Flame Force): Gate 3, Credit Union 1 Arena, sections 110-112",
+        "Flames Fast Pass: $50/year is a non-student season pass covering all home events except basketball",
+        "UIC competes in Missouri Valley Conference (MVC)",
+        "Students can follow @uic_studentsection for basketball game day info"
+      ],
+      "forbidden_claims_found": [],
+      "response_text": "[NO RESPONSE: fetch failed]",
+      "response_length": 27,
+      "sparky_trace": {
+        "server_abstained": false,
+        "abstain_reason": null
+      },
+      "judge_error": null
+    },
+    {
+      "id": "q84",
+      "question": "does uic have a disability resource center?",
+      "category": "admin",
+      "difficulty": "easy",
+      "expected_behavior": "answer",
+      "actual_behavior": "abstain",
+      "behavior_correct": false,
+      "score": 0,
+      "subscores": {
+        "factual_correctness": 0,
+        "completeness": 0,
+        "trust_behavior": 0,
+        "clarity": 0,
+        "safety": 0
+      },
+      "passed": false,
+      "judge_reasoning": "Sparky provided no response due to a fetch failure, which means it completely failed to address the user's question about UIC's disability resource center. This is not an appropriate abstain with redirection, but rather a technical failure that provides no value to the user.",
+      "missed_facts": [
+        "Yes, UIC has the Disability Resource Center (DRC)",
+        "Located at 1070 Student Services Building, 1200 W Harrison St",
+        "Phone: 312-413-2183",
+        "Email: drc@uic.edu",
+        "Hours: Mon-Fri 9AM-5PM"
+      ],
+      "forbidden_claims_found": [],
+      "response_text": "[NO RESPONSE: fetch failed]",
+      "response_length": 27,
+      "sparky_trace": {
+        "server_abstained": false,
+        "abstain_reason": null
+      },
+      "judge_error": null
+    }
+  ]
+}

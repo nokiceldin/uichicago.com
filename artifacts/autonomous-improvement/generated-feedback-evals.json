@@ -1,0 +1,19 @@
+{
+  "generatedAt": "2026-04-09T04:29:47.004Z",
+  "count": 1,
+  "evals": [
+    {
+      "id": "feedback_eval_1",
+      "sourceIncidentId": "2026-03-30T22:20:44.622Z_1",
+      "question": "play the song",
+      "priorBadAnswer": "Lets go Flames!",
+      "category": "feedback",
+      "expectedBehavior": "answer",
+      "judgePrompt": "Pass if the reply clearly acknowledges starting the song or playing it now, and feels more helpful than just saying a slogan. Fail if it only says 'Lets go Flames' or gives another non-action response.",
+      "successSignals": [
+        "Mentions playing or starting the song.",
+        "Avoids a bare chant-only response."
+      ]
+    }
+  ]
+}

@@ -223,6 +223,7 @@ The `scripts/` directory includes tooling for:
 - campus knowledge seeding
 - embeddings and vector search prep
 - evaluation and batch review workflows
+- autonomous improvement review generation for Sparky
 - RSS/news import
 - study and syllabus maintenance
 
@@ -234,6 +235,142 @@ node scripts/import-grades.mjs
 node scripts/import-majors.mjs
 node scripts/build-embeddings.mjs
 node scripts/run-eval.mjs
+```
+
+### Autonomous Sparky improvement loop
+
+Generate a gated improvement review bundle from rubric eval failures and bad-response feedback:
+
+```bash
+npm run improve:sparky
+```
+
+Optional:
+
+```bash
+node --env-file=.env scripts/run-self-improvement-loop.mjs --threshold=7.5
+node --env-file=.env scripts/run-self-improvement-loop.mjs --with-llm
+```
+
+Outputs are written to:
+
+```text
+artifacts/autonomous-improvement/
+```
+
+That bundle includes:
+
+- `incidents.json`: normalized failures and bad-feedback incidents
+- `clusters.json`: grouped failure patterns
+- `candidates.json`: ranked, gated improvement candidates
+- `generated-feedback-evals.json`: feedback-derived eval cases for candidates without rubric coverage
+- `review.md`: human-readable review of what to fix next
+
+This loop is intentionally conservative: it proposes changes and eval gates, but does not auto-edit production behavior by itself.
+
+### Candidate execution and eval gate
+
+After generating candidates, create an execution bundle for the top candidate:
+
+```bash
+npm run improve:sparky:execute
+npm run improve:sparky:apply
+```
+
+Optional:
+
+```bash
+node --env-file=.env scripts/execute-self-improvement-candidate.mjs --candidate-id=candidate_direct_rule_or_fast_path_quality
+node --env-file=.env scripts/execute-self-improvement-candidate.mjs --with-llm
+```
+
+This writes an execution folder under:
+
+```text
+artifacts/autonomous-improvement/executions/
+```
+
+Each execution contains:
+
+- `patch-proposal.md`: the proposed change scope
+- `execution-plan.json`: candidate metadata and next actions
+- `decision.json`: `promote_candidate`, `reject_candidate`, or `manual_review_only`
+- `auto-apply-result.json`: whether a known-safe local patch was applied
+- `auto-apply.diff`: the file diff when auto-apply succeeds
+- targeted rubric eval output when eval IDs are attached to the candidate
+
+`npm run improve:sparky:apply` is the first step beyond proposal-only mode. It can auto-apply a known-safe local patch for supported candidates, but it still does not auto-commit or auto-deploy code changes.
+
+### Feedback-derived evals
+
+For candidates created from bad user feedback rather than existing rubric cases:
+
+```bash
+npm run improve:sparky:feedback-evals
+npm run improve:sparky:worktree
+```
+
+This runs generated eval cases from:
+
+```text
+artifacts/autonomous-improvement/generated-feedback-evals.json
+```
+
+and writes:
+
+```text
+artifacts/autonomous-improvement/generated-feedback-eval-results.json
+```
+
+The candidate executor will automatically use these feedback-derived evals as a gate when no rubric eval IDs are attached.
+
+### Isolated branch worktree runs
+
+For the safest autonomous candidate test, run the candidate inside an isolated git worktree on its own local port:
+
+```bash
+npm run improve:sparky:worktree
+```
+
+Optional:
+
+```bash
+node --env-file=.env scripts/run-candidate-in-worktree.mjs --candidate-id=candidate_direct_rule_or_fast_path_quality --port=3011
+```
+
+This flow:
+
+- creates a temporary `codex/` branch in a git worktree
+- reuses your dependencies and env files
+- starts a dev server in that worktree
+- runs the improvement loop and candidate executor against that isolated server
+- shuts it down afterward
+
+This is the safest built-in path for trying autonomous candidate patches without testing them directly in your main workspace.
+
+### One command occasionally
+
+If you just want one command to run once in a while and let Sparky improve itself through the safest built-in loop, use:
+
+```bash
+npm run make:sparky:smarter
+```
+
+That command:
+
+- finds a free local port
+- creates an isolated worktree branch
+- refreshes a lighter subset of Sparky eval data inside that isolated environment
+- runs the improvement loop there
+- prefers a supported candidate patch there when one is available
+- runs the gate
+- copies the result artifacts back into your main workspace
+- cleans up the temporary worktree and branch
+
+It prints a simple summary at the end and saves the artifacts under:
+
+```text
+artifacts/autonomous-improvement/one-click-runs/
 ```
 
 ## Data Sources And Product Model

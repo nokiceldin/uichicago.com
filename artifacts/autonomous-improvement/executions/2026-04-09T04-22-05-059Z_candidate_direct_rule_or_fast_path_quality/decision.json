@@ -1,0 +1,7 @@
+{
+  "executionId": "2026-04-09T04-22-05-059Z_candidate_direct_rule_or_fast_path_quality",
+  "generatedAt": "2026-04-09T04:22:05.061Z",
+  "candidateId": "candidate_direct_rule_or_fast_path_quality",
+  "decision": "manual_review_only",
+  "reason": "Candidate has no attached eval IDs, so there is no automatic gate yet."
+}

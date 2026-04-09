@@ -320,6 +320,11 @@ function courseTitleFromItem(item: string) {
   return parts.length >= 2 ? parts.slice(1).join(" | ") : "";
 }
 
+function normalizeSalary(value: number | null | undefined) {
+  const numeric = Number(value ?? 0);
+  return Number.isFinite(numeric) && numeric > 0 ? numeric : null;
+}
+
 function uniqueSorted(values: string[]) {
   return [...new Set(values.filter(Boolean))].sort((a, b) => a.localeCompare(b));
 }
@@ -656,6 +661,7 @@ async function buildProfessorDirectory(): Promise<ProfessorDirectoryEntry[]> {
     }
 
     if (matchedDb) {
+      const normalizedSalary = normalizeSalary(matchedDb.salary);
       byStableKey.set(stableKey, {
         id: matchedDb.id,
         slug: matchedDb.slug,
@@ -668,8 +674,8 @@ async function buildProfessorDirectory(): Promise<ProfessorDirectoryEntry[]> {
         difficulty: matchedDb.rmpDifficulty ?? null,
         url: matchedDb.rmpUrl ?? "",
         aiSummary: matchedDb.aiSummary ?? "",
-        salary: matchedDb.salary ?? null,
-        salaryTitle: matchedDb.salaryTitle ?? null,
+        salary: normalizedSalary,
+        salaryTitle: normalizedSalary ? matchedDb.salaryTitle ?? null : null,
         score: calculateProfessorScore(matchedDb.rmpQuality, matchedDb.rmpRatingsCount),
         isRated: Number(matchedDb.rmpRatingsCount ?? 0) > 0,
         isSynthetic: false,

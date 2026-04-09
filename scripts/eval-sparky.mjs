@@ -28,8 +28,6 @@ const ROOT      = path.resolve(__dirname, "..");
 
 // ─── CONFIG ───────────────────────────────────────────────────────────────────
 
-const BASE_URL      = "http://localhost:3000";
-const CHAT_ENDPOINT = `${BASE_URL}/api/chat`;
 const QUERIES_FILE  = path.join(ROOT, "public/data/eval/sparky-eval-queries.json");
 const RESULTS_FILE  = path.join(ROOT, "public/data/eval/sparky-eval-results.json");
 const SUMMARY_FILE  = path.join(ROOT, "public/data/eval/sparky-eval-summary.json");
@@ -98,6 +96,7 @@ function parseArgs() {
     limit:    limit ? parseInt(limit, 10) : null,
     category: cat ?? null,
     ids:      ids ?? null,
+    url:      args.find(a => a.startsWith("--url="))?.split("=")[1] ?? process.env.SPARKY_EVAL_URL ?? "http://localhost:3000",
   };
 }
 
@@ -124,14 +123,15 @@ function loadQueries(filePath, { limit, category, ids }) {
  * POST to /api/chat with streaming response.
  * Returns the full accumulated text and timing info.
  */
-async function querySparkly(question) {
+async function querySparkly(question, baseUrl) {
   const startMs = Date.now();
+  const chatEndpoint = `${baseUrl.replace(/\/$/, "")}/api/chat`;
 
   const controller = new AbortController();
   const timeout    = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
 
   try {
-    const res = await fetch(CHAT_ENDPOINT, {
+    const res = await fetch(chatEndpoint, {
       method:  "POST",
       headers: { "Content-Type": "application/json" },
       body:    JSON.stringify({
@@ -265,7 +265,7 @@ function scoreResult(query, queryResult) {
 /**
  * Run queries in batches of CONCURRENCY with a small delay between batches.
  */
-async function runQueries(queries, onProgress) {
+async function runQueries(queries, onProgress, baseUrl) {
   const results = [];
 
   for (let i = 0; i < queries.length; i += CONCURRENCY) {
@@ -273,7 +273,7 @@ async function runQueries(queries, onProgress) {
 
     const batchResults = await Promise.all(
       batch.map(async (query) => {
-        const queryResult = await querySparkly(query.question);
+        const queryResult = await querySparkly(query.question, baseUrl);
         const scores      = scoreResult(query, queryResult);
         const result      = { query, queryResult, scores };
         onProgress(result, results.length + 1, queries.length);
@@ -427,12 +427,14 @@ function logProgress(result, current, total) {
 // ─── MAIN ─────────────────────────────────────────────────────────────────────
 
 async function main() {
+  const args = parseArgs();
+  const baseUrl = args.url;
+  const chatEndpoint = `${baseUrl.replace(/\/$/, "")}/api/chat`;
+
   console.log("\n═════════════════════════════════════════════════════════");
   console.log("  Sparky Eval Runner");
-  console.log(`  Endpoint: ${CHAT_ENDPOINT}`);
+  console.log(`  Endpoint: ${chatEndpoint}`);
   console.log("═════════════════════════════════════════════════════════\n");
-
-  const args = parseArgs();
 
   // ── Load queries ──────────────────────────────────────────────────────────
   let queries;
@@ -450,10 +452,10 @@ async function main() {
 
   // ── Verify server is up ───────────────────────────────────────────────────
   try {
-    const ping = await fetch(BASE_URL, { signal: AbortSignal.timeout(3000) });
-    console.log(`✅  Server reachable at ${BASE_URL} (${ping.status})\n`);
+    const ping = await fetch(baseUrl, { signal: AbortSignal.timeout(3000) });
+    console.log(`✅  Server reachable at ${baseUrl} (${ping.status})\n`);
   } catch {
-    console.error(`❌  Cannot reach ${BASE_URL} — is the Next.js server running?\n`);
+    console.error(`❌  Cannot reach ${baseUrl} — is the Next.js server running?\n`);
     console.error(`    Run: npm run dev\n`);
     process.exit(1);
   }
@@ -461,7 +463,7 @@ async function main() {
   // ── Run queries ───────────────────────────────────────────────────────────
   console.log("─────────────────────────────────────────────────────────");
   const startMs = Date.now();
-  const results = await runQueries(queries, logProgress);
+  const results = await runQueries(queries, logProgress, baseUrl);
   const elapsedSec = ((Date.now() - startMs) / 1000).toFixed(1);
   console.log("─────────────────────────────────────────────────────────\n");
 
@@ -474,7 +476,7 @@ async function main() {
       generated_at:  new Date().toISOString(),
       total_queries: results.length,
       elapsed_sec:   parseFloat(elapsedSec),
-      endpoint:      CHAT_ENDPOINT,
+      endpoint:      chatEndpoint,
     },
     results: results.map(({ query, queryResult, scores }) => ({
       id:           query.id,

@@ -1,0 +1,7 @@
+{
+  "generatedAt": "2026-04-09T04:29:55.699Z",
+  "candidateId": "candidate_direct_rule_or_fast_path_quality",
+  "applied": false,
+  "reason": "Expected fast-path snippet not found. Patch handler is out of sync.",
+  "targetFile": "/Users/nokiceldin/Downloads/uic-prof-rank/app/api/chat/route.ts"
+}

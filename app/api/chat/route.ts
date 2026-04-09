@@ -4314,7 +4314,7 @@ export async function POST(req: Request) {
 
   if (isFlamesSongRequest(lastMsg)) {
     const encoder = new TextEncoder();
-    const flamesText = "Lets go Flames!";
+    const flamesText = "Playing it now.";
     await persistChatLog({
       responseText: flamesText,
       responseKind: "flames_song_fast_path",

@@ -37,7 +37,6 @@ const RESPONSES_FILE = path.join(ROOT, "public/data/eval/sparky-eval-results.jso
 const OUTPUT_FILE   = path.join(ROOT, "public/data/eval/rubric-results.json");
 const SUMMARY_FILE  = path.join(ROOT, "public/data/eval/rubric-summary.json");
 
-const SPARKY_URL    = "http://localhost:3000/api/chat";
 const JUDGE_MODEL   = "claude-sonnet-4-20250514";
 const PASS_THRESHOLD = 7.0;
 const CONCURRENCY   = 3;
@@ -51,6 +50,7 @@ function parseArgs() {
     live:     args.includes("--live"),
     ids:      args.find(a => a.startsWith("--ids="))?.split("=")[1]?.split(",") ?? null,
     category: args.find(a => a.startsWith("--category="))?.split("=")[1] ?? null,
+    url:      args.find(a => a.startsWith("--url="))?.split("=")[1] ?? process.env.SPARKY_EVAL_URL ?? "http://localhost:3000",
     limit:    args.find(a => a.startsWith("--limit="))?.split("=")[1]
                 ? parseInt(args.find(a => a.startsWith("--limit=")).split("=")[1], 10)
                 : null,
@@ -81,11 +81,12 @@ function loadPriorResponses(filePath) {
 }
 
 // ─── SPARKY CALL ──────────────────────────────────────────────────────────────
-async function callSparky(question) {
+async function callSparky(question, baseUrl) {
+  const sparkyUrl = `${baseUrl.replace(/\/$/, "")}/api/chat`;
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
   try {
-    const res = await fetch(SPARKY_URL, {
+    const res = await fetch(sparkyUrl, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ messages: [{ role: "user", content: question }] }),
@@ -475,10 +476,10 @@ async function main() {
   } else {
     // Verify Sparky is up
     try {
-      const ping = await fetch(SPARKY_URL.replace("/api/chat", ""), { signal: AbortSignal.timeout(3000) });
+      const ping = await fetch(args.url, { signal: AbortSignal.timeout(3000) });
       console.log(`✅  Sparky reachable (${ping.status})`);
     } catch {
-      console.error(`❌  Cannot reach Sparky at ${SPARKY_URL}`);
+      console.error(`❌  Cannot reach Sparky at ${args.url}`);
       process.exit(1);
     }
   }
@@ -491,7 +492,7 @@ async function main() {
         sparkyTrace: { server_abstained: false, abstain_reason: null },
       };
     }
-    const result = await callSparky(spec.question);
+    const result = await callSparky(spec.question, args.url);
     if (!result.ok) {
       console.warn(`  ⚠  Sparky call failed for ${spec.id}: ${result.error}`);
       return {

@@ -1,0 +1,17 @@
+{
+  "generatedAt": "2026-04-09T04:52:26.761Z",
+  "url": "http://localhost:3011",
+  "count": 1,
+  "results": [
+    {
+      "id": "feedback_eval_1",
+      "sourceIncidentId": "2026-03-30T22:20:44.622Z_1",
+      "question": "play the song",
+      "priorBadAnswer": "Lets go Flames!",
+      "currentAnswer": "Playing it now.",
+      "score": 9,
+      "passed": true,
+      "reason": "The current answer 'Playing it now' clearly acknowledges the action of starting the song and is substantially more helpful than the prior bare chant 'Lets go Flames!'. It directly addresses the user's request and avoids being a non-action response."
+    }
+  ]
+}

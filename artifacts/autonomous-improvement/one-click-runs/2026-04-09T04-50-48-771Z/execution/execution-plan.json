@@ -1,0 +1,91 @@
+{
+  "executionId": "2026-04-09T04-52-36-127Z_candidate_incorrect_abstain_or_missing_retrieval",
+  "generatedAt": "2026-04-09T04:52:36.129Z",
+  "candidate": {
+    "candidateId": "candidate_incorrect_abstain_or_missing_retrieval",
+    "title": "Incorrect Abstain Or Missing Retrieval",
+    "clusterId": "incorrect_abstain_or_missing_retrieval",
+    "patchType": "retrieval_or_trust",
+    "leverageScore": 20,
+    "status": "proposed",
+    "hypothesis": "Recover good evidence earlier and relax abstention only when source quality supports it.",
+    "targetFiles": [
+      "app/api/chat/route.ts",
+      "lib/chat/trust-decision.ts",
+      "lib/chat/data.ts"
+    ],
+    "acceptanceGate": "Affected abstain cases must cross the pass threshold with no new hallucination flags in financial or policy domains.",
+    "affectedEvalIds": [
+      "q51",
+      "q60",
+      "q63",
+      "q84"
+    ],
+    "affectedFeedbackIds": [],
+    "affectedGeneratedEvalIds": [],
+    "humanReviewChecklist": [
+      "Confirm the cluster diagnosis matches real failure examples.",
+      "Implement the smallest targeted change first.",
+      "Run evals on affected IDs and related regression categories.",
+      "Only promote if safety and trust behavior do not regress."
+    ],
+    "exampleIncidents": [
+      {
+        "sourceId": "q51",
+        "question": "what do international students need to do before arriving at uic?",
+        "answer": "[NO RESPONSE: fetch failed]",
+        "notes": [
+          "The system failed to provide any response due to a fetch failure. This represents a complete system failure rather than an appropriate abstention with redirection. No information was provided to help the student, and there was no attempt to redirect them to appropriate resources.",
+          "missed: F-1 students must complete Immigration Check-In with OIS to remove SEVIS hold",
+          "missed: J-1 students must validate with OIS within 30 days of arrival"
+        ]
+      },
+      {
+        "sourceId": "q60",
+        "question": "what mental health resources does uic offer?",
+        "answer": "[NO RESPONSE: fetch failed]",
+        "notes": [
+          "The system provided no response at all due to a fetch failure. This is a complete system failure rather than an appropriate abstain behavior with redirection. For a critical mental health query, providing no information is particularly problematic and unsafe.",
+          "missed: Counseling Center is in Suite 2010, Student Services Building",
+          "missed: Phone: 312-996-3490"
+        ]
+      },
+      {
+        "sourceId": "q63",
+        "question": "are uic athletic events free for students?",
+        "answer": "[NO RESPONSE: fetch failed]",
+        "notes": [
+          "The system failed to provide any response (fetch failed), resulting in a complete failure to answer the student's question. Since the expected behavior was to answer with direct factual information about free athletic events, the absence of any response fails all evaluation criteria.",
+          "missed: Regular season home events are FREE for students with valid UIC student ID",
+          "missed: Basketball student section (Flame Force): Gate 3, Credit Union 1 Arena, sections 110-112"
+        ]
+      }
+    ]
+  },
+  "clusterTitle": "Incorrect Abstain Or Missing Retrieval",
+  "baselineEvalIds": [
+    "q51",
+    "q60",
+    "q63",
+    "q84"
+  ],
+  "generatedFeedbackEvalIds": [],
+  "baselineSummary": {
+    "count": 4,
+    "avgScore": 0,
+    "passedCount": 0,
+    "failedIds": [
+      "q51",
+      "q60",
+      "q63",
+      "q84"
+    ]
+  },
+  "nextActions": [
+    "Review the patch proposal.",
+    "Implement the smallest safe change in the target files.",
+    "Re-run the targeted rubric evals.",
+    "Promote only if the gate clears."
+  ],
+  "evalUrl": "http://localhost:3011"
+}

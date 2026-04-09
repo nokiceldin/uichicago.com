@@ -1,0 +1,13 @@
+{
+  "generatedAt": "2026-04-09T04:55:45.697Z",
+  "branchName": "codex/auto-improve-2026-04-09T04-53-26-286Z",
+  "worktreeDir": "/Users/nokiceldin/Downloads/uic-prof-rank/.codex-worktrees/2026-04-09T04-53-26-286Z",
+  "url": "http://localhost:3011",
+  "candidateId": null,
+  "keepWorktree": true,
+  "refreshEvals": true,
+  "evalLimit": 20,
+  "rubricLimit": 20,
+  "latestExecutionDir": "/Users/nokiceldin/Downloads/uic-prof-rank/.codex-worktrees/2026-04-09T04-53-26-286Z/artifacts/autonomous-improvement/executions/2026-04-09T04-55-39-558Z_candidate_direct_rule_or_fast_path_quality",
+  "latestDecisionPath": "/Users/nokiceldin/Downloads/uic-prof-rank/.codex-worktrees/2026-04-09T04-53-26-286Z/artifacts/autonomous-improvement/executions/2026-04-09T04-55-39-558Z_candidate_direct_rule_or_fast_path_quality/decision.json"
+}

@@ -1,0 +1,7 @@
+
+═════════════════════════════════════════════════════════
+  Sparky Rubric Eval Runner
+  Judge model: claude-sonnet-4-20250514 | Pass threshold: 7/10
+═════════════════════════════════════════════════════════
+
+📋  Loaded 4 eval specs

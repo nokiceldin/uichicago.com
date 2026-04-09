@@ -1,0 +1,45 @@
+{
+  "generatedAt": "2026-04-09T04:29:47.004Z",
+  "count": 1,
+  "clusters": [
+    {
+      "clusterId": "direct_rule_or_fast_path_quality",
+      "title": "Direct Rule Or Fast Path Quality",
+      "description": "A hardcoded response or fast path produced poor output or bad user feedback.",
+      "patchType": "fast_path",
+      "targetFiles": [
+        "app/api/chat/route.ts"
+      ],
+      "acceptanceGate": "Direct-rule regressions stay at zero and any targeted feedback case gets a clearly improved response on manual review.",
+      "incidents": [
+        {
+          "incidentType": "user_feedback",
+          "source": "bad_chat_feedback",
+          "sourceId": "2026-03-30T22:20:44.622Z_1",
+          "createdAt": "2026-03-30T22:20:44.622Z",
+          "title": "Feedback: play the song",
+          "question": "play the song",
+          "answer": "Lets go Flames!",
+          "category": "feedback",
+          "expectedBehavior": null,
+          "actualBehavior": "bad_feedback",
+          "score": null,
+          "severity": "medium",
+          "abstainReason": null,
+          "notes": [
+            "rating=bad"
+          ],
+          "signals": {
+            "missedFacts": [],
+            "forbiddenClaims": [],
+            "hallucinationFlags": [],
+            "responseLength": 15
+          }
+        }
+      ],
+      "incidentCount": 1,
+      "avgScore": null,
+      "highSeverityCount": 0
+    }
+  ]
+}

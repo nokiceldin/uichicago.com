@@ -1,0 +1,18 @@
+{
+  "executionId": "2026-04-09T04-52-25-043Z_candidate_direct_rule_or_fast_path_quality",
+  "generatedAt": "2026-04-09T04:52:26.801Z",
+  "candidateId": "candidate_direct_rule_or_fast_path_quality",
+  "decision": "promote_candidate",
+  "reason": "Generated feedback evals passed for all attached feedback-derived cases.",
+  "autoApplyResult": {
+    "applied": false,
+    "reason": "Best-known patch is already present.",
+    "targetFile": "/Users/nokiceldin/Downloads/uic-prof-rank/.codex-worktrees/2026-04-09T04-45-35-767Z/app/api/chat/route.ts",
+    "alreadyOptimal": true
+  },
+  "generatedFeedbackEvalSummary": {
+    "count": 1,
+    "avgScore": 9,
+    "failedIds": []
+  }
+}

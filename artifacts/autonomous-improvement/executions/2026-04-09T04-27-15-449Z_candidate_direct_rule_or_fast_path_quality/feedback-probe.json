@@ -1,0 +1,11 @@
+{
+  "generatedAt": "2026-04-09T04:27:15.451Z",
+  "probeType": "static_candidate_probe",
+  "question": "play the song",
+  "beforeAnswer": "Lets go Flames!",
+  "afterAnswer": "Playing it now. Go Flames!",
+  "heuristic": {
+    "improved": true,
+    "rationale": "The new reply acknowledges the requested action instead of only returning a chant."
+  }
+}

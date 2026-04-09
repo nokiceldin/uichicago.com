@@ -8,7 +8,7 @@ import Link from "next/link";
 import MissingProfessorButton from "@/app/components/MissingProfessorButton";
 import SiteFooter from "@/app/components/SiteFooter";
 import { signIn } from "next-auth/react";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import ProfessorNoteModal from "@/app/components/saved/ProfessorNoteModal";
 import SaveProfessorButton from "@/app/components/saved/SaveProfessorButton";
 import { UNAUTHORIZED_ERROR, useSavedItems } from "@/app/hooks/useSavedItems";
@@ -28,7 +28,22 @@ type Prof = {
   isSynthetic?: boolean;
   courseItems?: string[];
   courseLabels?: string[];
+  salary?: number | null;
 };
+
+type SortOption = "best" | "worst" | "most" | "salary_high" | "salary_low";
+
+function parseSortOption(value: string | null): SortOption {
+  if (value === "worst" || value === "most" || value === "salary_high" || value === "salary_low") {
+    return value;
+  }
+  return "best";
+}
+
+function parsePositiveNumber(value: string | null, fallback = 0) {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) && parsed >= 0 ? parsed : fallback;
+}
 
 function ratingConfig(v: number, isRated: boolean) {
   if (!isRated) return { text: "text-zinc-700 dark:text-zinc-300", bg: "bg-zinc-100 dark:bg-white/10", ring: "ring-zinc-200 dark:ring-white/15" };
@@ -41,19 +56,21 @@ function ratingConfig(v: number, isRated: boolean) {
 export default function Page() {
   const nf = useMemo(() => new Intl.NumberFormat("en-US"), []);
   const pathname = usePathname();
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const courseMap = useProfCoursesMap();
   const { loading: savedLoading, saved, savedProfessorSlugs, savedProfessorNotes, saveProfessor, sessionStatus, unsaveProfessor } = useSavedItems();
-  const [sort, setSort] = useState<"best" | "worst" | "most">("best");
+  const [sort, setSort] = useState<SortOption>(() => parseSortOption(searchParams.get("sort")));
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState<Prof[]>([]);
   const [total, setTotal] = useState(0);
-  const [query, setQuery] = useState("");
-  const [dept, setDept] = useState("All");
-  const [savedOnly, setSavedOnly] = useState(false);
+  const [query, setQuery] = useState(() => searchParams.get("q") ?? "");
+  const [dept, setDept] = useState(() => searchParams.get("dept") ?? "All");
+  const [savedOnly, setSavedOnly] = useState(() => searchParams.get("saved") === "1");
   const [departments, setDepartments] = useState<string[]>([]);
-  const [minRatings, setMinRatings] = useState(0);
-  const [minStars, setMinStars] = useState(0);
-  const [page, setPage] = useState(1);
+  const [minRatings, setMinRatings] = useState(() => parsePositiveNumber(searchParams.get("minRatings"), 0));
+  const [minStars, setMinStars] = useState(() => parsePositiveNumber(searchParams.get("minStars"), 0));
+  const [page, setPage] = useState(() => Math.max(1, parsePositiveNumber(searchParams.get("page"), 1) || 1));
   const [pendingProfessorSlug, setPendingProfessorSlug] = useState<string | null>(null);
   const [saveError, setSaveError] = useState("");
   const [noteModalOpen, setNoteModalOpen] = useState(false);
@@ -76,6 +93,21 @@ export default function Page() {
   useEffect(() => {
     fetch("/api/departments").then(async (r) => { const text = await r.text(); if (!r.ok) throw new Error(text); return JSON.parse(text); }).then((d) => setDepartments(Array.isArray(d) ? d : [])).catch(() => setDepartments([]));
   }, []);
+
+  useEffect(() => {
+    const params = new URLSearchParams();
+    const qTrim = query.trim();
+    if (qTrim) params.set("q", qTrim);
+    if (dept !== "All") params.set("dept", dept);
+    if (minRatings > 0) params.set("minRatings", String(minRatings));
+    if (minStars > 0) params.set("minStars", String(minStars));
+    if (sort !== "best") params.set("sort", sort);
+    if (savedOnly) params.set("saved", "1");
+    if (page > 1) params.set("page", String(page));
+
+    const nextUrl = params.toString() ? `${pathname}?${params.toString()}` : pathname;
+    router.replace(nextUrl, { scroll: false });
+  }, [query, dept, minRatings, minStars, sort, savedOnly, page, pathname, router]);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -223,8 +255,12 @@ export default function Page() {
             </div>
             <div>
               <div className="mb-1 text-[10px] font-bold uppercase tracking-widest text-zinc-400 dark:text-zinc-500">Sort by</div>
-              <select className={selectBase} value={sort} onChange={(e) => { setSort(e.target.value as "best" | "worst" | "most"); setPage(1); }}>
-                <option value="best">Highest rated</option><option value="worst">Lowest rated</option><option value="most">Most reviews</option>
+              <select className={selectBase} value={sort} onChange={(e) => { setSort(e.target.value as SortOption); setPage(1); }}>
+                <option value="best">Highest rated</option>
+                <option value="worst">Lowest rated</option>
+                <option value="most">Most reviews</option>
+                <option value="salary_high">Highest salary</option>
+                <option value="salary_low">Lowest salary</option>
               </select>
             </div>
             <div>

@@ -29,6 +29,10 @@ prisma/dev.db
 # production
 /build
 /artifacts/syllabus-submissions
+/.codex-worktrees
+/artifacts/autonomous-improvement
+/artifacts/ux-audit
+/artifacts/ux-audit-mobile
 
 # misc
 .DS_Store

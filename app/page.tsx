@@ -24,7 +24,7 @@ const productPillars = [
     border: "hover:border-sky-400/50",
   },
   {
-    eyebrow: "Sparky AI (BETA)",
+    eyebrow: "SparkyAI",
     title: "Ask one question and get the full picture",
     description:
       "Use Sparky for plans, comparisons, campus questions, and quick recommendations when browsing alone is not enough.",
@@ -284,7 +284,7 @@ export default function Home() {
                       ? "Structured data"
                       : pillar.eyebrow === "Professors"
                       ? "Real comparisons"
-                      : pillar.eyebrow === "Sparky AI (BETA)"
+                      : pillar.eyebrow === "SparkyAI"
                       ? "Fast synthesis"
                       : "Active recall"}
                   </div>

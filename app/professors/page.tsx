@@ -53,6 +53,25 @@ function ratingConfig(v: number, isRated: boolean) {
   return { text: "text-red-700 dark:text-red-400", bg: "bg-red-50 dark:bg-red-500/15", ring: "ring-red-200 dark:ring-red-500/25" };
 }
 
+function getProfessorSignal(professor: Prof, rank: number) {
+  if (!professor.isRated) {
+    return "Active instructor";
+  }
+  if (rank <= 10 && professor.ratingsCount >= 40) {
+    return "High-confidence pick";
+  }
+  if (professor.quality >= 4.8 && professor.ratingsCount < 30) {
+    return "Great score, smaller sample";
+  }
+  if (professor.ratingsCount >= 100) {
+    return "Heavy review signal";
+  }
+  if (professor.quality >= 4.5) {
+    return "Student favorite";
+  }
+  return "Worth a closer look";
+}
+
 function ProfessorsPageContent() {
   const nf = useMemo(() => new Intl.NumberFormat("en-US"), []);
   const pathname = usePathname();
@@ -184,26 +203,6 @@ function ProfessorsPageContent() {
 
   return (
     <main className="relative min-h-screen bg-zinc-50 text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100">
-      <FeatureTour
-        storageKey="uichicago-tour-professors-list-v1"
-        steps={[
-          {
-            targetId: "professors-filters",
-            title: "Start by narrowing the list",
-            description: "Search by professor name and filter by department, rating, reviews, or sort order.",
-          },
-          {
-            targetId: "professors-open-profile",
-            title: "Open a professor profile",
-            description: "Click a professor name to view their rankings, course-specific performance, and AI summary.",
-          },
-          {
-            targetId: "professors-classes",
-            title: "Use classes as a shortcut",
-            description: "The classes column helps you jump from a professor into the courses they are associated with.",
-          },
-        ]}
-      />
       <div className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-72 bg-linear-to-b from-red-950/20 to-transparent" />
       <div className="pointer-events-none absolute inset-0 -z-10 opacity-[0.02]" style={{ backgroundImage: "linear-gradient(rgba(0,0,0,0.4) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,0.4) 1px, transparent 1px)", backgroundSize: "48px 48px" }} />
       <ProfessorNoteModal
@@ -223,15 +222,40 @@ function ProfessorsPageContent() {
       />
 
       <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-12">
-        <div className="mb-6 sm:mb-8">
-          <div className="mb-2">
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-zinc-300 bg-zinc-100 px-3 py-1 text-xs font-semibold uppercase tracking-widest text-zinc-600 dark:border-white/12 dark:bg-white/6 dark:text-zinc-300">
-              <span className="h-1.5 w-1.5 rounded-full bg-zinc-500 dark:bg-zinc-400" />
-              {new Intl.NumberFormat("en-US").format(total)} professors
-            </span>
+        <div className="mb-6 flex flex-col gap-4 sm:mb-8 sm:flex-row sm:items-start sm:justify-between">
+          <div>
+            <div className="mb-2">
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-zinc-300 bg-zinc-100 px-3 py-1 text-xs font-semibold uppercase tracking-widest text-zinc-600 dark:border-white/12 dark:bg-white/6 dark:text-zinc-300">
+                <span className="h-1.5 w-1.5 rounded-full bg-zinc-500 dark:bg-zinc-400" />
+                {new Intl.NumberFormat("en-US").format(total)} professors
+              </span>
+            </div>
+            <h1 className="text-3xl font-black tracking-tight text-zinc-900 dark:text-white sm:text-5xl">UIC Professors</h1>
+            <p className="mt-2 max-w-xl text-sm text-zinc-500 sm:text-base">Find the best professors by department, rating, and student review count.</p>
           </div>
-          <h1 className="text-3xl font-black tracking-tight text-zinc-900 dark:text-white sm:text-5xl">UIC Professors</h1>
-          <p className="mt-2 max-w-xl text-sm text-zinc-500 sm:text-base">Find the best professors by department, rating, and student review count.</p>
+          <div className="sm:pt-1">
+            <FeatureTour
+              storageKey="uichicago-tour-professors-list-v1"
+              buttonLabel="Take the 20-second tour"
+              steps={[
+                {
+                  targetId: "professors-filters",
+                  title: "Start by narrowing the list",
+                  description: "Search by professor name and filter by department, rating, reviews, or sort order.",
+                },
+                {
+                  targetId: "professors-open-profile",
+                  title: "Open a professor profile",
+                  description: "Click a professor name to view their rankings, course-specific performance, and AI summary.",
+                },
+                {
+                  targetId: "professors-classes",
+                  title: "Use classes as a shortcut",
+                  description: "The classes column helps you jump from a professor into the courses they are associated with.",
+                },
+              ]}
+            />
+          </div>
         </div>
 
         <div data-tour="professors-filters" className="mb-4 rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-white/8 dark:bg-zinc-900/60 sm:p-6">
@@ -328,6 +352,9 @@ function ProfessorsPageContent() {
 
                 <div className="mt-4 flex flex-wrap items-center gap-2">
                   <span className="inline-flex items-center rounded-lg bg-zinc-100 dark:bg-white/5 px-2.5 py-1 text-xs font-medium text-zinc-600 dark:text-zinc-400 ring-1 ring-zinc-200 dark:ring-white/8">{p.department}</span>
+                  <span className="inline-flex items-center rounded-lg border border-zinc-200 bg-white px-2.5 py-1 text-[11px] font-semibold text-zinc-500 dark:border-white/10 dark:bg-white/4 dark:text-zinc-400">
+                    {getProfessorSignal(p, start + idx + 1)}
+                  </span>
                 </div>
 
                 <div data-tour={idx === 0 ? "professors-classes" : undefined} className="mt-4">
@@ -391,7 +418,12 @@ function ProfessorsPageContent() {
                         <div className="mt-0.5 text-xs text-zinc-400 dark:text-zinc-600">{p.school}</div>
                       </div>
                       <div className="col-span-3 pr-3">
-                        <span className="inline-flex items-center rounded-lg bg-zinc-100 dark:bg-white/5 px-2.5 py-1 text-xs font-medium text-zinc-600 dark:text-zinc-400 ring-1 ring-zinc-200 dark:ring-white/8">{p.department}</span>
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className="inline-flex items-center rounded-lg bg-zinc-100 dark:bg-white/5 px-2.5 py-1 text-xs font-medium text-zinc-600 dark:text-zinc-400 ring-1 ring-zinc-200 dark:ring-white/8">{p.department}</span>
+                          <span className="inline-flex items-center rounded-lg border border-zinc-200 bg-white px-2.5 py-1 text-[11px] font-semibold text-zinc-500 dark:border-white/10 dark:bg-white/4 dark:text-zinc-400">
+                            {getProfessorSignal(p, start + idx + 1)}
+                          </span>
+                        </div>
                       </div>
                       <div data-tour={idx === 0 ? "professors-classes" : undefined} className="col-span-2 pr-3"><ClassesCell profName={p.name} map={courseMap} courses={p.courseItems} /></div>
                       <div className="col-span-1 flex justify-end">

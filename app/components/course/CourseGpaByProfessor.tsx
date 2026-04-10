@@ -1,12 +1,14 @@
 import Link from "next/link"
 type ProfessorGpaRow = {
   instructorName: string;
-  slug: string | null;  // ← add this line
+  slug: string | null;
   avgGpa: number | null;
+  quality: number | null;
   gradedCount: number;
   totalRegs: number;
   a: number; b: number; c: number; d: number; f: number; w: number;
 };
+
 function gpaConfig(v: number | null) {
   if (v == null) return { text: "text-zinc-600 dark:text-zinc-400", bg: "bg-zinc-100 dark:bg-white/5", ring: "ring-zinc-200 dark:ring-white/10" };
   if (v >= 3.5) return { text: "text-emerald-700 dark:text-emerald-400", bg: "bg-emerald-50 dark:bg-emerald-500/15", ring: "ring-emerald-200 dark:ring-emerald-500/25" };
@@ -14,6 +16,15 @@ function gpaConfig(v: number | null) {
   if (v >= 2.5) return { text: "text-amber-700 dark:text-amber-400", bg: "bg-amber-50 dark:bg-amber-500/15", ring: "ring-amber-200 dark:ring-amber-500/25" };
   if (v >= 2.0) return { text: "text-orange-700 dark:text-orange-400", bg: "bg-orange-50 dark:bg-orange-500/15", ring: "ring-orange-200 dark:ring-orange-500/25" };
   return { text: "text-red-700 dark:text-red-400", bg: "bg-red-50 dark:bg-red-500/15", ring: "ring-red-200 dark:ring-red-500/25" };
+}
+
+function ratingConfig(v: number | null) {
+  if (v == null) return { text: "text-zinc-500 dark:text-zinc-400", bg: "bg-zinc-100 dark:bg-white/5", ring: "ring-zinc-200 dark:ring-white/10" };
+  if (v >= 4.5) return { text: "text-emerald-700 dark:text-emerald-300", bg: "bg-emerald-50 dark:bg-emerald-500/15", ring: "ring-emerald-200 dark:ring-emerald-500/25" };
+  if (v >= 4.0) return { text: "text-green-700 dark:text-green-300", bg: "bg-green-50 dark:bg-green-500/15", ring: "ring-green-200 dark:ring-green-500/25" };
+  if (v >= 3.5) return { text: "text-amber-700 dark:text-amber-300", bg: "bg-amber-50 dark:bg-amber-500/15", ring: "ring-amber-200 dark:ring-amber-500/25" };
+  if (v >= 3.0) return { text: "text-orange-700 dark:text-orange-300", bg: "bg-orange-50 dark:bg-orange-500/15", ring: "ring-orange-200 dark:ring-orange-500/25" };
+  return { text: "text-red-700 dark:text-red-300", bg: "bg-red-50 dark:bg-red-500/15", ring: "ring-red-200 dark:ring-red-500/25" };
 }
 
 const nf = new Intl.NumberFormat("en-US");
@@ -30,6 +41,7 @@ export default function CourseGpaByProfessor({ professors = [], courseLabel }: {
       <div className="space-y-3 px-4 py-4 sm:hidden">
         {professors.map((row, idx) => {
           const gc = gpaConfig(row.avgGpa);
+          const rc = ratingConfig(row.quality);
           return (
             <div key={`${row.instructorName}-${idx}`} className="rounded-2xl bg-zinc-50 p-4 ring-1 ring-zinc-200 dark:bg-white/4 dark:ring-white/8">
               <div className="flex items-start justify-between gap-3">
@@ -47,7 +59,11 @@ export default function CourseGpaByProfessor({ professors = [], courseLabel }: {
                   {row.avgGpa == null ? "N/A" : row.avgGpa.toFixed(2)}
                 </span>
               </div>
-              <div className="mt-4 grid grid-cols-2 gap-2 text-sm">
+              <div className="mt-4 grid grid-cols-3 gap-2 text-sm">
+                <div className="rounded-xl bg-white px-3 py-2.5 ring-1 ring-zinc-200 dark:bg-zinc-900/50 dark:ring-white/8">
+                  <div className="text-[10px] font-bold uppercase tracking-widest text-zinc-400 dark:text-zinc-600">RMP</div>
+                  <div className={`mt-1 font-semibold ${rc.text}`}>{row.quality == null ? "NR" : row.quality.toFixed(1)}</div>
+                </div>
                 <div className="rounded-xl bg-white px-3 py-2.5 ring-1 ring-zinc-200 dark:bg-zinc-900/50 dark:ring-white/8">
                   <div className="text-[10px] font-bold uppercase tracking-widest text-zinc-400 dark:text-zinc-600">Graded</div>
                   <div className="mt-1 font-semibold text-zinc-900 dark:text-zinc-100">{nf.format(row.gradedCount)}</div>
@@ -64,23 +80,25 @@ export default function CourseGpaByProfessor({ professors = [], courseLabel }: {
       </div>
 
       <div className="hidden overflow-x-auto sm:block">
-        <div className="min-w-[580px]">
+        <div className="min-w-[720px]">
           <div className="grid grid-cols-12 bg-zinc-50 dark:bg-zinc-950/50 px-5 sm:px-6 py-3 text-[10px] font-bold uppercase tracking-widest text-zinc-500 dark:text-zinc-600">
             <div className="col-span-1">#</div>
-            <div className="col-span-5">Professor</div>
+            <div className="col-span-4">Professor</div>
             <div className="col-span-2 text-right">Avg GPA</div>
+            <div className="col-span-1 text-right">RMP</div>
             <div className="col-span-2 text-right">Graded</div>
             <div className="col-span-2 text-right">Total regs</div>
           </div>
           <ul className="divide-y divide-zinc-100 dark:divide-white/4">
             {professors.map((row, idx) => {
               const gc = gpaConfig(row.avgGpa);
+              const rc = ratingConfig(row.quality);
               return (
                 <li key={`${row.instructorName}-${idx}`} className="grid grid-cols-12 items-center px-5 sm:px-6 py-4 text-sm hover:bg-zinc-50 dark:hover:bg-white/3 transition-colors">
                   <div className="col-span-1">
                     <span className="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-zinc-100 dark:bg-white/5 text-xs font-bold text-zinc-500 dark:text-zinc-500 ring-1 ring-zinc-200 dark:ring-white/8">{idx + 1}</span>
                   </div>
-                  <div className="col-span-5">
+                  <div className="col-span-4">
                     {row.slug ? (
   <Link href={`/professors/${row.slug}`} className="font-semibold text-zinc-900 dark:text-zinc-200 hover:text-emerald-600 dark:hover:text-emerald-400 hover:underline transition-colors">
     {row.instructorName}
@@ -92,6 +110,11 @@ export default function CourseGpaByProfessor({ professors = [], courseLabel }: {
                   <div className="col-span-2 flex justify-end">
                     <span className={`inline-flex items-center rounded-lg px-2.5 py-1 text-xs font-bold tabular-nums ring-1 ${gc.bg} ${gc.text} ${gc.ring}`}>
                       {row.avgGpa == null ? "N/A" : row.avgGpa.toFixed(2)}
+                    </span>
+                  </div>
+                  <div className="col-span-1 flex justify-end">
+                    <span className={`inline-flex items-center rounded-lg px-2 py-1 text-xs font-bold tabular-nums ring-1 ${rc.bg} ${rc.text} ${rc.ring}`}>
+                      {row.quality == null ? "NR" : row.quality.toFixed(1)}
                     </span>
                   </div>
                   <div className="col-span-2 flex justify-end">

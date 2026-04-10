@@ -19,31 +19,25 @@ type RectState = {
 type FeatureTourProps = {
   storageKey: string;
   steps: TourStep[];
+  buttonLabel?: string;
+  className?: string;
 };
 
 function clamp(value: number, min: number, max: number) {
   return Math.min(Math.max(value, min), max);
 }
 
-export default function FeatureTour({ storageKey, steps }: FeatureTourProps) {
+export default function FeatureTour({
+  storageKey,
+  steps,
+  buttonLabel = "Take the 20-second tour",
+  className = "",
+}: FeatureTourProps) {
   const [open, setOpen] = useState(false);
   const [stepIndex, setStepIndex] = useState(0);
   const [targetRect, setTargetRect] = useState<RectState>(null);
 
   const step = steps[stepIndex];
-
-  useEffect(() => {
-    try {
-      if (window.localStorage.getItem(storageKey) === "done") {
-        return;
-      }
-    } catch {
-      return;
-    }
-
-    const timeout = window.setTimeout(() => setOpen(true), 700);
-    return () => window.clearTimeout(timeout);
-  }, [storageKey]);
 
   useEffect(() => {
     if (!open || !step?.targetId) {
@@ -146,7 +140,7 @@ export default function FeatureTour({ storageKey, steps }: FeatureTourProps) {
     return { left, top, width: cardWidth };
   }, [targetRect]);
 
-  if (!open || steps.length === 0) {
+  if (steps.length === 0) {
     return null;
   }
 
@@ -167,8 +161,24 @@ export default function FeatureTour({ storageKey, steps }: FeatureTourProps) {
     setStepIndex((current) => current + 1);
   };
 
-  return createPortal(
+  const startTour = () => {
+    setStepIndex(0);
+    setOpen(true);
+  };
+
+  return (
     <>
+      <button
+        type="button"
+        onClick={startTour}
+        className={`inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-white px-4 py-2 text-sm font-semibold text-zinc-700 shadow-sm transition hover:border-red-300 hover:text-zinc-900 dark:border-white/10 dark:bg-white/5 dark:text-zinc-200 dark:hover:border-red-400/35 dark:hover:bg-white/8 ${className}`.trim()}
+      >
+        <span className="inline-flex h-2 w-2 rounded-full bg-red-500" />
+        {buttonLabel}
+      </button>
+      {open
+        ? createPortal(
+            <>
       <aside
         className="fixed z-[80] w-[min(360px,calc(100vw-24px))] rounded-[24px] border border-zinc-200/80 bg-white/96 p-4 text-zinc-900 shadow-[0_24px_80px_rgba(15,23,42,0.18)] backdrop-blur dark:border-white/10 dark:bg-zinc-950/92 dark:text-zinc-100"
         style={cardStyle}
@@ -215,7 +225,10 @@ export default function FeatureTour({ storageKey, steps }: FeatureTourProps) {
           </button>
         </div>
       </aside>
-    </>,
-    document.body,
+            </>,
+            document.body,
+          )
+        : null}
+    </>
   );
 }

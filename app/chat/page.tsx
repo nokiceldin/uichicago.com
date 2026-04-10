@@ -1,5 +1,6 @@
 "use client";
 export const dynamic = "force-dynamic";
+import Link from "next/link";
 import SparkyMarkdown from "../components/SparkyMarkdown";
 import { useState, useRef, useEffect, useCallback, useMemo, Suspense } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
@@ -1149,8 +1150,110 @@ function CopyBtn({ content }: { content: string }) {
   );
 }
 
+type GoDeeperLink = {
+  title: string;
+  href: string;
+  description: string;
+};
+
+function extractCourseMentions(text: string) {
+  const seen = new Set<string>();
+  const matches: { subject: string; number: string; code: string }[] = [];
+  const regex = /\b([A-Z]{2,4})\s*[- ]?(\d{3})\b/g;
+
+  for (const match of text.matchAll(regex)) {
+    const subject = match[1]?.toUpperCase();
+    const number = match[2];
+    if (!subject || !number) continue;
+    const code = `${subject} ${number}`;
+    if (seen.has(code)) continue;
+    seen.add(code);
+    matches.push({ subject, number, code });
+    if (matches.length >= 3) break;
+  }
+
+  return matches;
+}
+
+function extractProfessorMentions(text: string) {
+  const seen = new Set<string>();
+  const matches: string[] = [];
+  const regex = /\b(?:Professor|Prof\.?)\s+([A-Z][a-zA-Z'’-]+(?:\s+[A-Z][a-zA-Z'’-]+){1,2})/g;
+
+  for (const match of text.matchAll(regex)) {
+    const name = match[1]?.trim();
+    if (!name || seen.has(name)) continue;
+    seen.add(name);
+    matches.push(name);
+    if (matches.length >= 2) break;
+  }
+
+  return matches;
+}
+
+function buildGoDeeperLinks(answer: string, userQuestion?: string) {
+  const combined = `${userQuestion ?? ""}\n${answer}`;
+  const links: GoDeeperLink[] = [];
+  const seen = new Set<string>();
+  const trimmedQuestion = (userQuestion ?? "").trim();
+
+  const pushLink = (link: GoDeeperLink) => {
+    if (seen.has(link.href)) return;
+    seen.add(link.href);
+    links.push(link);
+  };
+
+  for (const course of extractCourseMentions(combined)) {
+    pushLink({
+      title: `Open ${course.code}`,
+      href: `/courses/${encodeURIComponent(course.subject)}/${encodeURIComponent(course.number)}`,
+      description: "Course page with GPA, grade, and instructor signals.",
+    });
+  }
+
+  for (const course of extractCourseMentions(combined)) {
+    pushLink({
+      title: `Browse professors for ${course.code}`,
+      href: `/professors?q=${encodeURIComponent(course.code)}`,
+      description: "See which professors are connected to this class.",
+    });
+  }
+
+  for (const professor of extractProfessorMentions(combined)) {
+    pushLink({
+      title: `Search ${professor}`,
+      href: `/professors?q=${encodeURIComponent(professor)}`,
+      description: "Open the rankings with this professor name prefilled.",
+    });
+  }
+
+  if (links.length === 0 && trimmedQuestion) {
+    if (/\b(course|courses|class|classes|gpa|gen ed|major|semester)\b/i.test(trimmedQuestion)) {
+      pushLink({
+        title: "Browse matching courses",
+        href: `/courses?q=${encodeURIComponent(trimmedQuestion)}`,
+        description: "Open structured course results for this topic.",
+      });
+    }
+
+    if (/\b(professor|professors|instructor|instructors|teach|teaches)\b/i.test(trimmedQuestion)) {
+      pushLink({
+        title: "Browse matching professors",
+        href: `/professors?q=${encodeURIComponent(trimmedQuestion)}`,
+        description: "Open the professor rankings for this question.",
+      });
+    }
+  }
+
+  return links.slice(0, 4);
+}
+
 function MessageBubble({ msg, onRegenerate, userQuestion }: { msg: Message; onRegenerate?: () => void; userQuestion?: string }) {
   const [feedbackGiven, setFeedbackGiven] = useState<"good" | "bad" | null>(null);
+  const goDeeperLinks = useMemo(
+    () => (msg.role === "assistant" && !msg.error ? buildGoDeeperLinks(msg.content, userQuestion) : []),
+    [msg.content, msg.error, msg.role, userQuestion],
+  );
 
   const submitFeedback = async (rating: "good" | "bad") => {
     if (feedbackGiven) return;
@@ -1207,6 +1310,33 @@ function MessageBubble({ msg, onRegenerate, userQuestion }: { msg: Message; onRe
         <div className="text-[15.5px] leading-[1.85] text-zinc-800 dark:text-zinc-100 font-normal tracking-[-0.008em] antialiased prose-sparky">
           <SparkyMarkdown content={msg.content} />
         </div>
+
+        {!msg.streaming && !msg.error && goDeeperLinks.length > 0 && (
+          <div className="mt-5 rounded-[22px] border border-zinc-200 bg-zinc-50/80 p-3.5 dark:border-white/8 dark:bg-white/[0.03]">
+            <div className="mb-3 text-[11px] font-bold uppercase tracking-[0.22em] text-zinc-500 dark:text-zinc-400">
+              Go deeper
+            </div>
+            <div className="grid gap-2 sm:grid-cols-2">
+              {goDeeperLinks.map((link) => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className="group rounded-2xl border border-zinc-200 bg-white px-4 py-3 transition hover:border-red-300 hover:shadow-sm dark:border-white/10 dark:bg-white/[0.04] dark:hover:border-red-400/30 dark:hover:bg-white/[0.07]"
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <div className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">{link.title}</div>
+                      <div className="mt-1 text-xs leading-5 text-zinc-500 dark:text-zinc-400">{link.description}</div>
+                    </div>
+                    <span className="pt-0.5 text-zinc-400 transition group-hover:translate-x-0.5 group-hover:text-zinc-700 dark:group-hover:text-zinc-200">
+                      →
+                    </span>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
 
         {!msg.streaming && !msg.error && (
           <div className="flex items-center gap-0.5 mt-2.5">

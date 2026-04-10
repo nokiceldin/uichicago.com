@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import { signIn } from "next-auth/react";
 import { usePathname, useSearchParams } from "next/navigation";
@@ -84,14 +85,34 @@ export default function SaveProfessorControl({ professor, compact = false }: Sav
 
   return (
     <>
-      <SaveProfessorButton
-        isSaved={isSaved}
-        pending={pending}
-        savedNote={savedNote}
-        error={error}
-        onToggle={handleToggle}
-        compact={compact}
-      />
+      <div className="flex flex-wrap items-center gap-2">
+        <SaveProfessorButton
+          isSaved={isSaved}
+          pending={pending}
+          savedNote={savedNote}
+          error={error}
+          onToggle={handleToggle}
+          compact={compact}
+        />
+        {isSaved ? (
+          <div className="flex flex-wrap items-center gap-2 text-xs">
+            {professor.department ? (
+              <Link
+                href={`/professors?dept=${encodeURIComponent(professor.department)}`}
+                className="rounded-full border border-zinc-200 bg-white px-2.5 py-1 font-semibold text-zinc-700 transition hover:border-zinc-300 hover:text-sky-600 dark:border-white/10 dark:bg-white/5 dark:text-zinc-200 dark:hover:text-sky-300"
+              >
+                More from {professor.department} →
+              </Link>
+            ) : null}
+            <Link
+              href="/study"
+              className="rounded-full border border-zinc-200 bg-white px-2.5 py-1 font-semibold text-zinc-700 transition hover:border-zinc-300 hover:text-sky-600 dark:border-white/10 dark:bg-white/5 dark:text-zinc-200 dark:hover:text-sky-300"
+            >
+              Open My School →
+            </Link>
+          </div>
+        ) : null}
+      </div>
       <ProfessorNoteModal
         open={noteModalOpen}
         professorName={professor.name}

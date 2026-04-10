@@ -113,40 +113,45 @@ export default function CoursesTable({ courses, total, page, pageSize, sort, dep
 
   return (
     <main className="relative min-h-screen bg-zinc-50 text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100">
-      <FeatureTour
-        storageKey="uichicago-tour-courses-list-v1"
-        steps={[
-          {
-            targetId: "courses-filters",
-            title: "Start with search and filters",
-            description: "Search by course code or title, then narrow the list by department, major, Gen Ed, or requirement type.",
-          },
-          {
-            targetId: "courses-sort",
-            title: "Swap the ranking direction",
-            description: "Use this toggle when you want to compare easiest-first versus hardest-first results.",
-          },
-          {
-            targetId: "courses-results",
-            title: "Open any course row",
-            description: "Each result takes you to a deeper course page with grade distributions, quick stats, and professor breakdowns.",
-          },
-        ]}
-      />
       <div className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-72 bg-linear-to-b from-red-950/20 to-transparent dark:from-red-950/20 dark:to-transparent" />
       <div className="pointer-events-none absolute inset-0 -z-10 opacity-[0.02] dark:opacity-[0.015]" style={{ backgroundImage: "linear-gradient(rgba(0,0,0,0.4) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,0.4) 1px, transparent 1px)", backgroundSize: "48px 48px" }} />
 
       <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-12">
         {/* Header */}
-        <div className="mb-6 sm:mb-8">
-          <div className="mb-2">
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-zinc-300 bg-zinc-100 px-3 py-1 text-xs font-semibold uppercase tracking-widest text-zinc-600 dark:border-white/12 dark:bg-white/6 dark:text-zinc-300">
-              <span className="h-1.5 w-1.5 rounded-full bg-zinc-500 dark:bg-zinc-400" />
-              {nf.format(total)} courses
-            </span>
+        <div className="mb-6 flex flex-col gap-4 sm:mb-8 sm:flex-row sm:items-start sm:justify-between">
+          <div>
+            <div className="mb-2">
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-zinc-300 bg-zinc-100 px-3 py-1 text-xs font-semibold uppercase tracking-widest text-zinc-600 dark:border-white/12 dark:bg-white/6 dark:text-zinc-300">
+                <span className="h-1.5 w-1.5 rounded-full bg-zinc-500 dark:bg-zinc-400" />
+                {nf.format(total)} courses
+              </span>
+            </div>
+            <h1 className="text-3xl font-black tracking-tight text-zinc-900 dark:text-white sm:text-5xl">UIC Courses</h1>
+            <p className="mt-2 max-w-xl text-sm text-zinc-500 sm:text-base">Find the easiest classes and best professors using real grade distributions and enrollment data.</p>
           </div>
-          <h1 className="text-3xl font-black tracking-tight text-zinc-900 dark:text-white sm:text-5xl">UIC Courses</h1>
-          <p className="mt-2 max-w-xl text-sm text-zinc-500 sm:text-base">Find the easiest classes and best professors using real grade distributions and enrollment data.</p>
+          <div className="sm:pt-1">
+            <FeatureTour
+              storageKey="uichicago-tour-courses-list-v1"
+              buttonLabel="Take the 20-second tour"
+              steps={[
+                {
+                  targetId: "courses-filters",
+                  title: "Start with search and filters",
+                  description: "Search by course code or title, then narrow the list by department, major, Gen Ed, or requirement type.",
+                },
+                {
+                  targetId: "courses-sort",
+                  title: "Swap the ranking direction",
+                  description: "Use this toggle when you want to compare easiest-first versus hardest-first results.",
+                },
+                {
+                  targetId: "courses-results",
+                  title: "Open any course row",
+                  description: "Each result takes you to a deeper course page with grade distributions, quick stats, and professor breakdowns.",
+                },
+              ]}
+            />
+          </div>
         </div>
 
         {/* Filters */}

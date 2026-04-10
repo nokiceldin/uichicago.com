@@ -134,7 +134,7 @@ export default function HeroSearchBar() {
           />
           <div className="min-w-0 flex-1 text-left">
             <div className="mb-1 text-[11px] font-bold uppercase tracking-[0.2em] text-red-500 dark:text-red-300">
-              Sparky AI (BETA)
+              SparkyAI
             </div>
             <span className="block text-sm text-zinc-500 dark:text-zinc-300">
             {displayed ? (

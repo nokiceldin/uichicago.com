@@ -50,6 +50,7 @@ import { DEFAULT_STUDY_LIBRARY } from "@/lib/study/sample-data";
 import type { CardProgress, QuizQuestion, QuizResult, StructuredLectureNotes, StudyCard, StudyGroup, StudyLibraryState, StudyNote, StudySet, StudySurface } from "@/lib/study/types";
 import NotesWorkspace from "@/app/study/NotesWorkspace";
 import FeatureTour from "@/app/components/onboarding/FeatureTour";
+import MyPicksPanel from "@/app/components/loops/MyPicksPanel";
 import { estimateFlashcardCountFromText, parseExplicitFlashcardsFromText } from "@/lib/study/flashcard-parser";
 
 const STORAGE_KEY = "uic-atlas-study-library-v1";
@@ -214,45 +215,7 @@ type SaveDestinationDialogState = {
   isEditing: boolean;
 } | null;
 
-type TriviaQuestion = {
-  prompt: string;
-  choices: string[];
-  correctAnswer: string;
-};
-
 const STUDY_MODE_SCREENS: Screen[] = ["flashcards", "learn", "test", "match"];
-const HOME_TRIVIA_QUESTIONS: TriviaQuestion[] = [
-  { prompt: "What year was UIC founded?", choices: ["1982", "1965", "1946", "2001"], correctAnswer: "1982" },
-  { prompt: "What is the name of UIC's mascot?", choices: ["Sparky", "Blaze", "Illini", "Brutus"], correctAnswer: "Sparky" },
-  { prompt: "What is UIC's official school color combination?", choices: ["Navy and Red", "Blue and Red", "Red and White", "Orange and Blue"], correctAnswer: "Navy and Red" },
-  { prompt: "What Chicago neighborhood is UIC's main campus located in?", choices: ["Near West Side", "Lincoln Park", "Hyde Park", "Wicker Park"], correctAnswer: "Near West Side" },
-  { prompt: "What does 'UIC' stand for?", choices: ["University of Illinois Chicago", "University of Illinois at Chicago", "Urban Illinois Campus", "University in Chicago"], correctAnswer: "University of Illinois Chicago" },
-  { prompt: "What is the name of UIC's main library?", choices: ["Richard J. Daley Library", "Harold Washington Library", "Regenstein Library", "UIC Central Library"], correctAnswer: "Richard J. Daley Library" },
-  { prompt: "Approximately how many students attend UIC?", choices: ["34,000", "12,000", "50,000", "22,000"], correctAnswer: "34,000" },
-  { prompt: "Which professional sports team has occasionally used Credit Union 1 Arena for practice?", choices: ["Chicago Bulls", "Chicago Bears", "Chicago Blackhawks", "Chicago Fire"], correctAnswer: "Chicago Bulls" },
-  { prompt: "What is the name of UIC's student newspaper?", choices: ["The Flame", "The Chicago Maroon", "The Daily Illini", "The UIC Times"], correctAnswer: "The Flame" },
-  { prompt: "What year did UIC merge with the Medical Center campus?", choices: ["1982", "1990", "1975", "2000"], correctAnswer: "1982" },
-  { prompt: "What conference do the UIC Flames compete in?", choices: ["Missouri Valley Conference", "Big Ten Conference", "Horizon League", "Atlantic 10"], correctAnswer: "Missouri Valley Conference" },
-  { prompt: "What is UIC's athletics nickname?", choices: ["Flames", "Dragons", "Chargers", "Lakers"], correctAnswer: "Flames" },
-  { prompt: "Which UIC campus is home to many health sciences programs?", choices: ["West Campus", "East Campus", "South Campus", "Lincoln Park Campus"], correctAnswer: "West Campus" },
-  { prompt: "What major Chicago expressway runs right by UIC's main campus?", choices: ["Eisenhower Expressway", "Kennedy Expressway", "Dan Ryan Expressway", "Stevenson Expressway"], correctAnswer: "Eisenhower Expressway" },
-  { prompt: "Which CTA train line stops at UIC-Halsted?", choices: ["Blue Line", "Red Line", "Green Line", "Brown Line"], correctAnswer: "Blue Line" },
-  { prompt: "UIC is part of which state university system?", choices: ["University of Illinois System", "Illinois State University System", "Chicago Public University System", "Midwestern Universities Consortium"], correctAnswer: "University of Illinois System" },
-  { prompt: "Which famous Chicago mayor has a UIC library named after him?", choices: ["Richard J. Daley", "Harold Washington", "Rahm Emanuel", "Jane Byrne"], correctAnswer: "Richard J. Daley" },
-  { prompt: "What mythical creature is Sparky?", choices: ["Dragon", "Phoenix", "Griffin", "Wolf"], correctAnswer: "Dragon" },
-  { prompt: "Which side of campus is most associated with the original Circle Campus?", choices: ["East Campus", "West Campus", "South Campus", "North Campus"], correctAnswer: "East Campus" },
-  { prompt: "What is the name of UIC's main student recreation facility?", choices: ["Student Recreation Facility", "Daley Fitness Center", "Flames Fieldhouse", "UIC Activity Center"], correctAnswer: "Student Recreation Facility" },
-  { prompt: "What is the name of UIC's large indoor arena?", choices: ["Credit Union 1 Arena", "United Center", "Flames Pavilion", "Chicago Arena"], correctAnswer: "Credit Union 1 Arena" },
-  { prompt: "Which UIC tradition features school spirit centered around flames and the mascot?", choices: ["Flames spirit tradition", "Maroon Monday", "Orange Crush", "Midnight Roar"], correctAnswer: "Flames spirit tradition" },
-  { prompt: "UIC is best described as what type of institution?", choices: ["Public research university", "Private liberal arts college", "Community college", "Technical institute"], correctAnswer: "Public research university" },
-  { prompt: "Which Illinois city is UIC located in?", choices: ["Chicago", "Springfield", "Naperville", "Peoria"], correctAnswer: "Chicago" },
-  { prompt: "What is a common shorthand students use for the campus area around Student Center East?", choices: ["East Campus", "North Quad", "Medical Mile", "South Commons"], correctAnswer: "East Campus" },
-  { prompt: "What is the name of UIC's NCAA Division I baseball venue?", choices: ["Les Miller Field", "Wrigley Field", "Flames Diamond", "Daley Park"], correctAnswer: "Les Miller Field" },
-  { prompt: "What is the name of UIC's softball field?", choices: ["Flames Field", "Curtis Granderson Stadium", "Les Miller Field", "UIC South Field"], correctAnswer: "Flames Field" },
-  { prompt: "Which student center is located on the east side of campus?", choices: ["Student Center East", "Student Center West", "Daley Student Union", "Flames Commons"], correctAnswer: "Student Center East" },
-  { prompt: "Which student center is located closer to UIC's west side academic and health campuses?", choices: ["Student Center West", "Student Center East", "Daley Hall", "Circle Center"], correctAnswer: "Student Center West" },
-  { prompt: "What is the name of UIC's well-known performance venue on campus?", choices: ["Dorothy Menker Theater", "Chicago Theatre", "UIC Playhouse", "Daley Auditorium"], correctAnswer: "Dorothy Menker Theater" },
-];
 
 const magneticHoverProps = {
   onMouseMove: (event: React.MouseEvent<HTMLElement>) => {
@@ -268,6 +231,20 @@ const magneticHoverProps = {
     event.currentTarget.style.setProperty("--my", "0px");
   },
 };
+
+function formatStudyRelativeDate(value?: string) {
+  if (!value) return "Recently";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "Recently";
+  const now = new Date();
+  const dateDay = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  const nowDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const diffDays = Math.round((nowDay.getTime() - dateDay.getTime()) / 86400000);
+  if (diffDays <= 0) return "Today";
+  if (diffDays === 1) return "Yesterday";
+  if (diffDays < 7) return `${diffDays} days ago`;
+  return date.toLocaleDateString([], { month: "short", day: "numeric" });
+}
 
 function normalizeFolderPath(value: string) {
   return value
@@ -405,14 +382,6 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedGuide, setGeneratedGuide] = useState<StructuredLectureNotes | null>(null);
   const [shouldCreateGuideFlashcards, setShouldCreateGuideFlashcards] = useState(true);
-  const [triviaSessionQuestions] = useState<TriviaQuestion[]>(() => {
-    const shuffled = [...HOME_TRIVIA_QUESTIONS].sort(() => Math.random() - 0.5);
-    return shuffled.slice(0, 10);
-  });
-  const [triviaIndex, setTriviaIndex] = useState(0);
-  const [selectedTriviaChoice, setSelectedTriviaChoice] = useState<string | null>(null);
-  const [triviaCorrectCount, setTriviaCorrectCount] = useState(0);
-  const [triviaSessionDone, setTriviaSessionDone] = useState(false);
   const [libraryItemMenuOpen, setLibraryItemMenuOpen] = useState<string | null>(null);
   const lastLibrarySerializedRef = useRef("");
   const lastFoldersSerializedRef = useRef("");
@@ -729,24 +698,6 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
     };
   }, []);
 
-  const activeTriviaQuestion = triviaSessionQuestions[triviaIndex] ?? triviaSessionQuestions[0];
-
-  useEffect(() => {
-    if (!selectedTriviaChoice) return;
-    const isCorrect = selectedTriviaChoice === activeTriviaQuestion?.correctAnswer;
-    if (isCorrect) setTriviaCorrectCount((c) => c + 1);
-    const timeout = window.setTimeout(() => {
-      setSelectedTriviaChoice(null);
-      const nextIndex = triviaIndex + 1;
-      if (nextIndex >= triviaSessionQuestions.length) {
-        setTriviaSessionDone(true);
-      } else {
-        setTriviaIndex(nextIndex);
-      }
-    }, 1200);
-    return () => window.clearTimeout(timeout);
-  }, [selectedTriviaChoice, activeTriviaQuestion, triviaIndex, triviaSessionQuestions.length]);
-
   useEffect(() => {
     const query = (isGuideCreateRoute ? draftGuide.course : draftSet.course).trim();
     if (!isCreateRoute || query.length < 2) {
@@ -901,6 +852,75 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
   const selectedProgress = library.progress[selectedSet?.id] ?? {};
   const dashboard = useMemo(() => computeStudyDashboard(library), [library]);
   const isFocusedStudyMode = STUDY_MODE_SCREENS.includes(screen);
+  const recentSessions = useMemo(
+    () => [...library.sessions].sort((a, b) => new Date(b.endedAt).getTime() - new Date(a.endedAt).getTime()),
+    [library.sessions],
+  );
+  const latestSession = recentSessions[0];
+  const latestSessionSet = latestSession ? library.sets.find((set) => set.id === latestSession.setId) : undefined;
+  const recentQuizResult = useMemo(
+    () => [...library.quizResults].sort((a, b) => new Date(b.endedAt).getTime() - new Date(a.endedAt).getTime())[0],
+    [library.quizResults],
+  );
+  const recentQuizSet = recentQuizResult ? library.sets.find((set) => set.id === recentQuizResult.setId) : undefined;
+  const recentNote = useMemo(
+    () =>
+      [...library.notes].sort(
+        (a, b) =>
+          new Date(b.lastOpenedAt || b.updatedAt).getTime() -
+          new Date(a.lastOpenedAt || a.updatedAt).getTime(),
+      )[0],
+    [library.notes],
+  );
+  const dueSetSummaries = useMemo(() => {
+    const now = Date.now();
+    return library.sets
+      .map((set) => {
+        const progressMap = library.progress[set.id] ?? {};
+        let dueCards = 0;
+        let difficultCards = 0;
+        let unseenCards = 0;
+
+        for (const card of set.cards) {
+          const progress = progressMap[card.id] ?? getDefaultProgress(card.id);
+          const dueByDate =
+            progress.nextReviewAt != null && new Date(progress.nextReviewAt).getTime() <= now;
+          if (dueByDate || progress.markedDifficult || progress.missedRecently) {
+            dueCards += 1;
+          }
+          if (progress.markedDifficult || progress.missedRecently) {
+            difficultCards += 1;
+          }
+          if ((progress.timesSeen ?? 0) === 0) {
+            unseenCards += 1;
+          }
+        }
+
+        return { set, dueCards, difficultCards, unseenCards };
+      })
+      .filter((entry) => entry.dueCards > 0 || entry.difficultCards > 0 || entry.unseenCards > 0)
+      .sort((a, b) => b.dueCards - a.dueCards || b.difficultCards - a.difficultCards || a.unseenCards - b.unseenCards);
+  }, [library.progress, library.sets]);
+  const totalDueCards = dueSetSummaries.reduce((sum, entry) => sum + entry.dueCards, 0);
+  const topDueSet = dueSetSummaries[0];
+  const weeklySessionCount = recentSessions.filter((session) => {
+    const endedAt = new Date(session.endedAt).getTime();
+    return Date.now() - endedAt <= 7 * 24 * 60 * 60 * 1000;
+  }).length;
+  const streakDays = useMemo(() => {
+    const sessionDays = new Set(
+      recentSessions.map((session) => new Date(session.endedAt).toISOString().slice(0, 10)),
+    );
+    let streak = 0;
+    const cursor = new Date();
+    cursor.setHours(0, 0, 0, 0);
+    while (sessionDays.has(cursor.toISOString().slice(0, 10))) {
+      streak += 1;
+      cursor.setDate(cursor.getDate() - 1);
+    }
+    return streak;
+  }, [recentSessions]);
+  const todayGoalCount = totalDueCards > 0 ? Math.min(12, totalDueCards) : selectedSet ? Math.min(8, selectedSet.cards.length) : 5;
 
   useEffect(() => {
     if (isFocusedStudyMode) {
@@ -2649,73 +2669,179 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
                     </div>
                   ) : null}
 
-                  {/* ── QUICK-FIRE TRIVIA ─────────────────────────────── */}
-                  <div>
-                    <div className="mb-2.5 flex items-center gap-2">
-                      <div className="flex h-4.5 w-4.5 items-center justify-center rounded-[5px] bg-amber-500/18">
-                        <Brain className="h-2.5 w-2.5 text-amber-400" />
+                  {/* ── READY NOW / RETURN LOOPS ─────────────────────── */}
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2">
+                      <div className="flex h-4.5 w-4.5 items-center justify-center rounded-[5px] bg-emerald-500/18">
+                        <Flame className="h-2.5 w-2.5 text-emerald-400" />
                       </div>
-                      <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-500">Quick-fire</p>
-                      <div className="ml-auto flex items-center gap-1">
-                        {triviaSessionQuestions.map((_, i) => (
-                          <span
-                            key={i}
-                            className={`h-0.75 w-4 rounded-full transition-all duration-300 ${
-                              i < triviaIndex ? "bg-amber-400" : i === triviaIndex ? "bg-white/35" : "bg-white/8"
-                            }`}
-                          />
-                        ))}
+                      <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-500">Ready now</p>
+                      <div className="ml-auto text-[11px] text-slate-500">
+                        Goal: review {todayGoalCount} card{todayGoalCount === 1 ? "" : "s"} today
                       </div>
                     </div>
-                    <div className="atlas-quickfire-card">
-                      {triviaSessionDone ? (
-                        <div className="flex flex-col items-center gap-3 py-3 text-center">
-                          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-500/15">
-                            <Trophy className="h-5 w-5 text-amber-400" />
+
+                    <div className="grid gap-3 lg:grid-cols-3">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const targetSet = topDueSet?.set ?? selectedSet;
+                          if (!targetSet) return;
+                          setSelectedSetId(targetSet.id);
+                          openSurface("flashcards");
+                          openStudyScreen("learn", targetSet.id);
+                        }}
+                        className="rounded-2xl border border-white/8 bg-white/4 p-4 text-left transition hover:bg-white/7"
+                      >
+                        <div className="flex items-center justify-between gap-3">
+                          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-rose-500/12 text-rose-300">
+                            <Clock3 className="h-4.5 w-4.5" />
                           </div>
-                          <p className="text-sm font-bold text-white">
-                            {triviaCorrectCount}/{triviaSessionQuestions.length} correct
-                          </p>
-                          <button
-                            onClick={() => {
-                              setTriviaIndex(0);
-                              setTriviaCorrectCount(0);
-                              setTriviaSessionDone(false);
-                              setSelectedTriviaChoice(null);
-                            }}
-                            className="atlas-mode-pill mt-0.5"
-                          >
-                            <RotateCcw className="h-3 w-3" />
-                            New round
-                          </button>
+                          <span className="rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-400">
+                            Review due
+                          </span>
                         </div>
-                      ) : activeTriviaQuestion ? (
-                        <>
-                          <p className="text-sm font-semibold leading-snug text-white">{activeTriviaQuestion.prompt}</p>
-                          <div className="mt-3.5 grid grid-cols-2 gap-2">
-                            {activeTriviaQuestion.choices.map((choice) => {
-                              const isSelected = selectedTriviaChoice === choice;
-                              const isCorrect = choice === activeTriviaQuestion.correctAnswer;
-                              const revealed = selectedTriviaChoice !== null;
-                              let choiceCls = "border-white/8 bg-white/3 text-slate-300 hover:border-indigo-500/35 hover:bg-indigo-500/6";
-                              if (revealed && isCorrect) choiceCls = "border-emerald-500/40 bg-emerald-500/8 text-emerald-300";
-                              else if (revealed && isSelected && !isCorrect) choiceCls = "border-rose-500/35 bg-rose-500/7 text-rose-300";
-                              return (
-                                <button
-                                  key={choice}
-                                  disabled={revealed}
-                                  onClick={() => setSelectedTriviaChoice(choice)}
-                                  className={`atlas-trivia-choice ${choiceCls}`}
-                                >
-                                  {choice}
-                                </button>
-                              );
-                            })}
+                        <p className="mt-4 text-lg font-semibold text-white">
+                          {totalDueCards > 0 ? `${totalDueCards} cards waiting` : "No cards waiting"}
+                        </p>
+                        <p className="mt-1 text-sm leading-6 text-slate-400">
+                          {topDueSet
+                            ? `${topDueSet.set.title} has ${topDueSet.dueCards} cards ready for another pass.`
+                            : selectedSet
+                              ? `You’re caught up on due reviews, so take a fresh pass through ${selectedSet.title}.`
+                              : "Create a set and Study will start surfacing review work here."}
+                        </p>
+                        <div className="mt-4 inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.14em] text-slate-300">
+                          {topDueSet || selectedSet ? "Review now" : "Create set"}
+                          <ChevronRight className="h-3.5 w-3.5" />
+                        </div>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (latestSessionSet) {
+                            setSelectedSetId(latestSessionSet.id);
+                            openSurface("flashcards");
+                            openStudyScreen(
+                              latestSession?.mode === "learn"
+                                ? "learn"
+                                : latestSession?.mode === "test" || latestSession?.mode === "match"
+                                  ? latestSession.mode
+                                  : "flashcards",
+                              latestSessionSet.id,
+                            );
+                            return;
+                          }
+                          if (selectedSet) {
+                            setSelectedSetId(selectedSet.id);
+                            openSurface("flashcards");
+                            openStudyScreen("flashcards", selectedSet.id);
+                            return;
+                          }
+                          router.push("/study/create?type=flashcards");
+                        }}
+                        className="rounded-2xl border border-white/8 bg-white/4 p-4 text-left transition hover:bg-white/7"
+                      >
+                        <div className="flex items-center justify-between gap-3">
+                          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-500/12 text-indigo-300">
+                            <Play className="h-4.5 w-4.5" />
                           </div>
-                        </>
-                      ) : null}
+                          <span className="rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-400">
+                            One-click resume
+                          </span>
+                        </div>
+                        <p className="mt-4 text-lg font-semibold text-white">
+                          {latestSessionSet ? latestSessionSet.title : selectedSet ? `Resume ${selectedSet.title}` : "Start your first study run"}
+                        </p>
+                        <p className="mt-1 text-sm leading-6 text-slate-400">
+                          {latestSession && latestSessionSet
+                            ? `${latestSession.mode} mode · ${latestSession.cardsReviewed} cards · ${formatStudyRelativeDate(latestSession.endedAt)}`
+                            : selectedSet
+                              ? `Jump straight back into ${selectedSet.cards.length} cards without hunting for your deck.`
+                              : "Your latest set, mode, and momentum will show up here automatically."}
+                        </p>
+                        <div className="mt-4 inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.14em] text-slate-300">
+                          {latestSessionSet || selectedSet ? "Continue" : "Create set"}
+                          <ChevronRight className="h-3.5 w-3.5" />
+                        </div>
+                      </button>
+
+                      <div className="rounded-2xl border border-white/8 bg-white/4 p-4">
+                        <div className="flex items-center justify-between gap-3">
+                          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-500/12 text-amber-300">
+                            <Target className="h-4.5 w-4.5" />
+                          </div>
+                          <span className="rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-400">
+                            Weekly recap
+                          </span>
+                        </div>
+                        <div className="mt-4 grid grid-cols-3 gap-2">
+                          <div className="rounded-xl border border-white/8 bg-white/4 px-3 py-2.5">
+                            <div className="text-[10px] uppercase tracking-[0.12em] text-slate-500">Streak</div>
+                            <div className="mt-1 text-lg font-semibold text-white">{streakDays}d</div>
+                          </div>
+                          <div className="rounded-xl border border-white/8 bg-white/4 px-3 py-2.5">
+                            <div className="text-[10px] uppercase tracking-[0.12em] text-slate-500">Sessions</div>
+                            <div className="mt-1 text-lg font-semibold text-white">{weeklySessionCount}</div>
+                          </div>
+                          <div className="rounded-xl border border-white/8 bg-white/4 px-3 py-2.5">
+                            <div className="text-[10px] uppercase tracking-[0.12em] text-slate-500">Best test</div>
+                            <div className="mt-1 text-lg font-semibold text-white">{recentQuizResult ? `${recentQuizResult.percentCorrect}%` : "—"}</div>
+                          </div>
+                        </div>
+                        <div className="mt-4 space-y-2.5">
+                          {recentNote ? (
+                            <button
+                              type="button"
+                              onClick={() => router.push(`/study?mode=notes&note=${encodeURIComponent(recentNote.id)}`)}
+                              className="flex w-full items-center justify-between rounded-xl border border-white/8 bg-white/4 px-3 py-2.5 text-left transition hover:bg-white/7"
+                            >
+                              <div>
+                                <div className="text-[10px] uppercase tracking-[0.12em] text-slate-500">Continue note</div>
+                                <div className="mt-1 text-sm font-semibold text-white">{recentNote.title}</div>
+                                <div className="mt-1 text-[11px] text-slate-400">{recentNote.course || recentNote.subject || "Study note"} · {formatStudyRelativeDate(recentNote.lastOpenedAt || recentNote.updatedAt)}</div>
+                              </div>
+                              <FileText className="h-4 w-4 text-slate-400" />
+                            </button>
+                          ) : null}
+                          {recentQuizResult && recentQuizSet ? (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setSelectedSetId(recentQuizSet.id);
+                                openSurface("flashcards");
+                                openStudyScreen("test", recentQuizSet.id);
+                              }}
+                              className="flex w-full items-center justify-between rounded-xl border border-white/8 bg-white/4 px-3 py-2.5 text-left transition hover:bg-white/7"
+                            >
+                              <div>
+                                <div className="text-[10px] uppercase tracking-[0.12em] text-slate-500">Retake your latest test</div>
+                                <div className="mt-1 text-sm font-semibold text-white">{recentQuizSet.title}</div>
+                                <div className="mt-1 text-[11px] text-slate-400">{recentQuizResult.percentCorrect}% correct · {formatStudyRelativeDate(recentQuizResult.endedAt)}</div>
+                              </div>
+                              <Target className="h-4 w-4 text-slate-400" />
+                            </button>
+                          ) : !recentNote ? (
+                            <button
+                              type="button"
+                              onClick={() => router.push("/study?mode=notes")}
+                              className="flex w-full items-center justify-between rounded-xl border border-dashed border-white/10 bg-white/[0.02] px-3 py-2.5 text-left transition hover:bg-white/5"
+                            >
+                              <div>
+                                <div className="text-[10px] uppercase tracking-[0.12em] text-slate-500">Build your loop</div>
+                                <div className="mt-1 text-sm font-semibold text-white">Add a note or take a test</div>
+                                <div className="mt-1 text-[11px] text-slate-400">That unlocks better resume and recap prompts here.</div>
+                              </div>
+                              <Plus className="h-4 w-4 text-slate-400" />
+                            </button>
+                          ) : null}
+                        </div>
+                      </div>
                     </div>
                   </div>
+
+                  <MyPicksPanel />
 
                   {/* ── ACTION STRIP ──────────────────────────────────── */}
                   <div className="flex gap-3" data-tour="study-home-modes">

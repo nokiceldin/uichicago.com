@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import SiteFooter from "@/app/components/SiteFooter";
+import ProfessorPageNavigator from "@/app/components/loops/ProfessorPageNavigator";
 import SaveProfessorControl from "@/app/components/saved/SaveProfessorControl";
 import {
   getProfessorDirectory,
@@ -46,6 +47,11 @@ function rankBadgeClass(rank: number, total: number) {
   if (pct <= 0.5) return "text-green-700 bg-green-50 ring-green-200 dark:text-green-400 dark:bg-green-500/15 dark:ring-green-500/25";
   if (pct <= 0.75) return "text-amber-700 bg-amber-50 ring-amber-200 dark:text-amber-400 dark:bg-amber-500/15 dark:ring-amber-500/25";
   return "text-zinc-600 bg-zinc-100 ring-zinc-200 dark:text-zinc-400 dark:bg-white/5 dark:ring-white/10";
+}
+
+function sharedCourseCount(a: string[], b: string[]) {
+  const set = new Set(a);
+  return b.reduce((count, course) => count + (set.has(course) ? 1 : 0), 0);
 }
 
 export default async function ProfessorPage({ params }: { params: Promise<{ slug: string }> }) {
@@ -99,10 +105,46 @@ export default async function ProfessorPage({ params }: { params: Promise<{ slug
   });
 
   const bg = ratingBg(professor.quality, professor.isRated);
+  const similarProfessors = directory
+    .filter((entry) => entry.slug !== professor.slug)
+    .filter((entry) => entry.department === professor.department || sharedCourseCount(entry.courseLabels, professor.courseLabels) > 0)
+    .sort((a, b) => {
+      const overlapDiff = sharedCourseCount(b.courseLabels, professor.courseLabels) - sharedCourseCount(a.courseLabels, professor.courseLabels);
+      if (overlapDiff !== 0) return overlapDiff;
+      if (b.score !== a.score) return b.score - a.score;
+      return b.ratingsCount - a.ratingsCount;
+    })
+    .slice(0, 3);
+  const currentIndex = directory.findIndex((entry) => entry.slug === professor.slug);
+  const previousProfessor = currentIndex > 0 ? directory[currentIndex - 1] : null;
+  const nextProfessor = currentIndex >= 0 && currentIndex < directory.length - 1 ? directory[currentIndex + 1] : null;
 
   return (
     <main className="relative min-h-screen bg-zinc-50 text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100">
       <div className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-72 bg-linear-to-b from-sky-50/60 to-transparent dark:from-sky-950/30 dark:to-transparent" />
+      <ProfessorPageNavigator
+        currentName={professor.name}
+        previous={
+          previousProfessor
+            ? {
+                href: `/professors/${previousProfessor.slug}`,
+                name: previousProfessor.name,
+                department: previousProfessor.department,
+                rating: previousProfessor.isRated ? previousProfessor.quality.toFixed(1) : "NR",
+              }
+            : null
+        }
+        next={
+          nextProfessor
+            ? {
+                href: `/professors/${nextProfessor.slug}`,
+                name: nextProfessor.name,
+                department: nextProfessor.department,
+                rating: nextProfessor.isRated ? nextProfessor.quality.toFixed(1) : "NR",
+              }
+            : null
+        }
+      />
 
       <div className="mx-auto max-w-3xl px-4 py-6 sm:px-6 sm:py-16">
         <div className="overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-lg dark:border-white/8 dark:bg-zinc-900/50 dark:shadow-black/40">
@@ -205,7 +247,7 @@ export default async function ProfessorPage({ params }: { params: Promise<{ slug
               ) : null}
             </div>
 
-            <div className="mt-5 flex flex-wrap items-center gap-3">
+            <div className="mt-4 flex flex-wrap items-center gap-2">
               <SaveProfessorControl
                 professor={{
                   slug: professor.slug,
@@ -219,7 +261,7 @@ export default async function ProfessorPage({ params }: { params: Promise<{ slug
                   href={professor.url}
                   target="_blank"
                   rel="noreferrer"
-                  className="inline-flex items-center gap-2 rounded-xl border border-zinc-200 bg-white px-5 py-2.5 text-sm font-semibold text-zinc-700 transition hover:bg-zinc-50 hover:border-zinc-300 dark:border-sky-500/15 dark:bg-sky-500/5 dark:text-zinc-200 dark:hover:bg-sky-500/10 dark:hover:border-sky-500/25"
+                  className="inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-white px-3.5 py-2 text-sm font-semibold text-zinc-700 transition hover:bg-zinc-50 hover:border-zinc-300 dark:border-sky-500/15 dark:bg-sky-500/5 dark:text-zinc-200 dark:hover:bg-sky-500/10 dark:hover:border-sky-500/25"
                 >
                   View on RateMyProfessors →
                 </a>
@@ -314,6 +356,49 @@ export default async function ProfessorPage({ params }: { params: Promise<{ slug
             </>
           )}
         </div>
+
+        {similarProfessors.length > 0 ? (
+          <div className="mt-6 overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-lg dark:border-white/8 dark:bg-zinc-900/40 dark:shadow-xl">
+            <div className="border-b border-zinc-100 dark:border-white/8 px-5 py-5 sm:px-6">
+              <h2 className="text-lg font-bold text-zinc-900 dark:text-white sm:text-xl">Compare with similar professors</h2>
+              <p className="mt-1 text-sm text-zinc-500">
+                Nearby picks from the same department or the same course mix, so you can compare without backing out to the full list.
+              </p>
+            </div>
+            <div className="grid gap-3 px-4 py-4 sm:px-6 sm:py-5 md:grid-cols-3">
+              {similarProfessors.map((entry) => (
+                <Link
+                  key={entry.slug}
+                  href={`/professors/${entry.slug}`}
+                  className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4 transition hover:border-sky-300 hover:bg-white hover:shadow-md dark:border-white/8 dark:bg-white/4 dark:hover:border-sky-400/30 dark:hover:bg-white/7"
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <div className="text-base font-semibold text-zinc-900 dark:text-white">{entry.name}</div>
+                      <div className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">{entry.department}</div>
+                    </div>
+                    <span className={`inline-flex items-center rounded-lg px-2.5 py-1 text-xs font-bold text-white ${ratingBg(entry.quality, entry.isRated)}`}>
+                      {entry.isRated ? entry.quality.toFixed(1) : "NR"}
+                    </span>
+                  </div>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    <span className="rounded-full border border-zinc-200 bg-white px-2.5 py-1 text-[11px] font-semibold text-zinc-600 dark:border-white/10 dark:bg-white/5 dark:text-zinc-300">
+                      {entry.ratingsCount} reviews
+                    </span>
+                    {sharedCourseCount(entry.courseLabels, professor.courseLabels) > 0 ? (
+                      <span className="rounded-full border border-sky-200 bg-sky-50 px-2.5 py-1 text-[11px] font-semibold text-sky-700 dark:border-sky-500/20 dark:bg-sky-500/10 dark:text-sky-300">
+                        {sharedCourseCount(entry.courseLabels, professor.courseLabels)} shared course{sharedCourseCount(entry.courseLabels, professor.courseLabels) === 1 ? "" : "s"}
+                      </span>
+                    ) : null}
+                  </div>
+                  <div className="mt-4 text-sm font-semibold text-zinc-700 dark:text-zinc-200">
+                    Open profile →
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        ) : null}
       </div>
 
       <SiteFooter className="mt-12" />

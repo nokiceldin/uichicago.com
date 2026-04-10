@@ -11,6 +11,7 @@ type ProfessorResult = {
   school: string;
   quality: number;
   ratingsCount: number;
+  isRated?: boolean;
   url: string;
 };
 
@@ -87,8 +88,8 @@ export default function HeroSearch({ compact = false }: { compact?: boolean }) {
         setProfessors(Array.isArray(profJson.items) ? profJson.items : []);
         setCourses(Array.isArray(courseJson.items) ? courseJson.items : []);
         setOpen(true);
-      } catch (err: any) {
-        if (err?.name !== "AbortError") {
+      } catch (err: unknown) {
+        if (!(err instanceof Error && err.name === "AbortError")) {
           console.error(err);
         }
       } finally {
@@ -232,8 +233,19 @@ export default function HeroSearch({ compact = false }: { compact?: boolean }) {
                           {prof.ratingsCount ? ` • ${prof.ratingsCount} reviews` : ""}
                         </div>
                       </div>
-                      <div className="shrink-0 rounded-full border border-zinc-200 bg-zinc-50 px-2.5 py-1 text-[11px] font-semibold text-zinc-700 dark:border-white/10 dark:bg-white/5 dark:text-zinc-200">
-                        Professor
+                      <div className="flex shrink-0 items-center gap-2">
+                        <div className={`flex h-8 w-8 items-center justify-center rounded-full text-[11px] font-bold tabular-nums ${
+                          prof.isRated || prof.ratingsCount > 0
+                            ? "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200 dark:bg-emerald-400/10 dark:text-emerald-200 dark:ring-emerald-400/20"
+                            : "bg-zinc-100 text-zinc-500 ring-1 ring-zinc-200 dark:bg-white/5 dark:text-zinc-400 dark:ring-white/10"
+                        }`}>
+                          {prof.isRated || prof.ratingsCount > 0
+                            ? (Number(prof.quality) || 0).toFixed(1)
+                            : "NR"}
+                        </div>
+                        <div className="rounded-full border border-zinc-200 bg-zinc-50 px-2.5 py-1 text-[11px] font-semibold text-zinc-700 dark:border-white/10 dark:bg-white/5 dark:text-zinc-200">
+                          Professor
+                        </div>
                       </div>
                     </button>
                   ))}

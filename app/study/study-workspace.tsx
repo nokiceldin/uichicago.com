@@ -5114,19 +5114,24 @@ function FlashcardFaceContent({
 }) {
   const text = side === "front" ? card.front.trim() : card.back.trim();
   const imageUrl = side === "front" ? card.imageFrontUrl?.trim() : card.imageBackUrl?.trim();
+  const useCompactCaption = side === "front" && Boolean(imageUrl) && Boolean(text);
+  const renderedTextClassName = useCompactCaption
+    ? "max-w-full rounded-full bg-black/28 px-4 py-1.5 text-lg font-semibold leading-tight text-white shadow-[0_10px_30px_rgba(0,0,0,0.2)]"
+    : textClassName;
 
   return (
-    <div className="flex w-full max-w-full flex-col items-center justify-center gap-5">
+    <div className="flex h-full w-full max-w-full min-h-0 flex-col items-center justify-center gap-4 overflow-hidden">
       {imageUrl ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img
           src={imageUrl}
           alt={getCardDisplayAlt(card, side === "front" ? "Flashcard prompt image" : "Flashcard answer image")}
           className={imageClassName}
+          style={useCompactCaption ? { maxHeight: "calc(100% - 2.3rem)" } : undefined}
         />
       ) : null}
       {text ? (
-        <div className={textClassName}>{text}</div>
+        <div className={renderedTextClassName}>{text}</div>
       ) : null}
     </div>
   );

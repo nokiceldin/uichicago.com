@@ -138,6 +138,7 @@ export interface StudySessionRecord {
 
 export interface QuizQuestion {
   id: string;
+  cardId?: string;
   type: QuizQuestionType;
   prompt: string;
   choices?: string[];

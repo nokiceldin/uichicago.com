@@ -72,7 +72,10 @@ export function moderatePublicStudySet(set: StudySet): { allowed: boolean; reaso
   }
 
   const lowSignalHits = LOW_SIGNAL_PATTERNS.reduce((count, pattern) => count + (pattern.test(fullText) ? 1 : 0), 0);
-  const meaningfulCards = set.cards.filter((card) => card.front.trim().length >= 3 && card.back.trim().length >= 3).length;
+  const meaningfulCards = set.cards.filter((card) => {
+    const hasFront = card.front.trim().length >= 3 || Boolean(card.imageFrontUrl?.trim());
+    return hasFront && card.back.trim().length >= 3;
+  }).length;
 
   if (lowSignalHits >= 2 || meaningfulCards < Math.max(2, Math.ceil(set.cards.length * 0.6))) {
     return { allowed: false, reason: "This set looks incomplete or joke-like, so it was kept private." };
@@ -109,4 +112,3 @@ export async function removePublicStudySet(setId: string) {
   await writePublicStudySets(next);
   return next;
 }
-

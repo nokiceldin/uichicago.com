@@ -58,6 +58,68 @@ const MATCH_BESTS_KEY = "uic-atlas-study-match-bests-v1";
 const CUSTOM_FOLDERS_KEY = "uic-atlas-study-custom-folders-v1";
 const LIBRARY_SYNC_EVENT = "uic-atlas-study-library-sync";
 const FOLDERS_SYNC_EVENT = "uic-atlas-study-folders-sync";
+const CARD_IMAGE_MAX_FILE_SIZE = 6 * 1024 * 1024;
+const CARD_IMAGE_MAX_DIMENSION = 1200;
+
+function hasImage(value?: string) {
+  return Boolean(value?.trim());
+}
+
+function hasCardFrontContent(card: StudyCard) {
+  return Boolean(card.front.trim() || hasImage(card.imageFrontUrl));
+}
+
+function getCardPromptLabel(card: StudyCard, index?: number) {
+  const front = card.front.trim();
+  if (front) return front;
+  if (hasImage(card.imageFrontUrl)) return `this image${typeof index === "number" ? ` (${index + 1})` : ""}`;
+  return `this card${typeof index === "number" ? ` (${index + 1})` : ""}`;
+}
+
+function getCardDisplayAlt(card: StudyCard, fallback: string) {
+  return card.back.trim() || card.front.trim() || fallback;
+}
+
+async function fileToDataUrl(file: File) {
+  return new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      if (typeof reader.result === "string") {
+        resolve(reader.result);
+        return;
+      }
+      reject(new Error("Could not read that image."));
+    };
+    reader.onerror = () => reject(new Error("Could not read that image."));
+    reader.readAsDataURL(file);
+  });
+}
+
+async function compressStudyCardImage(file: File) {
+  if (typeof window === "undefined") {
+    return fileToDataUrl(file);
+  }
+
+  if (!("createImageBitmap" in window)) {
+    return fileToDataUrl(file);
+  }
+
+  const bitmap = await createImageBitmap(file);
+  const scale = Math.min(1, CARD_IMAGE_MAX_DIMENSION / Math.max(bitmap.width, bitmap.height));
+  const canvas = document.createElement("canvas");
+  canvas.width = Math.max(1, Math.round(bitmap.width * scale));
+  canvas.height = Math.max(1, Math.round(bitmap.height * scale));
+  const ctx = canvas.getContext("2d");
+
+  if (!ctx) {
+    return fileToDataUrl(file);
+  }
+
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+  bitmap.close();
+  return canvas.toDataURL("image/webp", 0.82);
+}
 
 /**
  * Speak `text` using a natural English voice.
@@ -735,7 +797,7 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
   useEffect(() => {
     if (!Object.keys(draftSetErrors).length) return;
 
-    const cleanedCards = draftSet.cards.filter((card) => card.front.trim() && card.back.trim());
+    const cleanedCards = draftSet.cards.filter((card) => hasCardFrontContent(card) && card.back.trim());
     setDraftSetErrors((current) => {
       const next = { ...current };
       if (next.title && draftSet.title.trim()) delete next.title;
@@ -1028,11 +1090,11 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
         tags: card.tags.filter(Boolean),
         orderIndex: index,
       }))
-      .filter((card) => card.front && card.back);
+      .filter((card) => hasCardFrontContent(card) && card.back);
 
     const nextErrors: DraftSetErrors = {};
     if (!draftSet.title.trim()) nextErrors.title = "Enter a set title.";
-    if (cleanedCards.length === 0) nextErrors.cards = "Add at least one card with both a front and back.";
+    if (cleanedCards.length === 0) nextErrors.cards = "Add at least one card with a front image or term, plus a back answer.";
 
     if (Object.keys(nextErrors).length > 0) {
       setDraftSetErrors(nextErrors);
@@ -2089,6 +2151,7 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
               isGenerating={isGenerating}
               draggingCardId={draggingCardId}
               isEditing={isEditingFlashcardSet}
+              onShowToast={showToast}
               onDraftSetChange={setDraftSet}
               onImportTextChange={setImportText}
               onGenerateWithAi={generateWithAi}
@@ -3200,6 +3263,7 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
                 isGenerating={isGenerating}
                 draggingCardId={draggingCardId}
                 isEditing={Boolean(searchParams.get("edit"))}
+                onShowToast={showToast}
                 onDraftSetChange={setDraftSet}
                 onImportTextChange={setImportText}
                 onGenerateWithAi={generateWithAi}
@@ -3769,7 +3833,15 @@ function DashboardView({
             return (
               <div key={card.id} className="rounded-xl border border-slate-700/50 bg-slate-800/40 p-4">
                 <div className="text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-500">{card.tags[0] || selectedSet.subject}</div>
-                <div className="mt-2 text-sm font-semibold text-white">{card.front}</div>
+                {card.imageFrontUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={card.imageFrontUrl}
+                    alt={getCardDisplayAlt(card, "Recommended card image")}
+                    className="mt-3 h-24 w-full rounded-lg object-cover"
+                  />
+                ) : null}
+                <div className="mt-2 text-sm font-semibold text-white">{getCardPromptLabel(card, card.orderIndex)}</div>
                 <div className="mt-4 flex items-center justify-between text-[11px] text-slate-500">
                   <span>Mastery {progress.masteryScore}%</span>
                   <span className={progress.markedDifficult ? "text-rose-400" : "text-slate-500"}>{progress.markedDifficult ? "Needs work" : "Review due"}</span>
@@ -4242,6 +4314,7 @@ function CreateView({
   draftSetErrors,
   draggingCardId,
   isEditing,
+  onShowToast,
   onDraftSetChange,
   onImportTextChange,
   onGenerateWithAi,
@@ -4258,6 +4331,7 @@ function CreateView({
   draftSetErrors: DraftSetErrors;
   draggingCardId: string | null;
   isEditing: boolean;
+  onShowToast: (message: string, tone?: "reward" | "error") => void;
   onDraftSetChange: React.Dispatch<React.SetStateAction<StudySet>>;
   onImportTextChange: (value: string) => void;
   onGenerateWithAi: () => void;
@@ -4298,6 +4372,33 @@ function CreateView({
       ...current,
       visibility: current.visibility === "public" ? "private" : "public",
     }));
+  };
+
+  const handleCardImageChange = async (cardId: string, event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      onShowToast("Choose an image file for the flashcard front.", "error");
+      return;
+    }
+    if (file.size > CARD_IMAGE_MAX_FILE_SIZE) {
+      onShowToast("Keep flashcard images under 6 MB before import.", "error");
+      return;
+    }
+
+    try {
+      const imageFrontUrl = await compressStudyCardImage(file);
+      updateDraftCard(onDraftSetChange, cardId, { imageFrontUrl });
+      onShowToast("Image added to the card front.");
+    } catch {
+      onShowToast("Could not process that image.", "error");
+    }
+  };
+
+  const removeCardImage = (cardId: string) => {
+    updateDraftCard(onDraftSetChange, cardId, { imageFrontUrl: "" });
+    onShowToast("Removed the card image.");
   };
 
   return (
@@ -4464,7 +4565,7 @@ function CreateView({
                     <textarea
                       value={card.front}
                       onChange={(event) => updateDraftCard(onDraftSetChange, card.id, { front: event.target.value })}
-                      placeholder="Enter term"
+                      placeholder={hasImage(card.imageFrontUrl) ? "Optional label for the image side" : "Enter term"}
                       rows={3}
                       className="study-premium-input w-full resize-none bg-transparent text-sm text-white outline-none placeholder:text-zinc-400"
                     />
@@ -4480,13 +4581,50 @@ function CreateView({
                     />
                     <div className="mt-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-zinc-400">Definition</div>
                   </div>
-                  <button
-                    type="button"
-                    className="flex min-h-30 flex-col items-center justify-center rounded-xl border border-dashed border-white/25 bg-transparent text-zinc-300 transition hover:bg-white/5"
-                  >
-                    <ImageIcon className="h-5 w-5" />
-                    <span className="mt-2 text-xs font-semibold">Image</span>
-                  </button>
+                  <div className="relative">
+                    <input
+                      id={`card-image-${card.id}`}
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(event) => void handleCardImageChange(card.id, event)}
+                    />
+                    <label
+                      htmlFor={`card-image-${card.id}`}
+                      className={`flex min-h-30 cursor-pointer flex-col items-center justify-center overflow-hidden rounded-xl border text-zinc-300 transition hover:bg-white/5 ${
+                        hasImage(card.imageFrontUrl) ? "border-white/15 bg-[#1a163c]" : "border-dashed border-white/25 bg-transparent"
+                      }`}
+                    >
+                      {hasImage(card.imageFrontUrl) ? (
+                        <>
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            src={card.imageFrontUrl}
+                            alt={getCardDisplayAlt(card, "Flashcard image")}
+                            className="h-full max-h-30 w-full object-cover"
+                          />
+                          <span className="absolute bottom-2 left-1/2 -translate-x-1/2 rounded-full bg-black/65 px-2.5 py-1 text-[10px] font-semibold text-white">
+                            Replace
+                          </span>
+                        </>
+                      ) : (
+                        <>
+                          <ImageIcon className="h-5 w-5" />
+                          <span className="mt-2 text-center text-xs font-semibold">Front image</span>
+                        </>
+                      )}
+                    </label>
+                    {hasImage(card.imageFrontUrl) ? (
+                      <button
+                        type="button"
+                        onClick={() => removeCardImage(card.id)}
+                        className="absolute right-2 top-2 inline-flex h-7 w-7 items-center justify-center rounded-full bg-black/65 text-white transition hover:bg-red-500/80"
+                        aria-label="Remove image"
+                      >
+                        <X className="h-3.5 w-3.5" />
+                      </button>
+                    ) : null}
+                  </div>
                 </div>
               </div>
             ))}
@@ -4963,6 +5101,37 @@ function GuideCreateView({
   );
 }
 
+function FlashcardFaceContent({
+  card,
+  side,
+  textClassName,
+  imageClassName,
+}: {
+  card: StudyCard;
+  side: "front" | "back";
+  textClassName: string;
+  imageClassName: string;
+}) {
+  const text = side === "front" ? card.front.trim() : card.back.trim();
+  const imageUrl = side === "front" ? card.imageFrontUrl?.trim() : card.imageBackUrl?.trim();
+
+  return (
+    <div className="flex w-full max-w-full flex-col items-center justify-center gap-5">
+      {imageUrl ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={imageUrl}
+          alt={getCardDisplayAlt(card, side === "front" ? "Flashcard prompt image" : "Flashcard answer image")}
+          className={imageClassName}
+        />
+      ) : null}
+      {text ? (
+        <div className={textClassName}>{text}</div>
+      ) : null}
+    </div>
+  );
+}
+
 function OverviewView({
   set,
   progressMap,
@@ -5284,7 +5453,7 @@ function OverviewView({
                   onClick={() => {
                     const missedFronts = set.cards
                       .filter((card) => progressMap[card.id]?.missedRecently)
-                      .map((card) => card.front);
+                      .map((card) => getCardPromptLabel(card, card.orderIndex));
                     onPracticeMistakes(missedFronts);
                   }}
                   className="inline-flex items-center gap-2 rounded-full border border-rose-400/20 bg-rose-500/10 px-3.5 py-1.5 text-xs font-semibold text-rose-300 transition hover:bg-rose-500/18 hover:text-rose-200"
@@ -5324,7 +5493,7 @@ function OverviewView({
                   title="Read aloud"
                   onClick={() => {
                     if (!previewCard) return;
-                    speakEnglish(previewFlipped ? previewCard.back : previewCard.front);
+                    speakEnglish(previewFlipped ? previewCard.back : getCardPromptLabel(previewCard, previewIndex));
                   }}
                   className="inline-flex h-9 w-9 items-center justify-center rounded-full text-zinc-400 transition hover:bg-white/10 hover:text-white"
                 >
@@ -5375,13 +5544,23 @@ function OverviewView({
                   className="absolute inset-0 flex h-full w-full transform-gpu items-center justify-center rounded-3xl p-6 text-center"
                   style={{ backfaceVisibility: "hidden", WebkitBackfaceVisibility: "hidden", transform: "rotateX(0deg)" }}
                 >
-                  <div className="text-[1.9rem] font-medium tracking-[-0.03em] text-white">{previewCard.front}</div>
+                  <FlashcardFaceContent
+                    card={previewCard}
+                    side="front"
+                    textClassName="text-[1.9rem] font-medium tracking-[-0.03em] text-white"
+                    imageClassName="max-h-[52vh] w-auto max-w-full rounded-2xl object-contain shadow-[0_18px_48px_rgba(0,0,0,0.28)]"
+                  />
                 </div>
                 <div
                   className="absolute inset-0 flex h-full w-full transform-gpu items-center justify-center rounded-3xl p-6 text-center"
                   style={{ backfaceVisibility: "hidden", WebkitBackfaceVisibility: "hidden", transform: "rotateX(180deg)" }}
                 >
-                  <div className="text-[1.75rem] font-medium tracking-[-0.03em] text-white">{previewCard.back}</div>
+                  <FlashcardFaceContent
+                    card={previewCard}
+                    side="back"
+                    textClassName="text-[1.75rem] font-medium tracking-[-0.03em] text-white"
+                    imageClassName="max-h-[52vh] w-auto max-w-full rounded-2xl object-contain shadow-[0_18px_48px_rgba(0,0,0,0.28)]"
+                  />
                 </div>
               </div>
             </button>
@@ -5581,17 +5760,17 @@ function FlashcardsMode({
     }
     // Fetch a new AI hint
     setLoadingHintId(card.id);
-    setShowHint(true);
+      setShowHint(true);
     try {
       const response = await fetch("/api/study/generate-hint", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ front: card.front, back: card.back }),
+        body: JSON.stringify({ front: getCardPromptLabel(card, index), back: card.back }),
       });
       const payload = await response.json() as { hint?: string };
-      setAiHints((prev) => ({ ...prev, [card.id]: payload.hint || `Think about the key concept behind "${card.front}".` }));
+      setAiHints((prev) => ({ ...prev, [card.id]: payload.hint || `Think about the key concept behind "${getCardPromptLabel(card, index)}".` }));
     } catch {
-      setAiHints((prev) => ({ ...prev, [card.id]: `Think about the key concept behind "${card.front}".` }));
+      setAiHints((prev) => ({ ...prev, [card.id]: `Think about the key concept behind "${getCardPromptLabel(card, index)}".` }));
     } finally {
       setLoadingHintId(null);
     }
@@ -5919,7 +6098,7 @@ function FlashcardsMode({
             <button
               aria-label="Read aloud"
               title="Read aloud"
-              onClick={() => speakEnglish(flipped ? card.back : card.front)}
+              onClick={() => speakEnglish(flipped ? card.back : getCardPromptLabel(card, index))}
               className="inline-flex h-9 w-9 items-center justify-center rounded-full text-zinc-400 transition hover:bg-white/10 hover:text-white"
             >
               <Volume2 className="h-4 w-4" />
@@ -5994,9 +6173,12 @@ function FlashcardsMode({
                     transform: "rotateX(0deg)",
                   }}
                 >
-                  <div>
-                    <div className="text-4xl font-medium tracking-[-0.03em] text-white">{card.front}</div>
-                  </div>
+                  <FlashcardFaceContent
+                    card={card}
+                    side="front"
+                    textClassName="text-4xl font-medium tracking-[-0.03em] text-white"
+                    imageClassName="max-h-[46vh] w-auto max-w-full rounded-3xl object-contain shadow-[0_24px_60px_rgba(0,0,0,0.3)]"
+                  />
                 </div>
                 <div
                   className="absolute inset-0 flex h-full w-full transform-gpu items-center justify-center rounded-4xl border border-white/10 bg-[linear-gradient(180deg,#1a2037_0%,#232d4b_100%)] p-8 text-center shadow-[0_30px_80px_rgba(0,0,0,0.3)]"
@@ -6007,7 +6189,12 @@ function FlashcardsMode({
                   }}
                 >
                   <div className="max-w-3xl">
-                    <div className="text-3xl font-medium tracking-[-0.03em] text-white">{card.back}</div>
+                    <FlashcardFaceContent
+                      card={card}
+                      side="back"
+                      textClassName="text-3xl font-medium tracking-[-0.03em] text-white"
+                      imageClassName="mb-1 max-h-[34vh] w-auto max-w-full rounded-3xl object-contain shadow-[0_24px_60px_rgba(0,0,0,0.28)]"
+                    />
                     {card.example ? <div className="mt-5 text-sm leading-7 text-zinc-300">Example: {card.example}</div> : null}
                     {card.mnemonic ? <div className="mt-3 text-sm leading-7 text-zinc-400">Memory trick: {card.mnemonic}</div> : null}
                   </div>
@@ -6286,7 +6473,7 @@ function LearnMode({
     ? (q.type === "true_false" ? ["True", "False"] : (enhancedChoices[q.id] ?? q.choices ?? []))
     : [];
   const currentCard = q
-    ? (set.cards.find((card) => stripQuestionPrompt(q.prompt).includes(card.front) || q.prompt.includes(card.front)) ?? set.cards[index])
+    ? (set.cards.find((card) => card.id === q.cardId) ?? set.cards[index])
     : undefined;
 
   // Pre-fetch explanation the moment a question appears (before the user answers).
@@ -6607,6 +6794,14 @@ function LearnMode({
               <div className="text-xs text-zinc-400">{index + 1} of {questions.length}</div>
             </div>
             <div className="mt-8 min-h-27.5 text-[2rem] leading-[1.2] font-medium tracking-[-0.03em] text-white">
+              {currentCard?.imageFrontUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={currentCard.imageFrontUrl}
+                  alt={getCardDisplayAlt(currentCard, "Study prompt image")}
+                  className="mb-6 max-h-72 w-full rounded-[1.2rem] object-contain shadow-[0_20px_50px_rgba(0,0,0,0.28)]"
+                />
+              ) : null}
               {stripQuestionPrompt(q.prompt)}
             </div>
             {submitted ? (
@@ -6834,7 +7029,7 @@ function AssessmentMode({
   const finishAssessment = async () => {
     const scored = questions.map((quizQuestion) => {
       const correct = gradeQuestion(quizQuestion);
-      const cardId = set.cards.find((card) => card.front === stripQuestionPrompt(quizQuestion.prompt))?.id;
+      const cardId = quizQuestion.cardId;
       if (cardId) onProgress(cardId, correct ? "correct" : "wrong");
       return { quizQuestion, correct };
     });
@@ -7112,6 +7307,7 @@ function AssessmentMode({
           const isWritten = q.type === "short_answer" || q.type === "fill_blank" || q.type === "written";
           const choices = q.type === "true_false" ? ["True", "False"] : (enhancedChoices[q.id] ?? q.choices ?? []);
           const selectedValue = answers[q.id];
+          const linkedCard = set.cards.find((card) => card.id === q.cardId);
 
           return (
             <div
@@ -7137,6 +7333,14 @@ function AssessmentMode({
 
               {/* Question prompt */}
               <div className="mt-7 text-[1.75rem] leading-[1.18] font-medium tracking-[-0.04em] text-white">
+                {linkedCard?.imageFrontUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={linkedCard.imageFrontUrl}
+                    alt={getCardDisplayAlt(linkedCard, "Assessment prompt image")}
+                    className="mb-6 max-h-80 w-full rounded-[1.2rem] object-contain shadow-[0_20px_50px_rgba(0,0,0,0.28)]"
+                  />
+                ) : null}
                 {q.prompt}
               </div>
 
@@ -7757,7 +7961,7 @@ function filterCards(set: StudySet, progressMap: Record<string, CardProgress>, f
 
 function shuffleForMatch(cards: StudyCard[]) {
   const items = cards.flatMap((card) => [
-    { id: `term-${card.id}`, label: card.front },
+    { id: `term-${card.id}`, label: getCardPromptLabel(card, card.orderIndex) },
     { id: `def-${card.id}`, label: card.back },
   ]);
 

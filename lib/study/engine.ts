@@ -5,7 +5,6 @@ import type {
   QuizQuestion,
   QuizQuestionType,
   StudyCard,
-  StudyDifficulty,
   StudyLibraryState,
   StudyMode,
   StudySessionRecord,
@@ -40,21 +39,23 @@ export function fuzzyMatch(input: string, accepted: string | string[]): boolean 
 export function buildQuestionBank(set: StudySet): QuizQuestion[] {
   const cards = [...set.cards].sort((a, b) => a.orderIndex - b.orderIndex);
   return cards.flatMap((card, index) => {
+    const promptFront = getCardPromptFront(card, index);
     const distractors = buildDistractorsForCard(card, cards, set).slice(0, 3);
 
     const mcChoices = shuffleArray(Array.from(new Set([card.back.trim(), ...distractors].filter(Boolean)))).slice(0, 4);
-    const promptBase = card.front.endsWith("?") ? card.front : `What best matches: ${card.front}?`;
+    const promptBase = promptFront.endsWith("?") ? promptFront : `What best matches: ${promptFront}?`;
 
     const questionTypes: QuizQuestion[] = [];
 
     if (mcChoices.length >= 3) {
       questionTypes.push({
         id: createStudyId("mcq"),
+        cardId: card.id,
         type: "multiple_choice",
         prompt: promptBase,
         choices: mcChoices,
         correctAnswer: card.back,
-        explanation: `${card.front} maps to ${card.back}.`,
+        explanation: `${promptFront} maps to ${card.back}.`,
         difficulty: card.difficulty,
         topic: card.tags[0] || set.subject,
       });
@@ -63,18 +64,20 @@ export function buildQuestionBank(set: StudySet): QuizQuestion[] {
     questionTypes.push(
       {
         id: createStudyId("short"),
+        cardId: card.id,
         type: "short_answer",
-        prompt: `Type the definition for: ${card.front}`,
+        prompt: `Type the definition for: ${promptFront}`,
         correctAnswer: card.back,
         acceptedAnswers: [card.back],
-        explanation: `${card.front} should be explained as ${card.back}.`,
+        explanation: `${promptFront} should be explained as ${card.back}.`,
         difficulty: card.difficulty,
         topic: card.tags[0] || set.subject,
       },
       {
         id: createStudyId("tf"),
+        cardId: card.id,
         type: "true_false",
-        prompt: `${card.front}: ${index % 2 === 0 ? card.back : distractors[0] || card.back}`,
+        prompt: `${promptFront}: ${index % 2 === 0 ? card.back : distractors[0] || card.back}`,
         correctAnswer: index % 2 === 0 ? "true" : "false",
         explanation: index % 2 === 0 ? "This statement is correct." : `The correct answer is ${card.back}.`,
         difficulty: card.difficulty,
@@ -82,11 +85,12 @@ export function buildQuestionBank(set: StudySet): QuizQuestion[] {
       },
       {
         id: createStudyId("blank"),
+        cardId: card.id,
         type: "fill_blank",
-        prompt: createFillBlankPrompt(card),
-        correctAnswer: card.front,
-        acceptedAnswers: [card.front],
-        explanation: `The missing term is ${card.front}.`,
+        prompt: createFillBlankPrompt(card, promptFront),
+        correctAnswer: promptFront,
+        acceptedAnswers: [promptFront],
+        explanation: `The missing term is ${promptFront}.`,
         difficulty: card.difficulty,
         topic: card.tags[0] || set.subject,
       },
@@ -368,8 +372,15 @@ export function getQuestionTypeLabel(type: QuizQuestionType): string {
   }[type];
 }
 
-function createFillBlankPrompt(card: StudyCard) {
-  const words = card.front.split(" ");
+function getCardPromptFront(card: StudyCard, index: number) {
+  const front = card.front.trim();
+  if (front) return front;
+  if (card.imageFrontUrl?.trim()) return `this image (${index + 1})`;
+  return `this card (${index + 1})`;
+}
+
+function createFillBlankPrompt(card: StudyCard, promptFront: string) {
+  const words = promptFront.split(" ");
   if (words.length <= 1) {
     return `Fill in the blank: ______ means ${card.back}`;
   }

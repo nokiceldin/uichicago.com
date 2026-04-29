@@ -6302,13 +6302,8 @@ function LearnMode({
         .filter((question) => question.type === "multiple_choice" && (question.choices?.length || 0) >= 4 && question.cardId)
         .map((question) => [question.cardId as string, question]),
     );
-    const trueFalseByCard = new Map(
-      bank
-        .filter((question) => question.type === "true_false" && question.cardId)
-        .map((question) => [question.cardId as string, question]),
-    );
     const full = set.cards
-      .map((card) => multipleChoiceByCard.get(card.id) ?? trueFalseByCard.get(card.id))
+      .map((card) => multipleChoiceByCard.get(card.id))
       .filter((question): question is QuizQuestion => Boolean(question));
     if (practiceOnlyCardFronts && practiceOnlyCardFronts.length > 0) {
       const filtered = full.filter((q) =>

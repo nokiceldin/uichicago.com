@@ -71,6 +71,11 @@ Return JSON only with this shape:
 
 Rules:
 - Make distractors believable.
+- For every multiple-choice question, write 3 plausible distractors from the same topic as the correct answer.
+- Keep the wrong answers the same answer type as the correct answer: term, definition, process, number, organ, function, formula, date, or concept.
+- Make distractors feel like real exam traps: common misconceptions, closely related terms, nearby concepts, or easy-to-confuse processes.
+- Keep all answer choices similar in length, grammar, specificity, and wording style.
+- Avoid joke answers, random facts, unrelated chapters, and giveaway wording differences.
 - Avoid trick questions.
 - Prioritize conceptual and application questions.
 - Generate ${input.desiredCount ?? 10} questions.
@@ -109,6 +114,11 @@ Questions should follow the same schema as quiz questions.
 Rules:
 - Include conceptual and application questions.
 - Prefer realistic exam phrasing.
+- For every multiple-choice question, write exactly 3 plausible distractors from the same topic as the correct answer.
+- Keep the wrong answers the same answer type as the correct answer: term, definition, process, number, organ, function, formula, date, or concept.
+- Make distractors feel like real exam traps: common misconceptions, closely related terms, nearby concepts, or easy-to-confuse processes.
+- Keep all answer choices similar in length, grammar, specificity, and wording style.
+- Avoid joke answers, random facts, unrelated chapters, and giveaway wording differences.
 - Avoid generic filler.
 - Generate ${input.desiredCount ?? 15} questions.
 
@@ -139,16 +149,34 @@ Correct answer: ${input.correctAnswer}
 Topic: ${input.topic || "General"}`;
 }
 
-export function distractorGenerationPrompt(questions: Array<{ id: string; prompt: string; correctAnswer: string; topic: string }>) {
-  const list = questions.map((q, i) => `${i + 1}. id="${q.id}" topic="${q.topic}" question="${q.prompt}" correct="${q.correctAnswer}"`).join("\n");
+export function distractorGenerationPrompt(
+  questions: Array<{ id: string; prompt: string; correctAnswer: string; topic: string; existingChoices?: string[] }>,
+  options?: { strict?: boolean },
+) {
+  const strict = options?.strict ?? false;
+  const list = questions
+    .map((q, i) => {
+      const existingChoices = Array.isArray(q.existingChoices) && q.existingChoices.length
+        ? ` existing_choices="${q.existingChoices.join(" | ")}"`
+        : "";
+      return `${i + 1}. id="${q.id}" topic="${q.topic}" question="${q.prompt}" correct="${q.correctAnswer}"${existingChoices}`;
+    })
+    .join("\n");
   return `You are creating multiple-choice study questions. For each question below, generate exactly 3 plausible but INCORRECT answer choices (distractors).
 
 Rules:
 - Distractors must be the same TYPE and FORMAT as the correct answer (numbers near numbers, terms near terms, dates near dates, names near names)
 - Distractors should be plausible to someone who hasn't studied, but clearly wrong to someone who has
+- Keep distractors in the same conceptual neighborhood as the correct answer, not random facts from the broader subject
+- Make the wrong choices feel competitive with each other: similar specificity, similar wording, similar length
 - Keep distractors short — similar length and style to the correct answer
+- Use this distractor style: common misconceptions, closely related terms, similar processes, nearby concepts from the same topic, or tempting confusions a half-prepared student might pick
 - Do NOT repeat the correct answer
 - Do NOT invent answers from unrelated topics
+- Do NOT use joke answers, "all of the above", "none of the above", or obviously impossible options
+${strict ? "- Be extra strict: every distractor must look like it could have come from the same chapter, lecture, or diagram as the correct answer" : ""}
+${strict ? "- If the answer is a term, return terms; if it is a definition, return definitions; if it is a process, return processes; if it is a number, return nearby believable numbers with the same units or format" : ""}
+${strict ? "- If a distractor would stand out because it is much shorter, broader, sillier, or from a different subtopic, replace it" : ""}
 
 Return JSON only:
 {

@@ -15,6 +15,17 @@ export function createStudyId(prefix: string): string {
   return `${prefix}-${Math.random().toString(36).slice(2, 10)}`;
 }
 
+const MIN_DISTRACTOR_SCORE = 12;
+const DISTRACTOR_TARGET_COUNT = 3;
+const GENERIC_THROWAWAY_CHOICES = new Set([
+  "all of the above",
+  "none of the above",
+  "both a and b",
+  "both b and c",
+  "a and b",
+  "b and c",
+]);
+
 export function normalizeText(value: string): string {
   return value
     .toLowerCase()
@@ -102,17 +113,25 @@ export function buildQuestionBank(set: StudySet): QuizQuestion[] {
 
 function buildDistractorsForCard(card: StudyCard, cards: StudyCard[], set: StudySet) {
   const correctAnswer = card.back.trim();
+  const synthesized = buildStructuredAnswerDistractors(correctAnswer).map((answer) => ({
+    answer,
+    score: 100,
+  }));
   const ranked = cards
     .filter((candidate) => candidate.id !== card.id)
     .map((candidate) => ({
-      candidate,
+      answer: candidate.back.trim(),
       score: scoreDistractorCandidate(card, candidate, set),
     }))
     .sort((a, b) => b.score - a.score)
-    .map(({ candidate }) => candidate.back.trim())
-    .filter((answer) => answer && answer !== correctAnswer);
+    .filter(({ answer, score }) => score >= MIN_DISTRACTOR_SCORE && isUsableDistractorAnswer(answer, correctAnswer));
 
-  return Array.from(new Set(ranked));
+  return buildValidatedMultipleChoiceDistractors({
+    correctAnswer,
+    prompt: card.front,
+    topic: card.tags[0] || set.subject,
+    baselineChoices: [...synthesized, ...ranked].map(({ answer }) => answer),
+  });
 }
 
 function scoreDistractorCandidate(card: StudyCard, candidate: StudyCard, set: StudySet) {
@@ -173,6 +192,64 @@ function commonLeadLength(a: string[], b: string[]) {
   return count;
 }
 
+function isUsableDistractorAnswer(answer: string, correctAnswer: string) {
+  const trimmed = answer.trim();
+  if (!trimmed) return false;
+  if (trimmed === correctAnswer.trim()) return false;
+
+  const normalizedAnswer = normalizeText(trimmed);
+  const normalizedCorrect = normalizeText(correctAnswer);
+  if (!normalizedAnswer || normalizedAnswer === normalizedCorrect) return false;
+
+  const answerTokens = normalizedAnswer.split(" ").filter(Boolean);
+  const correctTokens = normalizedCorrect.split(" ").filter(Boolean);
+
+  if (answerTokens.length === 1 && answerTokens[0].length <= 2) return false;
+  if (answerTokens.length === 1 && /^[a-d]$/i.test(answerTokens[0])) return false;
+
+  const genericDirectionalAnswers = new Set(["left side", "right side", "top", "bottom", "inside", "outside"]);
+  if (genericDirectionalAnswers.has(normalizedAnswer) && !genericDirectionalAnswers.has(normalizedCorrect)) return false;
+
+  const tokenGap = Math.abs(answerTokens.length - correctTokens.length);
+  if (tokenGap > Math.max(3, Math.ceil(correctTokens.length * 0.75))) return false;
+
+  if (/\d/.test(normalizedCorrect) !== /\d/.test(normalizedAnswer)) return false;
+
+  return true;
+}
+
+function buildStructuredAnswerDistractors(correctAnswer: string) {
+  const distractors: string[] = [];
+
+  const leftRightPattern = /^(Left|Right) ([A-Za-z]+) and (left|right) ([A-Za-z]+) \(([IVX]+) & ([IVX]+)\)$/i;
+  const leftRightMatch = correctAnswer.trim().match(leftRightPattern);
+  if (leftRightMatch) {
+    const [, firstSide, firstNoun, secondSideRaw, secondNoun, firstRoman, secondRoman] = leftRightMatch;
+    const secondSide = secondSideRaw[0].toUpperCase() + secondSideRaw.slice(1).toLowerCase();
+    const flip = (side: string) => (side.toLowerCase() === "left" ? "Right" : "Left");
+    const firstFlipped = flip(firstSide);
+    const secondFlipped = flip(secondSide);
+
+    distractors.push(
+      `${firstFlipped} ${firstNoun} and ${secondFlipped.toLowerCase()} ${secondNoun} (${swapRomanSide(firstRoman)} & ${swapRomanSide(secondRoman)})`,
+      `${firstSide} ${firstNoun} and ${secondFlipped.toLowerCase()} ${secondNoun} (${firstRoman} & ${swapRomanSide(secondRoman)})`,
+      `${firstFlipped} ${firstNoun} and ${secondSide.toLowerCase()} ${secondNoun} (${swapRomanSide(firstRoman)} & ${secondRoman})`,
+    );
+  }
+
+  return distractors.filter((answer) => isUsableDistractorAnswer(answer, correctAnswer));
+}
+
+function swapRomanSide(value: string) {
+  const map: Record<string, string> = {
+    I: "II",
+    II: "I",
+    III: "IV",
+    IV: "III",
+  };
+  return map[value] || value;
+}
+
 export function buildExam(set: StudySet, length = 12): GeneratedExamPayload {
   const bank = buildQuestionBank(set);
   const questions = shuffleArray(bank).slice(0, Math.min(length, bank.length));
@@ -194,6 +271,148 @@ export function buildExam(set: StudySet, length = 12): GeneratedExamPayload {
       hard: Math.round((counts.hard / total) * 100),
     },
   };
+}
+
+export function buildValidatedMultipleChoiceDistractors(input: {
+  correctAnswer: string;
+  prompt?: string;
+  topic?: string;
+  baselineChoices?: string[];
+  aiChoices?: string[];
+  targetCount?: number;
+}) {
+  const correctAnswer = input.correctAnswer.trim();
+  if (!correctAnswer) return [];
+
+  const questionTokens = tokenize(`${input.prompt || ""} ${input.topic || ""}`);
+  const shape = describeAnswerShape(correctAnswer);
+  const targetCount = input.targetCount ?? DISTRACTOR_TARGET_COUNT;
+  const seen = new Set<string>();
+
+  const collected = [...(input.aiChoices ?? []), ...(input.baselineChoices ?? [])]
+    .map((choice, index) => scoreDistractorChoice({
+      choice,
+      index,
+      correctAnswer,
+      shape,
+      questionTokens,
+      source: index < (input.aiChoices ?? []).length ? "ai" : "baseline",
+    }))
+    .filter((entry): entry is { choice: string; normalized: string; score: number } => Boolean(entry))
+    .sort((a, b) => b.score - a.score)
+    .filter((entry) => {
+      if (seen.has(entry.normalized)) return false;
+      seen.add(entry.normalized);
+      return true;
+    })
+    .slice(0, targetCount)
+    .map((entry) => entry.choice);
+
+  return collected;
+}
+
+export function buildValidatedMultipleChoiceChoices(input: {
+  correctAnswer: string;
+  prompt?: string;
+  topic?: string;
+  baselineChoices?: string[];
+  aiChoices?: string[];
+}) {
+  const correctAnswer = input.correctAnswer.trim();
+  if (!correctAnswer) return [];
+
+  const wrongChoices = buildValidatedMultipleChoiceDistractors(input);
+  if (wrongChoices.length < DISTRACTOR_TARGET_COUNT) return [];
+
+  return shuffleArray([correctAnswer, ...wrongChoices]);
+}
+
+function scoreDistractorChoice(input: {
+  choice: string;
+  index: number;
+  correctAnswer: string;
+  shape: ReturnType<typeof describeAnswerShape>;
+  questionTokens: string[];
+  source: "ai" | "baseline";
+}) {
+  const trimmed = input.choice.trim();
+  if (!trimmed || !isUsableDistractorAnswer(trimmed, input.correctAnswer)) return null;
+
+  const normalizedChoice = normalizeText(trimmed);
+  if (GENERIC_THROWAWAY_CHOICES.has(normalizedChoice)) return null;
+  if (isDistractorTooSimilar(trimmed, input.correctAnswer)) return null;
+  if (!matchesAnswerShape(trimmed, input.shape)) return null;
+
+  const candidateTokens = tokenize(trimmed);
+  const tokenGap = Math.abs(candidateTokens.length - input.shape.tokenCount);
+  const charGap = Math.abs(normalizeText(trimmed).length - input.shape.charLength);
+  const questionOverlap = intersectionSize(candidateTokens, input.questionTokens);
+  const startsWithCapital = /^[A-Z]/.test(trimmed);
+  const punctuationPenalty = /[.!?]$/.test(trimmed) !== input.shape.endsWithSentencePunctuation ? 2 : 0;
+
+  let score = 100;
+  score -= tokenGap * 8;
+  score -= Math.min(18, Math.floor(charGap / 4));
+  score += questionOverlap * 5;
+  score += input.source === "ai" ? 4 : 0;
+  score += startsWithCapital === input.shape.startsWithCapital ? 2 : 0;
+  score -= punctuationPenalty;
+  score -= input.index * 0.2;
+
+  return {
+    choice: trimmed,
+    normalized: normalizedChoice,
+    score,
+  };
+}
+
+function describeAnswerShape(value: string) {
+  const normalized = normalizeText(value);
+  const tokens = normalized.split(" ").filter(Boolean);
+  return {
+    tokenCount: tokens.length,
+    charLength: normalized.length,
+    hasDigits: /\d/.test(value),
+    hasParentheses: /[()]/.test(value),
+    hasPercent: /%/.test(value),
+    isAllCaps: /^[A-Z0-9\s-]+$/.test(value) && /[A-Z]/.test(value),
+    startsWithCapital: /^[A-Z]/.test(value),
+    endsWithSentencePunctuation: /[.!?]$/.test(value.trim()),
+    isLikelySentence: tokens.length >= 6,
+  };
+}
+
+function matchesAnswerShape(candidate: string, correctShape: ReturnType<typeof describeAnswerShape>) {
+  const candidateShape = describeAnswerShape(candidate);
+  const tokenGap = Math.abs(candidateShape.tokenCount - correctShape.tokenCount);
+  const lowerBound = Math.max(3, Math.floor(correctShape.charLength * 0.5));
+  const upperBound = Math.max(8, Math.ceil(correctShape.charLength * 1.8));
+
+  if (candidateShape.hasDigits !== correctShape.hasDigits) return false;
+  if (candidateShape.hasPercent !== correctShape.hasPercent) return false;
+  if (correctShape.hasParentheses && !candidateShape.hasParentheses) return false;
+  if (correctShape.isAllCaps !== candidateShape.isAllCaps && (correctShape.isAllCaps || candidateShape.isAllCaps)) return false;
+  if (candidateShape.charLength < lowerBound || candidateShape.charLength > upperBound) return false;
+  if (tokenGap > Math.max(2, Math.ceil(correctShape.tokenCount * 0.5))) return false;
+  if (correctShape.isLikelySentence !== candidateShape.isLikelySentence && correctShape.tokenCount >= 5) return false;
+
+  return true;
+}
+
+function isDistractorTooSimilar(choice: string, correctAnswer: string) {
+  const normalizedChoice = normalizeText(choice);
+  const normalizedCorrect = normalizeText(correctAnswer);
+  if (!normalizedChoice || normalizedChoice === normalizedCorrect) return true;
+  if (normalizedChoice.includes(normalizedCorrect) || normalizedCorrect.includes(normalizedChoice)) return true;
+
+  const choiceTokens = normalizedChoice.split(" ").filter(Boolean);
+  const correctTokens = normalizedCorrect.split(" ").filter(Boolean);
+
+  if (choiceTokens.length === 1 && correctTokens.length === 1) {
+    return levenshteinDistance(normalizedChoice, normalizedCorrect) <= 1;
+  }
+
+  return false;
 }
 
 export function getDefaultProgress(cardId: string): CardProgress {

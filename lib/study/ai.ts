@@ -1,5 +1,5 @@
 import Anthropic from "@anthropic-ai/sdk";
-import { buildExam, buildQuestionBank, materializeGeneratedStudySet } from "./engine";
+import { buildExam, buildQuestionBank, buildValidatedMultipleChoiceDistractors, materializeGeneratedStudySet } from "./engine";
 import { cardHintPrompt, distractorGenerationPrompt, examGenerationPrompt, explanationPrompt, flashcardGenerationPrompt, noteActionPrompt, quizGenerationPrompt, structuredNotesPrompt, studyPlanPrompt } from "./ai-prompts";
 import { estimateFlashcardCountFromText, parseExplicitFlashcardsFromText } from "./flashcard-parser";
 import { validateGeneratedExam, validateGeneratedFlashcards, validateGeneratedQuiz, validateNoteAction, validateStructuredLectureNotes, validateStudyPlan } from "./validation";
@@ -183,21 +183,89 @@ export async function generateExamFromSet(set: StudySet, desiredCount = 15): Pro
 }
 
 export async function generateDistractors(
-  questions: Array<{ id: string; prompt: string; correctAnswer: string; topic: string }>,
+  questions: Array<{ id: string; prompt: string; correctAnswer: string; topic: string; existingChoices?: string[] }>,
 ): Promise<Array<{ id: string; choices: string[] }>> {
-  if (!anthropic || questions.length === 0) return [];
+  if (questions.length === 0) return [];
+
+  const byId = new Map(
+    questions.map((question) => [
+      question.id,
+      {
+        ...question,
+        existingChoices: Array.isArray(question.existingChoices) ? question.existingChoices : [],
+      },
+    ]),
+  );
+  const choicesById = new Map<string, string[]>();
+
+  const mergeChoices = (source: unknown) => {
+    if (!Array.isArray(source)) return;
+
+    for (const item of source) {
+      if (!item || typeof item !== "object") continue;
+      const rawId = (item as Record<string, unknown>).id;
+      const id = typeof rawId === "string" ? rawId : "";
+      const question = byId.get(id);
+      if (!question) continue;
+
+      const incomingChoices = Array.isArray((item as Record<string, unknown>).choices)
+        ? ((item as Record<string, unknown>).choices as unknown[]).filter(
+            (choice): choice is string => typeof choice === "string" && choice.trim().length > 0,
+          )
+        : [];
+
+      const validated = buildValidatedMultipleChoiceDistractors({
+        correctAnswer: question.correctAnswer,
+        prompt: question.prompt,
+        topic: question.topic,
+        baselineChoices: question.existingChoices,
+        aiChoices: [...(choicesById.get(id) ?? []), ...incomingChoices],
+      });
+
+      if (validated.length > 0) {
+        choicesById.set(id, validated);
+      }
+    }
+  };
+
   try {
-    const raw = await requestJson(distractorGenerationPrompt(questions));
-    if (!Array.isArray(raw?.distractors)) return [];
-    return raw.distractors.filter(
-      (item: unknown) =>
-        item != null &&
-        typeof (item as Record<string, unknown>).id === "string" &&
-        Array.isArray((item as Record<string, unknown>).choices),
+    const requestBatch = async (
+      batch: Array<{ id: string; prompt: string; correctAnswer: string; topic: string; existingChoices?: string[] }>,
+      strict = false,
+    ) => {
+      const prompt = distractorGenerationPrompt(batch, { strict });
+      return anthropic
+        ? requestJson(prompt)
+        : openaiApiKey
+          ? requestJsonWithOpenAI(prompt)
+          : null;
+    };
+
+    mergeChoices((await requestBatch(questions))?.distractors);
+
+    const incompleteQuestions = questions.filter(
+      (question) => (choicesById.get(question.id)?.length ?? 0) < 3,
     );
+
+    if (incompleteQuestions.length > 0) {
+      mergeChoices((await requestBatch(incompleteQuestions, true))?.distractors);
+    }
   } catch {
-    return [];
+    // Fall through to baseline validation fallback below.
   }
+
+  return questions
+    .map((question) => ({
+      id: question.id,
+      choices: buildValidatedMultipleChoiceDistractors({
+        correctAnswer: question.correctAnswer,
+        prompt: question.prompt,
+        topic: question.topic,
+        baselineChoices: question.existingChoices,
+        aiChoices: choicesById.get(question.id) ?? [],
+      }),
+    }))
+    .filter((item) => item.choices.length === 3);
 }
 
 export async function generateAnswerExplanation(input: {

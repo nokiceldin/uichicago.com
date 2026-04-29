@@ -1,3 +1,4 @@
+import { buildValidatedMultipleChoiceChoices } from "./engine";
 import type {
   GeneratedExamPayload,
   GeneratedFlashcardPayload,
@@ -155,14 +156,34 @@ function validateQuestion(question: any): QuizQuestion | null {
     return null;
   }
 
+  const correctAnswer =
+    Array.isArray(question.correctAnswer) || typeof question.correctAnswer === "string"
+      ? question.correctAnswer
+      : "";
+  const normalizedPrompt = question.prompt.trim();
+
+  const validatedChoices =
+    question.type === "multiple_choice" && typeof correctAnswer === "string"
+      ? buildValidatedMultipleChoiceChoices({
+          correctAnswer,
+          prompt: normalizedPrompt,
+          topic: typeof question.topic === "string" ? question.topic : "General",
+          baselineChoices: Array.isArray(question.choices)
+            ? question.choices.filter((choice: unknown): choice is string => typeof choice === "string")
+            : [],
+        })
+      : undefined;
+
+  if (question.type === "multiple_choice" && (!validatedChoices || validatedChoices.length !== 4)) {
+    return null;
+  }
+
   return {
     id: typeof question.id === "string" ? question.id : `generated-${Math.random().toString(36).slice(2, 10)}`,
     type: question.type,
-    prompt: question.prompt.trim(),
-    choices: Array.isArray(question.choices) ? question.choices.filter((choice: unknown) => typeof choice === "string") : undefined,
-    correctAnswer: Array.isArray(question.correctAnswer) || typeof question.correctAnswer === "string"
-      ? question.correctAnswer
-      : "",
+    prompt: normalizedPrompt,
+    choices: validatedChoices ?? (Array.isArray(question.choices) ? question.choices.filter((choice: unknown) => typeof choice === "string") : undefined),
+    correctAnswer,
     explanation: typeof question.explanation === "string" ? question.explanation : "",
     difficulty: difficulties.has(question.difficulty) ? question.difficulty : "medium",
     topic: typeof question.topic === "string" ? question.topic : "General",

@@ -4,7 +4,13 @@ import { generateDistractors } from "@/lib/study/ai";
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const questions: Array<{ id: string; prompt: string; correctAnswer: string; topic: string }> = body.questions ?? [];
+    const questions: Array<{
+      id: string;
+      prompt: string;
+      correctAnswer: string;
+      topic: string;
+      existingChoices?: string[];
+    }> = body.questions ?? [];
     if (!Array.isArray(questions) || questions.length === 0) {
       return NextResponse.json({ distractors: [] });
     }

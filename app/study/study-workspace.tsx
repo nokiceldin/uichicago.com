@@ -45,7 +45,7 @@ import {
   WandSparkles,
   X,
 } from "lucide-react";
-import { buildQuestionBank, buildStudySession, computeStudyDashboard, createStudyId, fuzzyMatch, getDefaultProgress, getRecommendedCards, reorderCards, updateProgressForReview } from "@/lib/study/engine";
+import { buildQuestionBank, buildStudySession, buildValidatedMultipleChoiceChoices, computeStudyDashboard, createStudyId, fuzzyMatch, getDefaultProgress, getRecommendedCards, reorderCards, updateProgressForReview } from "@/lib/study/engine";
 import { DEFAULT_STUDY_LIBRARY } from "@/lib/study/sample-data";
 import type { CardProgress, QuizQuestion, QuizResult, StructuredLectureNotes, StudyCard, StudyGroup, StudyLibraryState, StudyNote, StudySet, StudySurface } from "@/lib/study/types";
 import NotesWorkspace from "@/app/study/NotesWorkspace";
@@ -5116,7 +5116,7 @@ function FlashcardFaceContent({
   const imageUrl = side === "front" ? card.imageFrontUrl?.trim() : card.imageBackUrl?.trim();
   const useCompactCaption = side === "front" && Boolean(imageUrl) && Boolean(text);
   const renderedTextClassName = useCompactCaption
-    ? "max-w-full rounded-full bg-black/28 px-4 py-1.5 text-lg font-semibold leading-tight text-white shadow-[0_10px_30px_rgba(0,0,0,0.2)]"
+    ? "max-w-full rounded-full bg-black/28 px-3 py-1.5 text-sm font-semibold leading-tight text-white shadow-[0_10px_30px_rgba(0,0,0,0.2)]"
     : textClassName;
 
   return (
@@ -5127,7 +5127,7 @@ function FlashcardFaceContent({
           src={imageUrl}
           alt={getCardDisplayAlt(card, side === "front" ? "Flashcard prompt image" : "Flashcard answer image")}
           className={imageClassName}
-          style={useCompactCaption ? { maxHeight: "calc(100% - 2.3rem)" } : undefined}
+          style={useCompactCaption ? { maxHeight: "calc(100% - 3rem)" } : undefined}
         />
       ) : null}
       {text ? (
@@ -6296,8 +6296,20 @@ function LearnMode({
     initialPracticeCardFronts && initialPracticeCardFronts.length > 0 ? initialPracticeCardFronts : null,
   );
   const questions = useMemo(() => {
-    const bank = buildQuestionBank(set).filter((question) => question.type === "multiple_choice" && (question.choices?.length || 0) >= 4);
-    const full = bank.length ? bank : buildQuestionBank(set).filter((question) => question.type === "true_false");
+    const bank = buildQuestionBank(set);
+    const multipleChoiceByCard = new Map(
+      bank
+        .filter((question) => question.type === "multiple_choice" && (question.choices?.length || 0) >= 4 && question.cardId)
+        .map((question) => [question.cardId as string, question]),
+    );
+    const trueFalseByCard = new Map(
+      bank
+        .filter((question) => question.type === "true_false" && question.cardId)
+        .map((question) => [question.cardId as string, question]),
+    );
+    const full = set.cards
+      .map((card) => multipleChoiceByCard.get(card.id) ?? trueFalseByCard.get(card.id))
+      .filter((question): question is QuizQuestion => Boolean(question));
     if (practiceOnlyCardFronts && practiceOnlyCardFronts.length > 0) {
       const filtered = full.filter((q) =>
         practiceOnlyCardFronts.some(
@@ -6440,6 +6452,7 @@ function LearnMode({
           prompt: stripQuestionPrompt(mq.prompt),
           correctAnswer: String(mq.correctAnswer),
           topic: mq.topic || "",
+          existingChoices: mq.choices ?? [],
         })),
       }),
     })
@@ -6451,12 +6464,14 @@ function LearnMode({
           if (item.id && Array.isArray(item.choices)) {
             const src = mcQuestions.find((mq) => mq.id === item.id);
             if (!src) continue;
-            const all = [String(src.correctAnswer), ...item.choices.slice(0, 3)];
-            for (let i = all.length - 1; i > 0; i--) {
-              const j = Math.floor(Math.random() * (i + 1));
-              [all[i], all[j]] = [all[j], all[i]];
-            }
-            map[item.id] = all;
+            const validatedChoices = buildValidatedMultipleChoiceChoices({
+                correctAnswer: String(src.correctAnswer),
+                prompt: stripQuestionPrompt(src.prompt),
+                topic: src.topic || "",
+                baselineChoices: src.choices ?? [],
+                aiChoices: item.choices,
+              });
+            map[item.id] = validatedChoices.length === 4 ? validatedChoices : (src.choices ?? []);
           }
         }
         setEnhancedChoices(map);
@@ -6955,6 +6970,7 @@ function AssessmentMode({
           prompt: stripQuestionPrompt(mq.prompt),
           correctAnswer: String(mq.correctAnswer),
           topic: mq.topic || "",
+          existingChoices: mq.choices ?? [],
         })),
       }),
     })
@@ -6966,12 +6982,14 @@ function AssessmentMode({
           if (item.id && Array.isArray(item.choices)) {
             const src = mcQuestions.find((mq) => mq.id === item.id);
             if (!src) continue;
-            const all = [String(src.correctAnswer), ...item.choices.slice(0, 3)];
-            for (let i = all.length - 1; i > 0; i--) {
-              const j = Math.floor(Math.random() * (i + 1));
-              [all[i], all[j]] = [all[j], all[i]];
-            }
-            map[item.id] = all;
+            const validatedChoices = buildValidatedMultipleChoiceChoices({
+                correctAnswer: String(src.correctAnswer),
+                prompt: stripQuestionPrompt(src.prompt),
+                topic: src.topic || "",
+                baselineChoices: src.choices ?? [],
+                aiChoices: item.choices,
+              });
+            map[item.id] = validatedChoices.length === 4 ? validatedChoices : (src.choices ?? []);
           }
         }
         setEnhancedChoices(map);

@@ -52,13 +52,17 @@ export function buildQuestionBank(set: StudySet): QuizQuestion[] {
   return cards.flatMap((card, index) => {
     const promptFront = getCardPromptFront(card, index);
     const distractors = buildDistractorsForCard(card, cards, set).slice(0, 3);
-
-    const mcChoices = shuffleArray(Array.from(new Set([card.back.trim(), ...distractors].filter(Boolean)))).slice(0, 4);
+    const mcChoices = buildValidatedMultipleChoiceChoices({
+      correctAnswer: card.back.trim(),
+      prompt: promptFront,
+      topic: card.tags[0] || set.subject,
+      baselineChoices: distractors,
+    });
     const promptBase = promptFront.endsWith("?") ? promptFront : `What best matches: ${promptFront}?`;
 
     const questionTypes: QuizQuestion[] = [];
 
-    if (mcChoices.length >= 3) {
+    if (mcChoices.length >= 4) {
       questionTypes.push({
         id: createStudyId("mcq"),
         cardId: card.id,
@@ -288,8 +292,9 @@ export function buildValidatedMultipleChoiceDistractors(input: {
   const shape = describeAnswerShape(correctAnswer);
   const targetCount = input.targetCount ?? DISTRACTOR_TARGET_COUNT;
   const seen = new Set<string>();
+  const allCandidates = [...(input.aiChoices ?? []), ...(input.baselineChoices ?? [])];
 
-  const collected = [...(input.aiChoices ?? []), ...(input.baselineChoices ?? [])]
+  const collected = allCandidates
     .map((choice, index) => scoreDistractorChoice({
       choice,
       index,
@@ -307,6 +312,26 @@ export function buildValidatedMultipleChoiceDistractors(input: {
     })
     .slice(0, targetCount)
     .map((entry) => entry.choice);
+
+  if (collected.length < targetCount) {
+    const relaxed = allCandidates
+      .map((choice, index) => scoreRelaxedDistractorChoice({
+        choice,
+        index,
+        correctAnswer,
+        shape,
+        questionTokens,
+      }))
+      .filter((entry): entry is { choice: string; normalized: string; score: number } => Boolean(entry))
+      .sort((a, b) => b.score - a.score);
+
+    for (const entry of relaxed) {
+      if (seen.has(entry.normalized)) continue;
+      seen.add(entry.normalized);
+      collected.push(entry.choice);
+      if (collected.length >= targetCount) break;
+    }
+  }
 
   return collected;
 }
@@ -357,6 +382,40 @@ function scoreDistractorChoice(input: {
   score += input.source === "ai" ? 4 : 0;
   score += startsWithCapital === input.shape.startsWithCapital ? 2 : 0;
   score -= punctuationPenalty;
+  score -= input.index * 0.2;
+
+  return {
+    choice: trimmed,
+    normalized: normalizedChoice,
+    score,
+  };
+}
+
+function scoreRelaxedDistractorChoice(input: {
+  choice: string;
+  index: number;
+  correctAnswer: string;
+  shape: ReturnType<typeof describeAnswerShape>;
+  questionTokens: string[];
+}) {
+  const trimmed = input.choice.trim();
+  if (!trimmed || !isUsableDistractorAnswer(trimmed, input.correctAnswer)) return null;
+
+  const normalizedChoice = normalizeText(trimmed);
+  if (GENERIC_THROWAWAY_CHOICES.has(normalizedChoice)) return null;
+  if (isDistractorTooSimilar(trimmed, input.correctAnswer)) return null;
+
+  const candidateTokens = tokenize(trimmed);
+  const tokenGap = Math.abs(candidateTokens.length - input.shape.tokenCount);
+  const charGap = Math.abs(normalizeText(trimmed).length - input.shape.charLength);
+  const questionOverlap = intersectionSize(candidateTokens, input.questionTokens);
+  const shapeMatchBonus = matchesAnswerShape(trimmed, input.shape) ? 16 : 0;
+
+  let score = 60;
+  score += shapeMatchBonus;
+  score += questionOverlap * 4;
+  score -= tokenGap * 5;
+  score -= Math.min(16, Math.floor(charGap / 5));
   score -= input.index * 0.2;
 
   return {

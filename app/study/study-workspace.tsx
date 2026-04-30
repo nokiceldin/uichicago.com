@@ -1173,6 +1173,29 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
       createdAt: draftSet.createdAt || now,
       cards: cleanedCards,
     };
+    let visibilityErrorMessage: string | null = null;
+
+    if (nextSet.visibility === "public" && !isSignedIn) {
+      nextSet = { ...nextSet, visibility: "private" };
+      visibilityErrorMessage = "Sign in with Google to publish study sets publicly.";
+    }
+
+    if (isSignedIn) {
+      try {
+        const response = await fetch("/api/study/sets", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ set: nextSet }),
+        });
+        const payload = await response.json();
+        if (!response.ok) {
+          throw new Error(payload.error || "Failed to sync the study set.");
+        }
+        nextSet = payload.set as StudySet;
+      } catch (error) {
+        showToast(error instanceof Error ? error.message : "Saved locally, but server sync failed.", "error");
+      }
+    }
 
     if (nextSet.visibility === "public") {
       try {
@@ -1184,13 +1207,13 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
         const publishPayload = await publishResponse.json();
         if (!publishResponse.ok) {
           nextSet = { ...nextSet, visibility: "private" };
-          showToast(publishPayload.error || "This set was kept private.", "error");
+          visibilityErrorMessage = publishPayload.error || "This set was kept private.";
         } else {
           showToast(existsInLibrary(library, nextSet.id) ? "Study set updated and shared." : "Study set saved and shared.");
         }
       } catch {
         nextSet = { ...nextSet, visibility: "private" };
-        showToast("Could not publish this set, so it was saved privately instead.", "error");
+        visibilityErrorMessage = "Could not publish this set, so it was saved privately instead.";
       }
     } else {
       try {
@@ -1213,24 +1236,10 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
     });
     setSelectedSetId(nextSet.id);
     if (nextSet.visibility !== "public") {
-      showToast(existsInLibrary(library, nextSet.id) ? "Study set updated." : "Study set saved.");
-    }
-
-    if (isSignedIn) {
-      try {
-        const response = await fetch("/api/study/sets", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ set: nextSet }),
-        });
-        const payload = await response.json();
-        if (!response.ok) {
-          throw new Error(payload.error || "Failed to sync the study set.");
-        }
-        nextSet = payload.set as StudySet;
-      } catch (error) {
-        showToast(error instanceof Error ? error.message : "Saved locally, but server sync failed.", "error");
-      }
+      showToast(
+        visibilityErrorMessage || (existsInLibrary(library, nextSet.id) ? "Study set updated." : "Study set saved."),
+        visibilityErrorMessage ? "error" : "default",
+      );
     }
 
     setDraftSet(emptyDraftSet());

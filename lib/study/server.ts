@@ -53,7 +53,7 @@ export function serializeStudySet(
     "studyGroups" in set && Array.isArray(set.studyGroups)
       ? set.studyGroups.map((entry) => entry.groupId)
       : [];
-  const isOwner = viewerUserId ? set.ownerId === viewerUserId : true;
+  const isOwner = viewerUserId ? set.ownerId === viewerUserId : false;
 
   return {
     id: set.id,

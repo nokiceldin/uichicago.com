@@ -437,6 +437,8 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
   const [importText, setImportText] = useState("");
   const [courseSuggestions, setCourseSuggestions] = useState<StudyCourseSuggestion[]>([]);
   const [publicSearchResults, setPublicSearchResults] = useState<StudySet[]>([]);
+  const [loadingStandaloneSet, setLoadingStandaloneSet] = useState(false);
+  const [standaloneSetError, setStandaloneSetError] = useState<string | null>(null);
   const [draftSetErrors, setDraftSetErrors] = useState<DraftSetErrors>({});
   const [draftGuideErrors, setDraftGuideErrors] = useState<DraftGuideErrors>({});
   const [draggingCardId, setDraggingCardId] = useState<string | null>(null);
@@ -867,10 +869,62 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
     });
   };
 
-  const selectedSet = useMemo(
-    () => library.sets.find((set) => set.id === (forcedSetId || selectedSetId)) ?? library.sets[0],
-    [forcedSetId, library.sets, selectedSetId],
-  );
+  const selectedSet = useMemo(() => {
+    const targetId = forcedSetId || selectedSetId;
+    if (targetId) {
+      return library.sets.find((set) => set.id === targetId);
+    }
+    return library.sets[0];
+  }, [forcedSetId, library.sets, selectedSetId]);
+
+  useEffect(() => {
+    if (!standaloneSetView || !forcedSetId || selectedSet) {
+      setStandaloneSetError(null);
+      setLoadingStandaloneSet(false);
+      return;
+    }
+
+    let cancelled = false;
+    setLoadingStandaloneSet(true);
+    setStandaloneSetError(null);
+
+    const loadStandaloneSet = async () => {
+      try {
+        const response = await fetch(`/api/study/public-sets/${encodeURIComponent(forcedSetId)}`, {
+          cache: "no-store",
+        });
+        const payload = await response.json();
+        if (cancelled) return;
+
+        if (!response.ok || !payload?.set) {
+          setStandaloneSetError(typeof payload?.error === "string" ? payload.error : "Study set not found.");
+          return;
+        }
+
+        const incomingSet = payload.set as StudySet;
+        setLibrary((current) => ({
+          ...current,
+          sets: current.sets.some((set) => set.id === incomingSet.id)
+            ? current.sets.map((set) => (set.id === incomingSet.id ? incomingSet : set))
+            : [incomingSet, ...current.sets],
+        }));
+      } catch {
+        if (!cancelled) {
+          setStandaloneSetError("Could not load this shared study set.");
+        }
+      } finally {
+        if (!cancelled) {
+          setLoadingStandaloneSet(false);
+        }
+      }
+    };
+
+    void loadStandaloneSet();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [forcedSetId, selectedSet, standaloneSetView]);
 
   const openSurface = (nextSurface: StudySurface) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -911,7 +965,7 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
     router.push(`/study${params.toString() ? `?${params.toString()}` : ""}`);
   };
 
-  const selectedProgress = library.progress[selectedSet?.id] ?? {};
+  const selectedProgress = selectedSet ? (library.progress[selectedSet.id] ?? {}) : {};
   const dashboard = useMemo(() => computeStudyDashboard(library), [library]);
   const isFocusedStudyMode = STUDY_MODE_SCREENS.includes(screen);
   const recentSessions = useMemo(
@@ -2250,6 +2304,36 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
     );
   }
 
+  if (standaloneSetView && !selectedSet) {
+    return (
+      <main className="min-h-screen bg-transparent pb-20 text-white">
+        <div className="mx-auto max-w-5xl px-4 pb-14 pt-8 sm:px-6">
+          <div className="study-premium-panel rounded-[1.75rem] p-8 backdrop-blur-xl">
+            <div className="text-[11px] font-bold uppercase tracking-[0.22em] text-zinc-500">Shared set</div>
+            <h1 className="mt-4 text-[2rem] font-bold tracking-[-0.04em] text-white">
+              {loadingStandaloneSet ? "Loading study set..." : "Study set unavailable"}
+            </h1>
+            <p className="mt-3 max-w-2xl text-sm leading-6 text-zinc-400">
+              {loadingStandaloneSet
+                ? "Fetching the shared study set for this link."
+                : standaloneSetError || "This set may be private, deleted, or not available anymore."}
+            </p>
+            <div className="mt-6">
+              <button
+                onClick={() => router.push("/study?view=library")}
+                {...magneticHoverProps}
+                className="study-premium-button inline-flex items-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm font-semibold text-zinc-100"
+              >
+                <ChevronLeft className="h-4 w-4" />
+                Back to study
+              </button>
+            </div>
+          </div>
+        </div>
+      </main>
+    );
+  }
+
   return (
     <main className="min-h-screen bg-transparent pb-20 text-white">
       {surface === "home" && !libraryView && !folderFilter && screen !== "groups" ? (
@@ -3401,25 +3485,38 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
                           <div className="flex items-start justify-between gap-2">
                             <div className="min-w-0">
                               <div className="flex items-center gap-2">
-                                <div className="truncate text-sm font-medium text-white">{set.title}</div>
+                                <Link
+                                  href={`/study/set/${encodeURIComponent(set.id)}`}
+                                  className="truncate text-sm font-medium text-white transition hover:text-[#9ab8ff]"
+                                >
+                                  {set.title}
+                                </Link>
                                 <VisibilityBadge visibility={set.visibility} compact />
                               </div>
                               <div className="mt-0.5 text-[11px] text-slate-500">
                                 {[set.course || set.subject, `${set.cards.length} cards`].filter(Boolean).join(" · ")}
                               </div>
                             </div>
-                            <button
-                              type="button"
-                              onClick={() => addPublicSetToLibrary(set)}
-                              {...magneticHoverProps}
-                              className={`study-premium-button shrink-0 rounded-lg px-2.5 py-1 text-xs font-semibold ${
-                                alreadyAdded
-                                  ? "border border-white/8 bg-white/4 text-slate-400"
-                                  : "border border-emerald-500/25 bg-emerald-500/10 text-emerald-300 hover:bg-emerald-500/18"
-                              }`}
-                            >
-                              {alreadyAdded ? "Added" : "Add"}
-                            </button>
+                            <div className="flex shrink-0 items-center gap-2">
+                              <Link
+                                href={`/study/set/${encodeURIComponent(set.id)}`}
+                                className="study-premium-button rounded-lg border border-white/8 bg-white/4 px-2.5 py-1 text-xs font-semibold text-slate-200 hover:bg-white/8 hover:text-white"
+                              >
+                                Open
+                              </Link>
+                              <button
+                                type="button"
+                                onClick={() => addPublicSetToLibrary(set)}
+                                {...magneticHoverProps}
+                                className={`study-premium-button rounded-lg px-2.5 py-1 text-xs font-semibold ${
+                                  alreadyAdded
+                                    ? "border border-white/8 bg-white/4 text-slate-400"
+                                    : "border border-emerald-500/25 bg-emerald-500/10 text-emerald-300 hover:bg-emerald-500/18"
+                                }`}
+                              >
+                                {alreadyAdded ? "Added" : "Add"}
+                              </button>
+                            </div>
                           </div>
                           {set.description ? (
                             <p className="mt-1.5 line-clamp-2 text-[11px] leading-5 text-slate-500">{set.description}</p>
@@ -5190,7 +5287,10 @@ function OverviewView({
   // Share modal state
   const [shareOpen, setShareOpen] = useState(false);
   const [copied, setCopied] = useState(false);
-  const shareUrl = typeof window !== "undefined" ? window.location.href : "";
+  const shareUrl =
+    typeof window !== "undefined"
+      ? `${window.location.origin}/study/set/${encodeURIComponent(set.id)}`
+      : "";
 
   const handleCopyLink = () => {
     navigator.clipboard.writeText(shareUrl).then(() => {

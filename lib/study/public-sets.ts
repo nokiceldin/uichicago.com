@@ -55,10 +55,6 @@ export function moderatePublicStudySet(set: StudySet): { allowed: boolean; reaso
     .join(" ")
     .trim();
 
-  if (!set.course.trim()) {
-    return { allowed: false, reason: "Add a real course before publishing publicly." };
-  }
-
   if (set.cards.length < 2) {
     return { allowed: false, reason: "Public sets need at least two real cards." };
   }

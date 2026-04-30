@@ -657,10 +657,12 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
 
     const existingSet = library.sets.find((set) => set.id === editSetId);
     if (existingSet) {
-      setDraftSet(existingSet);
-      setImportText("");
+      setDraftSet((current) => (current.id === existingSet.id ? current : existingSet));
+      if (draftSet.id !== existingSet.id) {
+        setImportText("");
+      }
     }
-  }, [isCreateRoute, isGuideCreateRoute, library.sets, searchParams]);
+  }, [draftSet.id, isCreateRoute, isGuideCreateRoute, library.sets, searchParams]);
 
   // Scroll to a specific card in edit mode when ?card=CARDID is in the URL
   const editScrollCardId = isCreateRoute ? searchParams.get("card") : null;

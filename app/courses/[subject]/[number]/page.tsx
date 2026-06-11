@@ -275,9 +275,6 @@ export default async function CourseDetailPage({
     });
 
   const topProfessor = professorGpas.find((row) => row.slug);
-  const sparkyPrompt = encodeURIComponent(
-    `I am considering ${course.subject} ${course.number} ${course.title ? `(${course.title}) ` : ""}at UIC. Summarize how hard it is, who should take it, and which professor looks best.`,
-  );
   const comparePrompt = `Compare ${[`${course.subject} ${course.number}`, ...relatedCourses.slice(0, 2).map((item) => `${item.subject} ${item.number}`)].join(", ")} for difficulty, GPA, and which kind of UIC student each is best for.`;
   const orderedCourseDirectory = [...courseDirectory].sort(compareCourseDirectoryOrder);
   const currentIndex = orderedCourseDirectory.findIndex(
@@ -457,7 +454,7 @@ export default async function CourseDetailPage({
                 </p>
                 <div className="mt-4 flex flex-wrap gap-2">
                   <Link
-                    href={`/chat?q=${sparkyPrompt}`}
+                    href="/chat"
                     className="inline-flex items-center rounded-full bg-red-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-500"
                   >
                     Ask Sparky →

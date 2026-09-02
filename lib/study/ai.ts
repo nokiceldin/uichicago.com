@@ -6,6 +6,7 @@ import { validateGeneratedExam, validateGeneratedFlashcards, validateGeneratedQu
 import type { GeneratedExamPayload, GeneratedFlashcardPayload, GeneratedQuizPayload, NoteActionPayload, StructuredLectureNotesPayload, StudyPlanPayload, StudySet } from "./types";
 
 const anthropic = process.env.ANTHROPIC_API_KEY ? new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY }) : null;
+const anthropicStudyModel = process.env.ANTHROPIC_STUDY_MODEL?.trim() || process.env.ANTHROPIC_CHAT_MODEL?.trim() || "claude-sonnet-4-6";
 const openaiApiKey = process.env.OPENAI_API_KEY?.trim() || "";
 const openaiStudyModel = process.env.OPENAI_STUDY_MODEL?.trim() || process.env.OPENAI_MODEL?.trim() || "gpt-4.1-mini";
 
@@ -13,7 +14,7 @@ async function requestJson(prompt: string) {
   if (!anthropic) return null;
 
   const response = await anthropic.messages.create({
-    model: "claude-sonnet-4-20250514",
+    model: anthropicStudyModel,
     max_tokens: 2200,
     temperature: 0.4,
     messages: [{ role: "user", content: prompt }],

@@ -14,12 +14,47 @@ export async function GET(
     const studyUser = await getCurrentStudyUser().catch(() => null);
     const { id } = await params;
 
-    const set = await prisma.studySet.findUnique({
-      where: { id },
-      include: { flashcards: true },
+    const set = await prisma.studySet.findFirst({
+      where: {
+        id,
+        OR: [
+          { visibility: "PUBLIC" },
+          ...(studyUser
+            ? [
+                { ownerId: studyUser.id },
+                {
+                  studyGroups: {
+                    some: {
+                      group: {
+                        memberships: {
+                          some: { userId: studyUser.id },
+                        },
+                      },
+                    },
+                  },
+                },
+              ]
+            : []),
+        ],
+      },
+      include: {
+        flashcards: true,
+        studyGroups: studyUser
+          ? {
+              where: {
+                group: {
+                  memberships: {
+                    some: { userId: studyUser.id },
+                  },
+                },
+              },
+              select: { groupId: true },
+            }
+          : false,
+      },
     });
 
-    if (set && (set.visibility === "PUBLIC" || set.ownerId === studyUser?.id)) {
+    if (set) {
       return NextResponse.json({
         set: serializeStudySet(set, studyUser?.id),
       });

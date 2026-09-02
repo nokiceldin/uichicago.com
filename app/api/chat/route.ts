@@ -48,6 +48,8 @@ import {
   fetchCourseGpaRanking,       // ADD
 } from "@/lib/chat/data";
 const client = new Anthropic();
+const SPARKY_CHAT_MODEL = process.env.ANTHROPIC_CHAT_MODEL?.trim() || "claude-sonnet-4-6";
+const SPARKY_FAST_MODEL = process.env.ANTHROPIC_FAST_MODEL?.trim() || "claude-haiku-4-5-20251001";
 
 // ── Vector store empty check ──────────────────────────────────────────────────
 // Checked once per process lifetime and cached. If fewer than 100 chunks exist,
@@ -1890,7 +1892,7 @@ async function buildPlanningObject(
   const callClaude = async (strict: boolean): Promise<PlanningObject> => {
     const prompt = buildPlanningPrompt(scaffoldContent, studentCtx, queryIntent, strict);
     const response = await client.messages.create({
-      model: "claude-haiku-4-5-20251001",
+      model: SPARKY_FAST_MODEL,
       max_tokens: 2000,
       messages: [{ role: "user", content: prompt }],
     });
@@ -4241,7 +4243,7 @@ export async function POST(req: Request) {
 
   if (casualPatterns.test(normMsg)) {
     const casualResponse = await client.messages.create({
-      model: "claude-sonnet-4-20250514",
+      model: SPARKY_CHAT_MODEL,
       max_tokens: 100,
       system: buildCasualReplySystemPrompt(normMsg),
       messages: messages.map(m => ({ role: m.role, content: m.content })),
@@ -4299,7 +4301,7 @@ export async function POST(req: Request) {
 
   if (isHarmlessCodingQuestion(lastMsg)) {
     const codingResponse = await client.messages.create({
-      model: "claude-haiku-4-5-20251001",
+      model: SPARKY_FAST_MODEL,
       max_tokens: 220,
       system: "You are Sparky, primarily a UIC assistant. The student asked a harmless off-topic programming question. Answer briefly and directly. Start with exactly: \"I'm mainly here for UIC questions, but briefly:\". Keep the full response under 6 sentences. If code helps, include one small code block no longer than 10 lines. Do not mention UIC again after the opening unless necessary.",
       messages: [{ role: "user", content: lastMsg }],
@@ -5372,7 +5374,7 @@ const maxTokens = uploadedFile ? 2000
 
       // Step 1: generate full response (non-streaming — validation requires complete text)
       const firstRes = await client.messages.create({
-        model: "claude-sonnet-4-20250514",
+        model: SPARKY_CHAT_MODEL,
         max_tokens: maxTokens,
         system: systemPrompt,
         messages: apiMessages,
@@ -5391,7 +5393,7 @@ const maxTokens = uploadedFile ? 2000
         // Step 3: build correction prompt and retry ONCE
         const correctionPrompt = buildCorrectionPrompt(v1);
         const retryRes = await client.messages.create({
-          model: "claude-sonnet-4-20250514",
+          model: SPARKY_CHAT_MODEL,
           max_tokens: maxTokens,
           system: systemPrompt,
           messages: [
@@ -5446,7 +5448,7 @@ const maxTokens = uploadedFile ? 2000
 
     // ── Non-planning: existing streaming path (unchanged) ─────────────────────
     const stream = client.messages.stream({
-      model: "claude-sonnet-4-20250514",
+      model: SPARKY_CHAT_MODEL,
       max_tokens: maxTokens,
       system: systemPrompt,
       messages: apiMessages,
@@ -5454,6 +5456,7 @@ const maxTokens = uploadedFile ? 2000
 
     const encoder = new TextEncoder();
     let accumulatedText = "";
+    let streamError: string | null = null;
     const readable = new ReadableStream({
       async start(controller) {
         try {
@@ -5463,6 +5466,12 @@ const maxTokens = uploadedFile ? 2000
               accumulatedText += event.delta.text;
             }
           }
+        } catch (err) {
+          streamError = err instanceof Error ? err.message : "Unknown Anthropic stream error";
+          accumulatedText =
+            "Sparky hit an upstream AI error before it could answer. Please try again in a moment.";
+          console.error("Chat stream error:", streamError);
+          controller.enqueue(encoder.encode(accumulatedText));
         } finally {
           controller.close();
           // Single write: entity state + excerpt together, after stream completes
@@ -5471,12 +5480,14 @@ const maxTokens = uploadedFile ? 2000
           await persistChatLog({
             responseText: accumulatedText,
             responseKind: "model_stream_response",
+            responseStatus: streamError ? "error" : "success",
             answerMode: query.answerMode,
             domainsTriggered,
             retrievalSources,
             topChunkScore: trust.explanation.top_score > 0 ? trust.explanation.top_score : null,
             chunkCount: rerankedChunks.length,
             extraMetadata: {
+              streamError,
               trustDecision: trust.decision,
               trustConfidence: trust.confidence,
               trustClass: trust.explanation.query_class,

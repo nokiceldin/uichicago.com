@@ -16,9 +16,29 @@ export async function POST(request: Request) {
     const body = await request.json();
 
     const normalizedName = String(body.name || "").trim();
+    const requestedSetIds: string[] = Array.isArray(body.setIds)
+      ? [...new Set<string>(body.setIds.map((value: unknown) => String(value).trim()).filter(Boolean))]
+      : [];
     const nameValidation = validateStudyGroupName(normalizedName);
     if (!nameValidation.valid) {
       return NextResponse.json({ error: nameValidation.reason || "Group name is required." }, { status: 400 });
+    }
+
+    const ownedSets = requestedSetIds.length
+      ? await prisma.studySet.findMany({
+          where: {
+            id: { in: requestedSetIds },
+            ownerId: studyUser.id,
+          },
+          select: { id: true },
+        })
+      : [];
+
+    if (ownedSets.length !== requestedSetIds.length) {
+      return NextResponse.json(
+        { error: "Only your signed-in study sets can be added to a new group." },
+        { status: 403 },
+      );
     }
 
     let createdGroupId = "";
@@ -40,6 +60,14 @@ export async function POST(request: Request) {
                   role: "owner",
                 },
               },
+              linkedSets: ownedSets.length
+                ? {
+                    create: ownedSets.map((set) => ({
+                      setId: set.id,
+                      addedById: studyUser.id,
+                    })),
+                  }
+                : undefined,
             },
             include: {
               memberships: {

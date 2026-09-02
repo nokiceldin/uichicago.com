@@ -405,6 +405,7 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
   const createType = searchParams.get("type") === "guide" ? "guide" : "flashcards";
   const isGuideCreateRoute = isCreateRoute && createType === "guide";
   const editSetId = isCreateRoute && !isGuideCreateRoute ? searchParams.get("edit") : null;
+  const createInGroupId = isCreateRoute && !isGuideCreateRoute ? searchParams.get("group") : null;
   const [hydrated, setHydrated] = useState(false);
   const [library, setLibrary] = useState<StudyLibraryState>(DEFAULT_STUDY_LIBRARY);
   const [surface, setSurface] = useState<StudySurface>("home");
@@ -438,6 +439,7 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
   const [courseSuggestions, setCourseSuggestions] = useState<StudyCourseSuggestion[]>([]);
   const [publicSearchResults, setPublicSearchResults] = useState<StudySet[]>([]);
   const [loadingStandaloneSet, setLoadingStandaloneSet] = useState(false);
+  const [standaloneSetAccessVerified, setStandaloneSetAccessVerified] = useState(false);
   const [standaloneSetError, setStandaloneSetError] = useState<string | null>(null);
   const [draftSetErrors, setDraftSetErrors] = useState<DraftSetErrors>({});
   const [draftGuideErrors, setDraftGuideErrors] = useState<DraftGuideErrors>({});
@@ -714,7 +716,10 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
 
           return {
             ...current,
-            sets: [...remoteSets, ...current.sets.filter((set) => !knownSetIds.has(set.id))],
+            sets: [
+              ...remoteSets,
+              ...current.sets.filter((set) => !knownSetIds.has(set.id) && set.canEdit !== false),
+            ],
             groups: remoteGroups,
             sessions: [...remoteSessions, ...current.sessions.filter((studySession) => !knownSessionIds.has(studySession.id))],
           };
@@ -880,7 +885,8 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
   }, [forcedSetId, library.sets, selectedSetId]);
 
   useEffect(() => {
-    if (!standaloneSetView || !forcedSetId || selectedSet) {
+    if (!standaloneSetView || !forcedSetId) {
+      setStandaloneSetAccessVerified(false);
       setStandaloneSetError(null);
       setLoadingStandaloneSet(false);
       return;
@@ -888,6 +894,7 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
 
     let cancelled = false;
     setLoadingStandaloneSet(true);
+    setStandaloneSetAccessVerified(false);
     setStandaloneSetError(null);
 
     const loadStandaloneSet = async () => {
@@ -899,6 +906,10 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
         if (cancelled) return;
 
         if (!response.ok || !payload?.set) {
+          setLibrary((current) => ({
+            ...current,
+            sets: current.sets.filter((set) => set.id !== forcedSetId),
+          }));
           setStandaloneSetError(typeof payload?.error === "string" ? payload.error : "Study set not found.");
           return;
         }
@@ -910,8 +921,10 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
             ? current.sets.map((set) => (set.id === incomingSet.id ? incomingSet : set))
             : [incomingSet, ...current.sets],
         }));
+        setStandaloneSetAccessVerified(true);
       } catch {
         if (!cancelled) {
+          setStandaloneSetAccessVerified(false);
           setStandaloneSetError("Could not load this shared study set.");
         }
       } finally {
@@ -926,7 +939,7 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
     return () => {
       cancelled = true;
     };
-  }, [forcedSetId, selectedSet, standaloneSetView]);
+  }, [forcedSetId, standaloneSetView]);
 
   const openSurface = (nextSurface: StudySurface) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -1234,8 +1247,34 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
           : [nextSet, ...current.sets],
       };
     });
+
+    if (isSignedIn && createInGroupId) {
+      try {
+        const response = await fetch(`/api/study/groups/${encodeURIComponent(createInGroupId)}/sets`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ setId: nextSet.id }),
+        });
+        const payload = await response.json();
+        if (!response.ok) {
+          throw new Error(payload.error || "The set was saved, but could not be shared with the group.");
+        }
+        const updatedGroup = payload.group as StudyGroup;
+        setLibrary((current) => ({
+          ...current,
+          groups: current.groups.map((group) => (group.id === updatedGroup.id ? updatedGroup : group)),
+        }));
+        showToast(`Study set saved and shared with ${updatedGroup.name}.`, "reward");
+      } catch (error) {
+        showToast(
+          error instanceof Error ? error.message : "The set was saved, but could not be shared with the group.",
+          "error",
+        );
+      }
+    }
+
     setSelectedSetId(nextSet.id);
-    if (nextSet.visibility !== "public") {
+    if (nextSet.visibility !== "public" && !createInGroupId) {
       showToast(
         visibilityErrorMessage || (existsInLibrary(library, nextSet.id) ? "Study set updated." : "Study set saved."),
         visibilityErrorMessage ? "error" : "default",
@@ -2261,7 +2300,7 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
     );
   }
 
-  if (standaloneSetView && selectedSet) {
+  if (standaloneSetView && selectedSet && standaloneSetAccessVerified) {
     return (
       <main className="min-h-screen bg-transparent pb-20 text-white">
         <div className="mx-auto max-w-280 px-4 pb-14 pt-5 sm:px-6">
@@ -2315,7 +2354,7 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
     );
   }
 
-  if (standaloneSetView && !selectedSet) {
+  if (standaloneSetView && (!selectedSet || !standaloneSetAccessVerified)) {
     return (
       <main className="min-h-screen bg-transparent pb-20 text-white">
         <div className="mx-auto max-w-5xl px-4 pb-14 pt-8 sm:px-6">
@@ -2403,6 +2442,7 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
                 onRenameGroup={renameGroup}
                 onRemoveSetFromGroup={removeSetFromGroup}
                 onOpenAddSetPicker={setGroupSetPickerGroupId}
+                onCreateSetInGroup={(groupId) => router.push(`/study/create?type=flashcards&group=${encodeURIComponent(groupId)}`)}
               />
             ) : (
             <>
@@ -3348,6 +3388,7 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
                 onRenameGroup={renameGroup}
                 onRemoveSetFromGroup={removeSetFromGroup}
                 onOpenAddSetPicker={setGroupSetPickerGroupId}
+                onCreateSetInGroup={(groupId) => router.push(`/study/create?type=flashcards&group=${encodeURIComponent(groupId)}`)}
               />
             )}
 
@@ -3815,16 +3856,20 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
                         const resp = await fetch("/api/study/groups", {
                           method: "POST",
                           headers: { "Content-Type": "application/json" },
-                          body: JSON.stringify({ name: groupName.trim(), course: "", description: "" }),
+                          body: JSON.stringify({
+                            name: groupName.trim(),
+                            course: "",
+                            description: "",
+                            setIds: [groupPickerSetId],
+                          }),
                         });
                         const payload = await resp.json();
                         if (!resp.ok) throw new Error(payload.error || "Failed to create group.");
                         const newGroup = payload.group as StudyGroup;
                         setLibrary((cur) => ({ ...cur, groups: [newGroup, ...cur.groups] }));
                         setGroupName("");
-                        // Add the set to the newly created group
-                        await addSetToGroup(newGroup.id, groupPickerSetId);
                         setGroupPickerSetId(null);
+                        showToast("Group created and set shared.", "reward");
                       } catch (err) {
                         showToast(err instanceof Error ? err.message : "Failed to create group.", "error");
                       }
@@ -4034,6 +4079,7 @@ function GroupsView({
   onRenameGroup,
   onRemoveSetFromGroup,
   onOpenAddSetPicker,
+  onCreateSetInGroup,
 }: {
   groups: StudyGroup[];
   sets: StudySet[];
@@ -4059,6 +4105,7 @@ function GroupsView({
   onRenameGroup: (groupId: string) => void;
   onRemoveSetFromGroup: (groupId: string, setId: string) => void;
   onOpenAddSetPicker: (groupId: string) => void;
+  onCreateSetInGroup: (groupId: string) => void;
 }) {
   const [showDetail, setShowDetail] = useState(false);
   const [moreMenuOpen, setMoreMenuOpen] = useState(false);
@@ -4123,6 +4170,12 @@ function GroupsView({
           <div className="flex items-start justify-between gap-4">
             <h2 className="text-[2.1rem] font-bold tracking-[-0.05em] text-white">{selectedGroup.name}</h2>
             <div className="flex items-center gap-2">
+              <button
+                onClick={() => onCreateSetInGroup(selectedGroup.id)}
+                className="rounded-full bg-[#4f46e5] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#5d56f0]"
+              >
+                Create a set
+              </button>
               <button
                 onClick={() => onOpenAddSetPicker(selectedGroup.id)}
                 className="rounded-full border border-white/12 bg-white/7 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-white/12"
@@ -4206,13 +4259,21 @@ function GroupsView({
                     <BookOpen className="h-9 w-9" />
                   </div>
                   <div className="text-[1.6rem] font-semibold tracking-tight text-white">Add sets to your group</div>
-                  <div className="mt-2 text-sm text-zinc-400">Choose a flashcard set to share with the group.</div>
-                  <button
-                    onClick={() => onOpenAddSetPicker(selectedGroup.id)}
-                    className="mt-6 rounded-full bg-white/10 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-white/16"
-                  >
-                    Add sets
-                  </button>
+                  <div className="mt-2 text-sm text-zinc-400">Create a set here to share it automatically, or add one you already own.</div>
+                  <div className="mt-6 flex flex-wrap justify-center gap-2">
+                    <button
+                      onClick={() => onCreateSetInGroup(selectedGroup.id)}
+                      className="rounded-full bg-[#4f46e5] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#5d56f0]"
+                    >
+                      Create a set
+                    </button>
+                    <button
+                      onClick={() => onOpenAddSetPicker(selectedGroup.id)}
+                      className="rounded-full bg-white/10 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-white/16"
+                    >
+                      Add existing set
+                    </button>
+                  </div>
                 </div>
               )}
             </div>

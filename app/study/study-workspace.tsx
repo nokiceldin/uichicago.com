@@ -417,9 +417,9 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
   const [savedFilter, setSavedFilter] = useState(false);
   const [librarySection, setLibrarySection] = useState<LibrarySection>("flashcards");
   const [customFolders, setCustomFolders] = useState<string[]>([]);
-  const [draftSet, setDraftSet] = useState<StudySet>(emptyDraftSet());
+  const [draftSet, setDraftSet] = useState<StudySet>(emptyDraftSet);
   const [saveDestinationDialog, setSaveDestinationDialog] = useState<SaveDestinationDialogState>(null);
-  const [draftGuide, setDraftGuide] = useState<StudyNote>(emptyDraftGuide());
+  const [draftGuide, setDraftGuide] = useState<StudyNote>(emptyDraftGuide);
   // Card fronts to practice when entering LearnMode via the "Practice mistakes" chip
   const [learnInitialMistakeFronts, setLearnInitialMistakeFronts] = useState<string[] | null>(null);
   // Groups modal triggered from the set overview / flashcards header
@@ -449,6 +449,7 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
   const [generatedGuide, setGeneratedGuide] = useState<StructuredLectureNotes | null>(null);
   const [shouldCreateGuideFlashcards, setShouldCreateGuideFlashcards] = useState(true);
   const [libraryItemMenuOpen, setLibraryItemMenuOpen] = useState<string | null>(null);
+  const initializedDraftRouteRef = useRef<string | null>(null);
   const lastLibrarySerializedRef = useRef("");
   const lastFoldersSerializedRef = useRef("");
   const isEditingFlashcardSet = Boolean(editSetId && library.sets.some((set) => set.id === editSetId));
@@ -642,29 +643,31 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
   }, [globalQuery]);
 
   useEffect(() => {
-    if (!isCreateRoute) return;
+    if (!isCreateRoute) {
+      initializedDraftRouteRef.current = null;
+      return;
+    }
+    // Initialize once per editor destination. Draft IDs change when a new draft
+    // is created, so they must never drive the effect that creates that draft.
+    const routeKey = `${createType}:${editSetId ?? "new"}`;
+    if (initializedDraftRouteRef.current === routeKey) return;
+    const folder = normalizeFolderPath(searchParams.get("folder") || "");
     if (isGuideCreateRoute) {
-      setDraftGuide(emptyDraftGuide());
-      setDraftSet(emptyDraftSet());
+      setDraftGuide({ ...emptyDraftGuide(), folder });
       setGeneratedGuide(null);
-      setImportText("");
-      return;
+    } else if (editSetId) {
+      const existingSet = library.sets.find((set) => set.id === editSetId);
+      // The local or authenticated library may still be loading.
+      if (!existingSet) return;
+      setDraftSet(existingSet);
+    } else {
+      setDraftSet({ ...emptyDraftSet(), folder });
     }
-    const editSetId = searchParams.get("edit");
-    if (!editSetId) {
-      setDraftSet(emptyDraftSet());
-      setImportText("");
-      return;
-    }
-
-    const existingSet = library.sets.find((set) => set.id === editSetId);
-    if (existingSet) {
-      setDraftSet((current) => (current.id === existingSet.id ? current : existingSet));
-      if (draftSet.id !== existingSet.id) {
-        setImportText("");
-      }
-    }
-  }, [draftSet.id, isCreateRoute, isGuideCreateRoute, library.sets, searchParams]);
+    initializedDraftRouteRef.current = routeKey;
+    setImportText("");
+    setDraftSetErrors({});
+    setDraftGuideErrors({});
+  }, [createType, editSetId, isCreateRoute, isGuideCreateRoute, library.sets, searchParams]);
 
   // Scroll to a specific card in edit mode when ?card=CARDID is in the URL
   const editScrollCardId = isCreateRoute ? searchParams.get("card") : null;
@@ -811,7 +814,7 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
       const next = { ...current };
       if (next.title && draftSet.title.trim()) delete next.title;
       if (next.cards && cleanedCards.length > 0) delete next.cards;
-      return next;
+      return Object.keys(next).length === Object.keys(current).length ? current : next;
     });
   }, [draftSet.cards, draftSet.course, draftSet.title, draftSetErrors]);
 
@@ -833,7 +836,7 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
       if (next.course && draftGuide.course.trim()) delete next.course;
       if (next.content && importText.trim()) delete next.content;
       if (next.guide && generatedGuide) delete next.guide;
-      return next;
+      return Object.keys(next).length === Object.keys(current).length ? current : next;
     });
   }, [draftGuide.course, draftGuide.title, draftGuideErrors, generatedGuide, importText]);
 

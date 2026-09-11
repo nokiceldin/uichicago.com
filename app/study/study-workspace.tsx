@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { parseStudyInvite, studyInvitePath } from "@/lib/study/invite";
 import { signIn, useSession } from "next-auth/react";
 import {
   Bookmark,
@@ -438,6 +439,9 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
   const [importText, setImportText] = useState("");
   const [courseSuggestions, setCourseSuggestions] = useState<StudyCourseSuggestion[]>([]);
   const [publicSearchResults, setPublicSearchResults] = useState<StudySet[]>([]);
+  const [publicNoteResults, setPublicNoteResults] = useState<StudyNote[]>([]);
+  const [publicSearchLoading, setPublicSearchLoading] = useState(false);
+  const [publicSearchError, setPublicSearchError] = useState("");
   const [loadingStandaloneSet, setLoadingStandaloneSet] = useState(false);
   const [standaloneSetAccessVerified, setStandaloneSetAccessVerified] = useState(false);
   const [standaloneSetError, setStandaloneSetError] = useState<string | null>(null);
@@ -450,6 +454,7 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
   const [shouldCreateGuideFlashcards, setShouldCreateGuideFlashcards] = useState(true);
   const [libraryItemMenuOpen, setLibraryItemMenuOpen] = useState<string | null>(null);
   const initializedDraftRouteRef = useRef<string | null>(null);
+  const groupMutationVersionRef = useRef(0);
   const lastLibrarySerializedRef = useRef("");
   const lastFoldersSerializedRef = useRef("");
   const isEditingFlashcardSet = Boolean(editSetId && library.sets.some((set) => set.id === editSetId));
@@ -601,36 +606,44 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
 
   // Auto-join from invite URL (?join=CODE)
   const joinCodeFromUrl = searchParams.get("join");
-  const hasAutoJoinedRef = useRef(false);
+  const hasAutoJoinedRef = useRef<string | null>(null);
+  const [joinError, setJoinError] = useState("");
   useEffect(() => {
-    if (!joinCodeFromUrl || hasAutoJoinedRef.current) return;
-    if (status !== "authenticated") {
-      promptGoogleSignIn();
-      return;
-    }
-    hasAutoJoinedRef.current = true;
-    setInviteCodeInput(joinCodeFromUrl.toUpperCase());
+    if (!joinCodeFromUrl) { hasAutoJoinedRef.current = null; return; }
+    // A loading session is not a signed-out session. Never start OAuth here.
+    if (status !== "authenticated" || hasAutoJoinedRef.current === joinCodeFromUrl) return;
+    hasAutoJoinedRef.current = joinCodeFromUrl;
+    const code = parseStudyInvite(joinCodeFromUrl);
+    setInviteCodeInput(code);
+    setJoinError("");
     fetch("/api/study/groups/join", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ inviteCode: joinCodeFromUrl.toUpperCase() }),
+      body: JSON.stringify({ inviteCode: code }),
     })
-      .then((r) => r.json())
+      .then(async (response) => {
+        const payload = await response.json();
+        if (!response.ok) throw new Error(payload.error || "Could not join that group.");
+        return payload;
+      })
       .then((payload) => {
         if (payload.ok && payload.group) {
           const joinedGroup = payload.group as StudyGroup;
+          groupMutationVersionRef.current += 1;
           setLibrary((current) => ({
             ...current,
             groups: [joinedGroup, ...current.groups.filter((g) => g.id !== joinedGroup.id)],
+            sets: [...current.sets, ...(Array.isArray(payload.sets) ? payload.sets as StudySet[] : []).filter((set) => !current.sets.some((entry) => entry.id === set.id))],
           }));
           setSelectedGroupId(joinedGroup.id);
-          openStudyScreen("groups");
+          setGroupTab("materials");
+          router.replace(`/study?screen=groups&group=${encodeURIComponent(joinedGroup.id)}`);
           showToast(`Joined "${joinedGroup.name}"!`, "reward");
         } else {
-          showToast(payload.error || "Could not join that group.", "error");
+          setJoinError(payload.error || "Could not join that group.");
         }
       })
-      .catch(() => showToast("Could not join that group.", "error"));
+      .catch((error) => setJoinError(error instanceof Error ? error.message : "Could not join that group."));
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [joinCodeFromUrl, status]);
 
@@ -699,6 +712,7 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
 
     let cancelled = false;
 
+    const groupVersion = groupMutationVersionRef.current;
     const loadStudyProfile = async () => {
       try {
         const response = await fetch("/api/study/me", {
@@ -721,9 +735,9 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
             ...current,
             sets: [
               ...remoteSets,
-              ...current.sets.filter((set) => !knownSetIds.has(set.id) && set.canEdit !== false),
+              ...current.sets.filter((set) => !knownSetIds.has(set.id) && (set.canEdit !== false || groupMutationVersionRef.current !== groupVersion)),
             ],
-            groups: remoteGroups,
+            groups: groupMutationVersionRef.current === groupVersion ? remoteGroups : current.groups,
             sessions: [...remoteSessions, ...current.sessions.filter((studySession) => !knownSessionIds.has(studySession.id))],
           };
         });
@@ -842,29 +856,32 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
 
   useEffect(() => {
     const query = search.trim();
+    setPublicSearchResults([]);
+    setPublicNoteResults([]);
+    setPublicSearchError("");
     if (query.length < 2) {
-      setPublicSearchResults([]);
+      setPublicSearchLoading(false);
       return;
     }
-
     const controller = new AbortController();
+    setPublicSearchLoading(true);
     const timeout = window.setTimeout(async () => {
       try {
-        const response = await fetch(`/api/study/public-sets?q=${encodeURIComponent(query)}`, {
-          signal: controller.signal,
-        });
-        const payload = await response.json();
-        if (!response.ok) return;
-        setPublicSearchResults(Array.isArray(payload.items) ? payload.items : []);
-      } catch {
-        setPublicSearchResults([]);
+        const results = await Promise.all(["public-sets", "public-notes"].map(async (endpoint) => {
+          const response = await fetch(`/api/study/${endpoint}?q=${encodeURIComponent(query)}`, { signal: controller.signal });
+          if (!response.ok) throw new Error("Public search is unavailable. Please try again.");
+          return response.json();
+        }));
+        if (controller.signal.aborted) return;
+        setPublicSearchResults(results[0].items ?? []);
+        setPublicNoteResults(results[1].items ?? []);
+      } catch (error) {
+        if (!controller.signal.aborted) setPublicSearchError(error instanceof Error ? error.message : "Search failed.");
+      } finally {
+        if (!controller.signal.aborted) setPublicSearchLoading(false);
       }
     }, 180);
-
-    return () => {
-      controller.abort();
-      window.clearTimeout(timeout);
-    };
+    return () => { controller.abort(); window.clearTimeout(timeout); };
   }, [search]);
 
   const showToast = (message: string, tone: ToastTone = "default") => {
@@ -1109,6 +1126,11 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
   }, [customFolders, library.notes, library.sets]);
 
   const subjects = Array.from(new Set(library.sets.map((set) => set.subject).filter(Boolean)));
+  useEffect(() => {
+    const groupId = searchParams.get("group");
+    if (groupId) setSelectedGroupId(groupId);
+  }, [searchParams]);
+
   const selectedGroup = library.groups.find((group) => group.id === selectedGroupId) ?? library.groups[0];
   const folderSetPreview = setList.slice(0, 12);
   const folderNotePreview = matchingNotes.slice(0, 8);
@@ -1198,47 +1220,16 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
 
     if (isSignedIn) {
       try {
-        const response = await fetch("/api/study/sets", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ set: nextSet }),
+        const response = await fetch(nextSet.visibility === "public" ? "/api/study/public-sets" : "/api/study/sets", {
+          method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ set: nextSet }),
         });
         const payload = await response.json();
-        if (!response.ok) {
-          throw new Error(payload.error || "Failed to sync the study set.");
-        }
-        nextSet = payload.set as StudySet;
+        if (!response.ok) throw new Error(payload.error || "Could not save this set. Please try again.");
+        if (payload.set) nextSet = payload.set as StudySet;
       } catch (error) {
-        showToast(error instanceof Error ? error.message : "Saved locally, but server sync failed.", "error");
+        showToast(error instanceof Error ? error.message : "Could not save this set.", "error");
+        return;
       }
-    }
-
-    if (nextSet.visibility === "public") {
-      try {
-        const publishResponse = await fetch("/api/study/public-sets", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ set: nextSet }),
-        });
-        const publishPayload = await publishResponse.json();
-        if (!publishResponse.ok) {
-          nextSet = { ...nextSet, visibility: "private" };
-          visibilityErrorMessage = publishPayload.error || "This set was kept private.";
-        } else {
-          showToast(existsInLibrary(library, nextSet.id) ? "Study set updated and shared." : "Study set saved and shared.");
-        }
-      } catch {
-        nextSet = { ...nextSet, visibility: "private" };
-        visibilityErrorMessage = "Could not publish this set, so it was saved privately instead.";
-      }
-    } else {
-      try {
-        await fetch("/api/study/public-sets", {
-          method: "DELETE",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ setId: nextSet.id }),
-        });
-      } catch {}
     }
 
     setLibrary((current) => {
@@ -1383,6 +1374,8 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
 
     const localCopy: StudySet = {
       ...set,
+      ownerId: undefined,
+      canEdit: true,
       id: createStudyId("set"),
       visibility: "private",
       createdAt: new Date().toISOString(),
@@ -1495,13 +1488,15 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
       }
     } else {
       try {
-        await fetch("/api/study/public-sets", {
-          method: "DELETE",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ setId }),
+        const response = await fetch("/api/study/public-sets", {
+          method: "DELETE", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ setId }),
         });
-      } catch {}
-      showToast("Set is now private — only you can see it.");
+        if (!response.ok) throw new Error("Could not make this set private. Please try again.");
+        showToast("Set is now private — only you can see it.");
+      } catch (error) {
+        setLibrary((current) => ({ ...current, sets: current.sets.map((set) => set.id === setId ? target : set) }));
+        showToast(error instanceof Error ? error.message : "Could not change visibility.", "error");
+      }
     }
   };
 
@@ -1973,6 +1968,7 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
       }
 
       const nextGroup = payload.group as StudyGroup;
+      groupMutationVersionRef.current += 1;
       setLibrary((current) => ({
         ...current,
         groups: [nextGroup, ...current.groups.filter((group) => group.id !== nextGroup.id)],
@@ -1991,15 +1987,14 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
   };
 
   const joinGroup = async () => {
-    if (!isSignedIn) {
-      showToast("Sign in with Google to join verified study groups.", "error");
-      promptGoogleSignIn();
+    const code = parseStudyInvite(inviteCodeInput);
+    if (!code) {
+      showToast("Enter a valid invite code or link first.", "error");
       return;
     }
-
-    const code = inviteCodeInput.trim().toUpperCase();
-    if (!code) {
-      showToast("Enter an invite code first.", "error");
+    if (status === "loading") return;
+    if (!isSignedIn) {
+      void signIn("google", { callbackUrl: studyInvitePath(code) });
       return;
     }
 
@@ -2015,15 +2010,17 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
       }
 
       const matchingGroup = payload.group as StudyGroup;
+      groupMutationVersionRef.current += 1;
       setLibrary((current) => ({
         ...current,
         groups: [matchingGroup, ...current.groups.filter((group) => group.id !== matchingGroup.id)],
+        sets: [...current.sets, ...(Array.isArray(payload.sets) ? payload.sets as StudySet[] : []).filter((set) => !current.sets.some((entry) => entry.id === set.id))],
       }));
       setInviteCodeInput("");
       setSelectedGroupId(matchingGroup.id);
       setGroupTab("materials");
       showToast("Joined study group.");
-      openStudyScreen("groups");
+      router.push(`/study?screen=groups&group=${encodeURIComponent(matchingGroup.id)}`);
     } catch (error) {
       showToast(error instanceof Error ? error.message : "Failed to join study group.", "error");
     }
@@ -2214,6 +2211,8 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
   if (isCreateRoute) {
     return (
       <main className="min-h-screen bg-transparent pb-20 text-white">
+
+
         <div className="mx-auto max-w-310 px-1 pb-14 pt-3 sm:px-2">
           <div className="study-appear mb-8 flex items-center justify-between gap-4">
             <div>
@@ -2389,6 +2388,46 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
 
   return (
     <main className="min-h-screen bg-transparent pb-20 text-white">
+      {joinCodeFromUrl && (
+        <section className="mb-5 rounded-2xl border border-indigo-400/30 bg-slate-900 p-5" aria-label="Study group invitation">
+          <h2 className="font-semibold text-white">Join a study group</h2>
+          <p className="mt-2 text-sm text-slate-300">Invite code: <span className="select-all font-mono">{parseStudyInvite(joinCodeFromUrl) || "Invalid code"}</span></p>
+          {status === "unauthenticated" ? <button onClick={() => void signIn("google", { callbackUrl: studyInvitePath(parseStudyInvite(joinCodeFromUrl)) })} className="mt-3 rounded-lg bg-indigo-600 px-4 py-2 font-semibold text-white">Sign in to join</button> : <p role="status" className="mt-2 text-sm text-slate-300">{joinError || (status === "loading" ? "Checking your sign-in…" : "Joining group…")}</p>}
+          {joinError && <button onClick={() => { hasAutoJoinedRef.current = null; void joinGroup(); }} className="mt-3 rounded-lg border border-slate-600 px-4 py-2">Try again</button>}
+        </section>
+      )}
+
+      {globalQuery && (
+        <section aria-label="Public study materials" className="mb-6 rounded-2xl border border-slate-700 bg-slate-900 p-5">
+          <h2 className="text-lg font-semibold">Public study materials</h2>
+          <p className="mt-1 text-sm text-slate-400">Discover flashcards, notes, and study guides shared by other students. Your own library results appear below.</p>
+          {publicSearchLoading ? <p role="status" className="mt-4 text-slate-300">Searching public materials…</p> : publicSearchError ? <p role="alert" className="mt-4 text-rose-300">{publicSearchError}</p> : (
+            <div className="mt-4 grid gap-3 md:grid-cols-2">
+              {publicSearchResults.map((set) => (
+                <div key={set.id} className="rounded-xl border border-slate-700 bg-slate-800 p-4">
+                  <Link href={`/study/set/${encodeURIComponent(set.id)}`} className="font-semibold text-indigo-200 hover:text-white">{set.title}</Link>
+                  <p className="mt-1 text-xs text-slate-400">Public flashcards · {set.cards.length} cards · {set.course || set.subject}</p>
+                  <button onClick={() => addPublicSetToLibrary(set)} className="mt-3 text-sm font-medium text-indigo-200">Copy to my library</button>
+                </div>
+              ))}
+              {publicNoteResults.map((note) => (
+                <div key={note.id} className="rounded-xl border border-slate-700 bg-slate-800 p-4">
+                  <h3 className="font-semibold text-indigo-200">{note.title}</h3>
+                  <p className="mt-1 text-xs text-slate-400">Public {note.sourceType === "imported" ? "study guide" : "note"} · {note.course}</p>
+                  <p className="mt-2 line-clamp-3 text-sm text-slate-300">{note.structuredContent?.summary || note.rawContent || note.transcriptContent}</p>
+                  <button onClick={() => {
+                    const now = new Date().toISOString();
+                    const copy: StudyNote = { ...note, id: createStudyId("note"), visibility: "private", createdAt: now, updatedAt: now, lastOpenedAt: now, pinned: false, favorite: false };
+                    setLibrary((current) => ({ ...current, notes: [copy, ...current.notes] }));
+                    router.push(`/study?mode=notes&note=${encodeURIComponent(copy.id)}`);
+                  }} className="mt-3 text-sm font-medium text-indigo-200">Copy &amp; open note</button>
+                </div>
+              ))}
+              {!publicSearchResults.length && !publicNoteResults.length && <p className="text-sm text-slate-400">{globalQuery.length < 2 ? "Enter at least two characters to search public materials." : "No public materials match this search."}</p>}
+            </div>
+          )}
+        </section>
+      )}
       {surface === "home" && !libraryView && !folderFilter && screen !== "groups" ? (
         <FeatureTour
           storageKey="uichicago-tour-study-home-v1"
@@ -4110,7 +4149,8 @@ function GroupsView({
   onOpenAddSetPicker: (groupId: string) => void;
   onCreateSetInGroup: (groupId: string) => void;
 }) {
-  const [showDetail, setShowDetail] = useState(false);
+  const groupSearchParams = useSearchParams();
+  const [showDetail, setShowDetail] = useState(Boolean(groupSearchParams.get("group")));
   const [moreMenuOpen, setMoreMenuOpen] = useState(false);
   const moreMenuRef = useRef<HTMLDivElement>(null);
   const prevGroupIdRef = useRef(selectedGroupId);
@@ -4143,7 +4183,7 @@ function GroupsView({
 
   const copyInviteLink = async () => {
     if (!selectedGroup) return;
-    const inviteUrl = `${window.location.origin}/study?join=${selectedGroup.inviteCode}`;
+    const inviteUrl = `${window.location.origin}${studyInvitePath(selectedGroup.inviteCode)}`;
     try {
       await navigator.clipboard.writeText(inviteUrl);
     } catch {
@@ -4289,7 +4329,7 @@ function GroupsView({
                     {selectedGroup.memberNames.length} member{selectedGroup.memberNames.length === 1 ? "" : "s"}
                   </div>
                   <div className="mt-1 text-xs text-zinc-400">
-                    Invite members by sharing the link (15 max)
+                    Invite members by sharing the link or code
                   </div>
                   <div className="mt-0.5 text-xs text-zinc-500">
                     By inviting others, your info will be visible to accepted members.
@@ -4302,12 +4342,20 @@ function GroupsView({
                   Copy link
                 </button>
               </div>
+              <div className="grid gap-4 rounded-xl border border-slate-700 bg-slate-900 p-4 sm:grid-cols-[1fr_180px]">
+                <label className="min-w-0 text-xs font-semibold text-slate-300">Invite link
+                  <input aria-label="Invite link" readOnly value={`${typeof window === "undefined" ? "" : window.location.origin}${studyInvitePath(selectedGroup.inviteCode)}`} onFocus={(event) => event.target.select()} className="mt-2 w-full rounded-lg border border-slate-600 bg-slate-800 px-3 py-2 text-sm font-normal text-white" />
+                </label>
+                <label className="text-xs font-semibold text-slate-300">Invite code
+                  <input aria-label="Invite code" readOnly value={selectedGroup.inviteCode} onFocus={(event) => event.target.select()} className="mt-2 w-full rounded-lg border border-slate-600 bg-slate-800 px-3 py-2 font-mono text-base tracking-wider text-white" />
+                </label>
+              </div>
               {/* Also show join-by-code input */}
               <div className="flex gap-2">
                 <input
                   value={inviteCodeInput}
                   onChange={(e) => onInviteCodeInputChange(e.target.value)}
-                  placeholder="Have an invite code? Paste it here"
+                  placeholder="Paste an invite code or link"
                   className="study-premium-input flex-1 rounded-xl border border-white/10 bg-white/4 px-4 py-3 text-sm text-white outline-none placeholder:text-zinc-500"
                 />
                 <button
@@ -4406,7 +4454,7 @@ function GroupsView({
               <input
                 value={inviteCodeInput}
                 onChange={(e) => onInviteCodeInputChange(e.target.value)}
-                placeholder="Have an invite code? Enter it here"
+                placeholder="Paste an invite code or link"
                 className="study-premium-input rounded-xl border border-white/10 bg-white/6 px-4 py-3 text-sm text-white outline-none placeholder:text-zinc-500"
               />
               <button onClick={onJoinGroup} disabled={!inviteCodeInput.trim()} className="rounded-xl bg-[#4f46e5] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[#5d56f0] disabled:opacity-40">
@@ -4438,7 +4486,7 @@ function GroupsView({
               <input
                 value={inviteCodeInput}
                 onChange={(e) => onInviteCodeInputChange(e.target.value)}
-                placeholder="Join with invite code"
+                placeholder="Paste an invite code or link"
                 className="study-premium-input flex-1 rounded-xl border border-white/10 bg-white/4 px-4 py-3 text-sm text-white outline-none placeholder:text-zinc-500"
               />
               <button onClick={onJoinGroup} disabled={!inviteCodeInput.trim()} className="rounded-xl bg-[#4f46e5] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[#5d56f0] disabled:opacity-40">

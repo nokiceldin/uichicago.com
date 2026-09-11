@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { getCurrentStudyUser } from "@/lib/auth/session";
 import prisma from "@/lib/prisma";
-import { readPublicStudySets } from "@/lib/study/public-sets";
 import { serializeStudySet } from "@/lib/study/server";
 
 export const dynamic = "force-dynamic";
@@ -58,11 +57,6 @@ export async function GET(
       return NextResponse.json({
         set: serializeStudySet(set, studyUser?.id),
       });
-    }
-
-    const legacy = (await readPublicStudySets()).find((entry) => entry.id === id && entry.visibility === "public");
-    if (legacy) {
-      return NextResponse.json({ set: legacy });
     }
 
     return NextResponse.json({ error: "Study set not found." }, { status: 404 });

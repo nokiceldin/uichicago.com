@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { Search } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import HeroSearch from "./HeroSearch";
 import NavbarAuthControls from "./auth/NavbarAuthControls";
@@ -15,7 +15,10 @@ export default function Navbar() {
   const onStudy = pathname.startsWith("/study");
   const onChat = pathname.startsWith("/chat");
   const inStudyShell = pathname.startsWith("/study");
-  const [studySearch, setStudySearch] = useState("");
+  const searchRoute = `${pathname}?${searchParams.toString()}`;
+  const [searchDraft, setSearchDraft] = useState({ route: "", value: "" });
+  const studySearch = searchDraft.route === searchRoute ? searchDraft.value : searchParams.get("query") || "";
+  const searchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const navLink = (href: string, label: string) => {
     const active = pathname.startsWith(href);
@@ -50,25 +53,18 @@ export default function Navbar() {
   };
 
   useEffect(() => {
-    if (!inStudyShell) return;
+    if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
+    return () => { if (searchTimerRef.current) clearTimeout(searchTimerRef.current); };
+  }, [pathname, searchParams]);
 
-    const timeout = window.setTimeout(() => {
-      const nextQuery = studySearch.trim();
-      const currentQuery = (searchParams.get("query") || "").trim();
-      if (nextQuery === currentQuery) return;
-
-      const params = new URLSearchParams(searchParams.toString());
-      if (nextQuery) {
-        params.set("query", nextQuery);
-      } else {
-        params.delete("query");
-      }
-
-      router.push(`/study${params.toString() ? `?${params.toString()}` : ""}`);
+  const searchStudyMaterials = (value: string) => {
+    setSearchDraft({ route: searchRoute, value });
+    if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
+    searchTimerRef.current = setTimeout(() => {
+      const query = value.trim();
+      router.push(query ? `/study?query=${encodeURIComponent(query)}` : "/study");
     }, 220);
-
-    return () => window.clearTimeout(timeout);
-  }, [inStudyShell, router, searchParams, studySearch]);
+  };
 
   if (inStudyShell) {
     return (
@@ -94,8 +90,8 @@ export default function Navbar() {
             <Search className="pointer-events-none absolute left-3.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-zinc-500" />
             <input
               value={studySearch}
-              onChange={(event) => setStudySearch(event.target.value)}
-              placeholder="Search your library..."
+              onChange={(event) => searchStudyMaterials(event.target.value)}
+              placeholder="Search notes & flashcards..."
               className="h-10 w-full rounded-xl border border-white/10 bg-white/4 pl-10 pr-4 text-sm text-white outline-none placeholder:text-zinc-500 transition focus:border-indigo-500/35 focus:bg-white/6"
             />
           </div>

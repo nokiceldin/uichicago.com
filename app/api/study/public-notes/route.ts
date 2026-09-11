@@ -1,3 +1,4 @@
+import { requireCurrentStudyUser } from "@/lib/auth/session";
 import { NextRequest, NextResponse } from "next/server";
 import type { StudyNote } from "@/lib/study/types";
 import {
@@ -28,6 +29,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    const user = await requireCurrentStudyUser();
     const body = await request.json();
     const note = body?.note as StudyNote | undefined;
 
@@ -40,9 +42,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: moderation.reason || "This note could not be published." }, { status: 400 });
     }
 
-    await upsertPublicStudyNote(note);
+    await upsertPublicStudyNote(note, user.id);
     return NextResponse.json({ ok: true });
   } catch (error) {
+    if (error instanceof Error && error.message === "UNAUTHORIZED") return NextResponse.json({ error: "Sign in to publish notes publicly." }, { status: 401 });
+    if (error instanceof Error && error.message === "FORBIDDEN") return NextResponse.json({ error: "Only the owner can change this note." }, { status: 403 });
     return NextResponse.json(
       { error: error instanceof Error ? error.message : "Failed to publish note." },
       { status: 500 },
@@ -52,14 +56,17 @@ export async function POST(request: NextRequest) {
 
 export async function DELETE(request: NextRequest) {
   try {
+    const user = await requireCurrentStudyUser();
     const body = await request.json();
     const noteId = String(body?.noteId || "").trim();
     if (!noteId) {
       return NextResponse.json({ error: "Missing note id." }, { status: 400 });
     }
-    await removePublicStudyNote(noteId);
+    await removePublicStudyNote(noteId, user.id);
     return NextResponse.json({ ok: true });
   } catch (error) {
+    if (error instanceof Error && error.message === "UNAUTHORIZED") return NextResponse.json({ error: "Sign in to publish notes publicly." }, { status: 401 });
+    if (error instanceof Error && error.message === "FORBIDDEN") return NextResponse.json({ error: "Only the owner can change this note." }, { status: 403 });
     return NextResponse.json(
       { error: error instanceof Error ? error.message : "Failed to unpublish note." },
       { status: 500 },

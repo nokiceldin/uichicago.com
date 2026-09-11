@@ -1,13 +1,14 @@
+import { parseStudyInvite } from "@/lib/study/invite";
 import { NextResponse } from "next/server";
 import { requireCurrentStudyUser } from "@/lib/auth/session";
 import prisma from "@/lib/prisma";
-import { serializeStudyGroup } from "@/lib/study/server";
+import { serializeStudyGroup, serializeStudySet } from "@/lib/study/server";
 
 export async function POST(request: Request) {
   try {
     const studyUser = await requireCurrentStudyUser();
     const body = await request.json();
-    const inviteCode = String(body.inviteCode || "").trim().toUpperCase();
+    const inviteCode = parseStudyInvite(String(body.inviteCode || ""));
 
     if (!inviteCode) {
       return NextResponse.json({ error: "Invite code is required." }, { status: 400 });
@@ -46,7 +47,11 @@ export async function POST(request: Request) {
       },
     });
 
-    return NextResponse.json({ ok: true, group: serializeStudyGroup(updated as never) });
+    const sets = await prisma.studySet.findMany({
+      where: { studyGroups: { some: { groupId: group.id } } },
+      include: { flashcards: true },
+    });
+    return NextResponse.json({ ok: true, group: serializeStudyGroup(updated as never), sets: sets.map((set) => serializeStudySet(set, studyUser.id)) });
   } catch (error) {
     if (error instanceof Error && error.message === "UNAUTHORIZED") {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

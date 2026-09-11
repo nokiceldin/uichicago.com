@@ -3,10 +3,6 @@ import { getCurrentStudyUser, requireCurrentStudyUser } from "@/lib/auth/session
 import prisma from "@/lib/prisma";
 import {
   moderatePublicStudySet,
-  readPublicStudySets,
-  removePublicStudySet,
-  searchPublicStudySets,
-  upsertPublicStudySet,
 } from "@/lib/study/public-sets";
 import { serializeStudySet, toDbDifficulty } from "@/lib/study/server";
 import type { StudySet } from "@/lib/study/types";
@@ -22,6 +18,10 @@ export async function GET(request: NextRequest) {
   const dbSets = await prisma.studySet.findMany({
     where: {
       visibility: "PUBLIC",
+      ...(q ? { OR: [
+        ...["title", "description", "course", "subject"].map((field) => ({ [field]: { contains: q, mode: "insensitive" as const } })),
+        { tags: { has: q } },
+      ] } : {}),
       ...(course
         ? {
             course: {
@@ -37,17 +37,7 @@ export async function GET(request: NextRequest) {
   });
 
   const liveItems = dbSets.map((set) => serializeStudySet(set, studyUser?.id));
-  const legacyItems = (await readPublicStudySets()).filter(
-    (set) =>
-      set.visibility === "public" &&
-      !liveItems.some((item) => item.id === set.id) &&
-      (!course || set.course.toLowerCase() === course.toLowerCase()),
-  );
-
-  const merged = [...liveItems, ...legacyItems].sort(
-    (a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
-  );
-  const filtered = searchPublicStudySets(merged, q);
+  const filtered = liveItems;
 
   return NextResponse.json({
     items: filtered.slice(0, 24),
@@ -74,7 +64,7 @@ export async function POST(request: NextRequest) {
       select: { ownerId: true },
     });
 
-    if (existing?.ownerId && existing.ownerId !== studyUser.id) {
+    if (existing && existing.ownerId !== studyUser.id) {
       return NextResponse.json({ error: "Only the owner can publish this set." }, { status: 403 });
     }
 
@@ -130,16 +120,11 @@ export async function POST(request: NextRequest) {
       });
     });
 
-    await upsertPublicStudySet({
-      ...set,
-      visibility: "public",
-      ownerId: studyUser.id,
-    });
 
     return NextResponse.json({ ok: true });
   } catch (error) {
     if (error instanceof Error && error.message === "UNAUTHORIZED") {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json({ error: "Sign in to change public sharing." }, { status: 401 });
     }
     return NextResponse.json(
       { error: error instanceof Error ? error.message : "Failed to publish study set." },
@@ -162,7 +147,7 @@ export async function DELETE(request: NextRequest) {
       select: { ownerId: true },
     });
 
-    if (existing?.ownerId && existing.ownerId !== studyUser.id) {
+    if (existing && existing.ownerId !== studyUser.id) {
       return NextResponse.json({ error: "Only the owner can change this set." }, { status: 403 });
     }
 
@@ -173,11 +158,10 @@ export async function DELETE(request: NextRequest) {
       });
     }
 
-    await removePublicStudySet(setId);
     return NextResponse.json({ ok: true });
   } catch (error) {
     if (error instanceof Error && error.message === "UNAUTHORIZED") {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json({ error: "Sign in to change public sharing." }, { status: 401 });
     }
     return NextResponse.json(
       { error: error instanceof Error ? error.message : "Failed to unpublish study set." },

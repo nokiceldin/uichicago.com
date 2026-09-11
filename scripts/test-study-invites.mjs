@@ -1,0 +1,30 @@
+import assert from 'node:assert/strict';
+import { chromium } from 'playwright';
+const base = process.env.STUDY_TEST_URL || 'http://localhost:3100';
+const browser = await chromium.launch();
+const group = {id:'group-regression',name:'Biology study group',course:'BIOS 120',description:'',inviteCode:'BIO123',memberNames:['Owner','Joining student'],setIds:[],createdAt:new Date().toISOString(),updatedAt:new Date().toISOString()};
+try {
+ const page = await browser.newPage({viewport:{width:1440,height:1000}});
+ let joins=0;
+ await page.route('**/api/auth/session', async route=>{await new Promise(r=>setTimeout(r,700));await route.fulfill({json:{user:{id:'viewer',name:'Joining student',email:'viewer@example.com'},expires:'2099-01-01T00:00:00Z'}});});
+ await page.route('**/api/study/me',async route=>{await new Promise(r=>setTimeout(r,1000));await route.fulfill({json:{library:{sets:[],groups:[],sessions:[]}}});});
+ await page.route('**/api/study/groups/join', async route=>{joins++;assert.equal(route.request().postDataJSON().inviteCode,'BIO123');await route.fulfill({json:{ok:true,group}});});
+ await page.goto(`${base}/study?join=bio123`);
+ await page.waitForURL('**/study?screen=groups&group=group-regression');
+ await page.getByRole('button',{name:'Members',exact:true}).click();
+ await page.getByRole('textbox',{name:'Invite code',exact:true}).waitFor();
+ assert.equal(await page.getByRole('textbox',{name:'Invite code',exact:true}).inputValue(),'BIO123');
+ assert.equal(await page.getByRole('textbox',{name:'Invite link',exact:true}).inputValue(),`${base}/study?screen=groups&join=BIO123`);
+ await page.waitForTimeout(1200);
+ assert.equal(joins,1);
+ assert.equal(await page.getByRole('textbox',{name:'Invite code',exact:true}).inputValue(),'BIO123');
+ await page.getByPlaceholder('Paste an invite code or link').fill(`${base}/study?screen=groups&join=bio123`);
+ await page.getByRole('button',{name:'Join',exact:true}).click();
+ await page.waitForTimeout(300);assert.equal(joins,2);
+ const guest=await browser.newPage();
+ await guest.route('**/api/auth/session',route=>route.fulfill({json:{}}));
+ await guest.goto(`${base}/study?screen=groups&join=BIO123`);
+ await guest.getByRole('button',{name:'Sign in to join',exact:true}).waitFor();
+ await guest.waitForTimeout(500);assert(guest.url().startsWith(base));
+ console.log('PASS: delayed auth joins once; visible code/link; full-link join; delayed profile preserves group; guests remain on invitation without OAuth loop');
+} finally {await browser.close();}

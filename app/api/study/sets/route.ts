@@ -1,3 +1,4 @@
+import { moderatePublicStudySet } from "@/lib/study/public-sets";
 import { NextResponse } from "next/server";
 import { requireCurrentStudyUser } from "@/lib/auth/session";
 import prisma from "@/lib/prisma";
@@ -14,12 +15,17 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Invalid study set payload." }, { status: 400 });
     }
 
+    if (set.visibility === "public") {
+      const moderation = moderatePublicStudySet(set);
+      if (!moderation.allowed) return NextResponse.json({ error: moderation.reason }, { status: 400 });
+    }
+
     const existing = await prisma.studySet.findUnique({
       where: { id: set.id },
       select: { ownerId: true },
     });
 
-    if (existing?.ownerId && existing.ownerId !== studyUser.id) {
+    if (existing && existing.ownerId !== studyUser.id) {
       return NextResponse.json(
         { error: "You can only edit study sets you own. Duplicate the shared set to make your own copy." },
         { status: 403 },

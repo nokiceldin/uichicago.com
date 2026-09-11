@@ -1,9 +1,5 @@
-import path from "path";
-import { mkdir, readFile, writeFile } from "fs/promises";
+import prisma from "@/lib/prisma";
 import type { StudyNote } from "./types";
-
-const PUBLIC_NOTES_DIR = path.join(process.cwd(), "artifacts", "study");
-const PUBLIC_NOTES_PATH = path.join(PUBLIC_NOTES_DIR, "public-study-notes.json");
 
 const BANNED_PATTERNS = [
   /\bnigg(?:a|er|ers)\b/i,
@@ -47,18 +43,16 @@ function fullNoteText(note: StudyNote) {
 }
 
 export async function readPublicStudyNotes(): Promise<StudyNote[]> {
-  try {
-    const raw = await readFile(PUBLIC_NOTES_PATH, "utf8");
-    const parsed = JSON.parse(raw) as StudyNote[];
-    return Array.isArray(parsed) ? parsed : [];
-  } catch {
-    return [];
-  }
-}
-
-export async function writePublicStudyNotes(notes: StudyNote[]) {
-  await mkdir(PUBLIC_NOTES_DIR, { recursive: true });
-  await writeFile(PUBLIC_NOTES_PATH, JSON.stringify(notes, null, 2), "utf8");
+  const notes = await prisma.studyNote.findMany({ where: { visibility: "PUBLIC" }, orderBy: { updatedAt: "desc" } });
+  return notes.map((note) => ({
+    ...note, course: note.course ?? "", subject: note.subject ?? "",
+    rawContent: note.rawContent ?? "", transcriptContent: note.transcriptContent ?? "",
+    structuredContent: note.structuredContent ? JSON.parse(note.structuredContent) : null,
+    noteDate: note.noteDate?.toISOString().slice(0, 10) ?? "",
+    sourceType: note.sourceType.toLowerCase() as StudyNote["sourceType"],
+    status: note.status.toLowerCase() as StudyNote["status"], visibility: "public",
+    createdAt: note.createdAt.toISOString(), updatedAt: note.updatedAt.toISOString(), lastOpenedAt: note.lastOpenedAt.toISOString(),
+  }));
 }
 
 export function moderatePublicStudyNote(note: StudyNote): { allowed: boolean; reason?: string } {
@@ -109,18 +103,22 @@ export function searchPublicStudyNotes(notes: StudyNote[], query: string) {
   );
 }
 
-export async function upsertPublicStudyNote(note: StudyNote) {
-  const existing = await readPublicStudyNotes();
-  const next = [note, ...existing.filter((entry) => entry.id !== note.id)].sort(
-    (a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
-  );
-  await writePublicStudyNotes(next);
-  return next;
+export async function upsertPublicStudyNote(note: StudyNote, ownerId: string) {
+  const existing = await prisma.studyNote.findUnique({ where: { id: note.id }, select: { ownerId: true } });
+  if (existing && existing.ownerId !== ownerId) throw new Error("FORBIDDEN");
+  const data = {
+    title: note.title.trim(), course: note.course, subject: note.subject, tags: note.tags,
+    noteDate: new Date(`${note.noteDate}T12:00:00Z`), rawContent: note.rawContent,
+    transcriptContent: note.transcriptContent, structuredContent: note.structuredContent ? JSON.stringify(note.structuredContent) : null,
+    sourceType: note.sourceType.toUpperCase() as "MANUAL" | "AUDIO" | "IMPORTED",
+    status: "READY" as const, visibility: "PUBLIC" as const,
+  };
+  await prisma.studyNote.upsert({ where: { id: note.id }, create: { id: note.id, ownerId, ...data }, update: data });
 }
 
-export async function removePublicStudyNote(noteId: string) {
-  const existing = await readPublicStudyNotes();
-  const next = existing.filter((entry) => entry.id !== noteId);
-  await writePublicStudyNotes(next);
-  return next;
+export async function removePublicStudyNote(noteId: string, ownerId: string) {
+  const existing = await prisma.studyNote.findUnique({ where: { id: noteId }, select: { ownerId: true } });
+  if (!existing) return;
+  if (existing.ownerId !== ownerId) throw new Error("FORBIDDEN");
+  await prisma.studyNote.update({ where: { id: noteId }, data: { visibility: "PRIVATE" } });
 }

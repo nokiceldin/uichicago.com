@@ -193,6 +193,7 @@ export default function NotesWorkspace({ library, onLibraryChange, onCreateFlash
   const [liveTranscript, setLiveTranscript] = useState("");
   const [actionResult, setActionResult] = useState<NoteActionResponse>(null);
   const [saveDialogOpen, setSaveDialogOpen] = useState(false);
+  const [createAfterSave, setCreateAfterSave] = useState(false);
   const [saveDialogFolder, setSaveDialogFolder] = useState("");
   const [, setActionLoading] = useState<string | null>(null);
   const [generatedFlashcards, setGeneratedFlashcards] = useState<GeneratedFlashcardPayload | null>(null);
@@ -302,7 +303,15 @@ export default function NotesWorkspace({ library, onLibraryChange, onCreateFlash
     const now = new Date().toISOString();
     const existingNote = notes.find((note) => note.id === noteId);
     if (!existingNote) return;
-    const nextNote: StudyNote = { ...existingNote, ...patch, updatedAt: now };
+    const contentChanged = ["title", "course", "subject", "rawContent", "transcriptContent", "structuredContent"].some(
+      (key) => key in patch && patch[key as keyof StudyNote] !== existingNote[key as keyof StudyNote],
+    );
+    const nextNote: StudyNote = {
+      ...existingNote,
+      ...(contentChanged && existingNote.status !== "processing" ? { status: "draft" as const } : {}),
+      ...patch,
+      updatedAt: now,
+    };
     setSaveState("saving");
     onLibraryChange((current) => ({
       ...current,
@@ -323,7 +332,7 @@ export default function NotesWorkspace({ library, onLibraryChange, onCreateFlash
           onLibraryChange((current) => ({
             ...current,
             notes: current.notes.map((note) =>
-              note.id === noteId ? { ...note, visibility: "private" } : note,
+              note.id === noteId ? { ...note, visibility: existingNote.visibility } : note,
             ),
           }));
           showToast(payload.error || "This note was kept private.", "error");
@@ -332,17 +341,22 @@ export default function NotesWorkspace({ library, onLibraryChange, onCreateFlash
           onLibraryChange((current) => ({
             ...current,
             notes: current.notes.map((note) =>
-              note.id === noteId ? { ...note, visibility: "private" } : note,
+              note.id === noteId ? { ...note, visibility: existingNote.visibility } : note,
             ),
           }));
-          showToast("Could not publish the note, so it was kept private.", "error");
+          showToast("Could not publish these changes. The previous sharing setting was preserved.", "error");
         });
-    } else {
+    } else if (existingNote.visibility === "public") {
       fetch("/api/study/public-notes", {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ noteId }),
-      }).catch(() => undefined);
+      }).then((response) => {
+        if (!response.ok) throw new Error("Could not make this note private.");
+      }).catch(() => {
+        onLibraryChange((current) => ({ ...current, notes: current.notes.map((note) => note.id === noteId ? { ...note, visibility: "public" } : note) }));
+        showToast("Could not make this note private. Please try again.", "error");
+      });
     }
   };
 
@@ -366,6 +380,14 @@ export default function NotesWorkspace({ library, onLibraryChange, onCreateFlash
   const createNote = useCallback((sourceType: StudyNote["sourceType"] = "manual") => {
     const nextNote = createEmptyNote(sourceType);
     onLibraryChange((current) => ({ ...current, notes: [nextNote, ...current.notes] }));
+    setSaveDialogOpen(false);
+    setCreateAfterSave(false);
+    setCaptureOpen(false);
+    setRecordingError("");
+    setRecordingMs(0);
+    setLiveTranscript("");
+    setSaveState("saved");
+    if (saveTimerRef.current) window.clearTimeout(saveTimerRef.current);
     setSelectedNoteId(nextNote.id);
     setActiveTab("note");
     setActionResult(null);
@@ -814,11 +836,33 @@ export default function NotesWorkspace({ library, onLibraryChange, onCreateFlash
     return Array.from(new Set(folders)).sort((a, b) => a.localeCompare(b));
   }, [library.notes, library.sets]);
 
+  const requestNewNote = () => {
+    if (isRecording || isPaused || selectedNote?.status === "processing") {
+      showToast("Finish recording and processing this lecture before starting a new note.", "error");
+      return;
+    }
+    const hasContent = selectedNote && Boolean(
+      selectedNote.title.trim() || selectedNote.course.trim() || selectedNote.rawContent.trim() ||
+      selectedNote.transcriptContent.trim() || selectedNote.structuredContent,
+    );
+    if (hasContent && (selectedNote.status === "draft" || saveState === "saving")) {
+      setSaveDialogFolder(selectedNote.folder ?? "");
+      setCreateAfterSave(true);
+      setSaveDialogOpen(true);
+      return;
+    }
+    createNote("manual");
+  };
+
   const saveAndDone = () => {
     if (!selectedNote) return;
     // Persist the chosen folder onto the note
     updateNote(selectedNote.id, { folder: saveDialogFolder, status: "ready" });
     setSaveDialogOpen(false);
+    if (createAfterSave) {
+      createNote("manual");
+      return;
+    }
     // Reset so next Notes visit starts a fresh note
     autoCreatedRouteRef.current = false;
     // Navigate to the destination
@@ -853,7 +897,7 @@ export default function NotesWorkspace({ library, onLibraryChange, onCreateFlash
                   My notes
                 </div>
                 <button
-                  onClick={() => createNote("manual")}
+                  onClick={requestNewNote}
                   {...magneticHoverProps}
                   className="study-premium-button inline-flex items-center gap-1 rounded-full border border-white/10 bg-white/4 px-2.5 py-1 text-[11px] font-medium text-zinc-200"
                 >
@@ -930,7 +974,7 @@ export default function NotesWorkspace({ library, onLibraryChange, onCreateFlash
           {!selectedNote ? null : (
             <>
                   {isFocusedNoteView && (
-                <div className="study-appear flex items-center justify-between gap-3">
+                <div className="study-appear relative z-20 flex items-center justify-between gap-3">
                   <button
                     onClick={closeFocusedNote}
                     className="inline-flex items-center gap-1.5 text-[13px] font-medium text-slate-500 transition hover:text-slate-200"
@@ -939,10 +983,18 @@ export default function NotesWorkspace({ library, onLibraryChange, onCreateFlash
                     Notes
                   </button>
 
-                  {/* Save & done button + dialog */}
-                  <div className="relative">
+                  {/* Note actions stay available in the focused editor. */}
+                  <div className="relative flex flex-wrap justify-end gap-2">
                     <button
-                      onClick={() => { setSaveDialogFolder(selectedNote?.folder ?? ""); setSaveDialogOpen((o) => !o); }}
+                      type="button"
+                      onClick={requestNewNote}
+                      className="inline-flex items-center gap-1.5 rounded-lg border border-slate-600 bg-slate-800 px-3 py-1.5 text-[13px] font-semibold text-slate-100 transition hover:bg-slate-700"
+                    >
+                      <Plus className="h-3.5 w-3.5" />
+                      New note
+                    </button>
+                    <button
+                      onClick={() => { setCreateAfterSave(false); setSaveDialogFolder(selectedNote?.folder ?? ""); setSaveDialogOpen((o) => !o); }}
                       className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-3.5 py-1.5 text-[13px] font-semibold text-white shadow-[0_2px_8px_rgba(79,70,229,0.35)] transition hover:bg-indigo-500 active:scale-[0.97]"
                     >
                       <Check className="h-3.5 w-3.5" />
@@ -952,29 +1004,30 @@ export default function NotesWorkspace({ library, onLibraryChange, onCreateFlash
 
                     {saveDialogOpen && (
                       <div
-                        className="absolute right-0 top-10 z-50 w-72 rounded-xl border border-white/10 bg-[#0c1120] p-4 shadow-[0_24px_48px_rgba(0,0,0,0.6)]"
+                        className="absolute right-0 top-10 z-50 w-72 max-w-[calc(100vw-2rem)] rounded-xl border border-slate-600/60 bg-[#111827] p-4 shadow-[0_24px_48px_rgba(0,0,0,0.6)]"
                         onClick={(e) => e.stopPropagation()}
                       >
-                        <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500">Save to</p>
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-400">{createAfterSave ? "Save before creating a new note?" : "Save to"}</p>
+                        {createAfterSave && <p className="mt-2 text-xs leading-5 text-slate-300">Save this note to your library, or keep it as a draft and start a blank note.</p>}
 
                         {/* Library (no folder) */}
                         <button
                           onClick={() => setSaveDialogFolder("")}
                           className={`mt-2 flex w-full items-center gap-2.5 rounded-lg px-3 py-2.5 text-left text-[13px] transition ${
                             saveDialogFolder === ""
-                              ? "bg-indigo-500/15 text-indigo-300"
-                              : "text-slate-300 hover:bg-white/6"
+                              ? "bg-[#283457] text-indigo-100"
+                              : "text-slate-200 hover:bg-slate-700/60"
                           }`}
                         >
-                          <FileText className="h-3.5 w-3.5 shrink-0 text-slate-500" />
+                          <FileText className="h-3.5 w-3.5 shrink-0 text-slate-400" />
                           <span className="flex-1">My library</span>
-                          {saveDialogFolder === "" && <Check className="h-3.5 w-3.5 text-indigo-400" />}
+                          {saveDialogFolder === "" && <Check className="h-3.5 w-3.5 text-indigo-200" />}
                         </button>
 
                         {/* Folders */}
                         {availableFolders.length > 0 && (
                           <>
-                            <p className="mt-3 mb-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-600">Folders</p>
+                            <p className="mt-3 mb-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-400">Folders</p>
                             <div className="max-h-48 space-y-0.5 overflow-y-auto">
                               {availableFolders.map((folder) => (
                                 <button
@@ -982,23 +1035,28 @@ export default function NotesWorkspace({ library, onLibraryChange, onCreateFlash
                                   onClick={() => setSaveDialogFolder(folder)}
                                   className={`flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-left text-[13px] transition ${
                                     saveDialogFolder === folder
-                                      ? "bg-indigo-500/15 text-indigo-300"
-                                      : "text-slate-300 hover:bg-white/6"
+                                      ? "bg-[#283457] text-indigo-100"
+                                      : "text-slate-200 hover:bg-slate-700/60"
                                   }`}
                                 >
-                                  <Folder className="h-3.5 w-3.5 shrink-0 text-slate-500" />
+                                  <Folder className="h-3.5 w-3.5 shrink-0 text-slate-400" />
                                   <span className="flex-1 truncate">{folder}</span>
-                                  {saveDialogFolder === folder && <Check className="h-3.5 w-3.5 text-indigo-400" />}
+                                  {saveDialogFolder === folder && <Check className="h-3.5 w-3.5 text-indigo-200" />}
                                 </button>
                               ))}
                             </div>
                           </>
                         )}
 
-                        <div className="mt-3 flex gap-2">
+                        {createAfterSave && (
+                          <button type="button" onClick={() => createNote("manual")} className="mt-3 w-full rounded-lg border border-slate-600 px-3 py-2 text-xs font-medium text-slate-200 transition hover:bg-slate-700">
+                            Keep draft &amp; create new
+                          </button>
+                        )}
+                        <div className="mt-4 flex gap-2 border-t border-slate-700 pt-3">
                           <button
-                            onClick={() => setSaveDialogOpen(false)}
-                            className="flex-1 rounded-lg border border-white/8 py-2 text-[13px] font-medium text-slate-400 transition hover:text-slate-200"
+                            onClick={() => { setSaveDialogOpen(false); setCreateAfterSave(false); }}
+                            className="flex-1 rounded-lg border border-slate-600 bg-slate-800 py-2 text-[13px] font-medium text-slate-200 transition hover:bg-slate-700 hover:text-white"
                           >
                             Cancel
                           </button>
@@ -1006,7 +1064,7 @@ export default function NotesWorkspace({ library, onLibraryChange, onCreateFlash
                             onClick={saveAndDone}
                             className="flex-1 rounded-lg bg-indigo-600 py-2 text-[13px] font-semibold text-white transition hover:bg-indigo-500"
                           >
-                            Save
+                            {createAfterSave ? "Save & new" : "Save"}
                           </button>
                         </div>
                       </div>
@@ -1021,7 +1079,7 @@ export default function NotesWorkspace({ library, onLibraryChange, onCreateFlash
                       <div className="flex flex-wrap items-center gap-2 text-xs text-zinc-500">
                         <span>{selectedNote.sourceType === "audio" ? "Lecture note" : "Manual note"}</span>
                         <span className="text-zinc-400">
-                          {saveState === "saving" ? "Saving..." : "Saved"}
+                          {saveState === "saving" ? "Saving..." : selectedNote.status === "draft" ? "Draft autosaved" : "Saved"}
                         </span>
                         {selectedNote.status === "processing" ? (
                           <span className="inline-flex items-center gap-1 rounded-full border border-amber-300/15 bg-amber-400/10 px-2 py-0.5 text-[11px] font-medium text-amber-100">

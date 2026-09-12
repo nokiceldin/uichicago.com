@@ -1486,47 +1486,33 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
       showToast("Only the owner can change visibility for this shared set.", "error");
       return;
     }
+    if (!isSignedIn) {
+      showToast("Sign in with Google to publish a flashcard set.", "error");
+      promptGoogleSignIn();
+      return;
+    }
     const nextVisibility: StudySet["visibility"] = target.visibility === "public" ? "private" : "public";
     const nextSet = { ...target, visibility: nextVisibility, updatedAt: new Date().toISOString() };
-    setLibrary((current) => ({
-      ...current,
-      sets: current.sets.map((set) => (set.id === setId ? nextSet : set)),
-    }));
-    if (nextVisibility === "public") {
-      try {
-        const response = await fetch("/api/study/public-sets", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ set: nextSet }),
-        });
-        const payload = await response.json();
-        if (!response.ok) {
-          setLibrary((current) => ({
-            ...current,
-            sets: current.sets.map((set) => (set.id === setId ? { ...set, visibility: "private" } : set)),
-          }));
-          showToast(payload.error || "Could not make this set public.", "error");
-        } else {
-          showToast("Set is now public — anyone can find it by searching.");
-        }
-      } catch {
-        setLibrary((current) => ({
-          ...current,
-          sets: current.sets.map((set) => (set.id === setId ? { ...set, visibility: "private" } : set)),
-        }));
-        showToast("Could not publish this set.", "error");
-      }
-    } else {
-      try {
-        const response = await fetch("/api/study/public-sets", {
-          method: "DELETE", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ setId }),
-        });
-        if (!response.ok) throw new Error("Could not make this set private. Please try again.");
-        showToast("Set is now private — only you can see it.");
-      } catch (error) {
-        setLibrary((current) => ({ ...current, sets: current.sets.map((set) => set.id === setId ? target : set) }));
-        showToast(error instanceof Error ? error.message : "Could not change visibility.", "error");
-      }
+    try {
+      const response = await fetch("/api/study/sets", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ set: nextSet }),
+      });
+      const payload = await response.json();
+      if (!response.ok) throw new Error(payload.error || "Could not change visibility.");
+      const savedSet = (payload.set || nextSet) as StudySet;
+      setLibrary((current) => ({
+        ...current,
+        sets: current.sets.map((set) => (set.id === setId ? savedSet : set)),
+      }));
+      showToast(
+        nextVisibility === "public"
+          ? "Set is now public — anyone can open it or find it in search."
+          : "Set is now private — only your account can access it.",
+      );
+    } catch (error) {
+      showToast(error instanceof Error ? error.message : "Could not change visibility.", "error");
     }
   };
 
@@ -2487,9 +2473,10 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
               ))}
               {publicNoteResults.map((note) => (
                 <div key={note.id} className="rounded-xl border border-slate-700 bg-slate-800 p-4">
-                  <h3 className="font-semibold text-indigo-200">{note.title}</h3>
+                  <Link href={`/study/note/${encodeURIComponent(note.id)}`} className="font-semibold text-indigo-200 hover:text-white">{note.title}</Link>
                   <p className="mt-1 text-xs text-slate-400">Public {note.sourceType === "imported" ? "study guide" : "note"} · {note.course}</p>
                   <p className="mt-2 line-clamp-3 text-sm text-slate-300">{note.structuredContent?.summary || note.rawContent || note.transcriptContent}</p>
+                  <Link href={`/study/note/${encodeURIComponent(note.id)}`} className="mt-3 mr-4 inline-block text-sm font-medium text-indigo-200">Open</Link>
                   <button onClick={() => {
                     const now = new Date().toISOString();
                     const copy: StudyNote = { ...note, id: createStudyId("note"), visibility: "private", createdAt: now, updatedAt: now, lastOpenedAt: now, pinned: false, favorite: false };
@@ -2782,7 +2769,10 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
                             <FileText className="h-3.5 w-3.5" />
                           </div>
                           <div className="min-w-0 flex-1 text-left">
-                            <p className="truncate text-[13px] font-semibold text-white">{note.title || "Untitled note"}</p>
+                            <div className="flex items-center gap-2">
+                              <p className="truncate text-[13px] font-semibold text-white">{note.title || "Untitled note"}</p>
+                              <VisibilityBadge visibility={note.visibility} compact />
+                            </div>
                             <p className="text-[11px] text-slate-500">{note.course || note.subject || "Note"}</p>
                           </div>
                           <ChevronRight className="h-3.5 w-3.5 text-slate-600 opacity-0 transition group-hover:opacity-100" />
@@ -3268,7 +3258,10 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
                             <FileText className="h-3.5 w-3.5" />
                           </div>
                           <div className="min-w-0 flex-1">
-                            <p className="truncate text-[13px] font-semibold text-white">{note.title || "Untitled note"}</p>
+                            <div className="flex items-center gap-2">
+                              <p className="truncate text-[13px] font-semibold text-white">{note.title || "Untitled note"}</p>
+                              <VisibilityBadge visibility={note.visibility} compact />
+                            </div>
                             <p className="truncate text-[11px] text-slate-500">{[note.course || note.subject, note.rawContent?.slice(0, 60)].filter(Boolean).join(" · ") || "Empty"}</p>
                           </div>
                         </button>
@@ -3375,7 +3368,10 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
                             <Sparkles className="h-3.5 w-3.5" />
                           </div>
                           <div className="min-w-0 flex-1">
-                            <p className="truncate text-[13px] font-semibold text-white">{guide.title}</p>
+                            <div className="flex items-center gap-2">
+                              <p className="truncate text-[13px] font-semibold text-white">{guide.title}</p>
+                              <VisibilityBadge visibility={guide.visibility} compact />
+                            </div>
                             <p className="truncate text-[11px] text-slate-500">{[guide.course || guide.subject, guide.structuredContent?.summary?.slice(0, 60)].filter(Boolean).join(" · ") || "AI study guide"}</p>
                           </div>
                         </button>

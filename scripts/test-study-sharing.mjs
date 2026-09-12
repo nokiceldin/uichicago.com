@@ -8,6 +8,11 @@ let user = { id: 'owner-a' };
 const rows = new Map();
 const prisma = { studyNote: {
   findUnique: async ({where}) => rows.get(where.id) || null,
+  findFirst: async ({where}) => {
+    const row = rows.get(where.id);
+    if (!row) return null;
+    return where.OR.some(condition => condition.visibility === row.visibility || condition.ownerId === row.ownerId) ? row : null;
+  },
   findMany: async () => [...rows.values()].filter(row => row.visibility === 'PUBLIC'),
   upsert: async ({where,create,update}) => {
     const now = new Date();
@@ -32,7 +37,7 @@ function load(path) {
   new Function('require','module','exports',code)((id) => {
     if(id==='@/lib/prisma') return {__esModule:true,default:prisma};
     if(id==='@/lib/auth/session') return {getCurrentStudyUser:async()=>user,requireCurrentStudyUser:async()=>{if(!user)throw Error('UNAUTHORIZED');return user;}};
-    if(id==='@/lib/study/server') return {serializeStudySet:row=>({...row,visibility:row.visibility.toLowerCase()}),toDbDifficulty:value=>value.toUpperCase()};
+    if(id==='@/lib/study/server') return {serializeStudySet:row=>({...row,visibility:row.visibility.toLowerCase()}),serializeStudyNote:row=>({...row,visibility:row.visibility.toLowerCase()}),toDbDifficulty:value=>value.toUpperCase()};
     if(id==='@/lib/study/public-sets') return load('lib/study/public-sets.ts');
     if(id==='@/lib/study/public-notes') return load('lib/study/public-notes.ts');
     return requireModule(id);
@@ -45,18 +50,26 @@ function load(path) {
  const post=()=>api.POST(new Request('http://localhost/api/study/public-notes',{method:'POST',body:JSON.stringify({note})}));
  const del=()=>api.DELETE(new Request('http://localhost/api/study/public-notes',{method:'DELETE',body:JSON.stringify({noteId:note.id})}));
  const search=async()=> (await (await api.GET(new Request('http://localhost/api/study/public-notes?q=Photosynthesis'))).json()).items;
+ const directApi=load('app/api/study/public-notes/[id]/route.ts');
+ const openNote=()=>directApi.GET(new Request('http://localhost/api/study/public-notes/shared-note'),{params:Promise.resolve({id:note.id})});
  assert.equal((await post()).status,200);
  user={id:'viewer-b'};
  assert.equal((await search()).length,1);
+ assert.equal((await openNote()).status,200);
  assert.equal((await post()).status,403);
  assert.equal((await del()).status,403);
  user=null;
  assert.equal((await search()).length,1);
+ assert.equal((await openNote()).status,200);
  assert.equal((await post()).status,401);
  assert.equal((await del()).status,401);
  user={id:'owner-a'};
  assert.equal((await del()).status,200);
  assert.equal((await search()).length,0);
+ assert.equal((await openNote()).status,200);
+ user=null;
+ assert.equal((await openNote()).status,404);
+ user={id:'owner-a'};
  const setApi=load('app/api/study/public-sets/route.ts');
  const set={id:'shared-set',title:'Photosynthesis cards',description:'Plant biology',course:'BIOS 120',subject:'Biology',tags:[],difficulty:'medium',cards:[{id:'card-a',front:'Chlorophyll',back:'Pigment that absorbs light',tags:[],difficulty:'medium'},{id:'card-b',front:'Chloroplast',back:'Organelle for photosynthesis',tags:[],difficulty:'medium'}]};
  const publishSet=()=>setApi.POST(new Request('http://localhost/api/study/public-sets',{method:'POST',body:JSON.stringify({set})}));

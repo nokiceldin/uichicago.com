@@ -12,6 +12,7 @@ import {
   FileText,
   Folder,
   LoaderCircle,
+  Lock,
   Mic,
   Plus,
   Pause,
@@ -187,6 +188,7 @@ export default function NotesWorkspace({ library, onLibraryChange, onCreateFlash
   const [activeTab, setActiveTab] = useState<NotesTab>("note");
   const [focusMode] = useState(false);
   const [saveState, setSaveState] = useState<"saved" | "saving">("saved");
+  const [visibilitySaving, setVisibilitySaving] = useState(false);
   const [captureOpen, setCaptureOpen] = useState(false);
   const [recordingError, setRecordingError] = useState("");
   const [isRecording, setIsRecording] = useState(false);
@@ -349,6 +351,45 @@ export default function NotesWorkspace({ library, onLibraryChange, onCreateFlash
         onLibraryChange((current) => ({ ...current, notes: current.notes.map((note) => note.id === noteId ? { ...note, visibility: "public" } : note) }));
         showToast("Could not make this note private. Please try again.", "error");
       });
+    }
+  };
+
+  const toggleNoteVisibility = async () => {
+    if (!selectedNote || visibilitySaving) return;
+    if (status !== "authenticated") {
+      showToast("Sign in with Google to publish notes and study guides.", "error");
+      return;
+    }
+
+    const nextVisibility: StudyNote["visibility"] = selectedNote.visibility === "public" ? "private" : "public";
+    const nextNote: StudyNote = {
+      ...selectedNote,
+      visibility: nextVisibility,
+      updatedAt: new Date().toISOString(),
+    };
+    setVisibilitySaving(true);
+    try {
+      const response = await fetch("/api/study/notes", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ note: nextNote }),
+      });
+      const payload = await response.json();
+      if (!response.ok) throw new Error(payload.error || "Could not change visibility.");
+      const savedNote = (payload.note || nextNote) as StudyNote;
+      onLibraryChange((current) => ({
+        ...current,
+        notes: current.notes.map((note) => note.id === savedNote.id ? savedNote : note),
+      }));
+      showToast(
+        nextVisibility === "public"
+          ? "This material is now public — anyone can find and open it."
+          : "This material is now private — only your account can access it.",
+      );
+    } catch (error) {
+      showToast(error instanceof Error ? error.message : "Could not change visibility.", "error");
+    } finally {
+      setVisibilitySaving(false);
     }
   };
 
@@ -989,6 +1030,10 @@ export default function NotesWorkspace({ library, onLibraryChange, onCreateFlash
                           <div className={`truncate text-sm font-medium ${note.title.trim() ? "text-white" : "text-zinc-500"}`}>
                             {note.title.trim() || "Untitled note"}
                           </div>
+                          <span className={`mt-1 inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${note.visibility === "public" ? "border-emerald-400/25 bg-emerald-500/10 text-emerald-200" : "border-amber-400/25 bg-amber-500/10 text-amber-200"}`}>
+                            {note.visibility === "public" ? <Globe className="h-2.5 w-2.5" /> : <Lock className="h-2.5 w-2.5" />}
+                            {note.visibility === "public" ? "Public" : "Private"}
+                          </span>
                           <div className="mt-1 truncate text-xs text-zinc-400">
                             {[note.course || note.subject, formatNoteDate(note.noteDate)].filter(Boolean).join(" • ")}
                           </div>
@@ -1151,14 +1196,13 @@ export default function NotesWorkspace({ library, onLibraryChange, onCreateFlash
                     </div>
                     <div className="flex flex-wrap gap-2 lg:max-w-90 lg:justify-end">
                       <button
-                        onClick={() => updateNote(selectedNote.id, {
-                          visibility: selectedNote.visibility === "public" ? "private" : "public",
-                        })}
+                        onClick={() => void toggleNoteVisibility()}
+                        disabled={visibilitySaving}
                         {...magneticHoverProps}
-                        className="study-premium-button inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/4 px-3 py-2 text-xs font-medium text-zinc-200"
+                        className="study-premium-button inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/4 px-3 py-2 text-xs font-medium text-zinc-200 disabled:cursor-wait disabled:opacity-60"
                       >
                         <Globe className="h-3.5 w-3.5" />
-                        {selectedNote.visibility === "public" ? "Public" : "Private"}
+                        {visibilitySaving ? "Updating…" : selectedNote.visibility === "public" ? "Public" : "Private"}
                       </button>
                       <button
                         onClick={() => setCaptureOpen((current) => !current)}

@@ -732,10 +732,25 @@ model StudyGroup {
   updatedAt   DateTime             @updatedAt
   memberships StudyGroupMembership[]
   linkedSets  StudyGroupSet[]
+  linkedNotes StudyGroupNote[]
 
   @@index([creatorId])
   @@index([inviteCode])
   @@map("study_groups")
+}
+
+model StudyGroupNote {
+  id        String     @id @default(cuid())
+  groupId   String
+  noteId    String
+  authorId  String
+  content   String     @db.Text
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  group     StudyGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
+  @@unique([groupId, noteId])
+  @@map("study_group_notes")
 }
 
 model StudyGroupMembership {

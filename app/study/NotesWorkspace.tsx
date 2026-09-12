@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useSession } from "next-auth/react";
 import {
   BookPlus,
   Check,
@@ -178,6 +179,7 @@ function noteHasMeaningfulContent(note: StudyNote, audioSessionNoteIds: Set<stri
 export default function NotesWorkspace({ library, onLibraryChange, onCreateFlashcardSet, showToast, externalQuery = "", folderFilter = "" }: Props) {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { status } = useSession();
   const [selectedNoteId, setSelectedNoteId] = useState<string>("");
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState<NotesSort>("recent");
@@ -211,9 +213,7 @@ export default function NotesWorkspace({ library, onLibraryChange, onCreateFlash
   const saveTimerRef = useRef<number | null>(null);
   const lastOpenedNoteIdRef = useRef<string | null>(null);
   const autoCreatedRouteRef = useRef(false);
-  const onLibraryChangeRef = useRef(onLibraryChange);
-  onLibraryChangeRef.current = onLibraryChange;
-
+  const resolvingMissingNoteRef = useRef<string | null>(null);
   const notes = library.notes;
   const requestedNoteId = searchParams.get("note");
   const isLibraryView = searchParams.get("view") === "library";
@@ -237,16 +237,8 @@ export default function NotesWorkspace({ library, onLibraryChange, onCreateFlash
       if (timerRef.current) window.clearInterval(timerRef.current);
       mediaStreamRef.current?.getTracks().forEach((track) => track.stop());
       speechRecognitionRef.current?.stop?.();
-      // On unmount, remove any notes that have no content (title, body, or transcript)
-      const audioSessionNoteIds = new Set(library.noteAudioSessions.map((session) => session.noteId));
-      onLibraryChangeRef.current((current) => ({
-        ...current,
-        notes: current.notes.filter(
-          (note) => noteHasMeaningfulContent(note, audioSessionNoteIds),
-        ),
-      }));
     };
-  }, [library.noteAudioSessions]);
+  }, []);
 
   // When transitioning from note editor back to library view, prune empty notes
   const prevIsLibraryViewRef = useRef(isLibraryView);
@@ -395,6 +387,7 @@ export default function NotesWorkspace({ library, onLibraryChange, onCreateFlash
     const params = new URLSearchParams(searchParams.toString());
     params.set("mode", "notes");
     params.set("note", nextNote.id);
+    resolvingMissingNoteRef.current = nextNote.id;
     router.push(`/study?${params.toString()}`);
     showToast(sourceType === "audio" ? "Ready to capture a lecture." : "New note created.");
     return nextNote;
@@ -405,10 +398,16 @@ export default function NotesWorkspace({ library, onLibraryChange, onCreateFlash
 
   // Reset the guard whenever a note is open so next visit can create fresh.
   useEffect(() => {
-    if (requestedNoteId) {
+    if (requestedNoteId && requestedNoteId !== "create") {
       autoCreatedRouteRef.current = false;
     }
   }, [requestedNoteId]);
+
+  useEffect(() => {
+    if (requestedNoteId !== "create" || autoCreatedRouteRef.current) return;
+    autoCreatedRouteRef.current = true;
+    createNote("manual");
+  }, [requestedNoteId, createNote]);
 
   // No ?note= in URL -> open the newest note, or create one if none exist.
   useEffect(() => {
@@ -427,7 +426,12 @@ export default function NotesWorkspace({ library, onLibraryChange, onCreateFlash
   useEffect(() => {
     if (!isNotesMode || !requestedNoteId || requestedNoteId === "create" || isLibraryView) return;
     const exists = notesRef.current.some((n) => n.id === requestedNoteId);
-    if (exists) return;
+    if (exists) {
+      resolvingMissingNoteRef.current = null;
+      return;
+    }
+    if (resolvingMissingNoteRef.current === requestedNoteId) return;
+    resolvingMissingNoteRef.current = requestedNoteId;
     autoCreatedRouteRef.current = false;
     const nextNote = visibleNotes[0] || notesRef.current[0];
     if (nextNote) {
@@ -495,6 +499,13 @@ export default function NotesWorkspace({ library, onLibraryChange, onCreateFlash
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ noteId }),
     }).catch(() => undefined);
+    if (status === "authenticated") {
+      fetch("/api/study/notes", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ noteId }),
+      }).catch(() => showToast("The local note was deleted, but account sync failed.", "error"));
+    }
     if (selectedNoteId === noteId) {
       const next = notes.find((note) => note.id !== noteId);
       setSelectedNoteId(next?.id || "");
@@ -854,8 +865,34 @@ export default function NotesWorkspace({ library, onLibraryChange, onCreateFlash
     createNote("manual");
   };
 
-  const saveAndDone = () => {
+  const saveAndDone = async () => {
     if (!selectedNote) return;
+    const savedNote: StudyNote = { ...selectedNote, folder: saveDialogFolder, status: "ready" };
+    if (status === "authenticated") {
+      try {
+        const response = await fetch("/api/study/notes", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ note: savedNote }),
+        });
+        const payload = await response.json();
+        if (!response.ok) throw new Error(payload.error || "Could not sync this note.");
+      } catch (error) {
+        showToast(error instanceof Error ? error.message : "Could not sync this note.", "error");
+        return;
+      }
+    }
+    const destinationGroup = searchParams.get("group");
+    if (destinationGroup) {
+      try {
+        const response = await fetch(`/api/study/groups/${encodeURIComponent(destinationGroup)}/notes`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ note: savedNote }) });
+        const payload = await response.json();
+        if (!response.ok) throw new Error(payload.error || "Could not share this note with the group.");
+      } catch (error) {
+        showToast(error instanceof Error ? error.message : "Could not share this note.", "error");
+        return;
+      }
+    }
     // Persist the chosen folder onto the note
     updateNote(selectedNote.id, { folder: saveDialogFolder, status: "ready" });
     setSaveDialogOpen(false);
@@ -866,7 +903,9 @@ export default function NotesWorkspace({ library, onLibraryChange, onCreateFlash
     // Reset so next Notes visit starts a fresh note
     autoCreatedRouteRef.current = false;
     // Navigate to the destination
-    if (saveDialogFolder) {
+    if (destinationGroup) {
+      router.push(`/study?screen=groups&group=${encodeURIComponent(destinationGroup)}`);
+    } else if (saveDialogFolder) {
       router.push(`/study?folder=${encodeURIComponent(saveDialogFolder)}`);
     } else {
       router.push("/study?view=library&section=notes");
@@ -887,6 +926,7 @@ export default function NotesWorkspace({ library, onLibraryChange, onCreateFlash
 
   return (
     <div className="space-y-5">
+      {searchParams.get("group") && <p className="rounded-xl border border-indigo-400/30 bg-indigo-500/10 p-3 text-sm text-indigo-200">Saving this note also shares a copy with your study group.</p>}
       <div className={`grid gap-5 ${(focusMode || isFocusedNoteView) ? "xl:grid-cols-[minmax(0,1fr)]" : "xl:grid-cols-[270px_minmax(0,1fr)]"}`}>
         {!focusMode && !isFocusedNoteView && (
           <aside className="space-y-4 xl:sticky xl:top-24">

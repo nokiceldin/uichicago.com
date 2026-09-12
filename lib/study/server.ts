@@ -1,4 +1,4 @@
-import type { StudyDifficulty, StudyGroup, StudySessionRecord, StudySet, StudyVisibility } from "@/lib/study/types";
+import type { StudyDifficulty, StudyGroup, StudyNote, StudySessionRecord, StudySet, StudyVisibility } from "@/lib/study/types";
 import type { Prisma } from "@prisma/client";
 import prisma from "@/lib/prisma";
 import { shouldHidePlaceholderStudyGroup } from "@/lib/study/group-moderation";
@@ -17,6 +17,30 @@ export function toDbDifficulty(value: StudyDifficulty) {
 
 export function toDbVisibility(value: StudyVisibility) {
   return value.toUpperCase() as "PRIVATE" | "PUBLIC";
+}
+
+type StudyNoteRecord = Prisma.StudyNoteGetPayload<Record<string, never>>;
+
+export function serializeStudyNote(note: StudyNoteRecord): StudyNote {
+  return {
+    id: note.id,
+    title: note.title,
+    course: note.course ?? "",
+    noteDate: note.noteDate?.toISOString().slice(0, 10) ?? "",
+    subject: note.subject ?? "",
+    tags: note.tags,
+    rawContent: note.rawContent ?? "",
+    structuredContent: note.structuredContent ? JSON.parse(note.structuredContent) : null,
+    transcriptContent: note.transcriptContent ?? "",
+    sourceType: note.sourceType.toLowerCase() as StudyNote["sourceType"],
+    visibility: toUiVisibility(note.visibility),
+    status: note.status.toLowerCase() as StudyNote["status"],
+    createdAt: note.createdAt.toISOString(),
+    updatedAt: note.updatedAt.toISOString(),
+    lastOpenedAt: note.lastOpenedAt.toISOString(),
+    pinned: note.pinned,
+    favorite: note.favorite,
+  };
 }
 
 type StudySetRecord = Prisma.StudySetGetPayload<{
@@ -120,7 +144,7 @@ export function serializeStudyGroup(group: StudyGroupRecord): StudyGroup {
 }
 
 export async function getStudyWorkspacePayload(studyUserId: string) {
-  const [sets, sessions, groups] = await Promise.all([
+  const [sets, notes, sessions, groups] = await Promise.all([
     prisma.studySet.findMany({
       where: {
         OR: [
@@ -159,6 +183,10 @@ export async function getStudyWorkspacePayload(studyUserId: string) {
       },
       orderBy: { updatedAt: "desc" },
     }),
+    prisma.studyNote.findMany({
+      where: { ownerId: studyUserId },
+      orderBy: { updatedAt: "desc" },
+    }),
     prisma.studySession.findMany({
       where: { userId: studyUserId },
       orderBy: { createdAt: "desc" },
@@ -191,6 +219,7 @@ export async function getStudyWorkspacePayload(studyUserId: string) {
 
   return {
     sets: sets.map((set) => serializeStudySet(set, studyUserId)),
+    notes: notes.map(serializeStudyNote),
     groups: visibleGroups.map((group) => serializeStudyGroup(group)),
     sessions: sessions.map((session) => serializeStudySession(session)),
   };

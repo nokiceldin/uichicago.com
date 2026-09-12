@@ -2,8 +2,9 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useSession } from "next-auth/react";
 import {
   BookOpen,
   FileText,
@@ -21,9 +22,8 @@ import {
 } from "lucide-react";
 import { DEFAULT_STUDY_LIBRARY } from "@/lib/study/sample-data";
 import type { StudyLibraryState } from "@/lib/study/types";
+import { studyFoldersStorageKey, studyLibraryStorageKey, studyStorageOwner } from "@/lib/study/storage";
 
-const STORAGE_KEY = "uic-atlas-study-library-v1";
-const CUSTOM_FOLDERS_KEY = "uic-atlas-study-custom-folders-v1";
 const SIDEBAR_EXPANDED_KEY = "uic-atlas-study-sidebar-expanded-v1";
 const LIBRARY_SYNC_EVENT = "uic-atlas-study-library-sync";
 const FOLDERS_SYNC_EVENT = "uic-atlas-study-folders-sync";
@@ -62,6 +62,10 @@ export default function StudyLayout({ children }: { children: React.ReactNode })
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const { data: session, status } = useSession();
+  const storageOwner = status === "loading" ? null : studyStorageOwner(session?.user?.id);
+  const storageKey = storageOwner ? studyLibraryStorageKey(storageOwner) : null;
+  const foldersStorageKey = storageOwner ? studyFoldersStorageKey(storageOwner) : null;
   const [menuOpen, setMenuOpen] = useState(false);
   const [plusOpen, setPlusOpen] = useState(false);
   const [createFolderOpen, setCreateFolderOpen] = useState(false);
@@ -72,18 +76,21 @@ export default function StudyLayout({ children }: { children: React.ReactNode })
   const [customFolders, setCustomFolders] = useState<string[]>([]);
   const [folderMenuOpen, setFolderMenuOpen] = useState<string | null>(null);
   const [storageHydrated, setStorageHydrated] = useState(false);
+  const [loadedStorageOwner, setLoadedStorageOwner] = useState<string | null>(null);
   const lastLibrarySerializedRef = useRef("");
   const lastFoldersSerializedRef = useRef("");
+  const activeStorageKeyRef = useRef<string | null>(null);
 
-  const syncLibraryFromStorage = () => {
+  const syncLibraryFromStorage = useCallback(() => {
     try {
-      const raw = window.localStorage.getItem(STORAGE_KEY);
+      if (!storageKey) return;
+      const raw = window.localStorage.getItem(storageKey);
       if (!raw || raw === lastLibrarySerializedRef.current) return;
       const parsed = JSON.parse(raw) as StudyLibraryState;
       lastLibrarySerializedRef.current = raw;
       setLibrary({
         sets: parsed.sets ?? DEFAULT_STUDY_LIBRARY.sets,
-        groups: parsed.groups ?? DEFAULT_STUDY_LIBRARY.groups,
+        groups: storageOwner === "guest" ? [] : (parsed.groups ?? DEFAULT_STUDY_LIBRARY.groups),
         notes: parsed.notes ?? DEFAULT_STUDY_LIBRARY.notes,
         noteAudioSessions: parsed.noteAudioSessions ?? DEFAULT_STUDY_LIBRARY.noteAudioSessions,
         noteAiLogs: parsed.noteAiLogs ?? DEFAULT_STUDY_LIBRARY.noteAiLogs,
@@ -95,11 +102,12 @@ export default function StudyLayout({ children }: { children: React.ReactNode })
       lastLibrarySerializedRef.current = "";
       setLibrary(DEFAULT_STUDY_LIBRARY);
     }
-  };
+  }, [storageKey, storageOwner]);
 
-  const syncFoldersFromStorage = () => {
+  const syncFoldersFromStorage = useCallback(() => {
     try {
-      const rawFolders = window.localStorage.getItem(CUSTOM_FOLDERS_KEY);
+      if (!foldersStorageKey) return;
+      const rawFolders = window.localStorage.getItem(foldersStorageKey);
       const serializedFolders = rawFolders ?? "[]";
       if (serializedFolders === lastFoldersSerializedRef.current) return;
       const parsedFolders = rawFolders ? JSON.parse(rawFolders) : [];
@@ -113,30 +121,30 @@ export default function StudyLayout({ children }: { children: React.ReactNode })
       lastFoldersSerializedRef.current = "[]";
       setCustomFolders([]);
     }
-  };
+  }, [foldersStorageKey]);
 
   useEffect(() => {
+    if (!storageKey || !foldersStorageKey) return;
+    activeStorageKeyRef.current = null;
+    setLoadedStorageOwner(null);
+    setStorageHydrated(false);
+    lastLibrarySerializedRef.current = "";
+    lastFoldersSerializedRef.current = "";
     try {
-      const raw = window.localStorage.getItem(STORAGE_KEY);
-      if (!raw) return;
-      lastLibrarySerializedRef.current = raw;
-      const parsed = JSON.parse(raw) as StudyLibraryState;
-      setLibrary({
-        sets: parsed.sets ?? DEFAULT_STUDY_LIBRARY.sets,
-        groups: parsed.groups ?? DEFAULT_STUDY_LIBRARY.groups,
-        notes: parsed.notes ?? DEFAULT_STUDY_LIBRARY.notes,
-        noteAudioSessions: parsed.noteAudioSessions ?? DEFAULT_STUDY_LIBRARY.noteAudioSessions,
-        noteAiLogs: parsed.noteAiLogs ?? DEFAULT_STUDY_LIBRARY.noteAiLogs,
-        progress: parsed.progress ?? DEFAULT_STUDY_LIBRARY.progress,
-        sessions: parsed.sessions ?? DEFAULT_STUDY_LIBRARY.sessions,
-        quizResults: parsed.quizResults ?? DEFAULT_STUDY_LIBRARY.quizResults,
-      });
+      const raw = window.localStorage.getItem(storageKey);
+      if (raw) {
+        lastLibrarySerializedRef.current = raw;
+        const parsed = JSON.parse(raw) as StudyLibraryState;
+        setLibrary({ ...DEFAULT_STUDY_LIBRARY, ...parsed, groups: storageOwner === "guest" ? [] : (parsed.groups ?? []) });
+      } else {
+        setLibrary(DEFAULT_STUDY_LIBRARY);
+      }
     } catch {
       setLibrary(DEFAULT_STUDY_LIBRARY);
     }
 
     try {
-      const rawFolders = window.localStorage.getItem(CUSTOM_FOLDERS_KEY);
+      const rawFolders = window.localStorage.getItem(foldersStorageKey);
       const parsedFolders = rawFolders ? JSON.parse(rawFolders) : [];
       lastFoldersSerializedRef.current = rawFolders ?? "[]";
       setCustomFolders(
@@ -157,27 +165,29 @@ export default function StudyLayout({ children }: { children: React.ReactNode })
     } catch {
       setSidebarExpanded(true);
     } finally {
+      activeStorageKeyRef.current = storageKey;
+      setLoadedStorageOwner(storageOwner);
       setStorageHydrated(true);
     }
-  }, []);
+  }, [foldersStorageKey, storageKey, storageOwner]);
 
   useEffect(() => {
-    if (!storageHydrated) return;
+    if (!storageHydrated || !foldersStorageKey || activeStorageKeyRef.current !== storageKey) return;
     const serialized = JSON.stringify(customFolders);
     if (serialized === lastFoldersSerializedRef.current) return;
-    window.localStorage.setItem(CUSTOM_FOLDERS_KEY, serialized);
+    window.localStorage.setItem(foldersStorageKey, serialized);
     lastFoldersSerializedRef.current = serialized;
     window.dispatchEvent(new CustomEvent(FOLDERS_SYNC_EVENT));
-  }, [customFolders, storageHydrated]);
+  }, [customFolders, foldersStorageKey, storageHydrated, storageKey]);
 
   useEffect(() => {
-    if (!storageHydrated) return;
+    if (!storageHydrated || !storageKey || activeStorageKeyRef.current !== storageKey) return;
     const serialized = JSON.stringify(library);
     if (serialized === lastLibrarySerializedRef.current) return;
-    window.localStorage.setItem(STORAGE_KEY, serialized);
+    window.localStorage.setItem(storageKey, serialized);
     lastLibrarySerializedRef.current = serialized;
     window.dispatchEvent(new CustomEvent(LIBRARY_SYNC_EVENT));
-  }, [library, storageHydrated]);
+  }, [library, storageHydrated, storageKey]);
 
   useEffect(() => {
     if (!storageHydrated) return;
@@ -186,8 +196,8 @@ export default function StudyLayout({ children }: { children: React.ReactNode })
 
   useEffect(() => {
     const handleStorage = (event: StorageEvent) => {
-      if (event.key === STORAGE_KEY) syncLibraryFromStorage();
-      if (event.key === CUSTOM_FOLDERS_KEY) syncFoldersFromStorage();
+      if (event.key === storageKey) syncLibraryFromStorage();
+      if (event.key === foldersStorageKey) syncFoldersFromStorage();
     };
     const handleLibrarySync = () => syncLibraryFromStorage();
     const handleFoldersSync = () => syncFoldersFromStorage();
@@ -200,7 +210,7 @@ export default function StudyLayout({ children }: { children: React.ReactNode })
       window.removeEventListener(LIBRARY_SYNC_EVENT, handleLibrarySync);
       window.removeEventListener(FOLDERS_SYNC_EVENT, handleFoldersSync);
     };
-  }, []);
+  }, [foldersStorageKey, storageKey, syncFoldersFromStorage, syncLibraryFromStorage]);
 
   useEffect(() => {
     const close = () => setPlusOpen(false);
@@ -540,6 +550,10 @@ export default function StudyLayout({ children }: { children: React.ReactNode })
       </div>
     </>
   );
+
+  if (!storageOwner || loadedStorageOwner !== storageOwner) {
+    return <div className="min-h-screen bg-[#080d18]" />;
+  }
 
   return (
     <div className="min-h-screen overflow-x-clip bg-[#080d18] text-white">

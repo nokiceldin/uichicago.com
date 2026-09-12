@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { parseStudyInvite, studyInvitePath } from "@/lib/study/invite";
@@ -53,10 +53,9 @@ import NotesWorkspace from "@/app/study/NotesWorkspace";
 import FeatureTour from "@/app/components/onboarding/FeatureTour";
 import MyPicksPanel from "@/app/components/loops/MyPicksPanel";
 import { estimateFlashcardCountFromText, parseExplicitFlashcardsFromText } from "@/lib/study/flashcard-parser";
+import { studyFoldersStorageKey, studyLibraryStorageKey, studyStorageOwner } from "@/lib/study/storage";
 
-const STORAGE_KEY = "uic-atlas-study-library-v1";
 const MATCH_BESTS_KEY = "uic-atlas-study-match-bests-v1";
-const CUSTOM_FOLDERS_KEY = "uic-atlas-study-custom-folders-v1";
 const LIBRARY_SYNC_EVENT = "uic-atlas-study-library-sync";
 const FOLDERS_SYNC_EVENT = "uic-atlas-study-folders-sync";
 const CARD_IMAGE_MAX_FILE_SIZE = 6 * 1024 * 1024;
@@ -401,13 +400,18 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const { status } = useSession();
+  const { data: session, status } = useSession();
+  const storageOwner = status === "loading" ? null : studyStorageOwner(session?.user?.id);
+  const storageKey = storageOwner ? studyLibraryStorageKey(storageOwner) : null;
+  const foldersStorageKey = storageOwner ? studyFoldersStorageKey(storageOwner) : null;
   const isCreateRoute = pathname === "/study/create";
   const createType = searchParams.get("type") === "guide" ? "guide" : "flashcards";
   const isGuideCreateRoute = isCreateRoute && createType === "guide";
   const editSetId = isCreateRoute && !isGuideCreateRoute ? searchParams.get("edit") : null;
   const createInGroupId = isCreateRoute && !isGuideCreateRoute ? searchParams.get("group") : null;
   const [hydrated, setHydrated] = useState(false);
+  const [loadedStorageOwner, setLoadedStorageOwner] = useState<string | null>(null);
+  const [remoteLoadedOwner, setRemoteLoadedOwner] = useState<string | null>(null);
   const [library, setLibrary] = useState<StudyLibraryState>(DEFAULT_STUDY_LIBRARY);
   const [surface, setSurface] = useState<StudySurface>("home");
   const [screen, setScreen] = useState<Screen>(isCreateRoute ? "create" : "dashboard");
@@ -457,17 +461,19 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
   const groupMutationVersionRef = useRef(0);
   const lastLibrarySerializedRef = useRef("");
   const lastFoldersSerializedRef = useRef("");
+  const activeStorageKeyRef = useRef<string | null>(null);
   const isEditingFlashcardSet = Boolean(editSetId && library.sets.some((set) => set.id === editSetId));
 
-  const syncLibraryFromStorage = () => {
+  const syncLibraryFromStorage = useCallback(() => {
     try {
-      const raw = window.localStorage.getItem(STORAGE_KEY);
+      if (!storageKey) return;
+      const raw = window.localStorage.getItem(storageKey);
       if (!raw || raw === lastLibrarySerializedRef.current) return;
       const parsed = JSON.parse(raw) as StudyLibraryState;
       lastLibrarySerializedRef.current = raw;
       setLibrary({
         sets: parsed.sets ?? DEFAULT_STUDY_LIBRARY.sets,
-        groups: parsed.groups ?? DEFAULT_STUDY_LIBRARY.groups,
+        groups: storageOwner === "guest" ? [] : (parsed.groups ?? DEFAULT_STUDY_LIBRARY.groups),
         notes: parsed.notes ?? DEFAULT_STUDY_LIBRARY.notes,
         noteAudioSessions: parsed.noteAudioSessions ?? DEFAULT_STUDY_LIBRARY.noteAudioSessions,
         noteAiLogs: parsed.noteAiLogs ?? DEFAULT_STUDY_LIBRARY.noteAiLogs,
@@ -479,11 +485,12 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
       lastLibrarySerializedRef.current = "";
       setLibrary(DEFAULT_STUDY_LIBRARY);
     }
-  };
+  }, [storageKey, storageOwner]);
 
-  const syncFoldersFromStorage = () => {
+  const syncFoldersFromStorage = useCallback(() => {
     try {
-      const rawFolders = window.localStorage.getItem(CUSTOM_FOLDERS_KEY);
+      if (!foldersStorageKey) return;
+      const rawFolders = window.localStorage.getItem(foldersStorageKey);
       const serializedFolders = rawFolders ?? "[]";
       if (serializedFolders === lastFoldersSerializedRef.current) return;
       const parsedFolders = rawFolders ? JSON.parse(rawFolders) : [];
@@ -497,17 +504,23 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
       lastFoldersSerializedRef.current = "[]";
       setCustomFolders([]);
     }
-  };
+  }, [foldersStorageKey]);
 
   useEffect(() => {
+    if (!storageKey || !foldersStorageKey || !storageOwner) return;
+    activeStorageKeyRef.current = null;
+    setLoadedStorageOwner(null);
+    setHydrated(false);
+    lastLibrarySerializedRef.current = "";
+    lastFoldersSerializedRef.current = "";
     try {
-      const raw = window.localStorage.getItem(STORAGE_KEY);
+      const raw = window.localStorage.getItem(storageKey);
       if (raw) {
         lastLibrarySerializedRef.current = raw;
         const parsed = JSON.parse(raw) as StudyLibraryState;
         setLibrary({
           sets: parsed.sets ?? DEFAULT_STUDY_LIBRARY.sets,
-          groups: parsed.groups ?? DEFAULT_STUDY_LIBRARY.groups,
+          groups: storageOwner === "guest" ? [] : (parsed.groups ?? []),
           notes: parsed.notes ?? DEFAULT_STUDY_LIBRARY.notes,
           noteAudioSessions: parsed.noteAudioSessions ?? DEFAULT_STUDY_LIBRARY.noteAudioSessions,
           noteAiLogs: parsed.noteAiLogs ?? DEFAULT_STUDY_LIBRARY.noteAiLogs,
@@ -516,9 +529,12 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
           quizResults: parsed.quizResults ?? [],
         });
         setSelectedSetId(parsed.sets?.[0]?.id || "");
+      } else {
+        setLibrary(DEFAULT_STUDY_LIBRARY);
+        setSelectedSetId("");
       }
 
-      const rawFolders = window.localStorage.getItem(CUSTOM_FOLDERS_KEY);
+      const rawFolders = window.localStorage.getItem(foldersStorageKey);
       const parsedFolders = rawFolders ? JSON.parse(rawFolders) : [];
       lastFoldersSerializedRef.current = rawFolders ?? "[]";
       setCustomFolders(
@@ -530,9 +546,11 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
       setLibrary(DEFAULT_STUDY_LIBRARY);
       setCustomFolders([]);
     } finally {
+      activeStorageKeyRef.current = storageKey;
+      setLoadedStorageOwner(storageOwner);
       setHydrated(true);
     }
-  }, []);
+  }, [foldersStorageKey, storageKey, storageOwner]);
 
   useEffect(() => {
     setScreen(isCreateRoute ? "create" : "dashboard");
@@ -699,18 +717,22 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
   }, [editScrollCardId]);
 
   useEffect(() => {
-    if (!hydrated) return;
+    if (!hydrated || !storageKey || activeStorageKeyRef.current !== storageKey) return;
     const serialized = JSON.stringify(library);
     if (serialized === lastLibrarySerializedRef.current) return;
-    window.localStorage.setItem(STORAGE_KEY, serialized);
+    window.localStorage.setItem(storageKey, serialized);
     lastLibrarySerializedRef.current = serialized;
     window.dispatchEvent(new CustomEvent(LIBRARY_SYNC_EVENT));
-  }, [hydrated, library]);
+  }, [hydrated, library, storageKey]);
 
   useEffect(() => {
-    if (status !== "authenticated") return;
+    if (status !== "authenticated" || !storageOwner) {
+      setRemoteLoadedOwner(null);
+      return;
+    }
 
     let cancelled = false;
+    setRemoteLoadedOwner(null);
 
     const groupVersion = groupMutationVersionRef.current;
     const loadStudyProfile = async () => {
@@ -726,10 +748,12 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
         setLibrary((current) => {
           const remoteSets = Array.isArray(payload.library?.sets) ? payload.library.sets : [];
           const remoteGroups = Array.isArray(payload.library?.groups) ? payload.library.groups : [];
+          const remoteNotes = Array.isArray(payload.library?.notes) ? payload.library.notes : [];
           const remoteSessions = Array.isArray(payload.library?.sessions) ? payload.library.sessions : [];
 
           const knownSetIds = new Set(remoteSets.map((set: StudySet) => set.id));
           const knownSessionIds = new Set(remoteSessions.map((studySession: { id: string }) => studySession.id));
+          const knownNoteIds = new Set(remoteNotes.map((note: StudyNote) => note.id));
 
           return {
             ...current,
@@ -738,11 +762,17 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
               ...current.sets.filter((set) => !knownSetIds.has(set.id) && (set.canEdit !== false || groupMutationVersionRef.current !== groupVersion)),
             ],
             groups: groupMutationVersionRef.current === groupVersion ? remoteGroups : current.groups,
+            notes: [
+              ...remoteNotes,
+              ...current.notes.filter((note) => !knownNoteIds.has(note.id)),
+            ],
             sessions: [...remoteSessions, ...current.sessions.filter((studySession) => !knownSessionIds.has(studySession.id))],
           };
         });
       } catch {
         // Keep the local library if the authenticated fetch fails.
+      } finally {
+        if (!cancelled) setRemoteLoadedOwner(storageOwner);
       }
     };
 
@@ -751,7 +781,7 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
     return () => {
       cancelled = true;
     };
-  }, [status]);
+  }, [session?.user?.id, status, storageOwner]);
 
   useEffect(() => {
     if (!toast) return;
@@ -760,18 +790,18 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
   }, [toast]);
 
   useEffect(() => {
-    if (!hydrated) return;
+    if (!hydrated || !foldersStorageKey || activeStorageKeyRef.current !== storageKey) return;
     const serialized = JSON.stringify(customFolders);
     if (serialized === lastFoldersSerializedRef.current) return;
-    window.localStorage.setItem(CUSTOM_FOLDERS_KEY, serialized);
+    window.localStorage.setItem(foldersStorageKey, serialized);
     lastFoldersSerializedRef.current = serialized;
     window.dispatchEvent(new CustomEvent(FOLDERS_SYNC_EVENT));
-  }, [customFolders, hydrated]);
+  }, [customFolders, foldersStorageKey, hydrated, storageKey]);
 
   useEffect(() => {
     const handleStorage = (event: StorageEvent) => {
-      if (event.key === STORAGE_KEY) syncLibraryFromStorage();
-      if (event.key === CUSTOM_FOLDERS_KEY) syncFoldersFromStorage();
+      if (event.key === storageKey) syncLibraryFromStorage();
+      if (event.key === foldersStorageKey) syncFoldersFromStorage();
     };
     const handleLibrarySync = () => syncLibraryFromStorage();
     const handleFoldersSync = () => syncFoldersFromStorage();
@@ -784,7 +814,7 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
       window.removeEventListener(LIBRARY_SYNC_EVENT, handleLibrarySync);
       window.removeEventListener(FOLDERS_SYNC_EVENT, handleFoldersSync);
     };
-  }, []);
+  }, [foldersStorageKey, storageKey, syncFoldersFromStorage, syncLibraryFromStorage]);
 
   useEffect(() => {
     const query = (isGuideCreateRoute ? draftGuide.course : draftSet.course).trim();
@@ -1784,6 +1814,21 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
       } catch {}
     }
 
+    if (isSignedIn && nextGuide.visibility !== "public") {
+      try {
+        const response = await fetch("/api/study/notes", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ note: nextGuide }),
+        });
+        const payload = await response.json();
+        if (!response.ok) throw new Error(payload.error || "Could not sync this guide.");
+      } catch (error) {
+        showToast(error instanceof Error ? error.message : "Could not sync this guide.", "error");
+        return;
+      }
+    }
+
     setLibrary((current) => {
       const exists = current.notes.some((note) => note.id === nextGuide.id);
       return {
@@ -1893,11 +1938,22 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
       );
     }
 
+    const destinationGroup = searchParams.get("group");
+    if (destinationGroup) {
+      try {
+        const response = await fetch(`/api/study/groups/${encodeURIComponent(destinationGroup)}/notes`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ note: nextGuide }) });
+        const payload = await response.json();
+        if (!response.ok) throw new Error(payload.error || "Could not share the guide with your group.");
+      } catch (error) {
+        showToast(error instanceof Error ? error.message : "Could not share the guide.", "error");
+        return;
+      }
+    }
     setDraftGuide(emptyDraftGuide());
     setGeneratedGuide(null);
     setImportText("");
     setShouldCreateGuideFlashcards(true);
-    router.push(`/study?mode=notes&note=${encodeURIComponent(nextGuide.id)}`);
+    router.push(destinationGroup ? `/study?screen=groups&group=${encodeURIComponent(destinationGroup)}` : `/study?mode=notes&note=${encodeURIComponent(nextGuide.id)}`);
   };
 
   const updateCardProgress = (setId: string, cardId: string, updater: (current: CardProgress) => CardProgress) => {
@@ -2088,6 +2144,13 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
       ...current,
       notes: current.notes.filter((n) => n.id !== noteId),
     }));
+    if (isSignedIn) {
+      fetch("/api/study/notes", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ noteId }),
+      }).catch(() => showToast("The note was removed locally, but account sync failed.", "error"));
+    }
     showToast("Note deleted.");
   };
 
@@ -2192,6 +2255,16 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
         onProgress={(cardId, result) => updateCardProgress(selectedSet.id, cardId, (current) => updateProgressForReview(current, result))}
         onSessionSave={saveSession}
         onResultSave={saveQuizResult}
+        onMistakeSetSave={(mistakeSet) => {
+          setLibrary((current) => ({ ...current, sets: [mistakeSet, ...current.sets] }));
+          if (isSignedIn) {
+            fetch("/api/study/sets", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ set: mistakeSet }),
+            }).catch(() => showToast("The mistakes deck was saved locally, but account sync failed.", "error"));
+          }
+        }}
         onCelebrate={(message) => showToast(message, "reward")}
       />
     ) : selectedSet && screen === "match" ? (
@@ -2204,7 +2277,9 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
       />
     ) : null;
 
-  if (!hydrated) {
+  const correctLocalWorkspaceLoaded = Boolean(storageOwner && loadedStorageOwner === storageOwner);
+  const correctRemoteWorkspaceLoaded = status !== "authenticated" || remoteLoadedOwner === storageOwner;
+  if (!hydrated || !correctLocalWorkspaceLoaded || !correctRemoteWorkspaceLoaded) {
     return <StudyWorkspaceSkeleton />;
   }
 
@@ -2484,7 +2559,7 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
                 onRenameGroup={renameGroup}
                 onRemoveSetFromGroup={removeSetFromGroup}
                 onOpenAddSetPicker={setGroupSetPickerGroupId}
-                onCreateSetInGroup={(groupId) => router.push(`/study/create?type=flashcards&group=${encodeURIComponent(groupId)}`)}
+                onCreateSetInGroup={(groupId, type = "flashcards") => router.push(type === "notes" ? `/study?mode=notes&note=create&group=${encodeURIComponent(groupId)}` : `/study/create?type=${type}&group=${encodeURIComponent(groupId)}`)}
               />
             ) : (
             <>
@@ -3430,7 +3505,7 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
                 onRenameGroup={renameGroup}
                 onRemoveSetFromGroup={removeSetFromGroup}
                 onOpenAddSetPicker={setGroupSetPickerGroupId}
-                onCreateSetInGroup={(groupId) => router.push(`/study/create?type=flashcards&group=${encodeURIComponent(groupId)}`)}
+                onCreateSetInGroup={(groupId, type = "flashcards") => router.push(type === "notes" ? `/study?mode=notes&note=create&group=${encodeURIComponent(groupId)}` : `/study/create?type=${type}&group=${encodeURIComponent(groupId)}`)}
               />
             )}
 
@@ -4147,9 +4222,24 @@ function GroupsView({
   onRenameGroup: (groupId: string) => void;
   onRemoveSetFromGroup: (groupId: string, setId: string) => void;
   onOpenAddSetPicker: (groupId: string) => void;
-  onCreateSetInGroup: (groupId: string) => void;
+  onCreateSetInGroup: (groupId: string, type?: "flashcards" | "notes" | "guide") => void;
 }) {
   const groupSearchParams = useSearchParams();
+  const [createMaterialOpen, setCreateMaterialOpen] = useState(false);
+  const [groupNotes, setGroupNotes] = useState<StudyNote[]>([]);
+  const [groupNotesError, setGroupNotesError] = useState("");
+  const [openGroupNote, setOpenGroupNote] = useState<StudyNote | null>(null);
+  const activeGroupId = selectedGroup?.id;
+  useEffect(() => {
+    if (!activeGroupId) return;
+    const controller = new AbortController();
+    const resetTimer = window.setTimeout(() => { setGroupNotes([]); setGroupNotesError(""); }, 0);
+    fetch(`/api/study/groups/${encodeURIComponent(activeGroupId)}/notes`, { signal: controller.signal })
+      .then(async response => { if (!response.ok) throw new Error("Could not load group notes. Please reload to try again."); return response.json(); })
+      .then(payload => { if (!controller.signal.aborted) setGroupNotes(payload.notes ?? []); })
+      .catch(error => { if (!controller.signal.aborted) setGroupNotesError(error.message); });
+    return () => { window.clearTimeout(resetTimer); controller.abort(); };
+  }, [activeGroupId]);
   const [showDetail, setShowDetail] = useState(Boolean(groupSearchParams.get("group")));
   const [moreMenuOpen, setMoreMenuOpen] = useState(false);
   const moreMenuRef = useRef<HTMLDivElement>(null);
@@ -4214,10 +4304,10 @@ function GroupsView({
             <h2 className="text-[2.1rem] font-bold tracking-[-0.05em] text-white">{selectedGroup.name}</h2>
             <div className="flex items-center gap-2">
               <button
-                onClick={() => onCreateSetInGroup(selectedGroup.id)}
+                onClick={() => setCreateMaterialOpen((open) => !open)}
                 className="rounded-full bg-[#4f46e5] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#5d56f0]"
               >
-                Create a set
+                Create material
               </button>
               <button
                 onClick={() => onOpenAddSetPicker(selectedGroup.id)}
@@ -4254,6 +4344,28 @@ function GroupsView({
             </div>
           </div>
 
+          {createMaterialOpen && (
+            <div className="grid gap-3 rounded-xl border border-slate-700 bg-slate-900 p-4 sm:grid-cols-3" aria-label="Choose material type">
+              {([{ type: "notes", label: "Notes", description: "Write a new note for your group" }, { type: "flashcards", label: "Flashcards", description: "Create a flashcard set" }, { type: "guide", label: "Study guide", description: "Generate a guide from your notes" }] as const).map(item => (
+                <button key={item.type} onClick={() => onCreateSetInGroup(selectedGroup.id, item.type)} className="rounded-lg border border-slate-600 bg-slate-800 p-4 text-left transition hover:border-indigo-400">
+                  <span className="font-semibold text-white">{item.label}</span><span className="mt-1 block text-xs text-slate-400">{item.description}</span>
+                </button>
+              ))}
+              <p className="text-xs text-slate-400 sm:col-span-3">Saving shares a copy with this group. It does not make your notes public.</p>
+            </div>
+          )}
+          {openGroupNote && (
+            <div role="dialog" aria-modal="true" aria-label={openGroupNote.title} className="fixed inset-0 z-90 overflow-y-auto bg-black/70 p-6">
+              <article className="mx-auto max-w-3xl rounded-2xl border border-slate-600 bg-slate-900 p-6 text-slate-200">
+                <button onClick={() => setOpenGroupNote(null)} className="mb-4 rounded-lg border border-slate-600 px-4 py-2">Close note</button>
+                <h2 className="text-2xl font-semibold text-white">{openGroupNote.title}</h2>
+                <p className="mt-2 text-sm text-slate-400">{openGroupNote.course} · Shared with this group</p>
+                <p className="mt-5 whitespace-pre-wrap">{openGroupNote.structuredContent?.summary}</p>
+                {openGroupNote.structuredContent?.sections?.map((section, index) => <section key={index} className="mt-5"><h3 className="font-semibold text-white">{section.heading}</h3><ul className="mt-2 list-disc space-y-2 pl-5">{section.items.map((item, i) => <li key={i}>{item}</li>)}</ul></section>)}
+                <p className="mt-5 whitespace-pre-wrap">{openGroupNote.rawContent || openGroupNote.transcriptContent}</p>
+              </article>
+            </div>
+          )}
           {/* Tabs */}
           <div className="flex items-center gap-6 border-b border-white/10 text-sm">
             <button
@@ -4273,7 +4385,10 @@ function GroupsView({
           {/* Tab content */}
           {groupTab === "materials" ? (
             <div className="rounded-[1.6rem] border border-white/10 bg-[#1e2240] p-6">
-              {groupSets.length ? (
+              {groupNotesError && <p role="alert" className="mb-4 text-sm text-rose-300">{groupNotesError}</p>}
+              {groupNotes.map(note => <button key={note.id} onClick={() => setOpenGroupNote(note)} className="mb-3 block w-full rounded-xl border border-white/10 bg-white/5 p-4 text-left hover:bg-white/10"><span className="font-semibold text-white">{note.title}</span><span className="mt-1 block text-xs text-slate-400">{note.sourceType === "imported" ? "Study guide" : "Note"} · {note.course || "Group material"}</span></button>)}
+
+              {groupNotes.length && !groupSets.length ? null : groupSets.length ? (
                 <div className="space-y-3">
                   {groupSets.map((set) => (
                     <div key={set.id} className="flex items-center gap-3 rounded-xl border border-white/8 bg-white/4 px-4 py-4 transition hover:bg-white/7">
@@ -4301,14 +4416,14 @@ function GroupsView({
                   <div className="mb-6 flex h-20 w-20 items-center justify-center rounded-[1.4rem] bg-[#4f46e5]/20 text-[#a5b4fc]">
                     <BookOpen className="h-9 w-9" />
                   </div>
-                  <div className="text-[1.6rem] font-semibold tracking-tight text-white">Add sets to your group</div>
-                  <div className="mt-2 text-sm text-zinc-400">Create a set here to share it automatically, or add one you already own.</div>
+                  <div className="text-[1.6rem] font-semibold tracking-tight text-white">Add materials to your group</div>
+                  <div className="mt-2 text-sm text-zinc-400">Create notes, flashcards, or a study guide to share with your group.</div>
                   <div className="mt-6 flex flex-wrap justify-center gap-2">
                     <button
-                      onClick={() => onCreateSetInGroup(selectedGroup.id)}
+                      onClick={() => setCreateMaterialOpen(true)}
                       className="rounded-full bg-[#4f46e5] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#5d56f0]"
                     >
-                      Create a set
+                      Create material
                     </button>
                     <button
                       onClick={() => onOpenAddSetPicker(selectedGroup.id)}
@@ -7116,6 +7231,7 @@ function AssessmentMode({
   onProgress,
   onSessionSave,
   onResultSave,
+  onMistakeSetSave,
   onCelebrate,
 }: {
   title: string;
@@ -7124,6 +7240,7 @@ function AssessmentMode({
   onProgress: (cardId: string, result: "correct" | "wrong") => void;
   onSessionSave: (session: ReturnType<typeof buildStudySession>) => void;
   onResultSave: (result: QuizResult) => void;
+  onMistakeSetSave: (set: StudySet) => void;
   onCelebrate: (message: string) => void;
 }) {
   const [startedAt] = useState(() => new Date().toISOString());
@@ -7418,19 +7535,7 @@ function AssessmentMode({
                           tags: [quizQuestion.topic, "mistakes"],
                         })),
                       };
-                      const rawLibrary = window.localStorage.getItem(STORAGE_KEY);
-                      const existingLibrary = rawLibrary
-                        ? (JSON.parse(rawLibrary) as StudyLibraryState)
-                        : DEFAULT_STUDY_LIBRARY;
-                      window.localStorage.setItem(
-                        STORAGE_KEY,
-                        JSON.stringify({
-                          ...DEFAULT_STUDY_LIBRARY,
-                          ...existingLibrary,
-                          sets: [mistakeSet, ...existingLibrary.sets],
-                        }),
-                      );
-                      window.location.reload();
+                      onMistakeSetSave(mistakeSet);
                     }}
                     {...magneticHoverProps}
                     className="study-premium-button rounded-2xl border border-red-400/20 bg-red-500/10 px-4 py-3 text-sm font-semibold text-red-100"

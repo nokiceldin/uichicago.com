@@ -1,19 +1,12 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { prisma } from "@/lib/prisma";
+import type { UserMemory } from "@/lib/chat/user-memory";
+
+export { getAccountMemoryKey, mergeUserMemory } from "@/lib/chat/user-memory";
+export type { UserMemory } from "@/lib/chat/user-memory";
 
 const client = new Anthropic();
 
-export interface UserMemory {
-  major?: string;
-  year?: string;
-  interests?: string[];
-  struggles?: string[];
-  goals?: string[];
-  knownCourses?: string[];       // courses currently taking or mentioned
-  completedCourses?: string[];   // courses already completed (from profile)
-  knownPrefs?: string[];
-  lastTopics?: string[];
-}
 
 async function extractMemoryUpdate(
   messages: { role: string; content: string }[],

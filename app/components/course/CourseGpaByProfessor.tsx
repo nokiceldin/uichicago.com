@@ -4,6 +4,7 @@ type ProfessorGpaRow = {
   slug: string | null;
   avgGpa: number | null;
   quality: number | null;
+  ratingsCount: number | null;
   gradedCount: number;
   totalRegs: number;
   a: number; b: number; c: number; d: number; f: number; w: number;
@@ -29,14 +30,26 @@ function ratingConfig(v: number | null) {
 
 const nf = new Intl.NumberFormat("en-US");
 
-export default function CourseGpaByProfessor({ professors = [], courseLabel }: { professors: ProfessorGpaRow[]; courseLabel: string; }) {
+export default function CourseGpaByProfessor({
+  professors = [],
+  courseLabel,
+  termScope,
+  minimumGradedOutcomes,
+}: {
+  professors: ProfessorGpaRow[];
+  courseLabel: string;
+  termScope: string;
+  minimumGradedOutcomes: number;
+}) {
   return (
     <section className="overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-lg dark:border-white/8 dark:bg-zinc-900/40 dark:shadow-xl">
       <div className="px-5 py-5 sm:px-6 border-b border-zinc-100 dark:border-white/8">
         <h2 className="text-xl font-bold text-zinc-900 dark:text-white sm:text-2xl">
           {courseLabel} <span className="text-zinc-400 dark:text-zinc-500 font-medium">by Professor</span>
         </h2>
-        <p className="mt-1 text-sm text-zinc-500">Ranked highest to lowest GPA — using A, B, C, D, and F outcomes only</p>
+        <p className="mt-1 text-sm text-zinc-500">
+          Ranked by historical GPA for {termScope} · A–F outcomes only · minimum {minimumGradedOutcomes} graded outcomes
+        </p>
       </div>
       <div className="space-y-3 px-4 py-4 sm:hidden">
         {professors.map((row, idx) => {
@@ -63,6 +76,7 @@ export default function CourseGpaByProfessor({ professors = [], courseLabel }: {
                 <div className="rounded-xl bg-white px-3 py-2.5 ring-1 ring-zinc-200 dark:bg-zinc-900/50 dark:ring-white/8">
                   <div className="text-[10px] font-bold uppercase tracking-widest text-zinc-400 dark:text-zinc-600">RMP</div>
                   <div className={`mt-1 font-semibold ${rc.text}`}>{row.quality == null ? "NR" : row.quality.toFixed(1)}</div>
+                  {row.ratingsCount != null ? <div className="mt-0.5 text-[10px] text-zinc-500">{row.ratingsCount} reviews</div> : null}
                 </div>
                 <div className="rounded-xl bg-white px-3 py-2.5 ring-1 ring-zinc-200 dark:bg-zinc-900/50 dark:ring-white/8">
                   <div className="text-[10px] font-bold uppercase tracking-widest text-zinc-400 dark:text-zinc-600">Graded</div>
@@ -83,9 +97,9 @@ export default function CourseGpaByProfessor({ professors = [], courseLabel }: {
         <div className="min-w-[720px]">
           <div className="grid grid-cols-12 bg-zinc-50 dark:bg-zinc-950/50 px-5 sm:px-6 py-3 text-[10px] font-bold uppercase tracking-widest text-zinc-500 dark:text-zinc-600">
             <div className="col-span-1">#</div>
-            <div className="col-span-4">Professor</div>
+            <div className="col-span-3">Professor</div>
             <div className="col-span-2 text-right">Avg GPA</div>
-            <div className="col-span-1 text-right">RMP</div>
+            <div className="col-span-2 text-right">Student rating</div>
             <div className="col-span-2 text-right">Graded</div>
             <div className="col-span-2 text-right">Total regs</div>
           </div>
@@ -98,7 +112,7 @@ export default function CourseGpaByProfessor({ professors = [], courseLabel }: {
                   <div className="col-span-1">
                     <span className="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-zinc-100 dark:bg-white/5 text-xs font-bold text-zinc-500 dark:text-zinc-500 ring-1 ring-zinc-200 dark:ring-white/8">{idx + 1}</span>
                   </div>
-                  <div className="col-span-4">
+                  <div className="col-span-3">
                     {row.slug ? (
   <Link href={`/professors/${row.slug}`} className="font-semibold text-zinc-900 dark:text-zinc-200 hover:text-emerald-600 dark:hover:text-emerald-400 hover:underline transition-colors">
     {row.instructorName}
@@ -112,9 +126,9 @@ export default function CourseGpaByProfessor({ professors = [], courseLabel }: {
                       {row.avgGpa == null ? "N/A" : row.avgGpa.toFixed(2)}
                     </span>
                   </div>
-                  <div className="col-span-1 flex justify-end">
+                  <div className="col-span-2 flex justify-end">
                     <span className={`inline-flex items-center rounded-lg px-2 py-1 text-xs font-bold tabular-nums ring-1 ${rc.bg} ${rc.text} ${rc.ring}`}>
-                      {row.quality == null ? "NR" : row.quality.toFixed(1)}
+                      {row.quality == null ? "NR" : `${row.quality.toFixed(1)} (${row.ratingsCount ?? 0})`}
                     </span>
                   </div>
                   <div className="col-span-2 flex justify-end">

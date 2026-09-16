@@ -46,7 +46,7 @@ import {
   WandSparkles,
   X,
 } from "lucide-react";
-import { buildQuestionBank, buildStudySession, buildValidatedMultipleChoiceChoices, computeStudyDashboard, createStudyId, fuzzyMatch, getDefaultProgress, getRecommendedCards, reorderCards, updateProgressForReview } from "@/lib/study/engine";
+import { buildLearnQuestionBank, buildQuestionBank, buildStudySession, buildValidatedMultipleChoiceChoices, computeStudyDashboard, createStudyId, fuzzyMatch, getDefaultProgress, getRecommendedCards, getRecommendedPracticeMode, reorderCards, updateProgressForReview } from "@/lib/study/engine";
 import { DEFAULT_STUDY_LIBRARY } from "@/lib/study/sample-data";
 import type { CardProgress, QuizQuestion, QuizResult, StructuredLectureNotes, StudyCard, StudyGroup, StudyLibraryState, StudyNote, StudySet, StudySurface } from "@/lib/study/types";
 import NotesWorkspace from "@/app/study/NotesWorkspace";
@@ -271,7 +271,7 @@ type StudyWorkspaceProps = {
 };
 
 type SaveDestinationDialogState = {
-  afterSave: "overview" | "learn";
+  afterSave: "overview" | "practice";
   folder: string;
   newFolderName: string;
   isEditing: boolean;
@@ -1198,7 +1198,7 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
     afterSave,
     folder,
   }: {
-    afterSave: "overview" | "learn";
+    afterSave: "overview" | "practice";
     folder?: string;
   }) => {
     const cleanedCards = draftSet.cards
@@ -1307,19 +1307,20 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
 
     setDraftSet(emptyDraftSet());
     setImportText("");
+    const destination = afterSave === "practice" ? getRecommendedPracticeMode(nextSet) : "overview";
     if (isCreateRoute) {
       const params = new URLSearchParams({
         mode: "flashcards",
         set: nextSet.id,
-        screen: afterSave === "learn" ? "learn" : "overview",
+        screen: destination,
       });
       router.push(`/study?${params.toString()}`);
     } else {
-      openStudyScreen(afterSave === "learn" ? "learn" : "overview", nextSet.id);
+      openStudyScreen(destination, nextSet.id);
     }
   };
 
-  const openSaveDestinationDialog = (afterSave: "overview" | "learn") => {
+  const openSaveDestinationDialog = (afterSave: "overview" | "practice") => {
     const editSetId = searchParams.get("edit");
     setSaveDestinationDialog({
       afterSave,
@@ -2229,6 +2230,7 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
         set={selectedSet}
         initialPracticeCardFronts={learnInitialMistakeFronts}
         onBack={() => { setLearnInitialMistakeFronts(null); openStudyScreen("overview", selectedSet.id); }}
+        onOpenFlashcards={() => { setLearnInitialMistakeFronts(null); openStudyScreen("flashcards", selectedSet.id); }}
         onProgress={(cardId, result) => updateCardProgress(selectedSet.id, cardId, (current) => updateProgressForReview(current, result))}
         onSessionSave={saveSession}
         onCelebrate={(message) => showToast(message, "reward")}
@@ -4667,7 +4669,7 @@ function CreateView({
   onImportTextChange: (value: string) => void;
   onGenerateWithAi: () => void;
   onImportFromText: () => void;
-  onRequestSave: (afterSave: "overview" | "learn") => void;
+  onRequestSave: (afterSave: "overview" | "practice") => void;
   onDeleteSet: () => void;
   onDragStart: (cardId: string | null) => void;
   onDragEnd: () => void;
@@ -4754,7 +4756,7 @@ function CreateView({
                 {primarySaveLabel}
               </button>
               <button
-                onClick={() => onRequestSave("learn")}
+                onClick={() => onRequestSave("practice")}
                 {...magneticHoverProps}
                 className="study-premium-button rounded-full bg-[#5561ff] px-5 py-2.5 text-sm font-semibold text-white shadow-[0_12px_24px_rgba(85,97,255,0.24)]"
               >
@@ -4983,7 +4985,7 @@ function CreateView({
               {primarySaveLabel}
             </button>
             <button
-              onClick={() => onRequestSave("learn")}
+              onClick={() => onRequestSave("practice")}
               {...magneticHoverProps}
               className="study-premium-button rounded-full bg-[#5561ff] px-5 py-2.5 text-sm font-semibold text-white"
             >
@@ -5123,7 +5125,7 @@ function SaveSetDialog({
             onClick={onConfirm}
             className="rounded-full bg-[#5561ff] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#6570ff]"
           >
-            {dialog.afterSave === "learn"
+            {dialog.afterSave === "practice"
               ? dialog.isEditing ? "Save and practice" : "Create and practice"
               : dialog.isEditing ? "Save" : "Create"}
           </button>
@@ -6615,6 +6617,7 @@ function LearnMode({
   set,
   initialPracticeCardFronts,
   onBack,
+  onOpenFlashcards,
   onProgress,
   onSessionSave,
   onCelebrate,
@@ -6622,6 +6625,7 @@ function LearnMode({
   set: StudySet;
   initialPracticeCardFronts?: string[] | null;
   onBack: () => void;
+  onOpenFlashcards: () => void;
   onProgress: (cardId: string, result: "knew" | "missed") => void;
   onSessionSave: (session: ReturnType<typeof buildStudySession>) => void;
   onCelebrate: (message: string) => void;
@@ -6630,15 +6634,7 @@ function LearnMode({
     initialPracticeCardFronts && initialPracticeCardFronts.length > 0 ? initialPracticeCardFronts : null,
   );
   const questions = useMemo(() => {
-    const bank = buildQuestionBank(set);
-    const multipleChoiceByCard = new Map(
-      bank
-        .filter((question) => question.type === "multiple_choice" && (question.choices?.length || 0) >= 4 && question.cardId)
-        .map((question) => [question.cardId as string, question]),
-    );
-    const full = set.cards
-      .map((card) => multipleChoiceByCard.get(card.id))
-      .filter((question): question is QuizQuestion => Boolean(question));
+    const full = buildLearnQuestionBank(set);
     if (practiceOnlyCardFronts && practiceOnlyCardFronts.length > 0) {
       const filtered = full.filter((q) =>
         practiceOnlyCardFronts.some(
@@ -6864,7 +6860,22 @@ function LearnMode({
   }, [index, questions]);
 
   if (!question && !completed) {
-    return <EmptyModeState title="No cards available to learn right now." onBack={onBack} />;
+    return (
+      <div className="study-premium-panel study-appear rounded-[1.85rem] p-10 text-center backdrop-blur-xl">
+        <div className="text-2xl font-bold text-white">Learn needs more answer choices</div>
+        <p className="mx-auto mt-3 max-w-xl text-sm leading-6 text-zinc-400">
+          This deck does not have enough distinct, believable answers to build a fair multiple-choice session yet. You can still practice every card normally.
+        </p>
+        <div className="mt-6 flex flex-wrap justify-center gap-3">
+          <button onClick={onOpenFlashcards} {...magneticHoverProps} className="study-premium-button rounded-full bg-[#5561ff] px-5 py-2.5 text-sm font-semibold text-white">
+            Practice with flashcards
+          </button>
+          <button onClick={onBack} {...magneticHoverProps} className="study-premium-button rounded-full border border-white/10 bg-white/4 px-5 py-2.5 text-sm font-semibold text-zinc-100">
+            Back to overview
+          </button>
+        </div>
+      </div>
+    );
   }
 
   const handleExplainThis = () => {

@@ -443,11 +443,18 @@
     "groundTruth": {
       "mustContain": [
         "CS 211",
-        "GPA"
+        "GPA",
+        "Koehler",
+        "Hodges",
+        "Reckinger",
+        "Hayes",
+        "20 graded outcomes",
+        "cannot determine who teaches best"
       ],
       "mustNotContain": [
         "I don't have",
-        "can't confirm"
+        "can't confirm",
+        "4.3/5"
       ],
       "scoringMethod": "exact_string"
     },

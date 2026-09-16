@@ -18,7 +18,9 @@ const sections = [
       "Course pages are designed to help students compare difficulty, GPA patterns, withdrawal patterns, and instructor outcomes without guessing. Metrics are based on stored grade distributions and related registration history where available.",
     bullets: [
       "Average GPA is calculated from available letter-grade outcomes for the course",
-      "Pass rate and withdrawal rate are shown from the visible distribution on the page",
+      "C-or-better and D-or-better rates use A–F letter-grade outcomes as the denominator",
+      "Withdrawal rate uses A–F plus W outcomes as the denominator",
+      "A missing denominator is shown as N/A rather than as a zero-percent result",
       "Instructor comparisons are filtered to rows with enough outcomes to be worth showing",
       "Course explorer filters help narrow majors, Gen Eds, and requirement types faster",
     ],

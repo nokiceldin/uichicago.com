@@ -47,7 +47,6 @@ export async function serializeConversationList(userId: string) {
   const conversations = await prisma.chatConversation.findMany({
     where: { userId },
     orderBy: { lastMessageAt: "desc" },
-    take: 50,
   });
 
   return conversations.map((conversation) => {

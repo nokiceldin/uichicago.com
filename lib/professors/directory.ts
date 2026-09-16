@@ -737,19 +737,21 @@ export async function getProfessorDirectoryBySlug(slug: string) {
   ) ?? null;
 }
 
-export async function findProfessorDirectorySlugForUicName(uicName: string) {
+export function findProfessorDirectoryEntryForUicName(
+  uicName: string,
+  directory: ProfessorDirectoryEntry[],
+) {
   const target = normalizeProfessorName(uicName);
   if (!target) return null;
 
-  const directory = await getProfessorDirectory();
   const exact = directory.find((entry) =>
     entry.rawCourseMapKeys.some((key) => normalizeProfessorName(key) === target) ||
     normalizeProfessorName(entry.name) === target
   );
-  if (exact) return exact.slug;
+  if (exact) return exact;
 
   const targetParts = getNameParts(uicName);
-  let best: { slug: string; score: number } | null = null;
+  let best: { entry: ProfessorDirectoryEntry; score: number } | null = null;
 
   for (const entry of directory) {
     const entryParts = getNameParts(entry.name);
@@ -762,8 +764,13 @@ export async function findProfessorDirectorySlugForUicName(uicName: string) {
       overlapCount(entryParts.middle, targetParts.middle) * 5 +
       (entry.isRated ? 25 : 0);
 
-    if (!best || score > best.score) best = { slug: entry.slug, score };
+    if (!best || score > best.score) best = { entry, score };
   }
 
-  return best?.slug ?? null;
+  return best?.entry ?? null;
+}
+
+export async function findProfessorDirectorySlugForUicName(uicName: string) {
+  const directory = await getProfessorDirectory();
+  return findProfessorDirectoryEntryForUicName(uicName, directory)?.slug ?? null;
 }

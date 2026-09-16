@@ -28,16 +28,38 @@ export async function POST(request: Request) {
     const body = await request.json().catch(() => ({}));
     const messages = normalizeStoredMessages(Array.isArray(body.messages) ? (body.messages as StoredChatMessage[]) : []);
     const title = typeof body.title === "string" && body.title.trim() ? body.title.trim() : buildConversationTitle(messages);
+    const clientId =
+      typeof body.clientConversationId === "string" && body.clientConversationId.startsWith("local_")
+        ? body.clientConversationId.slice(0, 160)
+        : null;
 
-    const conversation = await prisma.chatConversation.create({
-      data: {
-        userId: session.user.id,
-        title: title || "New chat",
-        messagesJson: JSON.stringify(messages),
-        messageCount: messages.length,
-        lastMessageAt: new Date(),
-      },
-    });
+    const conversation = clientId
+      ? await prisma.chatConversation.upsert({
+          where: { userId_clientId: { userId: session.user.id, clientId } },
+          create: {
+            userId: session.user.id,
+            clientId,
+            title: title || "New chat",
+            messagesJson: JSON.stringify(messages),
+            messageCount: messages.length,
+            lastMessageAt: new Date(),
+          },
+          update: {
+            title: title || "New chat",
+            messagesJson: JSON.stringify(messages),
+            messageCount: messages.length,
+            lastMessageAt: new Date(),
+          },
+        })
+      : await prisma.chatConversation.create({
+          data: {
+            userId: session.user.id,
+            title: title || "New chat",
+            messagesJson: JSON.stringify(messages),
+            messageCount: messages.length,
+            lastMessageAt: new Date(),
+          },
+        });
 
     return NextResponse.json({
       id: conversation.id,

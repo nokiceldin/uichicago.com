@@ -37,13 +37,29 @@ export function normalizeText(value: string): string {
 export function fuzzyMatch(input: string, accepted: string | string[]): boolean {
   const acceptedList = Array.isArray(accepted) ? accepted : [accepted];
   const normalizedInput = normalizeText(input);
+  if (!normalizedInput) return false;
 
   return acceptedList.some((entry) => {
     const normalizedAccepted = normalizeText(entry);
     if (!normalizedAccepted) return false;
     if (normalizedInput === normalizedAccepted) return true;
-    if (normalizedAccepted.includes(normalizedInput) || normalizedInput.includes(normalizedAccepted)) return true;
-    return levenshteinDistance(normalizedInput, normalizedAccepted) <= 2;
+
+    const inputNumbers = normalizedInput.match(/\d+(?:\.\d+)?/g) ?? [];
+    const acceptedNumbers = normalizedAccepted.match(/\d+(?:\.\d+)?/g) ?? [];
+    if (
+      (inputNumbers.length > 0 || acceptedNumbers.length > 0) &&
+      (inputNumbers.length !== acceptedNumbers.length ||
+        inputNumbers.some((value, index) => value !== acceptedNumbers[index]))
+    ) {
+      return false;
+    }
+
+    const longerLength = Math.max(normalizedInput.length, normalizedAccepted.length);
+    const lengthDifference = Math.abs(normalizedInput.length - normalizedAccepted.length);
+    if (lengthDifference > 2) return false;
+
+    const typoAllowance = longerLength >= 10 ? 2 : longerLength >= 5 ? 1 : 0;
+    return typoAllowance > 0 && levenshteinDistance(normalizedInput, normalizedAccepted) <= typoAllowance;
   });
 }
 
@@ -113,6 +129,28 @@ export function buildQuestionBank(set: StudySet): QuizQuestion[] {
 
     return questionTypes;
   });
+}
+
+export function buildLearnQuestionBank(set: StudySet): QuizQuestion[] {
+  const multipleChoiceByCard = new Map(
+    buildQuestionBank(set)
+      .filter(
+        (question) =>
+          question.type === "multiple_choice" &&
+          (question.choices?.length || 0) >= 4 &&
+          question.cardId,
+      )
+      .map((question) => [question.cardId as string, question]),
+  );
+
+  return [...set.cards]
+    .sort((a, b) => a.orderIndex - b.orderIndex)
+    .map((card) => multipleChoiceByCard.get(card.id))
+    .filter((question): question is QuizQuestion => Boolean(question));
+}
+
+export function getRecommendedPracticeMode(set: StudySet): "flashcards" | "learn" {
+  return buildLearnQuestionBank(set).length > 0 ? "learn" : "flashcards";
 }
 
 function buildDistractorsForCard(card: StudyCard, cards: StudyCard[], set: StudySet) {

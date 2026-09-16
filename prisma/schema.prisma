@@ -406,6 +406,7 @@ model QueryLog {
 model ChatConversation {
   id            String   @id @default(cuid())
   userId        String
+  clientId      String?
   title         String
   messagesJson  String   @db.Text @default("[]")
   messageCount  Int      @default(0)
@@ -415,6 +416,7 @@ model ChatConversation {
   user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, lastMessageAt(sort: Desc)])
+  @@unique([userId, clientId])
   @@map("chat_conversations")
 }
 

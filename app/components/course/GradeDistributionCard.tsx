@@ -3,9 +3,9 @@
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
 
 type DistItem = { label: string; value: number; color: string; };
-type GradeDistributionCardProps = { avgGpa: number | null; distribution: DistItem[]; visualTotal: number; totalRegs: number; other: number; };
+type GradeDistributionCardProps = { avgGpa: number | null; distribution: DistItem[]; visualTotal: number; totalRegs: number; other: number; termScope: string; };
 
-export default function GradeDistributionCard({ avgGpa, distribution, visualTotal, totalRegs, other }: GradeDistributionCardProps) {
+export default function GradeDistributionCard({ avgGpa, distribution, visualTotal, totalRegs, other, termScope }: GradeDistributionCardProps) {
   const chartData = distribution.filter((item) => item.value > 0);
   const nf = new Intl.NumberFormat("en-US");
 
@@ -13,19 +13,19 @@ export default function GradeDistributionCard({ avgGpa, distribution, visualTota
     <section className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-lg dark:border-white/8 dark:bg-zinc-900/40 sm:p-6 dark:shadow-xl">
       <div className="mb-5 sm:mb-6">
         <h2 className="text-xl font-bold text-zinc-900 dark:text-white sm:text-2xl">Grade Distribution</h2>
-        <p className="mt-1 text-sm text-zinc-500">Based on all available term-level grade data for this course</p>
+        <p className="mt-1 text-sm text-zinc-500">{termScope} · Percentages use A–F and W outcomes</p>
       </div>
       <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
-        <div className="h-[300px] sm:h-[320px]">
+        <div className="h-[300px] min-w-0 sm:h-[320px]">
           {chartData.length > 0 ? (
-            <ResponsiveContainer width="100%" height="100%">
+            <ResponsiveContainer width="100%" height="100%" minWidth={0}>
               <PieChart>
                 <Tooltip
                   contentStyle={{ backgroundColor: "#fff", border: "1px solid #e4e4e7", borderRadius: "12px", fontSize: "12px", color: "#18181b" }}
                   formatter={(value, name) => {
                     const num = typeof value === "number" ? value : Number(value ?? 0);
-                    const pct = visualTotal > 0 ? ((num / visualTotal) * 100).toFixed(1) : "0.0";
-                    return [`${num} students · ${pct}%`, String(name)];
+                    const pct = visualTotal > 0 ? `${((num / visualTotal) * 100).toFixed(1)}%` : "N/A";
+                    return [`${num} outcomes · ${pct}`, String(name)];
                   }}
                 />
                 <Pie data={chartData} dataKey="value" nameKey="label" innerRadius={80} outerRadius={120} paddingAngle={2} strokeWidth={0}>
@@ -46,7 +46,7 @@ export default function GradeDistributionCard({ avgGpa, distribution, visualTota
         <div className="space-y-3">
           <div className="grid grid-cols-2 gap-2">
             {distribution.map((item) => {
-              const pct = visualTotal > 0 ? ((item.value / visualTotal) * 100).toFixed(1) : "0.0";
+              const pct = visualTotal > 0 ? `${((item.value / visualTotal) * 100).toFixed(1)}%` : "N/A";
               return (
                 <div key={item.label} className="flex items-center justify-between rounded-xl bg-zinc-50 dark:bg-white/4 px-3 py-2.5 ring-1 ring-zinc-200 dark:ring-white/8">
                   <div className="flex items-center gap-2">
@@ -54,7 +54,7 @@ export default function GradeDistributionCard({ avgGpa, distribution, visualTota
                     <span className="text-sm font-bold text-zinc-900 dark:text-zinc-300">{item.label}</span>
                   </div>
                   <div className="text-right">
-                    <div className="text-sm font-bold text-zinc-900 dark:text-zinc-200 tabular-nums">{pct}%</div>
+                    <div className="text-sm font-bold text-zinc-900 dark:text-zinc-200 tabular-nums">{pct}</div>
                     <div className="text-[10px] text-zinc-400 dark:text-zinc-600 tabular-nums">{item.value}</div>
                   </div>
                 </div>
@@ -63,9 +63,9 @@ export default function GradeDistributionCard({ avgGpa, distribution, visualTota
           </div>
           <div className="grid grid-cols-3 gap-2">
             {[
-              { label: "Visual total", value: nf.format(visualTotal) },
-              { label: "Other", value: nf.format(other) },
-              { label: "Total regs", value: nf.format(totalRegs) },
+              { label: "A–F + W", value: nf.format(visualTotal) },
+              { label: "Other outcomes", value: nf.format(other) },
+              { label: "All registrations", value: nf.format(totalRegs) },
             ].map((s) => (
               <div key={s.label} className="rounded-xl bg-zinc-50 dark:bg-white/4 px-3 py-3 ring-1 ring-zinc-200 dark:ring-white/8 text-center">
                 <div className="text-[9px] font-bold uppercase tracking-widest text-zinc-400 dark:text-zinc-600">{s.label}</div>

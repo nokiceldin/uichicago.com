@@ -8,6 +8,7 @@ import { flushSync } from "react-dom";
 import posthog from "posthog-js";
 import { Check, Ellipsis, MessageSquare, Pencil, PanelLeftClose, PanelLeftOpen, Plus, Trash2, X } from "lucide-react";
 import { useSession } from "next-auth/react";
+import { getDeterministicItems } from "@/lib/chat/prompts";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -41,6 +42,7 @@ interface ConversationSummary {
 
 interface StoredConversation extends ConversationSummary {
   messages: Message[];
+  ownerId?: string | null;
 }
 
 const LOCAL_CHAT_STORAGE_KEY = "sparky_chat_conversations_v1";
@@ -104,6 +106,7 @@ function loadLocalConversations(): StoredConversation[] {
         updatedAt: typeof item.updatedAt === "string" ? item.updatedAt : new Date().toISOString(),
         lastMessageAt: typeof item.lastMessageAt === "string" ? item.lastMessageAt : new Date().toISOString(),
         messages: Array.isArray(item.messages) ? (item.messages as Message[]) : [],
+        ownerId: typeof item.ownerId === "string" ? item.ownerId : null,
       }))
       .sort((a, b) => new Date(b.lastMessageAt).getTime() - new Date(a.lastMessageAt).getTime());
   } catch {
@@ -1000,19 +1003,6 @@ function uid() {
   return Math.random().toString(36).slice(2, 9);
 }
 
-function shuffleArray<T>(arr: T[]): T[] {
-  const copy = [...arr];
-  for (let i = copy.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [copy[i], copy[j]] = [copy[j], copy[i]];
-  }
-  return copy;
-}
-
-function getRandomItems<T>(arr: T[], count: number): T[] {
-  return shuffleArray(arr).slice(0, count);
-}
-
 function shortenPrompt(text: string): string {
   const map: Record<string, string> = {
     "What are the easiest 200-level CS courses at UIC?": "Easiest 200 level CS classes",
@@ -1652,7 +1642,7 @@ function EmptyState({
   onRemoveAttachment: () => void;
 }){
 const topic = TOPICS[activeTopic];
-const visiblePrompts = useMemo(() => getRandomItems(topic.items, 4), [topic.items]);
+const visiblePrompts = useMemo(() => getDeterministicItems(topic.items, 4), [topic.items]);
 
   return (
     <div
@@ -1833,7 +1823,7 @@ function QuickSuggestBar({
   refreshKey: number;
 }) {
   const quickPrompts = useMemo(() => {
-    return getRandomItems(CHAT_QUICK_PROMPTS, 10);
+    return getDeterministicItems(CHAT_QUICK_PROMPTS, 10, refreshKey * 10);
   }, [refreshKey]);
 
   return (
@@ -1914,6 +1904,9 @@ function ChatHistorySidebar({
           <div>
             <div className="text-xs font-bold uppercase tracking-[0.18em] text-zinc-400 dark:text-zinc-500">Sparky</div>
             <div className="mt-1 text-sm font-semibold text-zinc-900 dark:text-white">Chat history</div>
+            <div className="mt-1 text-[11px] text-zinc-500 dark:text-zinc-400">
+              {signedIn ? "Synced to your account" : "Saved on this device"}
+            </div>
           </div>
         ) : null}
         <button
@@ -2092,6 +2085,7 @@ function ChatContent() {
   const searchParams = useSearchParams();
   const { data: session, status: sessionStatus } = useSession();
   const isSignedIn = sessionStatus === "authenticated" && Boolean(session?.user?.id);
+  const signedInUserId = session?.user?.id ?? null;
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [conversations, setConversations] = useState<ConversationSummary[]>([]);
   const [historyLoading, setHistoryLoading] = useState(false);
@@ -2139,15 +2133,20 @@ const [attachedFile, setAttachedFile] = useState<AttachedFile | null>(null);
   }, []);
 
   const syncConversationParam = useCallback((conversationId: string | null) => {
-    const params = new URLSearchParams(searchParams.toString());
+    const params = new URLSearchParams(window.location.search);
     if (conversationId) params.set("c", conversationId);
     else params.delete("c");
     const next = params.toString();
     router.replace(next ? `${pathname}?${next}` : pathname, { scroll: false });
-  }, [pathname, router, searchParams]);
+  }, [pathname, router]);
 
   const refreshConversations = useCallback(async () => {
-    const localItems = loadLocalConversations().map(makeConversationSummary);
+    const localConversations = loadLocalConversations().filter((conversation) =>
+      isSignedIn
+        ? !conversation.ownerId || conversation.ownerId === signedInUserId
+        : !conversation.ownerId,
+    );
+    const localItems = localConversations.map(makeConversationSummary);
 
     if (!isSignedIn) {
       setConversations(localItems);
@@ -2159,14 +2158,56 @@ const [attachedFile, setAttachedFile] = useState<AttachedFile | null>(null);
       const response = await fetch("/api/chat/conversations", { cache: "no-store" });
       const payload = await readJsonSafely(response);
       const remoteItems = Array.isArray(payload?.items) ? (payload.items as ConversationSummary[]) : [];
-      const merged = [...remoteItems, ...localItems.filter((localItem) => !remoteItems.some((remoteItem) => remoteItem.id === localItem.id))];
+      const imported = await Promise.all(localConversations.map(async (localConversation) => {
+        try {
+          const importResponse = await fetch("/api/chat/conversations", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              clientConversationId: localConversation.id,
+              title: localConversation.title,
+              messages: localConversation.messages,
+            }),
+          });
+          const importPayload = await readJsonSafely(importResponse);
+          if (!importResponse.ok || !importPayload) return null;
+
+          const summary: ConversationSummary = {
+            id: String(importPayload.id),
+            title: String(importPayload.title),
+            preview: localConversation.preview,
+            messageCount: Number(importPayload.messageCount ?? localConversation.messageCount),
+            createdAt: String(importPayload.createdAt),
+            updatedAt: String(importPayload.updatedAt),
+            lastMessageAt: String(importPayload.lastMessageAt),
+          };
+          deleteLocalConversationById(localConversation.id);
+          return { localId: localConversation.id, summary };
+        } catch {
+          return null;
+        }
+      }));
+
+      const importedItems = imported.filter((item): item is NonNullable<typeof item> => Boolean(item));
+      const importedLocalIds = new Set(importedItems.map((item) => item.localId));
+      const remainingLocalItems = localItems.filter((item) => !importedLocalIds.has(item.id));
+      const merged = [...importedItems.map((item) => item.summary), ...remoteItems, ...remainingLocalItems]
+        .filter((item, index, items) => items.findIndex((candidate) => candidate.id === item.id) === index)
+        .sort((a, b) => new Date(b.lastMessageAt).getTime() - new Date(a.lastMessageAt).getTime());
       setConversations(merged);
+
+      const activeImport = importedItems.find((item) => item.localId === activeConversationIdRef.current);
+      if (activeImport) {
+        setActiveConversationId(activeImport.summary.id);
+        sessionIdRef.current = activeImport.summary.id;
+        syncConversationParam(activeImport.summary.id);
+      }
     } catch {
       setConversations(localItems);
     } finally {
       setHistoryLoading(false);
     }
-  }, [isSignedIn]);
+  }, [isSignedIn, signedInUserId, syncConversationParam]);
 
   const createConversation = useCallback(async (seedMessages: Message[] = []) => {
     if (!isSignedIn) {
@@ -2180,6 +2221,7 @@ const [attachedFile, setAttachedFile] = useState<AttachedFile | null>(null);
         updatedAt: now,
         lastMessageAt: now,
         messages: seedMessages,
+        ownerId: null,
       };
       upsertLocalConversation(localConversation);
       const summary = makeConversationSummary(localConversation);
@@ -2204,7 +2246,7 @@ const [attachedFile, setAttachedFile] = useState<AttachedFile | null>(null);
           if (response.status !== 401) {
             console.warn("Failed to create conversation.", payload);
           }
-          return null;
+          throw new Error("Remote conversation creation failed.");
         }
 
         const summary: ConversationSummary = {
@@ -2233,6 +2275,7 @@ const [attachedFile, setAttachedFile] = useState<AttachedFile | null>(null);
           updatedAt: now,
           lastMessageAt: now,
           messages: seedMessages,
+          ownerId: signedInUserId,
         };
         upsertLocalConversation(localConversation);
         const summary = makeConversationSummary(localConversation);
@@ -2249,25 +2292,66 @@ const [attachedFile, setAttachedFile] = useState<AttachedFile | null>(null);
     } finally {
       createConversationPromiseRef.current = null;
     }
-  }, [isSignedIn, syncConversationParam, upsertConversationSummary]);
+  }, [isSignedIn, signedInUserId, syncConversationParam, upsertConversationSummary]);
 
   const persistConversationSnapshot = useCallback(async (conversationId: string, nextMessages: Message[]) => {
     const now = new Date().toISOString();
+    const existingLocalConversation = getLocalConversationById(conversationId);
     const storedConversation: StoredConversation = {
       id: conversationId,
-      title: buildAutoConversationTitle(nextMessages),
+      title: existingLocalConversation?.title ?? buildAutoConversationTitle(nextMessages),
       preview: nextMessages[nextMessages.length - 1]?.content ?? "",
       messageCount: nextMessages.length,
-      createdAt: getLocalConversationById(conversationId)?.createdAt ?? now,
+      createdAt: existingLocalConversation?.createdAt ?? now,
       updatedAt: now,
       lastMessageAt: now,
       messages: nextMessages,
+      ownerId: existingLocalConversation?.ownerId ?? signedInUserId,
     };
 
-    if (!isSignedIn || isLocalConversationId(conversationId)) {
+    if (!isSignedIn) {
       upsertLocalConversation(storedConversation);
       upsertConversationSummary(makeConversationSummary(storedConversation));
-      return;
+      return conversationId;
+    }
+
+    if (isLocalConversationId(conversationId)) {
+      upsertLocalConversation(storedConversation);
+      upsertConversationSummary(makeConversationSummary(storedConversation));
+
+      try {
+        const importResponse = await fetch("/api/chat/conversations", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            clientConversationId: conversationId,
+            title: storedConversation.title,
+            messages: nextMessages,
+          }),
+        });
+        const importPayload = await readJsonSafely(importResponse);
+        if (!importResponse.ok || !importPayload) return conversationId;
+
+        const remoteSummary: ConversationSummary = {
+          id: String(importPayload.id),
+          title: String(importPayload.title),
+          preview: storedConversation.preview,
+          messageCount: Number(importPayload.messageCount ?? storedConversation.messageCount),
+          createdAt: String(importPayload.createdAt),
+          updatedAt: String(importPayload.updatedAt),
+          lastMessageAt: String(importPayload.lastMessageAt),
+        };
+        deleteLocalConversationById(conversationId);
+        setConversations((current) => [remoteSummary, ...current.filter((item) => item.id !== conversationId && item.id !== remoteSummary.id)]);
+        if (activeConversationIdRef.current === conversationId) {
+          setActiveConversationId(remoteSummary.id);
+          sessionIdRef.current = remoteSummary.id;
+          syncConversationParam(remoteSummary.id);
+        }
+        return remoteSummary.id;
+      } catch {
+        return conversationId;
+      }
     }
 
     const response = await fetch(`/api/chat/conversations/${conversationId}`, {
@@ -2292,7 +2376,8 @@ const [attachedFile, setAttachedFile] = useState<AttachedFile | null>(null);
       updatedAt: String(payload.updatedAt),
       lastMessageAt: String(payload.lastMessageAt),
     });
-  }, [isSignedIn, upsertConversationSummary]);
+    return conversationId;
+  }, [isSignedIn, signedInUserId, syncConversationParam, upsertConversationSummary]);
 
   const openConversation = useCallback(async (conversationId: string) => {
     if (loadingConversationId === conversationId) return;
@@ -2301,6 +2386,9 @@ const [attachedFile, setAttachedFile] = useState<AttachedFile | null>(null);
       if (!isSignedIn || isLocalConversationId(conversationId)) {
         const localConversation = getLocalConversationById(conversationId);
         if (!localConversation) {
+          throw new Error("Failed to load conversation.");
+        }
+        if (localConversation.ownerId && localConversation.ownerId !== signedInUserId) {
           throw new Error("Failed to load conversation.");
         }
         setMessages(localConversation.messages);
@@ -2329,7 +2417,7 @@ const [attachedFile, setAttachedFile] = useState<AttachedFile | null>(null);
     } finally {
       setLoadingConversationId(null);
     }
-  }, [isSignedIn, loadingConversationId, syncConversationParam]);
+  }, [isSignedIn, loadingConversationId, signedInUserId, syncConversationParam]);
 
   const startNewConversation = useCallback(() => {
     setMessages([]);
@@ -2343,6 +2431,8 @@ const [attachedFile, setAttachedFile] = useState<AttachedFile | null>(null);
 
   const deleteConversation = useCallback(async (conversationId: string) => {
     if (!isSignedIn || isLocalConversationId(conversationId)) {
+      const localConversation = getLocalConversationById(conversationId);
+      if (localConversation?.ownerId && localConversation.ownerId !== signedInUserId) return;
       deleteLocalConversationById(conversationId);
     } else {
       await fetch(`/api/chat/conversations/${conversationId}`, { method: "DELETE" });
@@ -2351,12 +2441,13 @@ const [attachedFile, setAttachedFile] = useState<AttachedFile | null>(null);
     if (activeConversationIdRef.current === conversationId) {
       startNewConversation();
     }
-  }, [isSignedIn, startNewConversation]);
+  }, [isSignedIn, signedInUserId, startNewConversation]);
 
   const renameConversation = useCallback(async (conversationId: string, title: string) => {
     if (!isSignedIn || isLocalConversationId(conversationId)) {
       const existing = getLocalConversationById(conversationId);
       if (!existing) return;
+      if (existing.ownerId && existing.ownerId !== signedInUserId) return;
       upsertLocalConversation({
         ...existing,
         title,
@@ -2384,7 +2475,7 @@ const [attachedFile, setAttachedFile] = useState<AttachedFile | null>(null);
     setConversations((current) =>
       current.map((item) => (item.id === conversationId ? { ...item, title: String(payload.title) } : item)),
     );
-  }, [isSignedIn]);
+  }, [isSignedIn, signedInUserId]);
 
   useEffect(() => {
     void refreshConversations();
@@ -2398,7 +2489,7 @@ const [attachedFile, setAttachedFile] = useState<AttachedFile | null>(null);
 
   useEffect(() => {
     if (isSignedIn) return;
-    setConversations(loadLocalConversations().map(makeConversationSummary));
+    setConversations(loadLocalConversations().filter((conversation) => !conversation.ownerId).map(makeConversationSummary));
     setActiveConversationId(null);
     setMessages([]);
     setInput("");
@@ -2453,7 +2544,7 @@ const [attachedFile, setAttachedFile] = useState<AttachedFile | null>(null);
     try {
       effectiveConversationId = effectiveConversationId ?? await createConversation(updated);
       if (effectiveConversationId) {
-        await persistConversationSnapshot(effectiveConversationId, updated);
+        effectiveConversationId = await persistConversationSnapshot(effectiveConversationId, updated);
       }
     } catch (error) {
       console.error("Failed to save chat history:", error);

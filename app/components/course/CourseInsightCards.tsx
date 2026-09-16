@@ -1,4 +1,10 @@
-type CourseInsightCardsProps = { avgGpa: number | null; difficultyScore: number | null; totalRegs: number; visualTotal: number; passRate: number; withdrawalRate: number; mostCommonGrade: string; };
+import type { CourseOutcomeSummary } from "@/lib/courses/outcome-summary";
+
+type CourseInsightCardsProps = {
+  avgGpa: number | null;
+  difficultyScore: number | null;
+  outcomeSummary: CourseOutcomeSummary;
+};
 
 function gpaColor(v: number | null) {
   if (v == null) return "text-zinc-500";
@@ -27,17 +33,22 @@ function StatCard({ label, value, valueClass = "text-zinc-900 dark:text-white", 
   );
 }
 
-export default function CourseInsightCards({ avgGpa, difficultyScore, totalRegs, visualTotal, passRate, withdrawalRate, mostCommonGrade }: CourseInsightCardsProps) {
+function rate(value: number | null) {
+  return value == null ? "N/A" : `${value.toFixed(1)}%`;
+}
+
+export default function CourseInsightCards({ avgGpa, difficultyScore, outcomeSummary }: CourseInsightCardsProps) {
   return (
     <section>
       <h2 className="mb-4 text-xl font-bold text-zinc-900 dark:text-white sm:text-2xl">Quick Insights</h2>
-      <div className="grid grid-cols-2 gap-3 xl:grid-cols-6">
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4 xl:grid-cols-7">
         <StatCard label="Avg GPA" value={avgGpa == null ? "N/A" : avgGpa.toFixed(2)} valueClass={gpaColor(avgGpa)} />
         <StatCard label="Easiness" value={difficultyScore == null ? "N/A" : difficultyScore.toFixed(2)} valueClass={easinessColor(difficultyScore)} />
-        <StatCard label="Pass rate" value={`${passRate.toFixed(1)}%`} helper="Using A, B, C, D as passing" />
-        <StatCard label="Withdrawal rate" value={`${withdrawalRate.toFixed(1)}%`} helper="Based on visible distribution" />
-        <StatCard label="Most common grade" value={mostCommonGrade} />
-        <StatCard label="Students counted" value={new Intl.NumberFormat("en-US").format(visualTotal || totalRegs)} helper={visualTotal > 0 ? "A through F plus W" : "Using total registrations"} />
+        <StatCard label="C or better" value={rate(outcomeSummary.cOrBetterRate)} helper="Among A–F outcomes" />
+        <StatCard label="D or better" value={rate(outcomeSummary.dOrBetterRate)} helper="Among A–F outcomes" />
+        <StatCard label="Withdrawal rate" value={rate(outcomeSummary.withdrawalRate)} helper="Among A–F and W outcomes" />
+        <StatCard label="Most common grade" value={outcomeSummary.mostCommonLetterGrade ?? "N/A"} helper="Letter grades only" />
+        <StatCard label="Outcomes counted" value={new Intl.NumberFormat("en-US").format(outcomeSummary.visibleOutcomeTotal)} helper="A–F and W outcomes" />
       </div>
     </section>
   );

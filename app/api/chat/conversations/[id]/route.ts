@@ -59,7 +59,7 @@ export async function PUT(
     ? normalizeStoredMessages(body.messages as StoredChatMessage[])
     : parseConversationMessages(existing.messagesJson);
   const explicitTitle = typeof body.title === "string" ? body.title.trim() : "";
-  const title = explicitTitle || buildConversationTitle(messages) || existing.title || "New chat";
+  const title = explicitTitle || existing.title || buildConversationTitle(messages) || "New chat";
 
   const updated = await prisma.chatConversation.update({
     where: { id: existing.id },

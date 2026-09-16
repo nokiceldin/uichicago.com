@@ -16,10 +16,15 @@ import {
 import { getCurrentStudyUser } from "@/lib/auth/session";
 import { parseStoredPreferences } from "@/lib/study/profile";
 import { getCurrentSession } from "@/lib/auth/session";
-import { getMemory, learnMemoryFromMessages, persistMemory, formatMemoryForPrompt } from "@/lib/chat/memory";
+import { formatMemoryForPrompt, getAccountMemoryKey, getMemory, learnMemoryFromMessages, mergeUserMemory, persistMemory } from "@/lib/chat/memory";
 import { buildUploadedFileSupport, type UploadedFile } from "@/lib/chat/attachments";
 import { prisma } from "@/lib/prisma";
 import { diffLabel } from "@/lib/chat/utils";
+import {
+  COURSE_INSTRUCTOR_TERM_CODES,
+  MIN_COURSE_INSTRUCTOR_GRADED_OUTCOMES,
+} from "@/lib/courses/instructor-stats";
+import { summarizeCourseOutcomes } from "@/lib/courses/outcome-summary";
 import housingDiningData from "@/public/data/uic-knowledge/housing-dining.json";
 import athleticsData from "@/public/data/uic-knowledge/athletics.json";
 import academicCalendarData from "@/public/data/uic-knowledge/academic-calendar.json";
@@ -1366,13 +1371,15 @@ async function retrieveCourseDetail(intent: any, query: QueryAnalysis): Promise<
     if (!result) return [];
     const { course, totals, instructors } = result;
     const sum = totals._sum;
-    const totalGraded = (sum.a ?? 0) + (sum.b ?? 0) + (sum.c ?? 0) + (sum.d ?? 0) + (sum.f ?? 0);
-    const aPct = totalGraded > 0 ? (((sum.a ?? 0) / totalGraded) * 100).toFixed(1) : "?";
-    const passPct = totalGraded > 0 ? ((((sum.a ?? 0) + (sum.b ?? 0) + (sum.c ?? 0) + (sum.d ?? 0)) / totalGraded) * 100).toFixed(1) : "?";
+    const outcomes = summarizeCourseOutcomes(sum);
+    const aPct = outcomes.letterGradeTotal > 0 ? ((outcomes.a / outcomes.letterGradeTotal) * 100).toFixed(1) : "N/A";
+    const cOrBetter = outcomes.cOrBetterRate == null ? "N/A" : `${outcomes.cOrBetterRate.toFixed(1)}%`;
+    const dOrBetter = outcomes.dOrBetterRate == null ? "N/A" : `${outcomes.dOrBetterRate.toFixed(1)}%`;
+    const withdrawalRate = outcomes.withdrawalRate == null ? "N/A" : `${outcomes.withdrawalRate.toFixed(1)}%`;
 
     let content = `=== ${course.subject} ${course.number}: ${course.title} ===\n` +
       `Dept: ${course.deptName ?? "N/A"} | Avg GPA: ${course.avgGpa ?? "N/A"} | Difficulty: ${diffLabel(course.difficultyScore)} (${course.difficultyScore ?? "N/A"}/5)\n` +
-      `${course.totalRegsAllTime} total students | Grades: A=${sum.a ?? 0}(${aPct}%), B=${sum.b ?? 0}, C=${sum.c ?? 0}, D=${sum.d ?? 0}, F=${sum.f ?? 0}, W=${sum.w ?? 0} | Pass rate: ${passPct}%` +
+      `${course.totalRegsAllTime} total registrations | Outcomes: A=${outcomes.a}(${aPct}${aPct === "N/A" ? "" : "%"}), B=${outcomes.b}, C=${outcomes.c}, D=${outcomes.d}, F=${outcomes.f}, W=${outcomes.w} | C-or-better: ${cOrBetter} of A–F | D-or-better: ${dOrBetter} of A–F | Withdrawal rate: ${withdrawalRate} of A–F + W` +
       (course.isGenEd ? ` | Gen Ed: YES — ${course.genEdCategory}` : "");
 
     if (instructors.length > 0) {
@@ -3957,7 +3964,7 @@ function buildSystemPrompt(
     (answerPack?.rankedEvidence.some((e) => e.source === "major_plan") ?? false);
 
   const modeInstructions: Record<AnswerMode, string> = {
-    ranking: "RANKING: Lead with the top options. Use real GPA numbers, scores, prices to justify rankings. Name a clear winner. Don't hedge — students want a decisive answer. If the question is about professors or classes, keep the answer useful for grades but add one short line acknowledging fit, teaching style, or learning value when the evidence supports it.",
+    ranking: "RANKING: Lead with the top options. Use real GPA numbers, scores, prices, and sample sizes to justify rankings. Name the strongest option for the metric the student asked about. For professors or classes, distinguish historical grade outcomes from teaching quality and learning. Do not claim a professor is best for learning, clearer, more supportive, or better at managing workload unless the retrieved evidence explicitly measures that.",
     discovery: "DISCOVERY: If this is a simple or casual question, answer briefly and directly. Only give a rich overview if the student is genuinely exploring a broad topic.",
     comparison: "COMPARISON: Structure as clear A vs B with parallel criteria. Acknowledge the real tradeoffs. End with a concrete recommendation tailored to the implied student profile.",
     recommendation: "RECOMMENDATION: You detected specific constraints about this student. Use them. Give a direct, personalized answer — not 'it depends,' but 'given that you care about X and Y, here is what I recommend and why.' If the student is choosing professors or classes, mention the strongest option for grades and briefly note any tradeoff in workload, teaching style, or learning fit.",
@@ -4009,6 +4016,8 @@ STRICT OUTPUT RULES:
 - Zero filler phrases — students want answers, not preamble
 - Read between the lines: if a student seems stressed or implicitly needs an easier path, address that directly
 - GRADE-SHOPPING TONE RULE: It is fine to use GPA, A-rate, and easiness data when the student asks for the easiest option or best shot at an A. But do not sound cynical or one-note. When recommending a professor or course, avoid framing it like "easy A at all costs." Give the strongest grades-based answer, then add one brief reality check about fit, teaching quality, workload, or what the course is actually good for.
+- ACADEMIC EVIDENCE RULE: Historical GPA, A-rate, W-rate, and enrollment show outcomes in the covered records. They do not prove teaching quality, clarity, support, workload management, or how much students learned. RMP ratings are student-review signals, not objective proof. Label the metric behind a recommendation and do not invent causal explanations.
+- NUMERICAL COMPARISON RULE: Calculate differences before describing them. Never call a 0.20 GPA-point difference "half a grade" or otherwise exaggerate the size of a gap.
 - ATHLETICS PERSON RULE: never call someone a coach unless the retrieved data explicitly says they are a coach. If a name appears on a roster, describe them as a player or roster member, and mention the coach separately if helpful.
 - If memory shows the student's major/year, tailor the answer to their situation`;
 
@@ -4065,6 +4074,52 @@ ${answerPack.rankedEvidence.map(e => `[${e.trust.toUpperCase()}/${e.source}] ${e
 --- RETRIEVED DATA ---
 ${context}
 --- END DATA ---`}`;
+}
+
+function formatCourseProfessorComparison(
+  result: NonNullable<Awaited<ReturnType<typeof fetchProfessorsForCourse>>>,
+  hardestFirst: boolean,
+) {
+  const { course, instructors } = result;
+  const scope = `${COURSE_INSTRUCTOR_TERM_CODES[0]}–${COURSE_INSTRUCTOR_TERM_CODES[COURSE_INSTRUCTOR_TERM_CODES.length - 1]}`;
+  const rows = instructors.map((instructor) => {
+    const professor = instructor.slug
+      ? `[${instructor.name}](/professors/${instructor.slug})`
+      : instructor.name;
+    const rating = instructor.rmpQuality != null
+      ? `${instructor.rmpQuality.toFixed(1)}/5 (${instructor.rmpRatingsCount ?? 0} reviews)`
+      : "No matched RMP rating";
+    return `| ${professor} | ${instructor.gpa.toFixed(2)} | ${instructor.aRate.toFixed(1)}% | ${instructor.wRate.toFixed(1)}% | ${rating} | ${instructor.totalStudents.toLocaleString("en-US")} |`;
+  });
+
+  const gradeLeader = instructors[0];
+  const ratedWithUsefulSample = [...instructors]
+    .filter((instructor) => instructor.rmpQuality != null && (instructor.rmpRatingsCount ?? 0) >= 10)
+    .sort((left, right) =>
+      (right.rmpQuality ?? 0) - (left.rmpQuality ?? 0) ||
+      (right.rmpRatingsCount ?? 0) - (left.rmpRatingsCount ?? 0)
+    )[0];
+
+  const gradeSummary = gradeLeader
+    ? `**For historical grade outcomes:** ${gradeLeader.name} has the ${hardestFirst ? "lowest" : "highest"} recent average GPA at **${gradeLeader.gpa.toFixed(2)}**, across **${gradeLeader.totalStudents.toLocaleString("en-US")} registrations**.`
+    : "There are no qualifying instructor grade records for this course.";
+  const learningSummary = ratedWithUsefulSample
+    ? `**For learning:** these records cannot determine who teaches best. The strongest well-sampled student-review signal here is ${ratedWithUsefulSample.name} at **${ratedWithUsefulSample.rmpQuality?.toFixed(1)}/5 from ${ratedWithUsefulSample.rmpRatingsCount} reviews**, but that is still subjective feedback rather than a direct measure of learning.`
+    : "**For learning:** these records cannot determine who teaches best, and there is no sufficiently sampled matched review signal to use as secondary context.";
+  const table = [
+    "| Instructor | Avg GPA | A rate | W rate | Student rating | Registrations |",
+    "|---|---:|---:|---:|---:|---:|",
+    ...rows,
+  ].join("\n");
+
+  return [
+    `## ${course.subject} ${course.number} professor comparison`,
+    `Recent instructor outcomes from **${scope}**, limited to instructors with at least **${MIN_COURSE_INSTRUCTOR_GRADED_OUTCOMES} graded outcomes**. The all-course GPA is **${course.avgGpa?.toFixed(2) ?? "N/A"}**.`,
+    table,
+    gradeSummary,
+    learningSummary,
+    "Grade outcomes describe past sections; they do not prove teaching quality, workload, or what a future section will be like. Check the current UIC schedule to confirm who is teaching.",
+  ].join("\n\n");
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -4435,8 +4490,10 @@ export async function POST(req: Request) {
   }
 
 // ── Fetch memory + session in parallel, then classify ─────────────────────
-const [userMemory, sessionState, authenticatedStudyUser] = await Promise.all([
+const accountMemoryKey = authSession?.user?.id ? getAccountMemoryKey(authSession.user.id) : null;
+const [conversationMemory, accountMemory, sessionState, authenticatedStudyUser] = await Promise.all([
   getMemory(sessionId).catch(() => null),
+  accountMemoryKey ? getMemory(accountMemoryKey).catch(() => null) : Promise.resolve(null),
   getSessionState(sessionId).catch((): import("@/lib/chat/session-state").SessionState => ({
     activeCourseId: null, activeCourseCode: null,
     activeProfessorId: null, activeProfessorName: null,
@@ -4448,6 +4505,7 @@ const [userMemory, sessionState, authenticatedStudyUser] = await Promise.all([
   })),
   getCurrentStudyUser().catch(() => null),
 ]);
+const userMemory = mergeUserMemory(accountMemory, conversationMemory);
 
 const numericYearToLabel: Record<number, string> = {
   1: "freshman",
@@ -4510,7 +4568,9 @@ if (memoryForThisTurn) {
 }
 
 if (memoryForThisTurn !== null) {
-  persistMemory(sessionId, memoryForThisTurn).catch(() => {});
+  const memoryWrites = [persistMemory(sessionId, memoryForThisTurn)];
+  if (accountMemoryKey) memoryWrites.push(persistMemory(accountMemoryKey, memoryForThisTurn));
+  void Promise.allSettled(memoryWrites);
 }
 
 // Always run AI classify — it runs in parallel with memory/session so cost is low,
@@ -4603,6 +4663,45 @@ if (!intent.profNameHint && sessionState.activeProfessorName) {
     lower2.match(/\b(their (rating|score|gpa|difficulty|reviews?|rmp|grade|class))\b/);
   if (profFollowUp) {
     intent.profNameHint = sessionState.activeProfessorName;
+  }
+}
+
+const isCourseProfessorComparison = Boolean(
+  intent.courseCode &&
+  (intent.isAboutProfessors || /\b(professor|instructor|teacher)\b/.test(normalizedLower)) &&
+  (query.answerMode === "ranking" ||
+    query.answerMode === "comparison" ||
+    query.answerMode === "recommendation" ||
+    /\b(compare|best|easiest|hardest|rank|which|grades?|learning|teach)\b/.test(normalizedLower))
+);
+
+if (isCourseProfessorComparison && intent.courseCode) {
+  const comparison = await fetchProfessorsForCourse(
+    intent.courseCode.subject,
+    intent.courseCode.number,
+    !intent.wantsHardest,
+  );
+  if (comparison?.instructors.length) {
+    const comparisonText = formatCourseProfessorComparison(comparison, intent.wantsHardest);
+    await updateSessionState(sessionId, {
+      activeCourseCode: `${comparison.course.subject} ${comparison.course.number}`,
+      activeDomain: "courses",
+      lastRetrievedDomain: "professors",
+      lastResponseExcerpt: comparisonText.slice(0, 400),
+    });
+    return makePlainTextResponse(comparisonText, undefined, {
+      responseKind: "deterministic_professor_course_comparison",
+      answerMode: query.answerMode,
+      retrievalSources: ["course_instructor_stats", "professor_directory"],
+      chunkCount: 1,
+      extraMetadata: {
+        matchedPath: "deterministic_professor_course_comparison",
+        courseCode: `${comparison.course.subject} ${comparison.course.number}`,
+        instructorCount: comparison.instructors.length,
+        termCodes: COURSE_INSTRUCTOR_TERM_CODES,
+        minimumGradedOutcomes: MIN_COURSE_INSTRUCTOR_GRADED_OUTCOMES,
+      },
+    });
   }
 }
 
@@ -4805,8 +4904,9 @@ if (intent.courseCode && (intent.isAboutProfessors || intent.wantsEasiest || int
     if (!result) return [];
     const { course, instructors } = result;
     if (instructors.length === 0) return [];
-    const content = `=== PROFESSORS FOR ${course.subject} ${course.number}: ${course.title} (ranked by ${intent.wantsHardest ? "hardest" : "easiest"} grader) ===\n` +
-      `Course avg GPA: ${course.avgGpa ?? "N/A"}\n\n` +
+    const content = `=== PROFESSORS FOR ${course.subject} ${course.number}: ${course.title} (ranked by ${intent.wantsHardest ? "lowest" : "highest"} historical GPA) ===\n` +
+      `Course avg GPA: ${course.avgGpa ?? "N/A"}\n` +
+      `Instructor comparison scope: ${COURSE_INSTRUCTOR_TERM_CODES.join(", ")}; minimum ${MIN_COURSE_INSTRUCTOR_GRADED_OUTCOMES} graded outcomes. Grade outcomes do not prove teaching quality or learning.\n\n` +
       instructors.slice(0, 8).map((i, idx) =>
         `${idx + 1}. ${i.name} | GPA: ${i.gpa?.toFixed(2) ?? "N/A"} | A-rate: ${i.aRate ?? "N/A"}% | W-rate: ${i.wRate ?? "N/A"}%` +
         (i.rmpQuality ? ` | RMP: ${i.rmpQuality}/5 (${i.rmpRatingsCount} reviews)` : "") +

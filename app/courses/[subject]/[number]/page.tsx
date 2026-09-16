@@ -4,7 +4,12 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import prisma from "@/lib/prisma";
-import { findProfessorDirectorySlugForUicName, getProfessorDirectory } from "@/lib/professors/directory";
+import {
+  COURSE_INSTRUCTOR_TERM_CODES,
+  getCourseInstructorStats,
+  MIN_COURSE_INSTRUCTOR_GRADED_OUTCOMES,
+} from "@/lib/courses/instructor-stats";
+import { formatCourseTermScope, summarizeCourseOutcomes } from "@/lib/courses/outcome-summary";
 import { buildCourseHref, normalizeCourseCode } from "@/lib/chat/entity-linking";
 import CourseHeader from "../../../components/course/CourseHeader";
 import GradeDistributionCard from "../../../components/course/GradeDistributionCard";
@@ -119,15 +124,7 @@ export default async function CourseDetailPage({
   const courseDescription = course.metaV2?.description?.trim() || "No catalog description is available for this course yet.";
   const mentionedCourseCodes = extractCourseCodesFromText(courseDescription);
 
-  const recentTerms = await prisma.term.findMany({
-    where: {
-      code: { in: ["2024SP","2024SU","2024FA","2025SP","2025SU","2025FA","2026SP"] },
-    },
-    select: { id: true },
-  });
-  const recentTermIds = recentTerms.map((t) => t.id);
-
-  const [totals, instructorGroups, relatedCourses, relatedGenEds, linkedDescriptionCourses, courseDirectory] = await Promise.all([
+  const [totals, courseTerms, professorGpas, relatedCourses, relatedGenEds, linkedDescriptionCourses, courseDirectory] = await Promise.all([
     prisma.courseTermStats.aggregate({
       where: { courseId: course.id },
       _sum: {
@@ -136,12 +133,11 @@ export default async function CourseDetailPage({
         i: true, ng: true, nr: true, o: true, pr: true, s: true, u: true,
       },
     }),
-    prisma.courseInstructorTermStats.groupBy({
-      by: ["instructorName"],
-      where: { courseId: course.id, termId: { in: recentTermIds } },
-      _sum: { gradeRegs: true, a: true, b: true, c: true, d: true, f: true, w: true },
-      orderBy: { _sum: { gradeRegs: "desc" } },
+    prisma.term.findMany({
+      where: { courseStats: { some: { courseId: course.id } } },
+      select: { code: true, name: true },
     }),
+    getCourseInstructorStats(course.id),
     prisma.course.findMany({
       where: {
         subject: course.subject,
@@ -227,52 +223,8 @@ export default async function CourseDetailPage({
 
   const other = adv + cr + dfr + i + ng + nr + o + pr + s + u;
   const totalRegs = sum.gradeRegs ?? 0;
-  const visualTotal = a + b + c + d + f + w;
-  const passRate = visualTotal > 0 ? ((a + b + c + d) / visualTotal) * 100 : 0;
-  const withdrawalRate = visualTotal > 0 ? (w / visualTotal) * 100 : 0;
-
-  const gradeMap = [
-    { label: "A", value: a }, { label: "B", value: b }, { label: "C", value: c },
-    { label: "D", value: d }, { label: "F", value: f }, { label: "W", value: w },
-  ];
-  const mostCommonGrade = gradeMap.reduce(
-    (best, cur) => (cur.value > best.value ? cur : best), gradeMap[0]
-  )?.label ?? "N/A";
-
-  const professorDirectory = await getProfessorDirectory();
-  const professorDirectoryBySlug = new Map(
-    professorDirectory.map((entry) => [entry.slug, entry] as const)
-  );
-
-  const professorGpas = (await Promise.all(
-    instructorGroups
-      .map(async (row) => {
-        const pa = row._sum.a ?? 0, pb = row._sum.b ?? 0, pc = row._sum.c ?? 0;
-        const pd = row._sum.d ?? 0, pf = row._sum.f ?? 0, pw = row._sum.w ?? 0;
-        const pTotalRegs = row._sum.gradeRegs ?? 0;
-        const gradedCount = pa + pb + pc + pd + pf;
-        const avgGpa = gradedCount > 0
-          ? (4 * pa + 3 * pb + 2 * pc + 1 * pd) / gradedCount
-          : null;
-        const slug = await findProfessorDirectorySlugForUicName(row.instructorName);
-        const directoryEntry = slug ? professorDirectoryBySlug.get(slug) : null;
-
-        return {
-          instructorName: row.instructorName,
-          slug,
-          avgGpa,
-          quality: directoryEntry?.isRated ? directoryEntry.quality : null,
-          gradedCount,
-          totalRegs: pTotalRegs,
-          a: pa, b: pb, c: pc, d: pd, f: pf, w: pw,
-        };
-      })
-  ))
-    .filter((row) => row.gradedCount >= 20)
-    .sort((x, y) => {
-      const gpaDiff = (y.avgGpa ?? -1) - (x.avgGpa ?? -1);
-      return gpaDiff !== 0 ? gpaDiff : y.gradedCount - x.gradedCount;
-    });
+  const outcomeSummary = summarizeCourseOutcomes({ a, b, c, d, f, w });
+  const termScope = formatCourseTermScope(courseTerms);
 
   const topProfessor = professorGpas.find((row) => row.slug);
   const comparePrompt = `Compare ${[`${course.subject} ${course.number}`, ...relatedCourses.slice(0, 2).map((item) => `${item.subject} ${item.number}`)].join(", ")} for difficulty, GPA, and which kind of UIC student each is best for.`;
@@ -341,9 +293,10 @@ export default async function CourseDetailPage({
               { label: "F", value: f, color: "#ef4444" },
               { label: "W", value: w, color: "#94a3b8" },
             ]}
-            visualTotal={visualTotal}
+            visualTotal={outcomeSummary.visibleOutcomeTotal}
             totalRegs={totalRegs}
             other={other}
+            termScope={termScope}
           />
         </div>
 
@@ -351,11 +304,7 @@ export default async function CourseDetailPage({
           <CourseInsightCards
             avgGpa={course.avgGpa}
             difficultyScore={course.difficultyScore}
-            totalRegs={totalRegs}
-            visualTotal={visualTotal}
-            passRate={passRate}
-            withdrawalRate={withdrawalRate}
-            mostCommonGrade={mostCommonGrade}
+            outcomeSummary={outcomeSummary}
           />
         </div>
 
@@ -363,6 +312,8 @@ export default async function CourseDetailPage({
           <CourseGpaByProfessor
             professors={professorGpas}
             courseLabel={`${course.subject} ${course.number}`}
+            termScope={`${COURSE_INSTRUCTOR_TERM_CODES[0]}–${COURSE_INSTRUCTOR_TERM_CODES[COURSE_INSTRUCTOR_TERM_CODES.length - 1]}`}
+            minimumGradedOutcomes={MIN_COURSE_INSTRUCTOR_GRADED_OUTCOMES}
           />
         </div>
 

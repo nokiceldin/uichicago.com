@@ -49,56 +49,13 @@ const proofStats = [
   { value: "460+", label: "student orgs mapped" },
 ];
 
-const launchTiles = [
-  {
-    title: "Course Explorer",
-    meta: "Live now",
-    href: "/courses",
-    summary:
-      "Search by course code or title, then sort by easiness, GPA, gen-ed fit, and requirement type.",
-    bullets: ["Real grade distributions", "Major + Gen-Ed filtering", "Course detail pages"],
-  },
-  {
-    title: "Professor Rankings",
-    meta: "Live now",
-    href: "/professors",
-    summary:
-      "See which professors students rate highest, which departments are strongest, and who has taught key classes before.",
-    bullets: ["RMP-driven rankings", "Department filters", "Past class history"],
-  },
-  {
-    title: "Sparky Chat",
-    meta: "Live now",
-    href: "/chat",
-    summary:
-      "Ask direct questions when you want recommendations, comparisons, campus answers, or quick decision help.",
-    bullets: ["Course and professor Q&A", "Campus-life questions", "Schedule and planning help"],
-  },
-  {
-    title: "My School",
-    meta: "Live now",
-    href: "/study",
-    summary:
-      "Step into your student workspace for semester planning, flashcards, learn mode, timed practice, notes, and AI-generated material.",
-    bullets: ["Flashcards + Learn mode", "Test + exam practice", "AI generation + progress tracking"],
-  },
-];
-
-function getLaunchBadgeClasses(meta: string): string {
-  if (meta === "Live now") {
-    return "border-emerald-500/30 bg-emerald-500/12 text-emerald-300 shadow-[0_0_0_1px_rgba(16,185,129,0.08)]";
-  }
-
-  return "border-amber-500/25 bg-amber-500/10 text-amber-200";
-}
-
 export default function Home() {
   return (
     <main className="min-h-screen bg-white text-zinc-950 dark:bg-black dark:text-white">
       <section className="relative overflow-hidden border-b border-zinc-200/80 bg-[radial-gradient(circle_at_top,rgba(239,68,68,0.14),transparent_28%),radial-gradient(circle_at_80%_18%,rgba(56,189,248,0.10),transparent_24%),linear-gradient(180deg,#fff7f7_0%,#fff5f2_50%,#ffffff_100%)] px-4 pb-16 pt-14 text-zinc-950 dark:border-white/10 dark:bg-[radial-gradient(circle_at_top,rgba(239,68,68,0.18),transparent_26%),radial-gradient(circle_at_80%_20%,rgba(56,189,248,0.12),transparent_22%),linear-gradient(180deg,#0d0d10_0%,#120809_52%,#09090b_100%)] dark:text-white sm:px-6 sm:pb-20 sm:pt-20">
         <div className="absolute inset-0 bg-[linear-gradient(rgba(15,23,42,0.04)_1px,transparent_1px),linear-gradient(90deg,rgba(15,23,42,0.04)_1px,transparent_1px)] bg-size-[42px_42px] opacity-[0.28] dark:bg-[linear-gradient(rgba(255,255,255,0.04)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.04)_1px,transparent_1px)] dark:opacity-[0.07]" />
         <div className="relative mx-auto max-w-6xl">
-          <div className="grid items-center gap-10 sm:gap-14 lg:grid-cols-[1.2fr_0.8fr]">
+          <div className="max-w-4xl">
             <div>
               <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-red-500/20 bg-white/70 px-4 py-1.5 text-xs font-bold uppercase tracking-[0.24em] text-red-600 shadow-sm dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-200">
                 UIChicago
@@ -165,63 +122,6 @@ export default function Home() {
               </div>
             </div>
 
-            <div className="relative lg:-mr-4">
-              <div className="absolute -inset-6 rounded-4xl bg-linear-to-br from-red-500/20 via-transparent to-sky-500/10 blur-3xl" />
-              <div className="relative overflow-hidden rounded-4xl border border-zinc-200 bg-white/85 p-4 shadow-2xl shadow-black/10 backdrop-blur-xl dark:border-white/10 dark:bg-[linear-gradient(180deg,rgba(17,19,27,0.98),rgba(9,10,15,0.95))] dark:shadow-[0_30px_80px_rgba(0,0,0,0.38)] sm:p-6 lg:p-7">
-                <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(239,68,68,0.08),transparent_32%),radial-gradient(circle_at_100%_0%,rgba(56,189,248,0.06),transparent_26%)] dark:bg-[radial-gradient(circle_at_top_left,rgba(239,68,68,0.18),transparent_30%),radial-gradient(circle_at_100%_0%,rgba(56,189,248,0.14),transparent_24%),linear-gradient(180deg,rgba(255,255,255,0.02),transparent_45%)]" />
-
-                <div className="relative">
-                  <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between sm:gap-6">
-                    <div className="min-w-0">
-                      <div className="text-xs font-bold uppercase tracking-[0.24em] text-zinc-500 dark:text-zinc-400">UIC Snapshot</div>
-                      <div className="mt-3 max-w-[12ch] text-[2rem] font-black leading-[0.98] tracking-[-0.055em] text-zinc-950 dark:text-white sm:text-[2.35rem]">
-                        Search, compare, ask AI.
-                      </div>
-                      <p className="mt-3 max-w-sm text-sm leading-6 text-zinc-600 dark:text-zinc-400">
-                        Three fast ways to figure out UIC.
-                      </p>
-                    </div>
-
-                    <div className="rounded-[1.6rem] border border-red-300/35 bg-[linear-gradient(180deg,rgba(254,242,242,0.96),rgba(255,255,255,0.9))] p-4 shadow-[0_14px_34px_rgba(239,68,68,0.08)] dark:border-red-400/25 dark:bg-[linear-gradient(180deg,rgba(57,21,25,0.88),rgba(24,13,18,0.82))] dark:shadow-[0_14px_34px_rgba(239,68,68,0.16)] sm:min-w-[16rem]">
-                      <div className="text-right text-[10px] font-bold uppercase tracking-[0.24em] text-red-600 dark:text-red-300">Live layer</div>
-                      <div className="mt-3 grid grid-cols-2 gap-2">
-                        <span className="rounded-full border border-red-100 bg-white px-2.5 py-2 text-center text-[13px] font-semibold text-zinc-900 dark:border-white/10 dark:bg-white/5 dark:text-zinc-100">
-                          Courses
-                        </span>
-                        <span className="rounded-full border border-red-100 bg-white px-2.5 py-2 text-center text-[13px] font-semibold text-zinc-900 dark:border-white/10 dark:bg-white/5 dark:text-zinc-100">
-                          Professors
-                        </span>
-                        <span className="rounded-full border border-red-100 bg-white px-2.5 py-2 text-center text-[13px] font-semibold text-zinc-900 dark:border-white/10 dark:bg-white/5 dark:text-zinc-100">
-                          My School
-                        </span>
-                        <span className="rounded-full border border-red-100 bg-white px-2 py-2 text-center text-[12px] font-semibold leading-tight text-zinc-900 dark:border-white/10 dark:bg-white/5 dark:text-zinc-100">
-                          Sparky
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="mt-6 h-px w-full bg-linear-to-r from-zinc-300 via-zinc-200 to-transparent dark:from-white/15 dark:via-white/10" />
-
-                  <div className="mt-6 grid gap-3 sm:grid-cols-3">
-                    {[
-                      ["Search courses", "Structured data"],
-                      ["Compare professors", "Rankings and history"],
-                      ["Ask Sparky", "Instant answers"],
-                    ].map(([title, body]) => (
-                      <div
-                        key={title}
-                        className="rounded-[1.35rem] border border-zinc-200 bg-white/85 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.35)] dark:border-white/10 dark:bg-[linear-gradient(180deg,rgba(28,32,40,0.96),rgba(18,21,29,0.94))]! dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]"
-                      >
-                        <div className="text-sm font-semibold text-zinc-950 dark:text-white">{title}</div>
-                        <div className="mt-1.5 text-sm leading-6 text-zinc-600 dark:text-zinc-400">{body}</div>
-                      </div>
-                    ))}
-                  </div>
-
-                </div>
-              </div>
-            </div>
           </div>
         </div>
       </section>
@@ -308,54 +208,6 @@ export default function Home() {
           </div>
 
           <DeepPageShowcase />
-        </div>
-      </section>
-
-      <section className="relative overflow-hidden border-y border-zinc-200 bg-zinc-50 px-6 py-20 dark:border-white/10 dark:bg-[radial-gradient(circle_at_top,rgba(239,68,68,0.08),transparent_20%),radial-gradient(circle_at_85%_15%,rgba(59,130,246,0.06),transparent_22%),linear-gradient(180deg,#0d0f14_0%,#0a0b0f_100%)]">
-        <div className="pointer-events-none absolute inset-0 opacity-[0.035]" style={{ backgroundImage: "linear-gradient(rgba(255,255,255,0.4) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.4) 1px, transparent 1px)", backgroundSize: "48px 48px" }} />
-        <div className="mx-auto max-w-6xl">
-          <div className="mb-12 text-center">
-            <div className="text-xs font-bold uppercase tracking-[0.24em] text-zinc-500">Platform map</div>
-            <h2 className="mt-3 text-4xl font-black tracking-[-0.04em] text-zinc-950 dark:text-white md:text-5xl">
-              What lives inside UIChicago
-            </h2>
-            <p className="mx-auto mt-4 max-w-2xl text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-              A cleaner story for the product: browse structured pages when you want control, and jump into Sparky when you want synthesis.
-            </p>
-          </div>
-
-          <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
-            {launchTiles.map((tile) => (
-              <Link
-                key={tile.title}
-                href={tile.href}
-                style={{ animationDelay: `${45 * (launchTiles.indexOf(tile) + 1)}ms` }}
-                className="premium-card premium-fade-up rounded-3xl border border-zinc-200 bg-white p-6 transition hover:border-red-400/40 hover:shadow-xl dark:border-white/10 dark:bg-[rgba(15,17,22,0.82)] dark:shadow-[0_12px_30px_rgba(0,0,0,0.18)]"
-              >
-                <div className="flex items-start justify-between gap-3">
-                  <h3 className="min-w-0 pr-2 text-xl font-black tracking-[-0.03em] text-zinc-950 dark:text-white">
-                    {tile.title}
-                  </h3>
-                  <span
-                    className={`shrink-0 whitespace-nowrap rounded-full border px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.18em] ${getLaunchBadgeClasses(tile.meta)}`}
-                  >
-                    {tile.meta}
-                  </span>
-                </div>
-                <p className="mt-4 text-sm leading-7 text-zinc-600 dark:text-zinc-300">
-                  {tile.summary}
-                </p>
-                <div className="mt-5 space-y-2">
-                  {tile.bullets.map((bullet) => (
-                    <div key={bullet} className="flex items-center gap-2 text-sm text-zinc-700 dark:text-zinc-300">
-                      <span className="h-1.5 w-1.5 rounded-full bg-red-500" />
-                      {bullet}
-                    </div>
-                  ))}
-                </div>
-              </Link>
-            ))}
-          </div>
         </div>
       </section>
 

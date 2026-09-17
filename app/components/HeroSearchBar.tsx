@@ -124,7 +124,7 @@ export default function HeroSearchBar() {
   }, [charIndex, deleting, paused, phraseIndex, phrases]);
 
   return (
-    <div className="max-w-2xl mx-auto mb-6">
+    <div className="mb-6 w-full max-w-2xl">
       <Link href="/chat?focus=1" className="group block w-full">
         <div className="flex cursor-text items-center gap-3 rounded-2xl border border-zinc-300 bg-white px-5 py-4 shadow-[0_14px_32px_rgba(15,23,42,0.08)] backdrop-blur-xl transition-colors hover:border-red-400/55 hover:shadow-[0_18px_38px_rgba(239,68,68,0.08)] dark:border-white/10 dark:bg-white/6">
           <img

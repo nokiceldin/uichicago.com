@@ -152,13 +152,15 @@ export default function MissingProfessorButton({
     </div>
   ) : null
 
+  if (!show) return null
+
   return (
     <>
       <button
         onClick={() => setOpen(true)}
-        className="rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-500"
+        className="rounded-xl border border-zinc-200 bg-white px-3 py-1.5 text-xs font-semibold text-zinc-700 hover:bg-zinc-50 dark:border-white/10 dark:bg-white/5 dark:text-zinc-200 dark:hover:bg-white/10"
       >
-        Missing professor? Click here
+        Report missing professor
       </button>
 
       {mounted && modal ? createPortal(modal, document.body) : null}

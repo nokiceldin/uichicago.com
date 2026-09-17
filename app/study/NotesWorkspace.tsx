@@ -177,6 +177,12 @@ function noteHasMeaningfulContent(note: StudyNote, audioSessionNoteIds: Set<stri
   );
 }
 
+async function requireSuccessfulResponse(response: Response, fallbackMessage: string) {
+  if (response.ok) return;
+  const payload = await response.json().catch(() => null);
+  throw new Error(payload?.error || fallbackMessage);
+}
+
 export default function NotesWorkspace({ library, onLibraryChange, onCreateFlashcardSet, showToast, externalQuery = "", folderFilter = "" }: Props) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -187,7 +193,7 @@ export default function NotesWorkspace({ library, onLibraryChange, onCreateFlash
   const [filter, setFilter] = useState<NotesFilter>("all");
   const [activeTab, setActiveTab] = useState<NotesTab>("note");
   const [focusMode] = useState(false);
-  const [saveState, setSaveState] = useState<"saved" | "saving">("saved");
+  const [saveState, setSaveState] = useState<"saved" | "saving" | "error">("saved");
   const [visibilitySaving, setVisibilitySaving] = useState(false);
   const [captureOpen, setCaptureOpen] = useState(false);
   const [recordingError, setRecordingError] = useState("");
@@ -213,11 +219,25 @@ export default function NotesWorkspace({ library, onLibraryChange, onCreateFlash
   const recordingStartedAtRef = useRef<number | null>(null);
   const recordingNoteIdRef = useRef<string>("");
   const saveTimerRef = useRef<number | null>(null);
+  const pendingCloudNoteRef = useRef<StudyNote | null>(null);
   const lastOpenedNoteIdRef = useRef<string | null>(null);
   const autoCreatedRouteRef = useRef(false);
   const resolvingMissingNoteRef = useRef<string | null>(null);
   const notes = library.notes;
   const requestedNoteId = searchParams.get("note");
+
+  useEffect(() => () => {
+    if (saveTimerRef.current) window.clearTimeout(saveTimerRef.current);
+    const pendingNote = pendingCloudNoteRef.current;
+    if (status === "authenticated" && pendingNote) {
+      void fetch("/api/study/notes", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ note: pendingNote }),
+        keepalive: true,
+      });
+    }
+  }, [status]);
   const isLibraryView = searchParams.get("view") === "library";
   const isNotesMode = searchParams.get("mode") === "notes";
   const isFocusedNoteView = Boolean(requestedNoteId);
@@ -312,46 +332,29 @@ export default function NotesWorkspace({ library, onLibraryChange, onCreateFlash
       notes: current.notes.map((note) => (note.id === noteId ? nextNote : note)),
     }));
     if (saveTimerRef.current) window.clearTimeout(saveTimerRef.current);
-    saveTimerRef.current = window.setTimeout(() => setSaveState("saved"), 420);
+    pendingCloudNoteRef.current = status === "authenticated" ? nextNote : null;
+    saveTimerRef.current = window.setTimeout(async () => {
+      if (status !== "authenticated") {
+        pendingCloudNoteRef.current = null;
+        setSaveState("saved");
+        return;
+      }
 
-    if (nextNote.visibility === "public") {
-      fetch("/api/study/public-notes", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ note: nextNote }),
-      })
-        .then(async (response) => {
-          if (response.ok) return;
-          const payload = await response.json().catch(() => ({}));
-          onLibraryChange((current) => ({
-            ...current,
-            notes: current.notes.map((note) =>
-              note.id === noteId ? { ...note, visibility: existingNote.visibility } : note,
-            ),
-          }));
-          showToast(payload.error || "This note was kept private.", "error");
-        })
-        .catch(() => {
-          onLibraryChange((current) => ({
-            ...current,
-            notes: current.notes.map((note) =>
-              note.id === noteId ? { ...note, visibility: existingNote.visibility } : note,
-            ),
-          }));
-          showToast("Could not publish these changes. The previous sharing setting was preserved.", "error");
+      try {
+        const response = await fetch("/api/study/notes", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ note: nextNote }),
         });
-    } else if (existingNote.visibility === "public") {
-      fetch("/api/study/public-notes", {
-        method: "DELETE",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ noteId }),
-      }).then((response) => {
-        if (!response.ok) throw new Error("Could not make this note private.");
-      }).catch(() => {
-        onLibraryChange((current) => ({ ...current, notes: current.notes.map((note) => note.id === noteId ? { ...note, visibility: "public" } : note) }));
-        showToast("Could not make this note private. Please try again.", "error");
-      });
-    }
+        const payload = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(payload.error || "Could not sync this note.");
+        if (pendingCloudNoteRef.current?.updatedAt === nextNote.updatedAt) pendingCloudNoteRef.current = null;
+        setSaveState("saved");
+      } catch (error) {
+        setSaveState("error");
+        showToast(error instanceof Error ? error.message : "Could not sync this note to your account.", "error");
+      }
+    }, 600);
   };
 
   const toggleNoteVisibility = async () => {
@@ -525,28 +528,29 @@ export default function NotesWorkspace({ library, onLibraryChange, onCreateFlash
     return true;
   }, []);
 
-  const deleteNote = (noteId: string) => {
+  const deleteNote = async (noteId: string) => {
     const target = notes.find((note) => note.id === noteId);
     if (!target) return;
     if (!window.confirm(`Delete "${target.title}"?`)) return;
+    if (status === "authenticated") {
+      try {
+        const response = await fetch("/api/study/notes", {
+          method: "DELETE",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ noteId }),
+        });
+        await requireSuccessfulResponse(response, "Could not delete this note from your account.");
+      } catch (error) {
+        showToast(error instanceof Error ? error.message : "Could not delete this note from your account.", "error");
+        return;
+      }
+    }
     onLibraryChange((current) => ({
       ...current,
       notes: current.notes.filter((note) => note.id !== noteId),
       noteAudioSessions: current.noteAudioSessions.filter((session) => session.noteId !== noteId),
       noteAiLogs: current.noteAiLogs.filter((log) => log.noteId !== noteId),
     }));
-    fetch("/api/study/public-notes", {
-      method: "DELETE",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ noteId }),
-    }).catch(() => undefined);
-    if (status === "authenticated") {
-      fetch("/api/study/notes", {
-        method: "DELETE",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ noteId }),
-      }).catch(() => showToast("The local note was deleted, but account sync failed.", "error"));
-    }
     if (selectedNoteId === noteId) {
       const next = notes.find((note) => note.id !== noteId);
       setSelectedNoteId(next?.id || "");
@@ -897,7 +901,7 @@ export default function NotesWorkspace({ library, onLibraryChange, onCreateFlash
       selectedNote.title.trim() || selectedNote.course.trim() || selectedNote.rawContent.trim() ||
       selectedNote.transcriptContent.trim() || selectedNote.structuredContent,
     );
-    if (hasContent && (selectedNote.status === "draft" || saveState === "saving")) {
+    if (hasContent && (selectedNote.status === "draft" || saveState === "saving" || saveState === "error")) {
       setSaveDialogFolder(selectedNote.folder ?? "");
       setCreateAfterSave(true);
       setSaveDialogOpen(true);
@@ -1164,7 +1168,13 @@ export default function NotesWorkspace({ library, onLibraryChange, onCreateFlash
                       <div className="flex flex-wrap items-center gap-2 text-xs text-zinc-500">
                         <span>{selectedNote.sourceType === "audio" ? "Lecture note" : "Manual note"}</span>
                         <span className="text-zinc-400">
-                          {saveState === "saving" ? "Saving..." : selectedNote.status === "draft" ? "Draft autosaved" : "Saved"}
+                          {saveState === "saving"
+                            ? "Saving..."
+                            : saveState === "error"
+                              ? "Saved on this device · sync failed"
+                              : selectedNote.status === "draft"
+                                ? status === "authenticated" ? "Draft saved to account" : "Draft autosaved"
+                                : "Saved"}
                         </span>
                         {selectedNote.status === "processing" ? (
                           <span className="inline-flex items-center gap-1 rounded-full border border-amber-300/15 bg-amber-400/10 px-2 py-0.5 text-[11px] font-medium text-amber-100">
@@ -1213,7 +1223,7 @@ export default function NotesWorkspace({ library, onLibraryChange, onCreateFlash
                         {captureOpen ? "Hide recorder" : "Record lecture"}
                       </button>
                       <button
-                        onClick={() => deleteNote(selectedNote.id)}
+                        onClick={() => void deleteNote(selectedNote.id)}
                         {...magneticHoverProps}
                         className="study-premium-button rounded-full border border-white/10 bg-transparent px-3 py-2 text-xs font-medium text-zinc-400 hover:text-white"
                       >

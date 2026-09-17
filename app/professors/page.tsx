@@ -3,7 +3,6 @@
 import { Suspense, useEffect, useMemo, useState } from "react";
 import { useProfCoursesMap } from "@/app/hooks/useProfCoursesMap";
 import { ClassesCell } from "@/app/components/ClassesCell";
-import FeatureTour from "@/app/components/onboarding/FeatureTour";
 import Link from "next/link";
 import MissingProfessorButton from "@/app/components/MissingProfessorButton";
 import SiteFooter from "@/app/components/SiteFooter";
@@ -233,32 +232,9 @@ function ProfessorsPageContent() {
             <h1 className="text-3xl font-black tracking-tight text-zinc-900 dark:text-white sm:text-5xl">UIC Professors</h1>
             <p className="mt-2 max-w-xl text-sm text-zinc-500 sm:text-base">Find the best professors by department, rating, and student review count.</p>
           </div>
-          <div className="sm:pt-1">
-            <FeatureTour
-              storageKey="uichicago-tour-professors-list-v1"
-              buttonLabel="Take the 20-second tour"
-              steps={[
-                {
-                  targetId: "professors-filters",
-                  title: "Start by narrowing the list",
-                  description: "Search by professor name and filter by department, rating, reviews, or sort order.",
-                },
-                {
-                  targetId: "professors-open-profile",
-                  title: "Open a professor profile",
-                  description: "Click a professor name to view their rankings, course-specific performance, and AI summary.",
-                },
-                {
-                  targetId: "professors-classes",
-                  title: "Use classes as a shortcut",
-                  description: "The classes column helps you jump from a professor into the courses they are associated with.",
-                },
-              ]}
-            />
-          </div>
         </div>
 
-        <div data-tour="professors-filters" className="mb-4 rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-white/8 dark:bg-zinc-900/60 sm:p-6">
+        <div className="mb-4 rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-white/8 dark:bg-zinc-900/60 sm:p-6">
           <div className="relative mb-4">
             <svg className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z" /></svg>
             <input className={inputBase + " pl-10"} placeholder="Search professor name..." value={query} onChange={(e) => { setQuery(e.target.value); setPage(1); }} />
@@ -338,7 +314,7 @@ function ProfessorsPageContent() {
               <div key={p.slug} className="rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-white/8 dark:bg-zinc-900/40">
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
-                    <div data-tour={idx === 0 ? "professors-open-profile" : undefined} className="text-base font-bold text-zinc-900 dark:text-zinc-100">
+                    <div className="text-base font-bold text-zinc-900 dark:text-zinc-100">
                       <span className="mr-1.5 text-zinc-400 dark:text-zinc-600">{start + idx + 1}.</span>
                       <Link href={`/professors/${p.slug}`} className="hover:text-red-500 dark:hover:text-white transition-colors hover:underline">{p.name}</Link>
                     </div>
@@ -357,7 +333,7 @@ function ProfessorsPageContent() {
                   </span>
                 </div>
 
-                <div data-tour={idx === 0 ? "professors-classes" : undefined} className="mt-4">
+                <div className="mt-4">
                   <div className="mb-1 text-[10px] font-bold uppercase tracking-widest text-zinc-400 dark:text-zinc-600">Classes</div>
                   <ClassesCell profName={p.name} map={courseMap} courses={p.courseItems} />
                 </div>
@@ -389,7 +365,6 @@ function ProfessorsPageContent() {
             <div className="rounded-2xl border border-zinc-200 bg-white px-6 py-16 text-center shadow-sm dark:border-white/8 dark:bg-zinc-900/40">
               <p className="text-zinc-400 text-sm">No professors found.</p>
               <button onClick={clearAll} className="mt-3 text-sm text-red-500 hover:text-red-400 transition-colors font-medium">Clear all filters →</button>
-              <div className="mt-4 flex justify-center"><MissingProfessorButton page="professors" searchQuery={query.trim()} show /></div>
             </div>
           )}
         </div>
@@ -411,7 +386,7 @@ function ProfessorsPageContent() {
                   return (
                     <li key={p.slug} className="grid grid-cols-12 items-center px-4 sm:px-6 py-4 transition-colors hover:bg-zinc-50 dark:hover:bg-white/4">
                       <div className="col-span-4 min-w-0 pr-3">
-                        <div data-tour={idx === 0 ? "professors-open-profile" : undefined} className="text-sm font-bold text-zinc-900 dark:text-zinc-100 sm:text-base">
+                        <div className="text-sm font-bold text-zinc-900 dark:text-zinc-100 sm:text-base">
                           <span className="text-zinc-400 dark:text-zinc-600 tabular-nums mr-1.5">{start + idx + 1}.</span>
                           <Link href={`/professors/${p.slug}`} className="hover:text-red-500 dark:hover:text-white transition-colors hover:underline">{p.name}</Link>
                         </div>
@@ -425,7 +400,7 @@ function ProfessorsPageContent() {
                           </span>
                         </div>
                       </div>
-                      <div data-tour={idx === 0 ? "professors-classes" : undefined} className="col-span-2 pr-3"><ClassesCell profName={p.name} map={courseMap} courses={p.courseItems} /></div>
+                      <div className="col-span-2 pr-3"><ClassesCell profName={p.name} map={courseMap} courses={p.courseItems} /></div>
                       <div className="col-span-1 flex justify-end">
                         <span className={`inline-flex flex-col items-center rounded-lg px-2.5 py-1.5 text-xs font-black tabular-nums ring-1 ${rc.bg} ${rc.text} ${rc.ring}`}>
                           <span className="text-sm">{p.isRated ? (Number(p.quality) || 0).toFixed(1) : "NR"}</span>
@@ -456,12 +431,15 @@ function ProfessorsPageContent() {
                   <li className="px-6 py-16 text-center">
                     <p className="text-zinc-400 text-sm">No professors found.</p>
                     <button onClick={clearAll} className="mt-3 text-sm text-red-500 hover:text-red-400 transition-colors font-medium">Clear all filters →</button>
-                    <div className="mt-4 flex justify-center"><MissingProfessorButton page="professors" searchQuery={query.trim()} show /></div>
                   </li>
                 )}
               </ul>
             </div>
           </div>
+        </div>
+
+        <div className="mt-6 flex justify-center">
+          <MissingProfessorButton page="professors" searchQuery={query.trim()} show />
         </div>
 
       </div>

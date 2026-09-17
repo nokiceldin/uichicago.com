@@ -3,7 +3,6 @@
 import { majorRequirements } from "@/lib/majorRequirements";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import MissingCourseButton from "@/app/components/MissingCourseButton";
-import FeatureTour from "@/app/components/onboarding/FeatureTour";
 import SiteFooter from "@/app/components/SiteFooter";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { signIn } from "next-auth/react";
@@ -15,6 +14,28 @@ function easinessConfig(v: number) {
   if (v >= 4.0) return { label: "Easy", dot: "bg-green-500", text: "text-green-700 dark:text-green-400", bg: "bg-green-50 dark:bg-green-500/15", ring: "ring-green-200 dark:ring-green-500/25" };
   if (v >= 3.0) return { label: "Medium", dot: "bg-amber-500", text: "text-amber-700 dark:text-amber-400", bg: "bg-amber-50 dark:bg-amber-500/15", ring: "ring-amber-200 dark:ring-amber-500/25" };
   return { label: "Hard", dot: "bg-red-500", text: "text-red-700 dark:text-red-400", bg: "bg-red-50 dark:bg-red-500/15", ring: "ring-red-200 dark:ring-red-500/25" };
+}
+
+function EasinessInfo() {
+  return (
+    <span className="group/easiness relative inline-flex normal-case tracking-normal">
+      <button
+        type="button"
+        aria-label="What does easiness mean?"
+        aria-describedby="easiness-scale-help"
+        className="inline-flex h-4 w-4 items-center justify-center rounded-full border border-zinc-300 text-[10px] font-bold text-zinc-500 transition hover:border-zinc-400 hover:text-zinc-800 focus:outline-none focus:ring-2 focus:ring-red-500/30 dark:border-white/20 dark:text-zinc-400 dark:hover:border-white/35 dark:hover:text-zinc-200"
+      >
+        i
+      </button>
+      <span
+        id="easiness-scale-help"
+        role="tooltip"
+        className="pointer-events-none absolute left-1/2 top-full z-20 mt-2 w-max -translate-x-1/2 rounded-lg bg-zinc-900 px-2.5 py-1.5 text-[11px] font-medium text-white opacity-0 shadow-lg transition-opacity group-hover/easiness:opacity-100 group-focus-within/easiness:opacity-100 dark:bg-zinc-100 dark:text-zinc-900"
+      >
+        5.00 = easiest · 1.00 = hardest
+      </span>
+    </span>
+  );
 }
 
 type CourseRow = {
@@ -129,33 +150,10 @@ export default function CoursesTable({ courses, total, page, pageSize, sort, dep
             <h1 className="text-3xl font-black tracking-tight text-zinc-900 dark:text-white sm:text-5xl">UIC Courses</h1>
             <p className="mt-2 max-w-xl text-sm text-zinc-500 sm:text-base">Find the easiest classes and best professors using real grade distributions and enrollment data.</p>
           </div>
-          <div className="sm:pt-1">
-            <FeatureTour
-              storageKey="uichicago-tour-courses-list-v1"
-              buttonLabel="Take the 20-second tour"
-              steps={[
-                {
-                  targetId: "courses-filters",
-                  title: "Start with search and filters",
-                  description: "Search by course code or title, then narrow the list by department, major, Gen Ed, or requirement type.",
-                },
-                {
-                  targetId: "courses-sort",
-                  title: "Swap the ranking direction",
-                  description: "Use this toggle when you want to compare easiest-first versus hardest-first results.",
-                },
-                {
-                  targetId: "courses-results",
-                  title: "Open any course row",
-                  description: "Each result takes you to a deeper course page with grade distributions, quick stats, and professor breakdowns.",
-                },
-              ]}
-            />
-          </div>
         </div>
 
         {/* Filters */}
-        <div data-tour="courses-filters" className="mb-4 rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-white/8 dark:bg-zinc-900/60 sm:p-6">
+        <div className="mb-4 rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-white/8 dark:bg-zinc-900/60 sm:p-6">
           <div className="relative mb-4">
             <svg className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z" />
@@ -224,7 +222,7 @@ export default function CoursesTable({ courses, total, page, pageSize, sort, dep
             Showing <span className="text-zinc-700 dark:text-zinc-300 font-medium">{effectiveTotal === 0 ? 0 : nf.format(start + 1)}–{nf.format(Math.min(start + pageSize, effectiveTotal))}</span> of <span className="text-zinc-700 dark:text-zinc-300 font-medium">{nf.format(effectiveTotal)}</span> courses
           </p>
           <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
-            <button data-tour="courses-sort" onClick={() => setSort(sort === "difficultyDesc" ? "difficultyAsc" : "difficultyDesc")} className="inline-flex h-10 items-center justify-center gap-1.5 rounded-xl border border-zinc-200 bg-white px-4 text-sm font-medium text-zinc-700 hover:bg-zinc-50 transition-colors dark:border-white/10 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-white/10">
+            <button onClick={() => setSort(sort === "difficultyDesc" ? "difficultyAsc" : "difficultyDesc")} className="inline-flex h-10 items-center justify-center gap-1.5 rounded-xl border border-zinc-200 bg-white px-4 text-sm font-medium text-zinc-700 hover:bg-zinc-50 transition-colors dark:border-white/10 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-white/10">
               {sort === "difficultyDesc" ? <><span className="text-emerald-500">↓</span> Easiest first</> : <><span className="text-red-500">↑</span> Hardest first</>}
             </button>
             <div className="flex items-center gap-3 overflow-x-auto pb-1 sm:overflow-visible">
@@ -237,7 +235,7 @@ export default function CoursesTable({ courses, total, page, pageSize, sort, dep
           </div>
         </div>
 
-        <div data-tour="courses-results" className="space-y-3 sm:hidden">
+        <div className="space-y-3 sm:hidden">
           {visibleCourses.map((c) => {
             const href = `/courses/${encodeURIComponent(c.subject)}/${encodeURIComponent(c.number)}`;
             const ec = c.difficultyScore != null ? easinessConfig(c.difficultyScore) : null;
@@ -309,10 +307,13 @@ export default function CoursesTable({ courses, total, page, pageSize, sort, dep
           )}
         </div>
 
-        <div data-tour="courses-results" className="hidden overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-lg dark:border-white/8 dark:bg-zinc-900/40 dark:shadow-black/40 sm:block">
+        <div className="hidden overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-lg dark:border-white/8 dark:bg-zinc-900/40 dark:shadow-black/40 sm:block">
           <div className="grid grid-cols-12 border-b border-zinc-100 bg-zinc-50 px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-zinc-500 dark:border-white/8 dark:bg-zinc-950/60 dark:text-zinc-600 sm:px-6">
             <div className="col-span-4">Course</div>
-            <div className="col-span-3">Easiness</div>
+            <div className="col-span-3 flex items-center gap-1.5">
+              Easiness
+              <EasinessInfo />
+            </div>
             <div className="col-span-2 text-right">Avg GPA</div>
             <div className="col-span-2 text-right">Enrollments</div>
             <div className="col-span-1 text-right">Save</div>

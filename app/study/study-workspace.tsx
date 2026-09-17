@@ -54,6 +54,7 @@ import FeatureTour from "@/app/components/onboarding/FeatureTour";
 import MyPicksPanel from "@/app/components/loops/MyPicksPanel";
 import { estimateFlashcardCountFromText, parseExplicitFlashcardsFromText } from "@/lib/study/flashcard-parser";
 import { studyFoldersStorageKey, studyLibraryStorageKey, studyStorageOwner } from "@/lib/study/storage";
+import { mergeAccountRecords } from "@/lib/study/account-sync";
 
 const MATCH_BESTS_KEY = "uic-atlas-study-match-bests-v1";
 const LIBRARY_SYNC_EVENT = "uic-atlas-study-library-sync";
@@ -119,6 +120,12 @@ async function compressStudyCardImage(file: File) {
   ctx.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
   bitmap.close();
   return canvas.toDataURL("image/webp", 0.82);
+}
+
+async function requireSuccessfulResponse(response: Response, fallbackMessage: string) {
+  if (response.ok) return;
+  const payload = await response.json().catch(() => null);
+  throw new Error(payload?.error || fallbackMessage);
 }
 
 /**
@@ -404,6 +411,7 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
   const storageOwner = status === "loading" ? null : studyStorageOwner(session?.user?.id);
   const storageKey = storageOwner ? studyLibraryStorageKey(storageOwner) : null;
   const foldersStorageKey = storageOwner ? studyFoldersStorageKey(storageOwner) : null;
+  const matchBestsStorageKey = storageOwner ? `${MATCH_BESTS_KEY}:${storageOwner}` : null;
   const isCreateRoute = pathname === "/study/create";
   const createType = searchParams.get("type") === "guide" ? "guide" : "flashcards";
   const isGuideCreateRoute = isCreateRoute && createType === "guide";
@@ -422,6 +430,7 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
   const [savedFilter, setSavedFilter] = useState(false);
   const [librarySection, setLibrarySection] = useState<LibrarySection>("flashcards");
   const [customFolders, setCustomFolders] = useState<string[]>([]);
+  const [matchBests, setMatchBests] = useState<Record<string, number>>({});
   const [draftSet, setDraftSet] = useState<StudySet>(emptyDraftSet);
   const [saveDestinationDialog, setSaveDestinationDialog] = useState<SaveDestinationDialogState>(null);
   const [draftGuide, setDraftGuide] = useState<StudyNote>(emptyDraftGuide);
@@ -461,6 +470,8 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
   const groupMutationVersionRef = useRef(0);
   const lastLibrarySerializedRef = useRef("");
   const lastFoldersSerializedRef = useRef("");
+  const lastRemoteWorkspaceSerializedRef = useRef("");
+  const pendingRemoteWorkspaceRef = useRef<{ state: object; serialized: string } | null>(null);
   const activeStorageKeyRef = useRef<string | null>(null);
   const isEditingFlashcardSet = Boolean(editSetId && library.sets.some((set) => set.id === editSetId));
 
@@ -542,15 +553,20 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
           ? parsedFolders.map((entry) => normalizeFolderPath(String(entry))).filter(Boolean)
           : [],
       );
+      const rawMatchBests = matchBestsStorageKey
+        ? window.localStorage.getItem(matchBestsStorageKey) ?? window.localStorage.getItem(MATCH_BESTS_KEY)
+        : null;
+      setMatchBests(rawMatchBests ? JSON.parse(rawMatchBests) as Record<string, number> : {});
     } catch {
       setLibrary(DEFAULT_STUDY_LIBRARY);
       setCustomFolders([]);
+      setMatchBests({});
     } finally {
       activeStorageKeyRef.current = storageKey;
       setLoadedStorageOwner(storageOwner);
       setHydrated(true);
     }
-  }, [foldersStorageKey, storageKey, storageOwner]);
+  }, [foldersStorageKey, matchBestsStorageKey, storageKey, storageOwner]);
 
   useEffect(() => {
     setScreen(isCreateRoute ? "create" : "dashboard");
@@ -740,37 +756,73 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
         const response = await fetch("/api/study/me", {
           cache: "no-store",
         });
-        if (!response.ok) return;
+        if (!response.ok) throw new Error("Could not load account study data.");
 
         const payload = await response.json();
         if (cancelled) return;
 
-        setLibrary((current) => {
-          const remoteSets = Array.isArray(payload.library?.sets) ? payload.library.sets : [];
-          const remoteGroups = Array.isArray(payload.library?.groups) ? payload.library.groups : [];
-          const remoteNotes = Array.isArray(payload.library?.notes) ? payload.library.notes : [];
-          const remoteSessions = Array.isArray(payload.library?.sessions) ? payload.library.sessions : [];
+        const remoteWorkspaceState = payload.workspaceState && typeof payload.workspaceState === "object"
+          ? payload.workspaceState
+          : {};
+        lastRemoteWorkspaceSerializedRef.current = JSON.stringify(remoteWorkspaceState);
 
-          const knownSetIds = new Set(remoteSets.map((set: StudySet) => set.id));
+        setLibrary((current) => {
+          const rawRemoteSets = Array.isArray(payload.library?.sets) ? payload.library.sets as StudySet[] : [];
+          const remoteGroups = Array.isArray(payload.library?.groups) ? payload.library.groups : [];
+          const remoteNotes = Array.isArray(payload.library?.notes) ? payload.library.notes as StudyNote[] : [];
+          const remoteSessions = Array.isArray(payload.library?.sessions) ? payload.library.sessions : [];
+          // Signed-in sets and notes already have dedicated database records. Treat
+          // that list as authoritative so a stale browser cache cannot recreate an
+          // item that was deleted on another device. Local-only progress and folder
+          // metadata are migrated separately below through workspaceState.
+          const remoteIsAuthoritative = true;
+          const hasRemoteNoteFolders = Object.prototype.hasOwnProperty.call(remoteWorkspaceState, "noteFolders");
+          const hasRemoteSavedSets = Object.prototype.hasOwnProperty.call(remoteWorkspaceState, "savedSetIds");
+          const localSetsById = new Map(current.sets.map((set) => [set.id, set]));
+          const remoteSets = rawRemoteSets.map((set) => ({
+            ...set,
+            saved: hasRemoteSavedSets ? set.saved : (localSetsById.get(set.id)?.saved ?? set.saved),
+          }));
+          const localNotesById = new Map(current.notes.map((note) => [note.id, note]));
+          const mergedRemoteNotes = remoteNotes.map((note) => ({
+            ...note,
+            folder: hasRemoteNoteFolders ? note.folder : (localNotesById.get(note.id)?.folder ?? note.folder ?? ""),
+          }));
+
           const knownSessionIds = new Set(remoteSessions.map((studySession: { id: string }) => studySession.id));
-          const knownNoteIds = new Set(remoteNotes.map((note: StudyNote) => note.id));
 
           return {
             ...current,
-            sets: [
-              ...remoteSets,
-              ...current.sets.filter((set) => !knownSetIds.has(set.id) && (set.canEdit !== false || groupMutationVersionRef.current !== groupVersion)),
-            ],
+            sets: mergeAccountRecords(
+              remoteSets,
+              current.sets.filter((set) => set.canEdit !== false || groupMutationVersionRef.current !== groupVersion),
+              remoteIsAuthoritative,
+            ),
             groups: groupMutationVersionRef.current === groupVersion ? remoteGroups : current.groups,
-            notes: [
-              ...remoteNotes,
-              ...current.notes.filter((note) => !knownNoteIds.has(note.id)),
-            ],
+            notes: mergeAccountRecords(mergedRemoteNotes, current.notes, remoteIsAuthoritative),
             sessions: [...remoteSessions, ...current.sessions.filter((studySession) => !knownSessionIds.has(studySession.id))],
+            progress: Object.prototype.hasOwnProperty.call(remoteWorkspaceState, "progress")
+              ? (remoteWorkspaceState.progress ?? {})
+              : current.progress,
+            quizResults: Object.prototype.hasOwnProperty.call(remoteWorkspaceState, "quizResults")
+              ? (remoteWorkspaceState.quizResults ?? [])
+              : current.quizResults,
+            noteAudioSessions: Object.prototype.hasOwnProperty.call(remoteWorkspaceState, "noteAudioSessions")
+              ? (remoteWorkspaceState.noteAudioSessions ?? [])
+              : current.noteAudioSessions,
+            noteAiLogs: Object.prototype.hasOwnProperty.call(remoteWorkspaceState, "noteAiLogs")
+              ? (remoteWorkspaceState.noteAiLogs ?? [])
+              : current.noteAiLogs,
           };
         });
+        if (Object.prototype.hasOwnProperty.call(remoteWorkspaceState, "customFolders")) {
+          setCustomFolders(Array.isArray(remoteWorkspaceState.customFolders) ? remoteWorkspaceState.customFolders : []);
+        }
+        if (Object.prototype.hasOwnProperty.call(remoteWorkspaceState, "matchBests")) {
+          setMatchBests(remoteWorkspaceState.matchBests && typeof remoteWorkspaceState.matchBests === "object" ? remoteWorkspaceState.matchBests : {});
+        }
       } catch {
-        // Keep the local library if the authenticated fetch fails.
+        showToast("Could not load the latest My School data from your account. Showing this device's saved copy.", "error");
       } finally {
         if (!cancelled) setRemoteLoadedOwner(storageOwner);
       }
@@ -782,6 +834,53 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
       cancelled = true;
     };
   }, [session?.user?.id, status, storageOwner]);
+
+  useEffect(() => {
+    if (status !== "authenticated" || remoteLoadedOwner !== storageOwner) return;
+    const workspaceState = {
+      syncInitialized: true,
+      progress: library.progress,
+      quizResults: library.quizResults.slice(0, 80),
+      customFolders,
+      noteFolders: Object.fromEntries(library.notes.map((note) => [note.id, normalizeFolderPath(note.folder ?? "")])),
+      matchBests,
+      savedSetIds: library.sets.filter((set) => set.saved).map((set) => set.id),
+      noteAudioSessions: library.noteAudioSessions.slice(0, 200),
+      noteAiLogs: library.noteAiLogs.slice(0, 200),
+    };
+    const serialized = JSON.stringify(workspaceState);
+    if (serialized === lastRemoteWorkspaceSerializedRef.current) return;
+    pendingRemoteWorkspaceRef.current = { state: workspaceState, serialized };
+
+    const timeout = window.setTimeout(async () => {
+      try {
+        const response = await fetch("/api/study/me", {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ workspaceState }),
+        });
+        if (!response.ok) throw new Error("Workspace sync failed.");
+        lastRemoteWorkspaceSerializedRef.current = serialized;
+        if (pendingRemoteWorkspaceRef.current?.serialized === serialized) pendingRemoteWorkspaceRef.current = null;
+      } catch {
+        showToast("Your latest study progress is saved on this device, but account sync failed.", "error");
+      }
+    }, 700);
+
+    return () => window.clearTimeout(timeout);
+  }, [customFolders, library.noteAiLogs, library.noteAudioSessions, library.notes, library.progress, library.quizResults, library.sets, matchBests, remoteLoadedOwner, status, storageOwner]);
+
+  useEffect(() => () => {
+    const pending = pendingRemoteWorkspaceRef.current;
+    if (status === "authenticated" && pending) {
+      void fetch("/api/study/me", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ workspaceState: pending.state }),
+        keepalive: true,
+      });
+    }
+  }, [status]);
 
   useEffect(() => {
     if (!toast) return;
@@ -797,6 +896,11 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
     lastFoldersSerializedRef.current = serialized;
     window.dispatchEvent(new CustomEvent(FOLDERS_SYNC_EVENT));
   }, [customFolders, foldersStorageKey, hydrated, storageKey]);
+
+  useEffect(() => {
+    if (!hydrated || !matchBestsStorageKey || activeStorageKeyRef.current !== storageKey) return;
+    window.localStorage.setItem(matchBestsStorageKey, JSON.stringify(matchBests));
+  }, [hydrated, matchBests, matchBestsStorageKey, storageKey]);
 
   useEffect(() => {
     const handleStorage = (event: StorageEvent) => {
@@ -889,7 +993,8 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
     setPublicSearchResults([]);
     setPublicNoteResults([]);
     setPublicSearchError("");
-    if (query.length < 2) {
+    const isBrowsingSharedMaterials = libraryView && query.length === 0;
+    if (!isBrowsingSharedMaterials && query.length < 2) {
       setPublicSearchLoading(false);
       return;
     }
@@ -898,7 +1003,8 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
     const timeout = window.setTimeout(async () => {
       try {
         const results = await Promise.all(["public-sets", "public-notes"].map(async (endpoint) => {
-          const response = await fetch(`/api/study/${endpoint}?q=${encodeURIComponent(query)}`, { signal: controller.signal });
+          const searchSuffix = query ? `?q=${encodeURIComponent(query)}` : "";
+          const response = await fetch(`/api/study/${endpoint}${searchSuffix}`, { signal: controller.signal });
           if (!response.ok) throw new Error("Public search is unavailable. Please try again.");
           return response.json();
         }));
@@ -912,7 +1018,7 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
       }
     }, 180);
     return () => { controller.abort(); window.clearTimeout(timeout); };
-  }, [search]);
+  }, [libraryView, search]);
 
   const showToast = (message: string, tone: ToastTone = "default") => {
     setToast({ message, tone });
@@ -1352,7 +1458,7 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
   const deleteDraftSet = () => {
     const editSetId = searchParams.get("edit");
     if (editSetId && library.sets.some((set) => set.id === editSetId)) {
-      deleteSet(editSetId, { stayOnCreate: true });
+      void deleteSet(editSetId, { stayOnCreate: true });
       return;
     }
 
@@ -1386,15 +1492,17 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
     showToast("Copied into your library.");
 
     if (isSignedIn) {
-      fetch("/api/study/sets", {
+      void fetch("/api/study/sets", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ set: clone }),
-      }).catch(() => undefined);
+      })
+        .then((response) => requireSuccessfulResponse(response, "Could not sync the duplicated set."))
+        .catch((error) => showToast(error instanceof Error ? error.message : "Could not sync the duplicated set.", "error"));
     }
   };
 
-  const addPublicSetToLibrary = (set: StudySet) => {
+  const addPublicSetToLibrary = async (set: StudySet) => {
     const existing = library.sets.find((entry) => entry.title === set.title && entry.course === set.course);
     if (existing) {
       setSelectedSetId(existing.id);
@@ -1418,24 +1526,65 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
       })),
     };
 
+    if (isSignedIn) {
+      try {
+        const response = await fetch("/api/study/sets", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ set: localCopy }),
+        });
+        const payload = await response.json();
+        if (!response.ok) throw new Error(payload.error || "Could not add this set to your account.");
+      } catch (error) {
+        showToast(error instanceof Error ? error.message : "Could not add this set to your account.", "error");
+        return;
+      }
+    }
+
     setLibrary((current) => ({
       ...current,
       sets: [localCopy, ...current.sets],
     }));
     setSelectedSetId(localCopy.id);
     openStudyScreen("overview", localCopy.id);
-    showToast("Added shared set to your library as a private copy.");
-
-    if (isSignedIn) {
-      fetch("/api/study/sets", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ set: localCopy }),
-      }).catch(() => undefined);
-    }
+    showToast(isSignedIn ? "Added to your account as a private copy." : "Added on this device as a private copy.");
   };
 
-  const deleteSet = (setId: string, options?: { stayOnCreate?: boolean }) => {
+  const copyPublicNoteToLibrary = async (note: StudyNote) => {
+    const now = new Date().toISOString();
+    let copy: StudyNote = {
+      ...note,
+      id: createStudyId("note"),
+      visibility: "private",
+      createdAt: now,
+      updatedAt: now,
+      lastOpenedAt: now,
+      pinned: false,
+      favorite: false,
+    };
+
+    if (isSignedIn) {
+      try {
+        const response = await fetch("/api/study/notes", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ note: copy }),
+        });
+        const payload = await response.json();
+        if (!response.ok) throw new Error(payload.error || "Could not add this note to your account.");
+        if (payload.note) copy = payload.note as StudyNote;
+      } catch (error) {
+        showToast(error instanceof Error ? error.message : "Could not add this note to your account.", "error");
+        return;
+      }
+    }
+
+    setLibrary((current) => ({ ...current, notes: [copy, ...current.notes] }));
+    showToast(isSignedIn ? "Added to your account as a private copy." : "Added on this device as a private copy.");
+    router.push(`/study?mode=notes&note=${encodeURIComponent(copy.id)}`);
+  };
+
+  const deleteSet = async (setId: string, options?: { stayOnCreate?: boolean }) => {
     const target = library.sets.find((set) => set.id === setId);
     if (!target) return;
     if (target.canEdit === false) {
@@ -1446,16 +1595,14 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
     const confirmed = window.confirm(`Delete "${target.title}"? This will remove the set and its local study progress.`);
     if (!confirmed) return;
 
-    fetch("/api/study/public-sets", {
-      method: "DELETE",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ setId }),
-    }).catch(() => undefined);
-
     if (isSignedIn) {
-      fetch(`/api/study/sets/${encodeURIComponent(setId)}`, {
-        method: "DELETE",
-      }).catch(() => undefined);
+      try {
+        const response = await fetch(`/api/study/sets/${encodeURIComponent(setId)}`, { method: "DELETE" });
+        await requireSuccessfulResponse(response, "Could not delete this set from your account.");
+      } catch (error) {
+        showToast(error instanceof Error ? error.message : "Could not delete this set from your account.", "error");
+        return;
+      }
     }
 
     setLibrary((current) => ({
@@ -1530,13 +1677,6 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
     if (!nextSet) return;
     const isSaved = (nextSet as StudySet).saved;
     showToast(isSaved ? "Set saved to your library." : "Set removed from saved.");
-    if (isSignedIn) {
-      fetch("/api/study/sets", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ set: nextSet }),
-      }).catch(() => undefined);
-    }
   };
 
   const moveSetToFolder = (setId: string, folder: string) => {
@@ -1557,11 +1697,13 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
     showToast(normalizedFolder ? `Moved to ${folderLabelFromPath(normalizedFolder)}.` : "Removed from folder.");
 
     if (isSignedIn) {
-      fetch("/api/study/sets", {
+      void fetch("/api/study/sets", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ set: nextSet }),
-      }).catch(() => undefined);
+      })
+        .then((response) => requireSuccessfulResponse(response, "Could not sync the folder change."))
+        .catch((error) => showToast(error instanceof Error ? error.message : "Could not sync the folder change.", "error"));
     }
   };
 
@@ -1791,14 +1933,6 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
         nextGuide = { ...nextGuide, visibility: "private" };
         showToast("Could not publish this guide, so it was saved privately instead.", "error");
       }
-    } else {
-      try {
-        await fetch("/api/study/public-notes", {
-          method: "DELETE",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ noteId: nextGuide.id }),
-        });
-      } catch {}
     }
 
     if (isSignedIn && nextGuide.visibility !== "public") {
@@ -1901,13 +2035,14 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
 
         if (isSignedIn) {
           try {
-            await fetch("/api/study/sets", {
+            const response = await fetch("/api/study/sets", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({ set: nextSet }),
             });
-          } catch {
-            showToast("Guide saved locally, but flashcard sync failed.", "error");
+            await requireSuccessfulResponse(response, "Guide saved locally, but flashcard sync failed.");
+          } catch (error) {
+            showToast(error instanceof Error ? error.message : "Guide saved locally, but flashcard sync failed.", "error");
           }
         }
 
@@ -1967,11 +2102,13 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
     }));
 
     if (isSignedIn) {
-      fetch("/api/study/sessions", {
+      void fetch("/api/study/sessions", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ session }),
-      }).catch(() => undefined);
+      })
+        .then((response) => requireSuccessfulResponse(response, "Could not sync this study session."))
+        .catch((error) => showToast(error instanceof Error ? error.message : "Could not sync this study session.", "error"));
     }
   };
 
@@ -2116,28 +2253,44 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
     if (!target) return;
     const nextTitle = window.prompt("Rename note", target.title);
     if (!nextTitle || !nextTitle.trim() || nextTitle.trim() === target.title) return;
+    const renamedNote = { ...target, title: nextTitle.trim(), updatedAt: new Date().toISOString() };
     setLibrary((current) => ({
       ...current,
-      notes: current.notes.map((n) => n.id === noteId ? { ...n, title: nextTitle.trim(), updatedAt: new Date().toISOString() } : n),
+      notes: current.notes.map((n) => n.id === noteId ? renamedNote : n),
     }));
     showToast("Note renamed.");
+    if (isSignedIn) {
+      void fetch("/api/study/notes", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ note: renamedNote }),
+      })
+        .then((response) => requireSuccessfulResponse(response, "Could not sync the renamed note."))
+        .catch((error) => showToast(error instanceof Error ? error.message : "Could not sync the renamed note.", "error"));
+    }
   };
 
-  const deleteNote = (noteId: string) => {
+  const deleteNote = async (noteId: string) => {
     const target = library.notes.find((n) => n.id === noteId);
     if (!target) return;
     if (!window.confirm(`Delete "${target.title}"? This cannot be undone.`)) return;
+    if (isSignedIn) {
+      try {
+        const response = await fetch("/api/study/notes", {
+          method: "DELETE",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ noteId }),
+        });
+        await requireSuccessfulResponse(response, "Could not delete this note from your account.");
+      } catch (error) {
+        showToast(error instanceof Error ? error.message : "Could not delete this note from your account.", "error");
+        return;
+      }
+    }
     setLibrary((current) => ({
       ...current,
       notes: current.notes.filter((n) => n.id !== noteId),
     }));
-    if (isSignedIn) {
-      fetch("/api/study/notes", {
-        method: "DELETE",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ noteId }),
-      }).catch(() => showToast("The note was removed locally, but account sync failed.", "error"));
-    }
     showToast("Note deleted.");
   };
 
@@ -2179,14 +2332,9 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
         ...current,
         groups: current.groups.map((group) => (group.id === groupId ? updatedGroup : group)),
       }));
-    } catch {
-      // Optimistic fallback
-      setLibrary((current) => ({
-        ...current,
-        groups: current.groups.map((g) =>
-          g.id === groupId ? { ...g, setIds: g.setIds.filter((id) => id !== setId) } : g,
-        ),
-      }));
+    } catch (error) {
+      showToast(error instanceof Error ? error.message : "Could not remove the set from this group.", "error");
+      return;
     }
     showToast("Set removed from group.");
   };
@@ -2201,11 +2349,13 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
     setSurface("flashcards");
 
     if (isSignedIn) {
-      fetch("/api/study/sets", {
+      void fetch("/api/study/sets", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ set: nextSet }),
-      }).catch(() => undefined);
+      })
+        .then((response) => requireSuccessfulResponse(response, "Could not sync the flashcard set created from this note."))
+        .catch((error) => showToast(error instanceof Error ? error.message : "Could not sync the flashcard set created from this note.", "error"));
     }
   };
 
@@ -2246,11 +2396,13 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
         onMistakeSetSave={(mistakeSet) => {
           setLibrary((current) => ({ ...current, sets: [mistakeSet, ...current.sets] }));
           if (isSignedIn) {
-            fetch("/api/study/sets", {
+            void fetch("/api/study/sets", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({ set: mistakeSet }),
-            }).catch(() => showToast("The mistakes deck was saved locally, but account sync failed.", "error"));
+            })
+              .then((response) => requireSuccessfulResponse(response, "The mistakes deck was saved locally, but account sync failed."))
+              .catch((error) => showToast(error instanceof Error ? error.message : "The mistakes deck was saved locally, but account sync failed.", "error"));
           }
         }}
         onCelebrate={(message) => showToast(message, "reward")}
@@ -2258,9 +2410,11 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
     ) : selectedSet && screen === "match" ? (
       <MatchMode
         set={selectedSet}
+        bestMs={matchBests[selectedSet.id] ?? null}
         onBack={() => openStudyScreen("overview", selectedSet.id)}
         onSessionSave={saveSession}
         onProgress={(cardId, result) => updateCardProgress(selectedSet.id, cardId, (current) => updateProgressForReview(current, result))}
+        onBestTime={(nextBestMs) => setMatchBests((current) => ({ ...current, [selectedSet.id]: nextBestMs }))}
         onCelebrate={(message) => showToast(message, "reward")}
       />
     ) : null;
@@ -2392,7 +2546,7 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
                 onModeChange={(nextScreen) => openStudyScreen(nextScreen, selectedSet.id)}
                 onMoveToFolder={(folder) => moveSetToFolder(selectedSet.id, folder)}
                 onDuplicate={() => duplicateSet(selectedSet)}
-                onDelete={() => deleteSet(selectedSet.id)}
+                onDelete={() => void deleteSet(selectedSet.id)}
                 onEdit={() => {
                   if (selectedSet.canEdit === false) {
                     duplicateSet(selectedSet);
@@ -2470,7 +2624,7 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
                 <div key={set.id} className="rounded-xl border border-slate-700 bg-slate-800 p-4">
                   <Link href={`/study/set/${encodeURIComponent(set.id)}`} className="font-semibold text-indigo-200 hover:text-white">{set.title}</Link>
                   <p className="mt-1 text-xs text-slate-400">Public flashcards · {set.cards.length} cards · {set.course || set.subject}</p>
-                  <button onClick={() => addPublicSetToLibrary(set)} className="mt-3 text-sm font-medium text-indigo-200">Copy to my library</button>
+                  <button onClick={() => void addPublicSetToLibrary(set)} className="mt-3 text-sm font-medium text-indigo-200">Copy to my library</button>
                 </div>
               ))}
               {publicNoteResults.map((note) => (
@@ -2479,12 +2633,7 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
                   <p className="mt-1 text-xs text-slate-400">Public {note.sourceType === "imported" ? "study guide" : "note"} · {note.course}</p>
                   <p className="mt-2 line-clamp-3 text-sm text-slate-300">{note.structuredContent?.summary || note.rawContent || note.transcriptContent}</p>
                   <Link href={`/study/note/${encodeURIComponent(note.id)}`} className="mt-3 mr-4 inline-block text-sm font-medium text-indigo-200">Open</Link>
-                  <button onClick={() => {
-                    const now = new Date().toISOString();
-                    const copy: StudyNote = { ...note, id: createStudyId("note"), visibility: "private", createdAt: now, updatedAt: now, lastOpenedAt: now, pinned: false, favorite: false };
-                    setLibrary((current) => ({ ...current, notes: [copy, ...current.notes] }));
-                    router.push(`/study?mode=notes&note=${encodeURIComponent(copy.id)}`);
-                  }} className="mt-3 text-sm font-medium text-indigo-200">Copy &amp; open note</button>
+                  <button onClick={() => void copyPublicNoteToLibrary(note)} className="mt-3 text-sm font-medium text-indigo-200">Copy &amp; open note</button>
                 </div>
               ))}
               {!publicSearchResults.length && !publicNoteResults.length && <p className="text-sm text-slate-400">{globalQuery.length < 2 ? "Enter at least two characters to search public materials." : "No public materials match this search."}</p>}
@@ -2642,6 +2791,55 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
                     </div>
                   </div>
                 </div>
+              </section>
+            ) : null}
+            {libraryView && !search.trim() ? (
+              <section aria-labelledby="shared-library-heading" className="study-appear border-y border-white/7 py-5">
+                <div className="flex flex-wrap items-end justify-between gap-3">
+                  <div>
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-emerald-400/80">Community library</p>
+                    <h2 id="shared-library-heading" className="mt-1 text-lg font-bold tracking-[-0.02em] text-white">Shared with everyone</h2>
+                    <p className="mt-1 text-[13px] text-slate-500">Open public study material, or save a private copy you can edit.</p>
+                  </div>
+                  <div className="text-[11px] text-slate-600">{publicSearchResults.length + publicNoteResults.length} public items</div>
+                </div>
+
+                {publicSearchLoading ? (
+                  <p role="status" className="mt-4 text-sm text-slate-400">Loading shared materials…</p>
+                ) : publicSearchError ? (
+                  <p role="alert" className="mt-4 text-sm text-rose-300">{publicSearchError}</p>
+                ) : publicSearchResults.length || publicNoteResults.length ? (
+                  <div className="mt-4 grid gap-x-6 gap-y-2 md:grid-cols-2">
+                    {publicSearchResults.slice(0, 3).map((set) => (
+                      <article key={set.id} className="flex items-center justify-between gap-4 border-b border-white/6 py-3">
+                        <div className="min-w-0">
+                          <Link href={`/study/set/${encodeURIComponent(set.id)}`} className="block truncate text-sm font-semibold text-slate-100 transition hover:text-indigo-200">
+                            {set.title}
+                          </Link>
+                          <p className="mt-1 truncate text-[11px] text-slate-500">Flashcards · {set.cards.length} cards · {set.course || set.subject || "General"}</p>
+                        </div>
+                        <button type="button" onClick={() => void addPublicSetToLibrary(set)} className="shrink-0 rounded-lg border border-white/8 px-2.5 py-1.5 text-xs font-semibold text-slate-300 transition hover:bg-white/6 hover:text-white">
+                          Save copy
+                        </button>
+                      </article>
+                    ))}
+                    {publicNoteResults.slice(0, 3).map((note) => (
+                      <article key={note.id} className="flex items-center justify-between gap-4 border-b border-white/6 py-3">
+                        <div className="min-w-0">
+                          <Link href={`/study/note/${encodeURIComponent(note.id)}`} className="block truncate text-sm font-semibold text-slate-100 transition hover:text-indigo-200">
+                            {note.title}
+                          </Link>
+                          <p className="mt-1 truncate text-[11px] text-slate-500">{note.sourceType === "imported" ? "Study guide" : "Note"} · {note.course || "General"}</p>
+                        </div>
+                        <button type="button" onClick={() => void copyPublicNoteToLibrary(note)} className="shrink-0 rounded-lg border border-white/8 px-2.5 py-1.5 text-xs font-semibold text-slate-300 transition hover:bg-white/6 hover:text-white">
+                          Save copy
+                        </button>
+                      </article>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="mt-4 text-sm text-slate-500">No one has shared anything publicly yet. Public sets and notes will appear here.</p>
+                )}
               </section>
             ) : null}
             {folderFilter ? (
@@ -3284,7 +3482,7 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
                                 <FolderPlus className="h-3.5 w-3.5 text-slate-500" /> Move to folder
                               </button>
                               <div className="my-1 h-px bg-white/6" />
-                              <button onClick={() => { setLibraryItemMenuOpen(null); deleteNote(note.id); }} className="flex w-full items-center gap-2.5 px-3 py-2 text-[13px] text-rose-400 hover:bg-rose-500/8">
+                              <button onClick={() => { setLibraryItemMenuOpen(null); void deleteNote(note.id); }} className="flex w-full items-center gap-2.5 px-3 py-2 text-[13px] text-rose-400 hover:bg-rose-500/8">
                                 <Trash2 className="h-3.5 w-3.5" /> Delete
                               </button>
                             </div>
@@ -3391,7 +3589,7 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
                                 <Pencil className="h-3.5 w-3.5 text-slate-500" /> Rename
                               </button>
                               <div className="my-1 h-px bg-white/6" />
-                              <button onClick={() => { setLibraryItemMenuOpen(null); deleteNote(guide.id); }} className="flex w-full items-center gap-2.5 px-3 py-2 text-[13px] text-rose-400 hover:bg-rose-500/8">
+                              <button onClick={() => { setLibraryItemMenuOpen(null); void deleteNote(guide.id); }} className="flex w-full items-center gap-2.5 px-3 py-2 text-[13px] text-rose-400 hover:bg-rose-500/8">
                                 <Trash2 className="h-3.5 w-3.5" /> Delete
                               </button>
                             </div>
@@ -3538,7 +3736,7 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
                 onModeChange={(nextScreen) => openStudyScreen(nextScreen, selectedSet.id)}
                 onMoveToFolder={(folder) => moveSetToFolder(selectedSet.id, folder)}
                 onDuplicate={() => duplicateSet(selectedSet)}
-                onDelete={() => deleteSet(selectedSet.id)}
+                onDelete={() => void deleteSet(selectedSet.id)}
                 onEdit={() => {
                   if (selectedSet.canEdit === false) {
                     duplicateSet(selectedSet);
@@ -3623,7 +3821,7 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
                       </button>
                       <button
                         type="button"
-                        onClick={() => deleteSet(set.id)}
+                        onClick={() => void deleteSet(set.id)}
                         {...magneticHoverProps}
                         aria-label={`Delete ${set.title}`}
                         className="study-premium-button shrink-0 rounded-lg border border-rose-500/20 bg-rose-500/8 p-1.5 text-rose-400 hover:bg-rose-500/15"
@@ -3673,7 +3871,7 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
                               </Link>
                               <button
                                 type="button"
-                                onClick={() => addPublicSetToLibrary(set)}
+                                onClick={() => void addPublicSetToLibrary(set)}
                                 {...magneticHoverProps}
                                 className={`study-premium-button rounded-lg px-2.5 py-1 text-xs font-semibold ${
                                   alreadyAdded
@@ -7857,15 +8055,19 @@ function AssessmentMode({
 
 function MatchMode({
   set,
+  bestMs: savedBestMs,
   onBack,
   onSessionSave,
   onProgress,
+  onBestTime,
   onCelebrate,
 }: {
   set: StudySet;
+  bestMs: number | null;
   onBack: () => void;
   onSessionSave: (session: ReturnType<typeof buildStudySession>) => void;
   onProgress: (cardId: string, result: "correct" | "wrong") => void;
+  onBestTime: (milliseconds: number) => void;
   onCelebrate: (message: string) => void;
 }) {
   const [sourceCards, setSourceCards] = useState<StudyCard[]>(() => {
@@ -7886,20 +8088,14 @@ function MatchMode({
   const [matched, setMatched] = useState<string[]>([]);
   const [startedAt, setStartedAt] = useState<string | null>(null);
   const [elapsedMs, setElapsedMs] = useState(0);
-  const [bestMs, setBestMs] = useState<number | null>(null);
+  const [bestMs, setBestMs] = useState<number | null>(savedBestMs);
   const [completedMs, setCompletedMs] = useState<number | null>(null);
   const [isNewBest, setIsNewBest] = useState(false);
   const isComplete = matched.length === items.length && items.length > 0;
 
   useEffect(() => {
-    try {
-      const raw = window.localStorage.getItem(MATCH_BESTS_KEY);
-      const parsed = raw ? (JSON.parse(raw) as Record<string, number>) : {};
-      setBestMs(typeof parsed[set.id] === "number" ? parsed[set.id] : null);
-    } catch {
-      setBestMs(null);
-    }
-  }, [set.id]);
+    setBestMs(savedBestMs);
+  }, [savedBestMs, set.id]);
 
   useEffect(() => {
     if (!startedAt || (matched.length === items.length && items.length)) return;
@@ -7952,13 +8148,7 @@ function MatchMode({
     if (newBest) {
       setIsNewBest(true);
       setBestMs(finalMs);
-      try {
-        const raw = window.localStorage.getItem(MATCH_BESTS_KEY);
-        const parsed = raw ? (JSON.parse(raw) as Record<string, number>) : {};
-        window.localStorage.setItem(MATCH_BESTS_KEY, JSON.stringify({ ...parsed, [set.id]: finalMs }));
-      } catch {
-        // Ignore localStorage write issues and keep the in-memory best.
-      }
+      onBestTime(finalMs);
       onCelebrate("New best time. Nice speed.");
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps

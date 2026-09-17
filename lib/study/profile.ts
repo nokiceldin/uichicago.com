@@ -1,9 +1,23 @@
+import type { CardProgress, NoteAiGenerationLog, NoteAudioSession, QuizResult } from "@/lib/study/types";
+
 export type PlannerProfilePayload = {
   majorSlug?: string;
   currentSemesterNumber?: number;
   honorsStudent?: boolean;
   currentCourses?: string[];
   completedCourses?: string[];
+};
+
+export type StudyWorkspaceStatePayload = {
+  syncInitialized?: boolean;
+  progress?: Record<string, Record<string, CardProgress>>;
+  quizResults?: QuizResult[];
+  customFolders?: string[];
+  noteFolders?: Record<string, string>;
+  matchBests?: Record<string, number>;
+  savedSetIds?: string[];
+  noteAudioSessions?: NoteAudioSession[];
+  noteAiLogs?: NoteAiGenerationLog[];
 };
 
 export type ThemeMode = "auto" | "light" | "dark";
@@ -33,10 +47,11 @@ export type SiteSettingsPayload = {
 };
 
 export type StudyPreferencesEnvelope = {
-  __type: "study_profile_v3";
+  __type: "study_profile_v4";
   notes: string;
   plannerProfile: PlannerProfilePayload;
   settings: SiteSettingsPayload;
+  workspaceState: StudyWorkspaceStatePayload;
 };
 
 export type StudyProfileSnapshot = {
@@ -64,16 +79,21 @@ export function parseStoredPreferences(raw: string | null | undefined) {
       notes: "",
       plannerProfile: {} as PlannerProfilePayload,
       settings: {} as SiteSettingsPayload,
+      workspaceState: {} as StudyWorkspaceStatePayload,
     };
   }
 
   try {
-    const parsed = JSON.parse(raw) as Partial<StudyPreferencesEnvelope>;
-    if (parsed && (parsed.__type === "study_profile_v3" || parsed.__type === "study_profile_v2")) {
+    const parsed = JSON.parse(raw) as Partial<StudyPreferencesEnvelope> & { __type?: string };
+    if (parsed && (parsed.__type === "study_profile_v4" || parsed.__type === "study_profile_v3" || parsed.__type === "study_profile_v2")) {
       return {
         notes: typeof parsed.notes === "string" ? parsed.notes : "",
         plannerProfile: typeof parsed.plannerProfile === "object" && parsed.plannerProfile ? parsed.plannerProfile : {},
         settings: typeof parsed.settings === "object" && parsed.settings ? parsed.settings : {},
+        workspaceState:
+          typeof parsed.workspaceState === "object" && parsed.workspaceState
+            ? parsed.workspaceState
+            : {},
       };
     }
   } catch {}
@@ -82,6 +102,7 @@ export function parseStoredPreferences(raw: string | null | undefined) {
     notes: raw,
     plannerProfile: {} as PlannerProfilePayload,
     settings: {} as SiteSettingsPayload,
+    workspaceState: {} as StudyWorkspaceStatePayload,
   };
 }
 
@@ -89,12 +110,14 @@ export function serializeStoredPreferences(
   notes: string,
   plannerProfile: PlannerProfilePayload,
   settings: SiteSettingsPayload = {},
+  workspaceState: StudyWorkspaceStatePayload = {},
 ) {
   return JSON.stringify({
-    __type: "study_profile_v3",
+    __type: "study_profile_v4",
     notes,
     plannerProfile,
     settings,
+    workspaceState,
   } satisfies StudyPreferencesEnvelope);
 }
 

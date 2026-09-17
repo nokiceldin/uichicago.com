@@ -1,113 +1,109 @@
 import SiteFooter from "@/app/components/SiteFooter";
 
-const sections = [
-  {
-    title: "What UIChicago is built from",
-    body:
-      "UIChicago combines imported course history, professor review signals, course-to-professor mapping, campus knowledge content, and student workspace tools inside one product. It is student-built and unofficial, so transparency matters more here than pretending to be an official university source.",
-    bullets: [
-      "UIC course and grade history used in course pages and rankings",
-      "Professor review and matching data used in professor pages",
-      "Campus knowledge content used for planning and Sparky answers",
-      "Public or imported source material transformed into student-friendly views",
-    ],
-  },
-  {
-    title: "How to read course pages",
-    body:
-      "Course pages are designed to help students compare difficulty, GPA patterns, withdrawal patterns, and instructor outcomes without guessing. Metrics are based on stored grade distributions and related registration history where available.",
-    bullets: [
-      "Average GPA is calculated from available letter-grade outcomes for the course",
-      "C-or-better and D-or-better rates use A–F letter-grade outcomes as the denominator",
-      "Withdrawal rate uses A–F plus W outcomes as the denominator",
-      "A missing denominator is shown as N/A rather than as a zero-percent result",
-      "Instructor comparisons are filtered to rows with enough outcomes to be worth showing",
-      "Course explorer filters help narrow majors, Gen Eds, and requirement types faster",
-    ],
-  },
-  {
-    title: "How to read professor pages",
-    body:
-      "Professor rankings use more than a raw star score. The product weighs rating quality, review depth, and available course context so profiles with tiny samples do not look identical to profiles with stronger signals.",
-    bullets: [
-      "Review count matters alongside the rating itself",
-      "Department rank and course rank help add local context",
-      "Course matching is used so students can jump between professor and class decisions",
-      "AI summaries are interpretive and should be read as guidance, not as a transcript of every review",
-    ],
-  },
-  {
-    title: "How to use Sparky well",
-    body:
-      "Sparky is the synthesis layer. It is best when you want the product to connect courses, professors, campus life, housing, costs, and planning into one answer. It should speed up exploration, not replace judgment for high-stakes decisions.",
-    bullets: [
-      "Use Sparky when you want a fast recommendation or summary",
-      "Open linked course or professor pages when you want deeper evidence",
-      "Treat time-sensitive, policy, and money decisions with extra caution",
-      "For official deadlines, bills, and requirements, confirm against official UIC sources",
-    ],
-  },
-  {
-    title: "Limits and tradeoffs",
-    body:
-      "No student platform can perfectly represent every class, every instructor, or every student experience. Some courses have richer data than others. Some professors have strong review signals while others are lightly sampled or unmatched.",
-    bullets: [
-      "Missing or sparse data can happen on newer or lower-volume courses",
-      "Professor matches are strong but not perfect in edge cases",
-      "AI summaries can compress nuance",
-      "The platform is unofficial and should complement, not replace, official advising or university policy pages",
-    ],
-  },
+const courseMetrics = [
+  ["Average GPA", "Calculated from the available A–F letter grades."],
+  ["C or better", "A, B, and C divided by all A–F outcomes."],
+  ["D or better", "A through D divided by all A–F outcomes."],
+  ["Withdrawal rate", "W divided by A–F plus W outcomes."],
 ];
 
 export default function MethodologyPage() {
   return (
-    <main className="min-h-screen bg-zinc-50 text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100">
-      <div className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-80 bg-linear-to-b from-red-950/20 to-transparent" />
-      <div className="mx-auto max-w-5xl px-4 py-10 sm:px-6 sm:py-16">
-        <div className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-lg dark:border-white/8 dark:bg-zinc-900/50 dark:shadow-black/40 sm:p-8">
+    <main className="min-h-screen bg-white text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100">
+      <div className="mx-auto max-w-5xl px-4 pb-10 pt-12 sm:px-6 sm:pb-16 sm:pt-20">
+        <header className="border-b border-zinc-200 pb-10 dark:border-white/10 sm:pb-14">
           <div className="text-[11px] font-bold uppercase tracking-[0.24em] text-red-500">Methodology</div>
-          <h1 className="mt-3 text-4xl font-black tracking-[-0.04em] text-zinc-900 dark:text-white sm:text-5xl">
-            How UIChicago works
-          </h1>
-          <p className="mt-4 max-w-3xl text-base leading-8 text-zinc-600 dark:text-zinc-300">
-            This page explains what the product is built from, how rankings and summaries should be read, and where students should still verify details for themselves.
-          </p>
-          <div className="mt-6 flex flex-wrap gap-2">
-            <span className="rounded-full border border-zinc-200 bg-zinc-50 px-3 py-1.5 text-xs font-semibold text-zinc-600 dark:border-white/10 dark:bg-white/5 dark:text-zinc-300">
-              Student-built
-            </span>
-            <span className="rounded-full border border-zinc-200 bg-zinc-50 px-3 py-1.5 text-xs font-semibold text-zinc-600 dark:border-white/10 dark:bg-white/5 dark:text-zinc-300">
-              Unofficial
-            </span>
-            <span className="rounded-full border border-zinc-200 bg-zinc-50 px-3 py-1.5 text-xs font-semibold text-zinc-600 dark:border-white/10 dark:bg-white/5 dark:text-zinc-300">
-              Transparent about signals and limits
-            </span>
+          <div className="mt-4 grid gap-6 lg:grid-cols-[1fr_18rem] lg:items-end lg:gap-16">
+            <div>
+              <h1 className="max-w-3xl text-5xl font-black tracking-[-0.055em] text-zinc-950 dark:text-white sm:text-6xl">
+                The short version.
+              </h1>
+              <p className="mt-5 max-w-2xl text-lg leading-8 text-zinc-600 dark:text-zinc-300">
+                UIChicago turns course history, professor signals, and campus information into tools that are easier to use.
+              </p>
+            </div>
+            <p className="border-l-2 border-red-500 pl-4 text-sm leading-6 text-zinc-500 dark:text-zinc-400">
+              Student-built and unofficial. We show missing data instead of filling the gaps with guesses.
+            </p>
           </div>
-        </div>
+        </header>
 
-        <div className="mt-6 space-y-5">
-          {sections.map((section) => (
-            <section
-              key={section.title}
-              className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-white/8 dark:bg-zinc-900/40"
-            >
-              <h2 className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-white">{section.title}</h2>
-              <p className="mt-3 text-sm leading-7 text-zinc-600 dark:text-zinc-300">{section.body}</p>
-              <ul className="mt-4 space-y-2">
-                {section.bullets.map((bullet) => (
-                  <li key={bullet} className="flex items-start gap-2 text-sm text-zinc-600 dark:text-zinc-300">
-                    <span className="mt-2 h-1.5 w-1.5 rounded-full bg-red-500" />
-                    <span>{bullet}</span>
-                  </li>
+        <div className="divide-y divide-zinc-200 dark:divide-white/10">
+          <section className="grid gap-5 py-10 sm:py-14 md:grid-cols-[5rem_1fr]">
+            <div className="text-sm font-bold tracking-[0.2em] text-red-500">01</div>
+            <div>
+              <h2 className="text-3xl font-bold tracking-[-0.035em] text-zinc-950 dark:text-white">Where the information comes from</h2>
+              <p className="mt-4 max-w-3xl text-base leading-7 text-zinc-600 dark:text-zinc-300">
+                We combine imported UIC course and grade history, professor reviews and matches, plus public campus information used by Sparky.
+              </p>
+              <div className="mt-7 grid border-y border-zinc-200 text-sm text-zinc-600 dark:border-white/10 dark:text-zinc-300 sm:grid-cols-2">
+                {["Course and grade history", "Professor reviews", "Course–instructor matches", "Campus reference material"].map((source, index) => (
+                  <div
+                    key={source}
+                    className={`py-3.5 ${index % 2 === 0 ? "sm:pr-6" : "sm:border-l sm:border-zinc-200 sm:pl-6 dark:sm:border-white/10"}`}
+                  >
+                    {source}
+                  </div>
                 ))}
-              </ul>
-            </section>
-          ))}
+              </div>
+            </div>
+          </section>
+
+          <section className="grid gap-5 py-10 sm:py-14 md:grid-cols-[5rem_1fr]">
+            <div className="text-sm font-bold tracking-[0.2em] text-red-500">02</div>
+            <div>
+              <h2 className="text-3xl font-bold tracking-[-0.035em] text-zinc-950 dark:text-white">How course numbers work</h2>
+              <p className="mt-4 max-w-3xl text-base leading-7 text-zinc-600 dark:text-zinc-300">
+                Every percentage names its denominator. If there are no usable outcomes, the page shows N/A.
+              </p>
+              <dl className="mt-7 border-t border-zinc-200 dark:border-white/10">
+                {courseMetrics.map(([term, description]) => (
+                  <div key={term} className="grid gap-1 border-b border-zinc-200 py-4 dark:border-white/10 sm:grid-cols-[11rem_1fr] sm:gap-6">
+                    <dt className="font-semibold text-zinc-950 dark:text-white">{term}</dt>
+                    <dd className="text-sm leading-6 text-zinc-600 dark:text-zinc-300">{description}</dd>
+                  </div>
+                ))}
+              </dl>
+            </div>
+          </section>
+
+          <section className="grid gap-5 py-10 sm:py-14 md:grid-cols-[5rem_1fr]">
+            <div className="text-sm font-bold tracking-[0.2em] text-red-500">03</div>
+            <div>
+              <h2 className="text-3xl font-bold tracking-[-0.035em] text-zinc-950 dark:text-white">Ratings and AI need context</h2>
+              <div className="mt-7 grid gap-8 lg:grid-cols-2 lg:gap-0">
+                <div className="lg:pr-10">
+                  <h3 className="text-lg font-semibold text-zinc-950 dark:text-white">Professor pages</h3>
+                  <p className="mt-3 text-sm leading-7 text-zinc-600 dark:text-zinc-300">
+                    Ratings, review count, department rank, and course history belong together. A high score with a tiny sample is a weaker signal.
+                  </p>
+                </div>
+                <div className="border-t border-zinc-200 pt-8 dark:border-white/10 lg:border-l lg:border-t-0 lg:pl-10 lg:pt-0 dark:lg:border-white/10">
+                  <h3 className="text-lg font-semibold text-zinc-950 dark:text-white">Sparky</h3>
+                  <p className="mt-3 text-sm leading-7 text-zinc-600 dark:text-zinc-300">
+                    Sparky connects the available evidence into a quick answer. Use the linked course and professor pages when you want the details behind it.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section className="grid gap-5 py-10 sm:py-14 md:grid-cols-[5rem_1fr]">
+            <div className="text-sm font-bold tracking-[0.2em] text-red-500">04</div>
+            <div>
+              <h2 className="text-3xl font-bold tracking-[-0.035em] text-zinc-950 dark:text-white">When to check UIC directly</h2>
+              <p className="mt-4 max-w-3xl text-base leading-7 text-zinc-600 dark:text-zinc-300">
+                Confirm deadlines, tuition and bills, degree requirements, immigration rules, and other policy decisions with an official UIC source.
+              </p>
+              <p className="mt-6 text-sm font-medium text-red-600 dark:text-red-300">
+                UIChicago helps you explore. Official UIC pages make the final call.
+              </p>
+            </div>
+          </section>
         </div>
       </div>
 
-      <SiteFooter className="mt-12" />
+      <SiteFooter />
     </main>
   );
 }

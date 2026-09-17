@@ -12,6 +12,7 @@ type PlannerProfileState = {
   currentSemesterNumber: number;
   honorsStudent: boolean;
   currentCourses: string[];
+  completedCourses: string[];
 };
 
 const STUDY_PROFILE_EVENT = "uichicago-study-profile-change";
@@ -26,6 +27,7 @@ function samePlannerProfile(a: PlannerProfileState, b: PlannerProfileState) {
     a.currentSemesterNumber === b.currentSemesterNumber &&
     a.honorsStudent === b.honorsStudent &&
     sameStringArray(a.currentCourses, b.currentCourses)
+    && sameStringArray(a.completedCourses, b.completedCourses)
   );
 }
 
@@ -36,11 +38,13 @@ export default function StudyPlannerPageClient() {
   const [profileCurrentCourses, setProfileCurrentCourses] = useState("");
   const [profileInterests, setProfileInterests] = useState<string[]>([]);
   const [profileStudyPreferences, setProfileStudyPreferences] = useState("");
+  const [profileSyncError, setProfileSyncError] = useState("");
   const [plannerProfile, setPlannerProfile] = useState<PlannerProfileState>({
     majorSlug: "",
     currentSemesterNumber: 0,
     honorsStudent: false,
     currentCourses: [],
+    completedCourses: [],
   });
 
   const syncLocalProfile = useCallback((profile: {
@@ -78,6 +82,9 @@ export default function StudyPlannerPageClient() {
           : Array.isArray(profile.currentCourses)
             ? profile.currentCourses
             : [],
+        completedCourses: Array.isArray(profile.plannerProfile?.completedCourses)
+          ? profile.plannerProfile.completedCourses
+          : [],
       };
 
       setPlannerProfile((current) => (samePlannerProfile(current, nextPlannerProfile) ? current : nextPlannerProfile));
@@ -114,6 +121,7 @@ export default function StudyPlannerPageClient() {
           cache: "no-store",
         });
         if (!response.ok) {
+          setProfileSyncError("Could not load your saved planner profile. This device's copy is still available.");
           setHasLoadedProfile(true);
           return;
         }
@@ -123,9 +131,11 @@ export default function StudyPlannerPageClient() {
 
         syncLocalProfile(payload.profile);
         writeLocalStudyProfile(payload.profile);
+        setProfileSyncError("");
 
         setHasLoadedProfile(true);
       } catch {
+        setProfileSyncError("Could not load your saved planner profile. This device's copy is still available.");
         setHasLoadedProfile(true);
         return;
       }
@@ -152,6 +162,9 @@ export default function StudyPlannerPageClient() {
       currentSemesterNumber: Number(overrides?.plannerProfile?.currentSemesterNumber ?? plannerProfile.currentSemesterNumber),
       honorsStudent: Boolean(overrides?.plannerProfile?.honorsStudent ?? plannerProfile.honorsStudent),
       currentCourses: Array.isArray(overrides?.plannerProfile?.currentCourses) ? overrides!.plannerProfile!.currentCourses! : plannerProfile.currentCourses,
+      completedCourses: Array.isArray(overrides?.plannerProfile?.completedCourses)
+        ? overrides.plannerProfile.completedCourses
+        : plannerProfile.completedCourses,
     };
 
     const localProfile = {
@@ -190,7 +203,9 @@ export default function StudyPlannerPageClient() {
         writeLocalStudyProfile(payload.profile);
         window.dispatchEvent(new CustomEvent(STUDY_PROFILE_EVENT, { detail: { profile: payload.profile } }));
       }
-    } catch {
+      setProfileSyncError("");
+    } catch (error) {
+      setProfileSyncError(error instanceof Error ? error.message : "Could not save your planner profile to your account.");
       return;
     }
   }, [plannerProfile, profileCurrentCourses, profileInterests, profileMajor, profileStudyPreferences, status, syncLocalProfile]);
@@ -201,8 +216,11 @@ export default function StudyPlannerPageClient() {
     setProfileCurrentCourses((current) => (current === nextCourses ? current : nextCourses));
   }, []);
 
-  const handlePlannerProfileChange = useCallback((next: PlannerProfileState) => {
-    setPlannerProfile((current) => (samePlannerProfile(current, next) ? current : next));
+  const handlePlannerProfileChange = useCallback((next: Omit<PlannerProfileState, "completedCourses">) => {
+    setPlannerProfile((current) => {
+      const merged = { ...next, completedCourses: current.completedCourses };
+      return samePlannerProfile(current, merged) ? current : merged;
+    });
   }, []);
 
   useEffect(() => {
@@ -217,6 +235,11 @@ export default function StudyPlannerPageClient() {
     <main className="min-h-screen bg-transparent pb-20 text-white">
       <div className="mx-auto max-w-[1280px] space-y-6 px-1 pb-16 pt-3 sm:px-2">
         <section className="rounded-[1.6rem] border border-white/10 bg-white/4 p-6">
+          {profileSyncError ? (
+            <p role="alert" className="mb-4 rounded-xl border border-rose-400/20 bg-rose-500/8 px-4 py-3 text-sm text-rose-200">
+              {profileSyncError}
+            </p>
+          ) : null}
           <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
             <div>
               <div className="inline-flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.22em] text-indigo-200">

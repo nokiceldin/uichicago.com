@@ -49,6 +49,21 @@ const proofStats = [
   { value: "460+", label: "student orgs mapped" },
 ];
 
+function SectionTransition({ label }: { label: string }) {
+  return (
+    <div className="px-6" aria-hidden="true">
+      <div className="mx-auto flex max-w-6xl items-center gap-4 py-5">
+        <div className="h-px flex-1 bg-linear-to-r from-transparent to-zinc-300 dark:to-white/15" />
+        <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-400 dark:text-zinc-600">
+          {label}
+          <span className="text-red-500">↓</span>
+        </div>
+        <div className="h-px flex-1 bg-linear-to-l from-transparent to-zinc-300 dark:to-white/15" />
+      </div>
+    </div>
+  );
+}
+
 export default function Home() {
   return (
     <main className="min-h-screen bg-white text-zinc-950 dark:bg-black dark:text-white">
@@ -195,7 +210,9 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="px-6 pb-6">
+      <SectionTransition label="See the pages behind the data" />
+
+      <section className="border-y border-zinc-200 bg-zinc-50/70 px-6 py-20 dark:border-white/8 dark:bg-zinc-950/55">
         <div className="mx-auto max-w-6xl">
           <div className="mb-8 max-w-2xl">
             <div className="text-xs font-bold uppercase tracking-[0.24em] text-red-500">Deep Pages</div>
@@ -211,7 +228,9 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="px-6 py-20">
+      <SectionTransition label="Bring the data together" />
+
+      <section className="bg-[radial-gradient(circle_at_top,rgba(239,68,68,0.05),transparent_28%)] px-6 py-20 dark:bg-[radial-gradient(circle_at_top,rgba(239,68,68,0.08),transparent_30%)]">
         <SparkyShowcase />
       </section>
 

@@ -56,15 +56,12 @@ const emptyProfile: ProfileFormState = {
 const STUDY_PROFILE_EVENT = "uichicago-study-profile-change";
 
 function serializeProfileForm(form: ProfileFormState) {
-  const unifiedCourses = Array.from(new Set([
-    ...parseCommaSeparated(form.currentCourses),
-    ...parseCommaSeparated(form.completedCourses),
-  ]));
   return JSON.stringify({
     school: form.school.trim(),
     major: form.major.trim(),
     majorSlug: form.majorSlug.trim(),
-    currentCourses: unifiedCourses,
+    currentCourses: parseCommaSeparated(form.currentCourses),
+    completedCourses: parseCommaSeparated(form.completedCourses),
     interests: parseCommaSeparated(form.interests),
     studyPreferences: form.studyPreferences.trim(),
     currentSemesterNumber: String(Number(form.currentSemesterNumber || "0")),
@@ -73,22 +70,20 @@ function serializeProfileForm(form: ProfileFormState) {
 }
 
 function formToStudyProfilePayload(form: ProfileFormState, settings?: SiteSettingsPayload) {
-  const unifiedCourses = Array.from(new Set([
-    ...parseCommaSeparated(form.currentCourses),
-    ...parseCommaSeparated(form.completedCourses),
-  ]));
+  const currentCourses = parseCommaSeparated(form.currentCourses);
+  const completedCourses = parseCommaSeparated(form.completedCourses);
   return {
     school: form.school.trim() || "UIC",
     major: form.major.trim(),
-    currentCourses: unifiedCourses,
+    currentCourses,
     interests: parseCommaSeparated(form.interests),
     studyPreferences: form.studyPreferences.trim(),
     plannerProfile: {
       majorSlug: form.majorSlug.trim() || undefined,
       currentSemesterNumber: Number(form.currentSemesterNumber || "0"),
       honorsStudent: Boolean(form.honorsStudent),
-      currentCourses: unifiedCourses,
-      completedCourses: [],
+      currentCourses,
+      completedCourses,
     },
     settings: settings ?? {},
   };
@@ -96,21 +91,8 @@ function formToStudyProfilePayload(form: ProfileFormState, settings?: SiteSettin
 
 export default function ProfilePageClient() {
   const { data: session, status } = useSession();
-  const [form, setForm] = useState<ProfileFormState>(() => {
-    const cached = typeof window !== "undefined" ? readLocalStudyProfile() : null;
-    if (!cached) return emptyProfile;
-    return {
-      school: cached.school || "UIC",
-      major: cached.major || "",
-      majorSlug: cached.plannerProfile.majorSlug || "",
-      currentCourses: Array.isArray(cached.currentCourses) ? cached.currentCourses.join(", ") : "",
-      completedCourses: "",
-      interests: Array.isArray(cached.interests) ? cached.interests.join(", ") : "",
-      studyPreferences: cached.studyPreferences || "",
-      currentSemesterNumber: String(Number(cached.plannerProfile.currentSemesterNumber || 0)),
-      honorsStudent: Boolean(cached.plannerProfile.honorsStudent),
-    };
-  });
+  const userId = session?.user?.id ?? null;
+  const [form, setForm] = useState<ProfileFormState>(emptyProfile);
   const [savedSnapshot, setSavedSnapshot] = useState(() => serializeProfileForm(form));
   const [isSaving, setIsSaving] = useState(false);
   const [loaded, setLoaded] = useState(false);
@@ -127,27 +109,7 @@ export default function ProfilePageClient() {
 
   // --- Avatar state ---
   type AvatarPayload = NonNullable<SiteSettingsPayload["avatar"]>;
-  const [avatar, setAvatar] = useState<AvatarPayload>(() => {
-    // Read from localStorage immediately so the profile page shows the right
-    // picture before the API response arrives (fixes the "wrong picture" flash).
-    if (typeof window !== "undefined") {
-      try {
-        const localSettings = readLocalSiteSettings();
-        if (localSettings.avatar?.type === "upload" && (localSettings.avatar as { type: "upload"; value?: string }).value) {
-          return localSettings.avatar as AvatarPayload;
-        }
-        if (localSettings.avatar?.type === "preset" && (localSettings.avatar as { type: "preset"; value?: string }).value) {
-          return localSettings.avatar as AvatarPayload;
-        }
-        if (localSettings.avatar?.type === "google") {
-          return localSettings.avatar as AvatarPayload;
-        }
-      } catch {
-        // ignore
-      }
-    }
-    return { type: "google" };
-  });
+  const [avatar, setAvatar] = useState<AvatarPayload>({ type: "google" });
   const [fallbackAvatar, setFallbackAvatar] = useState<string | null>(null);
   const [avatarPickerOpen, setAvatarPickerOpen] = useState(false);
   const [isAvatarSaving, setIsAvatarSaving] = useState(false);
@@ -158,7 +120,7 @@ export default function ProfilePageClient() {
     [avatar, fallbackAvatar],
   );
 
-  const broadcastStudyProfile = (profile: {
+  const broadcastStudyProfile = useCallback((profile: {
     school: string;
     major: string;
     currentCourses: string[];
@@ -175,19 +137,19 @@ export default function ProfilePageClient() {
   }) => {
     writeLocalStudyProfile({
       ...profile,
-      settings: profile.settings ?? readLocalSiteSettings(),
-    });
+      settings: profile.settings ?? readLocalSiteSettings(userId),
+    }, userId);
     window.dispatchEvent(new CustomEvent(STUDY_PROFILE_EVENT, { detail: { profile } }));
-  };
+  }, [userId]);
 
   const saveAvatarImmediately = async (newAvatar: AvatarPayload) => {
     // Always persist to localStorage immediately
-    const localSettings = readLocalSiteSettings();
+    const localSettings = readLocalSiteSettings(userId);
     const nextSettings = { ...localSettings, avatar: newAvatar };
-    writeLocalSiteSettings(nextSettings);
-    const cachedProfile = readLocalStudyProfile();
+    writeLocalSiteSettings(nextSettings, userId);
+    const cachedProfile = readLocalStudyProfile(userId);
     if (cachedProfile) {
-      writeLocalStudyProfile({ ...cachedProfile, settings: nextSettings });
+      writeLocalStudyProfile({ ...cachedProfile, settings: nextSettings }, userId);
       window.dispatchEvent(new CustomEvent(STUDY_PROFILE_EVENT, { detail: { profile: { ...cachedProfile, settings: nextSettings } } }));
     }
     window.dispatchEvent(new CustomEvent("uichicago-avatar-change", {
@@ -209,7 +171,6 @@ export default function ProfilePageClient() {
       const payload = await response.json().catch(() => null);
       if (response.ok) {
         const nextUrl = payload?.user?.avatarUrl ?? resolveAvatarUrl(newAvatar, fallbackAvatar) ?? null;
-        setFallbackAvatar(nextUrl);
         window.dispatchEvent(new CustomEvent("uichicago-avatar-change", { detail: { avatarUrl: nextUrl } }));
       }
     } catch {
@@ -321,21 +282,22 @@ export default function ProfilePageClient() {
     if (status !== "authenticated") return;
 
     let cancelled = false;
+    setLoaded(false);
 
     const loadProfile = async () => {
       try {
-        const response = await fetch("/api/study/me", { cache: "no-store" });
+        const response = await fetch("/api/study/me?scope=profile", { cache: "no-store" });
         const payload = await response.json().catch(() => null);
         if (!response.ok || cancelled || !payload) {
           if (!cancelled) {
-            const cached = readLocalStudyProfile();
+            const cached = readLocalStudyProfile(userId);
             if (cached) {
               const nextForm = {
                 school: cached.school || "UIC",
                 major: cached.major || "",
                 majorSlug: cached.plannerProfile.majorSlug || "",
                 currentCourses: Array.isArray(cached.currentCourses) ? cached.currentCourses.join(", ") : "",
-                completedCourses: "",
+                completedCourses: Array.isArray(cached.plannerProfile.completedCourses) ? cached.plannerProfile.completedCourses.join(", ") : "",
                 interests: Array.isArray(cached.interests) ? cached.interests.join(", ") : "",
                 studyPreferences: cached.studyPreferences || "",
                 currentSemesterNumber: String(Number(cached.plannerProfile.currentSemesterNumber || 0)),
@@ -354,17 +316,18 @@ export default function ProfilePageClient() {
         const rawMajor = payload.profile?.major || "";
         const rawMajorSlug = payload.profile?.plannerProfile?.majorSlug || "";
         // Auto-resolve slug if we already have majorOptions loaded
-        const resolvedSlug = resolveMajorSlug(rawMajor, rawMajorSlug, majorOptions);
+        const resolvedSlug = rawMajorSlug;
 
         const nextForm = {
           school: payload.profile?.school || "UIC",
           major: rawMajor,
           majorSlug: resolvedSlug,
-          currentCourses: Array.from(new Set([
-            ...(Array.isArray(payload.profile?.currentCourses) ? payload.profile.currentCourses : []),
-            ...(Array.isArray(payload.profile?.plannerProfile?.completedCourses) ? payload.profile.plannerProfile.completedCourses : []),
-          ])).join(", "),
-          completedCourses: "",
+          currentCourses: (Array.isArray(payload.profile?.plannerProfile?.currentCourses)
+            ? payload.profile.plannerProfile.currentCourses
+            : Array.isArray(payload.profile?.currentCourses) ? payload.profile.currentCourses : []).join(", "),
+          completedCourses: Array.isArray(payload.profile?.plannerProfile?.completedCourses)
+            ? payload.profile.plannerProfile.completedCourses.join(", ")
+            : "",
           interests: Array.isArray(payload.profile?.interests) ? payload.profile.interests.join(", ") : "",
           studyPreferences: payload.profile?.studyPreferences || "",
           currentSemesterNumber: String(Number(payload.profile?.plannerProfile?.currentSemesterNumber || 0)),
@@ -375,7 +338,7 @@ export default function ProfilePageClient() {
 
         // Load avatar: prefer DB value, fall back to localStorage
         const dbAvatar = payload.profile?.settings?.avatar;
-        const localSettings = readLocalSiteSettings();
+        const localSettings = readLocalSiteSettings(userId);
         const resolvedAvatar: AvatarPayload = (dbAvatar?.type === "upload" && dbAvatar.value)
           ? dbAvatar
           : (dbAvatar?.type === "preset" && dbAvatar.value)
@@ -387,13 +350,13 @@ export default function ProfilePageClient() {
           : (localSettings.avatar?.type === "preset" && localSettings.avatar.value)
           ? localSettings.avatar
           : { type: "google" };
-        const nextFallbackAvatar = payload.user?.avatarUrl ?? payload.user?.image ?? session?.user?.image ?? null;
+        const nextFallbackAvatar = payload.user?.image ?? session?.user?.image ?? null;
         setAvatar(resolvedAvatar as AvatarPayload);
         setFallbackAvatar(nextFallbackAvatar);
         setSavedProfessors(Array.isArray(payload.saved?.professors) ? payload.saved.professors : []);
         setSavedCourses(Array.isArray(payload.saved?.courses) ? payload.saved.courses : []);
         // Keep localStorage in sync with DB value
-        writeLocalSiteSettings({ ...localSettings, avatar: resolvedAvatar as AvatarPayload });
+        writeLocalSiteSettings({ ...localSettings, avatar: resolvedAvatar as AvatarPayload }, userId);
         broadcastStudyProfile({
           school: nextForm.school,
           major: nextForm.major,
@@ -425,7 +388,7 @@ export default function ProfilePageClient() {
     return () => {
       cancelled = true;
     };
-  }, [majorOptions, session?.user?.image, status]);
+  }, [broadcastStudyProfile, session?.user?.image, status, userId]);
 
   useEffect(() => {
     if (!message) return;
@@ -467,6 +430,7 @@ export default function ProfilePageClient() {
   }, [currentClassesOpen, currentCourseQuery]);
 
   const currentCoursesList = useMemo(() => parseCommaSeparated(form.currentCourses), [form.currentCourses]);
+  const completedCoursesList = useMemo(() => parseCommaSeparated(form.completedCourses), [form.completedCourses]);
   const hasUnsavedChanges = useMemo(() => serializeProfileForm(form) !== savedSnapshot, [form, savedSnapshot]);
   const selectedMajor = useMemo(
     () => majorOptions.find((option) => option.slug === form.majorSlug) ?? null,
@@ -504,7 +468,7 @@ export default function ProfilePageClient() {
   const addCourse = (field: "currentCourses" | "completedCourses", code: string) => {
     const trimmedCode = code.trim();
     if (!trimmedCode) return;
-    const existing = currentCoursesList;
+    const existing = field === "currentCourses" ? currentCoursesList : completedCoursesList;
     if (existing.includes(trimmedCode)) return;
     updateCourseField(field, [...existing, trimmedCode]);
     setCurrentCourseQuery("");
@@ -512,7 +476,7 @@ export default function ProfilePageClient() {
   };
 
   const removeCourse = (field: "currentCourses" | "completedCourses", code: string) => {
-    const existing = currentCoursesList;
+    const existing = field === "currentCourses" ? currentCoursesList : completedCoursesList;
     updateCourseField(field, existing.filter((course) => course !== code));
   };
 
@@ -532,7 +496,7 @@ export default function ProfilePageClient() {
     }
     if (!hasUnsavedChanges) return;
 
-    const localSettings = readLocalSiteSettings();
+    const localSettings = readLocalSiteSettings(userId);
     const resolvedMajorSlug = resolveMajorSlug(form.major, form.majorSlug, majorOptions);
 
     try {
@@ -558,10 +522,7 @@ export default function ProfilePageClient() {
         body: JSON.stringify({
           school: form.school,
           major: form.major,
-          currentCourses: Array.from(new Set([
-            ...parseCommaSeparated(form.currentCourses),
-            ...parseCommaSeparated(form.completedCourses),
-          ])),
+          currentCourses: parseCommaSeparated(form.currentCourses),
           interests: parseCommaSeparated(form.interests),
           studyPreferences: form.studyPreferences,
           settings: { ...localSettings, avatar },
@@ -569,11 +530,8 @@ export default function ProfilePageClient() {
             majorSlug: resolvedMajorSlug,
             currentSemesterNumber: Number(form.currentSemesterNumber || "0"),
             honorsStudent: form.honorsStudent,
-            currentCourses: Array.from(new Set([
-              ...parseCommaSeparated(form.currentCourses),
-              ...parseCommaSeparated(form.completedCourses),
-            ])),
-            completedCourses: [],
+            currentCourses: parseCommaSeparated(form.currentCourses),
+            completedCourses: parseCommaSeparated(form.completedCourses),
           },
         }),
       });
@@ -592,7 +550,9 @@ export default function ProfilePageClient() {
         currentCourses: Array.isArray(payload.profile?.currentCourses)
           ? payload.profile.currentCourses.join(", ")
           : form.currentCourses,
-        completedCourses: "",
+        completedCourses: Array.isArray(payload.profile?.plannerProfile?.completedCourses)
+          ? payload.profile.plannerProfile.completedCourses.join(", ")
+          : form.completedCourses,
         interests: Array.isArray(payload.profile?.interests)
           ? payload.profile.interests.join(", ")
           : form.interests,
@@ -603,8 +563,8 @@ export default function ProfilePageClient() {
       setForm(savedForm);
       setSavedSnapshot(serializeProfileForm(savedForm));
       // Sync avatar from server if returned
-      if (payload.user?.avatarUrl) {
-        setFallbackAvatar(payload.user.avatarUrl);
+      if (payload.user?.image) {
+        setFallbackAvatar(payload.user.image);
       }
       broadcastStudyProfile(payload.profile ?? {
         school: savedForm.school,
@@ -635,7 +595,7 @@ export default function ProfilePageClient() {
     } finally {
       setIsSaving(false);
     }
-  }, [avatar, form, hasUnsavedChanges, majorOptions, status]);
+  }, [avatar, broadcastStudyProfile, form, hasUnsavedChanges, majorOptions, status, userId]);
 
   useEffect(() => {
     if (status !== "authenticated" || !loaded || !hasUnsavedChanges || isSaving) return;

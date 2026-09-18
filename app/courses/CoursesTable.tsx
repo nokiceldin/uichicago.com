@@ -134,7 +134,6 @@ export default function CoursesTable({ courses, total, page, pageSize, sort, dep
 
   return (
     <main className="relative min-h-screen bg-zinc-50 text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100">
-      <div className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-72 bg-linear-to-b from-red-950/20 to-transparent dark:from-red-950/20 dark:to-transparent" />
       <div className="pointer-events-none absolute inset-0 -z-10 opacity-[0.02] dark:opacity-[0.015]" style={{ backgroundImage: "linear-gradient(rgba(0,0,0,0.4) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,0.4) 1px, transparent 1px)", backgroundSize: "48px 48px" }} />
 
       <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-12">
@@ -318,8 +317,9 @@ export default function CoursesTable({ courses, total, page, pageSize, sort, dep
             <div className="col-span-2 text-right">Enrollments</div>
             <div className="col-span-1 text-right">Save</div>
           </div>
-          <ul className="divide-y divide-zinc-100 dark:divide-white/4">
-            {visibleCourses.map((c) => {
+          <div className="max-h-[75vh] overflow-auto">
+            <ul className="divide-y divide-zinc-100 dark:divide-white/4">
+              {visibleCourses.map((c) => {
               const href = `/courses/${encodeURIComponent(c.subject)}/${encodeURIComponent(c.number)}`;
               const ec = c.difficultyScore != null ? easinessConfig(c.difficultyScore) : null;
               return (
@@ -363,14 +363,15 @@ export default function CoursesTable({ courses, total, page, pageSize, sort, dep
                   </div>
                 </li>
               );
-            })}
-            {visibleCourses.length === 0 && (
-              <li className="px-6 py-16 text-center">
-                <p className="text-zinc-400 text-sm">No courses found.</p>
-                <button onClick={clearAll} className="mt-3 text-sm text-red-500 hover:text-red-400 dark:text-red-500 dark:hover:text-red-400 transition-colors font-medium">Clear all filters →</button>
-              </li>
-            )}
-          </ul>
+              })}
+              {visibleCourses.length === 0 && (
+                <li className="px-6 py-16 text-center">
+                  <p className="text-zinc-400 text-sm">No courses found.</p>
+                  <button onClick={clearAll} className="mt-3 text-sm text-red-500 hover:text-red-400 dark:text-red-500 dark:hover:text-red-400 transition-colors font-medium">Clear all filters →</button>
+                </li>
+              )}
+            </ul>
+          </div>
         </div>
 
         <div className="mt-6 flex justify-center">

@@ -3,6 +3,7 @@ import HeroSearchBar from "./components/HeroSearchBar";
 import DeepPageShowcase from "./components/DeepPageShowcase";
 import SparkyShowcase from "./components/SparkyShowcase";
 import SiteFooter from "./components/SiteFooter";
+import LandingMotion from "./components/LandingMotion";
 
 const productPillars = [
   {
@@ -51,7 +52,7 @@ const proofStats = [
 
 function SectionTransition({ label }: { label: string }) {
   return (
-    <div className="px-6" aria-hidden="true">
+    <div className="landing-section-transition px-6" data-reveal="line" aria-hidden="true">
       <div className="mx-auto flex max-w-6xl items-center gap-4 py-5">
         <div className="h-px flex-1 bg-linear-to-r from-transparent to-zinc-300 dark:to-white/15" />
         <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-400 dark:text-zinc-600">
@@ -66,11 +67,12 @@ function SectionTransition({ label }: { label: string }) {
 
 export default function Home() {
   return (
-    <main className="min-h-screen bg-white text-zinc-950 dark:bg-black dark:text-white">
-      <section className="relative overflow-hidden border-b border-zinc-200/80 bg-[radial-gradient(circle_at_top,rgba(239,68,68,0.14),transparent_28%),radial-gradient(circle_at_80%_18%,rgba(56,189,248,0.10),transparent_24%),linear-gradient(180deg,#fff7f7_0%,#fff5f2_50%,#ffffff_100%)] px-4 pb-16 pt-14 text-zinc-950 dark:border-white/10 dark:bg-[radial-gradient(circle_at_top,rgba(239,68,68,0.18),transparent_26%),radial-gradient(circle_at_80%_20%,rgba(56,189,248,0.12),transparent_22%),linear-gradient(180deg,#0d0d10_0%,#120809_52%,#09090b_100%)] dark:text-white sm:px-6 sm:pb-20 sm:pt-20">
+    <main className="landing-page min-h-screen bg-white text-zinc-950 dark:bg-black dark:text-white">
+      <LandingMotion />
+      <section className="landing-hero relative overflow-hidden border-b border-zinc-200/80 bg-[radial-gradient(circle_at_top,rgba(239,68,68,0.14),transparent_28%),radial-gradient(circle_at_80%_18%,rgba(56,189,248,0.10),transparent_24%),linear-gradient(180deg,#fff7f7_0%,#fff5f2_50%,#ffffff_100%)] px-4 pb-16 pt-14 text-zinc-950 dark:border-white/10 dark:bg-[radial-gradient(circle_at_top,rgba(239,68,68,0.18),transparent_26%),radial-gradient(circle_at_80%_20%,rgba(56,189,248,0.12),transparent_22%),linear-gradient(180deg,#0d0d10_0%,#120809_52%,#09090b_100%)] dark:text-white sm:px-6 sm:pb-20 sm:pt-20 md:flex md:min-h-[calc(100svh-65px)] md:items-center">
         <div className="absolute inset-0 bg-[linear-gradient(rgba(15,23,42,0.04)_1px,transparent_1px),linear-gradient(90deg,rgba(15,23,42,0.04)_1px,transparent_1px)] bg-size-[42px_42px] opacity-[0.28] dark:bg-[linear-gradient(rgba(255,255,255,0.04)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.04)_1px,transparent_1px)] dark:opacity-[0.07]" />
-        <div className="relative mx-auto max-w-6xl">
-          <div className="max-w-4xl">
+        <div className="relative mx-auto w-full max-w-6xl">
+          <div className="landing-hero-content max-w-4xl">
             <div>
               <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-red-500/20 bg-white/70 px-4 py-1.5 text-xs font-bold uppercase tracking-[0.24em] text-red-600 shadow-sm dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-200">
                 UIChicago
@@ -141,11 +143,15 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="border-b border-zinc-200 bg-white px-4 py-7 dark:border-white/10 dark:bg-zinc-950 sm:px-6">
+      <section className="border-b border-zinc-200 bg-white px-4 py-7 dark:border-white/10 dark:bg-zinc-950 sm:px-6" data-reveal="section">
         <div className="mx-auto grid max-w-5xl grid-cols-1 gap-y-5 md:grid-cols-3">
           {proofStats.map((stat) => (
-            <div key={stat.label} className="text-center">
-              <div className="text-3xl font-black tracking-[-0.04em] text-zinc-950 dark:text-white">
+            <div key={stat.label} className="text-center" data-reveal="item" style={{ transitionDelay: `${proofStats.indexOf(stat) * 90}ms` }}>
+              <div
+                className="text-3xl font-black tracking-[-0.04em] text-zinc-950 dark:text-white"
+                data-count-value={stat.value.replace(/[^0-9]/g, "")}
+                data-count-suffix={stat.value.includes("+") ? "+" : ""}
+              >
                 {stat.value}
               </div>
               <div className="mt-1 text-xs font-medium uppercase tracking-[0.18em] text-zinc-500">
@@ -158,7 +164,7 @@ export default function Home() {
 
       <section className="px-6 py-20">
         <div className="mx-auto max-w-6xl">
-          <div className="mb-12 max-w-2xl">
+          <div className="mb-12 max-w-2xl" data-reveal="section">
             <div className="text-xs font-bold uppercase tracking-[0.24em] text-red-500">Three ways in</div>
             <h2 className="mt-3 text-4xl font-black tracking-[-0.04em] text-zinc-950 dark:text-white md:text-5xl">
               Start with data, then use AI when you need it.
@@ -173,8 +179,9 @@ export default function Home() {
               <Link
                 key={pillar.title}
                 href={pillar.href}
-                style={{ animationDelay: `${40 * (productPillars.indexOf(pillar) + 1)}ms` }}
-                className={`premium-card premium-fade-up group relative flex min-h-80 flex-col overflow-hidden rounded-[1.75rem] border border-zinc-200 bg-zinc-50 p-6 transition duration-300 hover:shadow-2xl dark:border-white/10 dark:bg-zinc-950 ${pillar.border}`}
+                style={{ transitionDelay: `${70 * (productPillars.indexOf(pillar) + 1)}ms` }}
+                data-reveal="item"
+                className={`premium-card group relative flex min-h-80 flex-col overflow-hidden rounded-[1.75rem] border border-zinc-200 bg-zinc-50 p-6 transition duration-300 hover:shadow-2xl dark:border-white/10 dark:bg-zinc-950 ${pillar.border}`}
               >
                 <div className={`absolute inset-x-0 top-0 h-40 bg-linear-to-b ${pillar.accent}`} />
                 <div className="relative">
@@ -214,7 +221,7 @@ export default function Home() {
 
       <section className="border-y border-zinc-200 bg-zinc-50/70 px-6 py-20 dark:border-white/8 dark:bg-zinc-950/55">
         <div className="mx-auto max-w-6xl">
-          <div className="mb-8 max-w-2xl">
+          <div className="mb-8 max-w-2xl" data-reveal="section">
             <div className="text-xs font-bold uppercase tracking-[0.24em] text-red-500">Deep Pages</div>
             <h2 className="mt-3 text-3xl font-black tracking-[-0.04em] text-zinc-950 dark:text-white md:text-4xl">
               Go deeper than search results.

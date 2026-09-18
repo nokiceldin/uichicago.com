@@ -12,3 +12,11 @@ export function studyLibraryStorageKey(owner: string) {
 export function studyFoldersStorageKey(owner: string) {
   return `${FOLDERS_BASE_KEY}:${owner}`;
 }
+
+export function clearLocalStudyStorage(userId: string) {
+  if (typeof window === "undefined") return;
+  const owner = studyStorageOwner(userId);
+  window.localStorage.removeItem(studyLibraryStorageKey(owner));
+  window.localStorage.removeItem(studyFoldersStorageKey(owner));
+  window.localStorage.removeItem(`uic-atlas-study-match-bests-v1:${owner}`);
+}

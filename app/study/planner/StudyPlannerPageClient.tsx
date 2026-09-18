@@ -33,6 +33,7 @@ function samePlannerProfile(a: PlannerProfileState, b: PlannerProfileState) {
 
 export default function StudyPlannerPageClient() {
   const { data: session, status } = useSession();
+  const userId = session?.user?.id ?? null;
   const [hasLoadedProfile, setHasLoadedProfile] = useState(false);
   const [profileMajor, setProfileMajor] = useState("");
   const [profileCurrentCourses, setProfileCurrentCourses] = useState("");
@@ -92,7 +93,8 @@ export default function StudyPlannerPageClient() {
   }, []);
 
   useEffect(() => {
-    syncLocalProfile(readLocalStudyProfile());
+    if (status === "loading") return;
+    syncLocalProfile(readLocalStudyProfile(userId));
 
     const handleStudyProfileChange = (event: Event) => {
       const customEvent = event as CustomEvent<{ profile?: {
@@ -103,12 +105,12 @@ export default function StudyPlannerPageClient() {
         studyPreferences?: string;
         plannerProfile?: Partial<PlannerProfileState>;
       } }>;
-      syncLocalProfile(customEvent.detail?.profile ?? readLocalStudyProfile());
+      syncLocalProfile(customEvent.detail?.profile ?? readLocalStudyProfile(userId));
     };
 
     window.addEventListener(STUDY_PROFILE_EVENT, handleStudyProfileChange);
     return () => window.removeEventListener(STUDY_PROFILE_EVENT, handleStudyProfileChange);
-  }, [syncLocalProfile]);
+  }, [status, syncLocalProfile, userId]);
 
   useEffect(() => {
     if (status !== "authenticated") return;
@@ -117,7 +119,7 @@ export default function StudyPlannerPageClient() {
 
     const loadStudyProfile = async () => {
       try {
-        const response = await fetch("/api/study/me", {
+        const response = await fetch("/api/study/me?scope=profile", {
           cache: "no-store",
         });
         if (!response.ok) {
@@ -130,7 +132,7 @@ export default function StudyPlannerPageClient() {
         if (cancelled) return;
 
         syncLocalProfile(payload.profile);
-        writeLocalStudyProfile(payload.profile);
+        writeLocalStudyProfile(payload.profile, userId);
         setProfileSyncError("");
 
         setHasLoadedProfile(true);
@@ -146,7 +148,7 @@ export default function StudyPlannerPageClient() {
     return () => {
       cancelled = true;
     };
-  }, [status, syncLocalProfile]);
+  }, [status, syncLocalProfile, userId]);
 
   const saveAcademicContext = useCallback(async (overrides?: {
     major?: string;
@@ -176,7 +178,7 @@ export default function StudyPlannerPageClient() {
       plannerProfile: nextPlannerProfile,
     };
 
-    writeLocalStudyProfile(localProfile);
+    writeLocalStudyProfile(localProfile, userId);
     window.dispatchEvent(new CustomEvent(STUDY_PROFILE_EVENT, { detail: { profile: localProfile } }));
 
     try {
@@ -200,7 +202,7 @@ export default function StudyPlannerPageClient() {
       const payload = await response.json().catch(() => null);
       if (payload?.profile) {
         syncLocalProfile(payload.profile);
-        writeLocalStudyProfile(payload.profile);
+        writeLocalStudyProfile(payload.profile, userId);
         window.dispatchEvent(new CustomEvent(STUDY_PROFILE_EVENT, { detail: { profile: payload.profile } }));
       }
       setProfileSyncError("");
@@ -208,7 +210,7 @@ export default function StudyPlannerPageClient() {
       setProfileSyncError(error instanceof Error ? error.message : "Could not save your planner profile to your account.");
       return;
     }
-  }, [plannerProfile, profileCurrentCourses, profileInterests, profileMajor, profileStudyPreferences, status, syncLocalProfile]);
+  }, [plannerProfile, profileCurrentCourses, profileInterests, profileMajor, profileStudyPreferences, status, syncLocalProfile, userId]);
 
   const handleProfileSync = useCallback((next: { major: string; currentCourses: string[] }) => {
     const nextCourses = next.currentCourses.join(", ");

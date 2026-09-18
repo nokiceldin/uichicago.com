@@ -662,7 +662,6 @@ export default function StudyLayout({ children }: { children: React.ReactNode })
 
             <div className="relative flex items-center gap-2">
               <button
-                data-tour="study-nav-create"
                 type="button"
                 onClick={(e) => { e.stopPropagation(); setPlusOpen((c) => !c); }}
                 className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-indigo-600 text-white shadow-[0_2px_8px_rgba(79,70,229,0.35)] transition hover:bg-indigo-500"

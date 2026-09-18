@@ -7,12 +7,15 @@ import { getSavedItemsForStudyUser } from "@/lib/saved-items";
 
 export const dynamic = "force-dynamic";
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
     const studyUser = await requireCurrentStudyUser();
+    const scope = new URL(request.url).searchParams.get("scope");
+    const includeWorkspace = scope !== "profile" && scope !== "settings";
+    const includeSaved = scope !== "settings";
     const [library, saved] = await Promise.all([
-      getStudyWorkspacePayload(studyUser.id),
-      getSavedItemsForStudyUser(studyUser.id),
+      includeWorkspace ? getStudyWorkspacePayload(studyUser.id) : Promise.resolve(null),
+      includeSaved ? getSavedItemsForStudyUser(studyUser.id) : Promise.resolve(null),
     ]);
     const preferences = parseStoredPreferences(studyUser.studyPreferences);
     const currentCourses = preferences.plannerProfile.currentCourses ?? studyUser.currentCourses ?? [];
@@ -23,7 +26,7 @@ export async function GET() {
       completedCourses,
     };
     const noteFolders = preferences.workspaceState.noteFolders ?? {};
-    const workspaceLibrary = {
+    const workspaceLibrary = library ? {
       ...library,
       sets: library.sets.map((set) => ({
         ...set,
@@ -36,7 +39,7 @@ export async function GET() {
       quizResults: preferences.workspaceState.quizResults ?? [],
       noteAudioSessions: preferences.workspaceState.noteAudioSessions ?? [],
       noteAiLogs: preferences.workspaceState.noteAiLogs ?? [],
-    };
+    } : null;
 
     return NextResponse.json({
       user: {
@@ -55,9 +58,8 @@ export async function GET() {
         plannerProfile,
         settings: preferences.settings,
       },
-      library: workspaceLibrary,
-      workspaceState: preferences.workspaceState,
-      saved,
+      ...(workspaceLibrary ? { library: workspaceLibrary, workspaceState: preferences.workspaceState } : {}),
+      ...(saved ? { saved } : {}),
     });
   } catch (error) {
     if (error instanceof Error && error.message === "UNAUTHORIZED") {

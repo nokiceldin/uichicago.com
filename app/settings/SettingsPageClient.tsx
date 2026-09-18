@@ -7,11 +7,14 @@ import {
   DEFAULT_THEME_MODE,
   SETTINGS_STORAGE_KEY,
   THEME_STORAGE_KEY,
+  clearLocalSiteSettingsForAccount,
   readLocalSiteSettings,
   writeLocalSiteSettings,
 } from "@/lib/site-settings";
 import ContactButton from "@/app/components/ContactButton";
 import type { SiteSettingsPayload, ThemeMode } from "@/lib/study/profile";
+import { clearLocalStudyProfile } from "@/lib/study/profile";
+import { clearLocalStudyStorage } from "@/lib/study/storage";
 
 function persistThemeLocally(themeMode: ThemeMode) {
   const existing = readLocalSiteSettings();
@@ -50,7 +53,7 @@ export default function SettingsPageClient() {
 
     const load = async () => {
       try {
-        const response = await fetch("/api/study/me", { cache: "no-store" });
+        const response = await fetch("/api/study/me?scope=settings", { cache: "no-store" });
         const payload = await response.json().catch(() => null);
         if (!response.ok || !payload || cancelled) return;
         const dbTheme: ThemeMode = payload.profile?.settings?.themeMode ?? DEFAULT_THEME_MODE;
@@ -118,6 +121,11 @@ export default function SettingsPageClient() {
 
       window.localStorage.removeItem(THEME_STORAGE_KEY);
       window.localStorage.removeItem(SETTINGS_STORAGE_KEY);
+      if (session?.user?.id) {
+        clearLocalSiteSettingsForAccount(session.user.id);
+        clearLocalStudyProfile(session.user.id);
+        clearLocalStudyStorage(session.user.id);
+      }
       window.dispatchEvent(new Event("uichicago-theme-change"));
       window.dispatchEvent(new Event("uichicago-settings-change"));
       await signOut({ callbackUrl: "/" });

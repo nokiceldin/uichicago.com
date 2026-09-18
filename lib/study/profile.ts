@@ -66,6 +66,10 @@ export type StudyProfileSnapshot = {
 
 export const STUDY_PROFILE_STORAGE_KEY = "uic-study-profile";
 
+function studyProfileStorageKey(userId?: string | null) {
+  return userId ? `${STUDY_PROFILE_STORAGE_KEY}:${encodeURIComponent(userId)}` : STUDY_PROFILE_STORAGE_KEY;
+}
+
 export function parseCommaSeparated(value: string) {
   return value
     .split(",")
@@ -157,11 +161,11 @@ export function normalizeStudyProfileSnapshot(profile: Partial<StudyProfileSnaps
   };
 }
 
-export function readLocalStudyProfile() {
+export function readLocalStudyProfile(userId?: string | null) {
   if (typeof window === "undefined") return null;
 
   try {
-    const raw = window.localStorage.getItem(STUDY_PROFILE_STORAGE_KEY);
+    const raw = window.localStorage.getItem(studyProfileStorageKey(userId));
     if (!raw) return null;
     return normalizeStudyProfileSnapshot(JSON.parse(raw) as Partial<StudyProfileSnapshot>);
   } catch {
@@ -169,11 +173,16 @@ export function readLocalStudyProfile() {
   }
 }
 
-export function writeLocalStudyProfile(profile: Partial<StudyProfileSnapshot> | null | undefined) {
+export function writeLocalStudyProfile(profile: Partial<StudyProfileSnapshot> | null | undefined, userId?: string | null) {
   if (typeof window === "undefined") return;
 
   const normalized = normalizeStudyProfileSnapshot(profile);
   if (!normalized) return;
 
-  window.localStorage.setItem(STUDY_PROFILE_STORAGE_KEY, JSON.stringify(normalized));
+  window.localStorage.setItem(studyProfileStorageKey(userId), JSON.stringify(normalized));
+}
+
+export function clearLocalStudyProfile(userId: string) {
+  if (typeof window === "undefined") return;
+  window.localStorage.removeItem(studyProfileStorageKey(userId));
 }

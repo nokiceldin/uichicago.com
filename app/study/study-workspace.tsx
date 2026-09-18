@@ -50,7 +50,6 @@ import { buildLearnQuestionBank, buildQuestionBank, buildStudySession, buildVali
 import { DEFAULT_STUDY_LIBRARY } from "@/lib/study/sample-data";
 import type { CardProgress, QuizQuestion, QuizResult, StructuredLectureNotes, StudyCard, StudyGroup, StudyLibraryState, StudyNote, StudySet, StudySurface } from "@/lib/study/types";
 import NotesWorkspace from "@/app/study/NotesWorkspace";
-import FeatureTour from "@/app/components/onboarding/FeatureTour";
 import MyPicksPanel from "@/app/components/loops/MyPicksPanel";
 import { estimateFlashcardCountFromText, parseExplicitFlashcardsFromText } from "@/lib/study/flashcard-parser";
 import { studyFoldersStorageKey, studyLibraryStorageKey, studyStorageOwner } from "@/lib/study/storage";
@@ -2641,33 +2640,6 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
           )}
         </section>
       )}
-      {surface === "home" && !libraryView && !folderFilter && screen !== "groups" ? (
-        <FeatureTour
-          storageKey="uichicago-tour-study-home-v1"
-          steps={[
-            {
-              targetId: "study-nav-search",
-              title: "Search across your study space",
-              description: "Use the top search to jump between your sets, folders, and notes without manually hunting for them.",
-            },
-            {
-              targetId: "study-nav-create",
-              title: "Create something quickly",
-              description: "The plus button opens fast actions for new sets, study guides, folders, and groups.",
-            },
-            {
-              targetId: "study-home-recents",
-              title: "Pick up where you left off",
-              description: "Your recent and active sets live here, so you can open a deck and continue studying in one click.",
-            },
-            {
-              targetId: "study-home-modes",
-              title: "Switch between study styles",
-              description: "Jump into flashcards, notes, or AI-generated study guides depending on how you want to prepare.",
-            },
-          ]}
-        />
-      ) : null}
       <div className="mx-auto max-w-7xl px-1 pb-16 pt-3 sm:px-2">
         {surface === "home" ? (
           <div className="space-y-6">
@@ -3113,7 +3085,7 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
                   )}
 
                   {/* ── SET RAIL ─────────────────────────────────────── */}
-                  <div data-tour="study-home-recents">
+                  <div>
                     {setList.length > 0 ? (
                       <>
                         <p className="mb-2.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-500">
@@ -3349,7 +3321,7 @@ export default function StudyWorkspace({ forcedSetId, standaloneSetView = false 
                   <MyPicksPanel />
 
                   {/* ── ACTION STRIP ──────────────────────────────────── */}
-                  <div className="flex gap-3" data-tour="study-home-modes">
+                  <div className="flex gap-3">
                     <button
                       onClick={() => router.push("/study/create?type=flashcards")}
                       className="atlas-action-strip-btn flex-1"

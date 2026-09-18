@@ -9,28 +9,23 @@ type AuthUserSeed = {
 };
 
 export async function ensureStudyUserForAuthUser(authUser: AuthUserSeed) {
-  const hasPersistedAuthUser = authUser.id
-    ? Boolean(
-        await prisma.user.findUnique({
-          where: { id: authUser.id },
-          select: { id: true },
-        }),
-      )
-    : false;
-  const byAuthId = hasPersistedAuthUser
-    ? await prisma.studyUser.findUnique({
-        where: { authUserId: authUser.id },
-      })
-    : null;
+  // JWT sessions do not require a row in auth_users. Keep a stable, unique
+  // link to the provider identity in sessionKey so every request resolves the
+  // same StudyUser without an auth_users lookup and an unnecessary update.
+  const bySessionKey = await prisma.studyUser.findUnique({
+    where: { sessionKey: authUser.id },
+  });
 
-  if (byAuthId) {
+  if (bySessionKey) {
+    const nextEmail = authUser.email ?? bySessionKey.email;
+    const nextName = authUser.name ?? bySessionKey.displayName;
+    const nextImage = authUser.image ?? bySessionKey.image;
+    if (nextEmail === bySessionKey.email && nextName === bySessionKey.displayName && nextImage === bySessionKey.image) {
+      return bySessionKey;
+    }
     return prisma.studyUser.update({
-      where: { id: byAuthId.id },
-      data: {
-        email: authUser.email ?? byAuthId.email,
-        displayName: authUser.name ?? byAuthId.displayName,
-        image: authUser.image ?? byAuthId.image,
-      },
+      where: { id: bySessionKey.id },
+      data: { email: nextEmail, displayName: nextName, image: nextImage },
     });
   }
 
@@ -43,7 +38,7 @@ export async function ensureStudyUserForAuthUser(authUser: AuthUserSeed) {
       return prisma.studyUser.update({
         where: { id: byEmail.id },
         data: {
-          authUserId: hasPersistedAuthUser ? authUser.id : byEmail.authUserId,
+          sessionKey: authUser.id,
           displayName: authUser.name ?? byEmail.displayName,
           image: authUser.image ?? byEmail.image,
         },
@@ -54,7 +49,7 @@ export async function ensureStudyUserForAuthUser(authUser: AuthUserSeed) {
   try {
     return await prisma.studyUser.create({
       data: {
-        authUserId: hasPersistedAuthUser ? authUser.id : null,
+        sessionKey: authUser.id,
         email: authUser.email,
         displayName: authUser.name,
         image: authUser.image,
@@ -68,7 +63,7 @@ export async function ensureStudyUserForAuthUser(authUser: AuthUserSeed) {
 
     const recovered =
       (await prisma.studyUser.findUnique({
-        where: { authUserId: authUser.id },
+        where: { sessionKey: authUser.id },
       })) ||
       (authUser.email
         ? await prisma.studyUser.findUnique({
@@ -83,7 +78,7 @@ export async function ensureStudyUserForAuthUser(authUser: AuthUserSeed) {
     return prisma.studyUser.update({
       where: { id: recovered.id },
       data: {
-        authUserId: hasPersistedAuthUser ? authUser.id : recovered.authUserId,
+        sessionKey: authUser.id,
         email: authUser.email ?? recovered.email,
         displayName: authUser.name ?? recovered.displayName,
         image: authUser.image ?? recovered.image,

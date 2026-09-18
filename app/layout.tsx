@@ -7,6 +7,7 @@ import { Analytics } from "@vercel/analytics/react"
 import Navbar from "./components/Navbar"
 import ThemeInit from "./components/ThemeInit"
 import AuthProvider from "./components/auth/AuthProvider"
+import { getCurrentSession } from "@/lib/auth/session"
 import WebsiteFeedbackPrompt from "./components/WebsiteFeedbackPrompt"
 import { Inter } from "next/font/google";
 const inter = Inter({ subsets: ["latin"] });
@@ -31,11 +32,12 @@ export const metadata: Metadata = {
   },
 }
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const session = await getCurrentSession();
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${inter.className} ${geistSans.variable} ${geistMono.variable}`}>
-        <AuthProvider>
+        <AuthProvider session={session}>
           <ThemeInit />
           <Suspense fallback={null}>
             <Navbar />

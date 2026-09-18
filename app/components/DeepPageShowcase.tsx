@@ -108,10 +108,11 @@ export default function DeepPageShowcase() {
   }, []);
 
   return (
-    <div className="grid gap-5 lg:grid-cols-2">
+    <div className="grid gap-5 lg:grid-cols-2" data-reveal="section">
       <Link
         href={activeCourse.slug}
-        className="premium-card premium-fade-up group relative overflow-hidden rounded-[1.75rem] border border-zinc-300 bg-white p-5 shadow-[0_18px_42px_rgba(15,23,42,0.08)] transition duration-300 hover:border-emerald-400/35 hover:shadow-xl dark:border-white/10 dark:bg-zinc-950"
+        data-reveal="item"
+        className="premium-card group relative overflow-hidden rounded-[1.75rem] border border-zinc-300 bg-white p-5 shadow-[0_18px_42px_rgba(15,23,42,0.08)] transition duration-300 hover:border-emerald-400/35 hover:shadow-xl dark:border-white/10 dark:bg-zinc-950"
       >
         <div className={`absolute inset-x-0 top-0 h-24 ${
           activeCourse.accent === "emerald"
@@ -203,7 +204,9 @@ export default function DeepPageShowcase() {
 
       <Link
         href={activeProfessor.slug}
-        className="premium-card premium-fade-up group relative overflow-hidden rounded-[1.75rem] border border-zinc-300 bg-white p-5 shadow-[0_18px_42px_rgba(15,23,42,0.08)] transition duration-300 hover:border-sky-400/35 hover:shadow-xl dark:border-white/10 dark:bg-zinc-950"
+        data-reveal="item"
+        style={{ transitionDelay: "100ms" }}
+        className="premium-card group relative overflow-hidden rounded-[1.75rem] border border-zinc-300 bg-white p-5 shadow-[0_18px_42px_rgba(15,23,42,0.08)] transition duration-300 hover:border-sky-400/35 hover:shadow-xl dark:border-white/10 dark:bg-zinc-950"
       >
         <div className="absolute inset-x-0 top-0 h-24 bg-linear-to-b from-sky-500/18 via-sky-500/7 to-transparent" />
         <div className="relative">

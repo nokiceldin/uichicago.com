@@ -113,8 +113,8 @@ export default function SparkyShowcase() {
   );
 
   return (
-    <div className="mx-auto grid max-w-6xl gap-10 lg:grid-cols-[1.08fr_0.92fr]">
-      <div>
+    <div className="mx-auto grid max-w-6xl gap-10 lg:grid-cols-[1.08fr_0.92fr]" data-reveal="section">
+      <div data-reveal="item">
         <div className="text-xs font-bold uppercase tracking-[0.24em] text-red-500">See Sparky In Action</div>
         <h2 className="mt-3 text-4xl font-black tracking-[-0.04em] text-zinc-950 dark:text-white">
           Sparky becomes the intelligent layer.
@@ -176,15 +176,16 @@ export default function SparkyShowcase() {
         </div>
       </div>
 
-      <div className="space-y-4">
+      <div className="space-y-4" data-reveal="item" style={{ transitionDelay: "100ms" }}>
         <div className="text-xs font-bold uppercase tracking-[0.22em] text-zinc-500">Try questions like</div>
         <div className="grid gap-3">
           {visiblePrompts.map((item) => (
             <Link
               key={item.tag}
               href={`/chat?q=${encodeURIComponent(item.question)}`}
-              style={{ animationDelay: `${45 * (visiblePrompts.indexOf(item) + 1)}ms` }}
-              className="premium-card premium-fade-up rounded-[1.2rem] border border-zinc-300 bg-white p-4 shadow-[0_10px_28px_rgba(15,23,42,0.05)] transition hover:border-red-400/40 hover:bg-white hover:shadow-lg dark:border-white/10 dark:bg-[rgba(15,17,22,0.75)] dark:hover:bg-[rgba(19,22,28,0.92)]"
+              style={{ transitionDelay: `${150 + 65 * (visiblePrompts.indexOf(item) + 1)}ms` }}
+              data-reveal="item"
+              className="premium-card rounded-[1.2rem] border border-zinc-300 bg-white p-4 shadow-[0_10px_28px_rgba(15,23,42,0.05)] transition hover:border-red-400/40 hover:bg-white hover:shadow-lg dark:border-white/10 dark:bg-[rgba(15,17,22,0.75)] dark:hover:bg-[rgba(19,22,28,0.92)]"
             >
               <div className="inline-flex items-center gap-2 rounded-full border border-red-300/50 bg-red-50 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-red-600 dark:border-red-400/30 dark:bg-red-400/16 dark:text-red-200">
                 <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-white/10 text-[13px] not-italic leading-none">

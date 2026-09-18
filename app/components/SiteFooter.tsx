@@ -33,10 +33,6 @@ export default function SiteFooter({ className = "" }: SiteFooterProps) {
             />
           </div>
         </div>
-
-        <div className="mt-6 border-t border-zinc-200 pt-4 text-center text-[11px] tracking-[0.12em] text-zinc-500 dark:border-white/10 sm:text-left">
-          Student-built, unofficial, and transparent about sources
-        </div>
       </div>
     </footer>
   );

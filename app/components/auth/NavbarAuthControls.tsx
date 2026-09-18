@@ -5,18 +5,15 @@ import { ChevronDown, LayoutDashboard, LogOut, Settings, UserRound } from "lucid
 import { signIn, signOut, useSession } from "next-auth/react";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { getPresetAvatarUrl, readLocalSiteSettings, resolveAvatarUrl } from "@/lib/site-settings";
+import { getPresetAvatarUrl } from "@/lib/site-settings";
+import { useAccountIdentity } from "./AuthProvider";
 
 export default function NavbarAuthControls() {
   const pathname = usePathname();
   const { data: session, status } = useSession();
+  const { avatarUrl, isAdmin } = useAccountIdentity();
   const [open, setOpen] = useState(false);
-  const [isAdmin, setIsAdmin] = useState(false);
   const menuRef = useRef<HTMLDivElement | null>(null);
-  const [avatarUrl, setAvatarUrl] = useState<string | null>(() => {
-    const localSettings = typeof window !== "undefined" ? readLocalSiteSettings() : {};
-    return resolveAvatarUrl(localSettings.avatar, session?.user?.image ?? null);
-  });
 
   useEffect(() => {
     if (!open) return;
@@ -30,76 +27,6 @@ export default function NavbarAuthControls() {
     window.addEventListener("pointerdown", handlePointerDown);
     return () => window.removeEventListener("pointerdown", handlePointerDown);
   }, [open]);
-
-  useEffect(() => {
-    const sessionUser = session?.user;
-    if (!sessionUser) return;
-
-    let cancelled = false;
-
-    const loadAvatar = async () => {
-      try {
-        const response = await fetch("/api/study/me", { cache: "no-store" });
-        const payload = await response.json().catch(() => null);
-        if (!response.ok || !payload || cancelled) {
-          const localSettings = readLocalSiteSettings();
-          setAvatarUrl(resolveAvatarUrl(localSettings.avatar, sessionUser.image ?? null));
-          return;
-        }
-
-        setAvatarUrl(payload.user?.avatarUrl ?? sessionUser.image ?? null);
-      } catch {
-        if (!cancelled) {
-          const localSettings = readLocalSiteSettings();
-          setAvatarUrl(resolveAvatarUrl(localSettings.avatar, sessionUser.image ?? null));
-        }
-      }
-    };
-
-    void loadAvatar();
-
-    const refreshAvatar = () => void loadAvatar();
-    const applySavedAvatar = (event: Event) => {
-      const nextAvatarUrl = (event as CustomEvent<{ avatarUrl?: string | null }>).detail?.avatarUrl;
-      if (typeof nextAvatarUrl !== "undefined") {
-        setAvatarUrl(nextAvatarUrl ?? resolveAvatarUrl(readLocalSiteSettings().avatar, sessionUser.image ?? null));
-        return;
-      }
-      void loadAvatar();
-    };
-
-    window.addEventListener("uichicago-settings-change", refreshAvatar);
-    window.addEventListener("uichicago-avatar-change", applySavedAvatar as EventListener);
-
-    return () => {
-      cancelled = true;
-      window.removeEventListener("uichicago-settings-change", refreshAvatar);
-      window.removeEventListener("uichicago-avatar-change", applySavedAvatar as EventListener);
-    };
-  }, [session?.user]);
-
-  useEffect(() => {
-    if (!session?.user) return;
-
-    let cancelled = false;
-
-    const loadAdminState = async () => {
-      try {
-        const response = await fetch("/api/admin/me", { cache: "no-store" });
-        const payload = await response.json().catch(() => null);
-        if (!cancelled) {
-          setIsAdmin(Boolean(payload?.isAdmin));
-        }
-      } catch {
-        if (!cancelled) setIsAdmin(false);
-      }
-    };
-
-    void loadAdminState();
-    return () => {
-      cancelled = true;
-    };
-  }, [session?.user]);
 
   if (status === "loading") {
     return <div className="h-10 w-28 rounded-full border border-zinc-200 bg-zinc-100/80 dark:border-white/10 dark:bg-white/5" />;

@@ -2,6 +2,7 @@ import type { AvatarSelectionPayload, SiteSettingsPayload, ThemeMode, ThemeSched
 
 export const THEME_STORAGE_KEY = "uichicago_theme_settings";
 export const SETTINGS_STORAGE_KEY = "uichicago_site_settings";
+export const ACCOUNT_SETTINGS_STORAGE_PREFIX = "uichicago_account_settings";
 
 export const DEFAULT_THEME_MODE: ThemeMode = "dark";
 
@@ -219,22 +220,50 @@ export function resolveAvatarUrl(selection: AvatarSelectionPayload | undefined, 
   return fallbackImage ?? null;
 }
 
-export function readLocalSiteSettings() {
+function accountSettingsKey(userId: string) {
+  return `${ACCOUNT_SETTINGS_STORAGE_PREFIX}:${encodeURIComponent(userId)}`;
+}
+
+export function readLocalSiteSettings(userId?: string | null) {
   if (typeof window === "undefined") {
     return {} as SiteSettingsPayload;
   }
 
   try {
     const raw = window.localStorage.getItem(SETTINGS_STORAGE_KEY);
-    if (!raw) return {} as SiteSettingsPayload;
-    const parsed = JSON.parse(raw) as SiteSettingsPayload;
-    return typeof parsed === "object" && parsed ? parsed : ({} as SiteSettingsPayload);
+    const parsed = raw ? JSON.parse(raw) as SiteSettingsPayload : {};
+    const deviceSettings = typeof parsed === "object" && parsed ? parsed : ({} as SiteSettingsPayload);
+    if (!userId) return deviceSettings;
+
+    const accountRaw = window.localStorage.getItem(accountSettingsKey(userId));
+    if (!accountRaw) return { ...deviceSettings, avatar: undefined };
+    const accountSettings = JSON.parse(accountRaw) as SiteSettingsPayload;
+    return {
+      ...deviceSettings,
+      avatar: accountSettings && typeof accountSettings === "object" ? accountSettings.avatar : undefined,
+    };
   } catch {
     return {} as SiteSettingsPayload;
   }
 }
 
-export function writeLocalSiteSettings(settings: SiteSettingsPayload) {
+export function writeLocalSiteSettings(settings: SiteSettingsPayload, userId?: string | null) {
   if (typeof window === "undefined") return;
-  window.localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(settings));
+  if (!userId) {
+    window.localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(settings));
+    return;
+  }
+
+  const { avatar, ...deviceSettings } = settings;
+  const currentDeviceSettings = readLocalSiteSettings();
+  window.localStorage.setItem(
+    SETTINGS_STORAGE_KEY,
+    JSON.stringify({ ...currentDeviceSettings, ...deviceSettings, avatar: undefined }),
+  );
+  window.localStorage.setItem(accountSettingsKey(userId), JSON.stringify({ avatar }));
+}
+
+export function clearLocalSiteSettingsForAccount(userId: string) {
+  if (typeof window === "undefined") return;
+  window.localStorage.removeItem(accountSettingsKey(userId));
 }

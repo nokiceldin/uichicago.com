@@ -1,8 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { usePathname } from "next/navigation";
-import { DEFAULT_THEME_MODE, DEFAULT_THEME_SCHEDULE, SETTINGS_STORAGE_KEY, THEME_STORAGE_KEY, resolveEffectiveTheme, shouldForceDarkTheme } from "@/lib/site-settings";
+import { DEFAULT_THEME_MODE, SETTINGS_STORAGE_KEY, THEME_STORAGE_KEY, resolveEffectiveTheme } from "@/lib/site-settings";
 import type { SiteSettingsPayload } from "@/lib/study/profile";
 
 function readStoredThemeSettings(): SiteSettingsPayload {
@@ -11,7 +10,6 @@ function readStoredThemeSettings(): SiteSettingsPayload {
     if (!raw) {
       return {
         themeMode: DEFAULT_THEME_MODE,
-        themeSchedule: DEFAULT_THEME_SCHEDULE,
       };
     }
 
@@ -22,12 +20,11 @@ function readStoredThemeSettings(): SiteSettingsPayload {
   }
 }
 
-function applyDocumentTheme(pathname: string | null, settings?: SiteSettingsPayload) {
+function applyDocumentTheme(settings?: SiteSettingsPayload) {
   const root = document.documentElement;
-  const forcedDark = shouldForceDarkTheme(pathname);
-  const effective = forcedDark ? "dark" : resolveEffectiveTheme(settings);
+  const effective = resolveEffectiveTheme(settings);
 
-  root.dataset.themeMode = settings?.themeMode ?? DEFAULT_THEME_MODE;
+  root.dataset.themeMode = effective;
   root.dataset.themeEffective = effective;
 
   if (effective === "dark") root.classList.add("dark");
@@ -35,28 +32,21 @@ function applyDocumentTheme(pathname: string | null, settings?: SiteSettingsPayl
 }
 
 export default function ThemeInit() {
-  const pathname = usePathname();
-
   useEffect(() => {
     const syncTheme = () => {
-      applyDocumentTheme(pathname, readStoredThemeSettings());
+      applyDocumentTheme(readStoredThemeSettings());
     };
 
     syncTheme();
 
-    const media = window.matchMedia("(prefers-color-scheme: dark)");
-    const intervalId = window.setInterval(syncTheme, 60_000);
-    media.addEventListener("change", syncTheme);
     window.addEventListener("storage", syncTheme);
     window.addEventListener("uichicago-theme-change", syncTheme as EventListener);
 
     return () => {
-      window.clearInterval(intervalId);
-      media.removeEventListener("change", syncTheme);
       window.removeEventListener("storage", syncTheme);
       window.removeEventListener("uichicago-theme-change", syncTheme as EventListener);
     };
-  }, [pathname]);
+  }, []);
 
   return null;
 }

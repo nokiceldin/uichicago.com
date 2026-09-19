@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { requireCurrentStudyUser } from "@/lib/auth/session";
 import { getStudyWorkspacePayload } from "@/lib/study/server";
 import { parseStoredPreferences, serializeStoredPreferences, type PlannerProfilePayload, type SiteSettingsPayload, type StudyWorkspaceStatePayload } from "@/lib/study/profile";
-import { resolveAvatarUrl } from "@/lib/site-settings";
+import { getResolvedThemeMode, resolveAvatarUrl } from "@/lib/site-settings";
 import { getSavedItemsForStudyUser } from "@/lib/saved-items";
 
 export const dynamic = "force-dynamic";
@@ -56,7 +56,10 @@ export async function GET(request: Request) {
         interests: studyUser.interests ?? [],
         studyPreferences: preferences.notes,
         plannerProfile,
-        settings: preferences.settings,
+        settings: {
+          themeMode: getResolvedThemeMode(preferences.settings),
+          avatar: preferences.settings.avatar,
+        },
       },
       ...(workspaceLibrary ? { library: workspaceLibrary, workspaceState: preferences.workspaceState } : {}),
       ...(saved ? { saved } : {}),
@@ -115,12 +118,12 @@ export async function PATCH(request: Request) {
         : existingCompletedCourses,
     };
     const nextSettings: SiteSettingsPayload = {
-      ...existingPreferences.settings,
-      ...(typeof body.settings === "object" && body.settings ? body.settings : {}),
-      themeSchedule: {
-        ...existingPreferences.settings.themeSchedule,
-        ...(typeof body.settings?.themeSchedule === "object" && body.settings?.themeSchedule ? body.settings.themeSchedule : {}),
-      },
+      themeMode: getResolvedThemeMode({
+        themeMode:
+          body.settings?.themeMode === "light" || body.settings?.themeMode === "dark"
+            ? body.settings.themeMode
+            : existingPreferences.settings.themeMode,
+      }),
       avatar:
         typeof body.settings?.avatar === "object" && body.settings?.avatar
           ? body.settings.avatar

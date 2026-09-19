@@ -355,7 +355,6 @@ export default function StudyLayout({ children }: { children: React.ReactNode })
   ];
 
   const studyItems = [
-    { href: "/study/planner", label: "Degree planner", icon: <Target className="h-4 w-4" />, active: onPlanner },
     { href: "/study/create?type=flashcards", label: "Flashcards", icon: <BookOpen className="h-4 w-4" />, active: onFlashcards },
     { href: "/study?mode=notes", label: "Notes", icon: <FileText className="h-4 w-4" />, active: onNotes },
     { href: "/study/create?type=guide", label: "Study guides", icon: <Sparkles className="h-4 w-4" />, active: onStudyGuides },
@@ -370,7 +369,6 @@ export default function StudyLayout({ children }: { children: React.ReactNode })
         { label: "Flashcard set", icon: <BookOpen className="h-3.5 w-3.5 text-indigo-400" />, href: "/study/create?type=flashcards" },
         { label: "Study guide", icon: <Sparkles className="h-3.5 w-3.5 text-violet-400" />, href: "/study/create?type=guide" },
         { label: "Notes", icon: <FileText className="h-3.5 w-3.5 text-emerald-400" />, href: "/study?mode=notes" },
-        { label: "Degree planner", icon: <Target className="h-3.5 w-3.5 text-sky-400" />, href: "/study/planner" },
       ].map((item) => (
         <button key={item.label} onClick={() => openFromPlus(item.href)} className="flex w-full items-center gap-2.5 px-3 py-2 text-left text-[13px] font-medium text-slate-300 transition hover:bg-white/5 hover:text-white">
           {item.icon}
@@ -548,6 +546,39 @@ export default function StudyLayout({ children }: { children: React.ReactNode })
           {studyItems.map((item) => renderSidebarItem(item, compact, mobile ? closeMenu : undefined))}
         </div>
       </div>
+
+      {/* Early-access tools stay visually separate from the public toolset. */}
+      <div className="mt-auto px-2 pt-6">
+        {!compact ? (
+          <div className="mb-2 px-2.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-600">
+            Preview
+          </div>
+        ) : (
+          <div className="my-3 mx-auto h-px w-6 bg-white/8" />
+        )}
+        <Link
+          href="/study/planner"
+          onClick={mobile ? closeMenu : undefined}
+          title={compact ? "Degree planner · Preview" : undefined}
+          className={`group flex items-center rounded-xl border transition-colors ${
+            compact ? "justify-center border-white/6 bg-white/[0.025] p-2.5" : "gap-2.5 border-dashed border-white/8 bg-white/[0.025] px-2.5 py-2.5"
+          } ${
+            onPlanner
+              ? "border-indigo-400/25 bg-indigo-500/8 text-slate-200"
+              : "text-slate-500 hover:border-white/14 hover:bg-white/5 hover:text-slate-300"
+          }`}
+        >
+          <Target className={`h-4 w-4 shrink-0 ${onPlanner ? "text-indigo-400" : "text-slate-600 group-hover:text-slate-400"}`} />
+          {!compact ? (
+            <>
+              <span className="truncate text-[13px] font-medium">Degree planner</span>
+              <span className="ml-auto rounded-full border border-white/8 bg-white/4 px-2 py-0.5 text-[9px] font-semibold uppercase tracking-[0.1em] text-slate-500">
+                Preview
+              </span>
+            </>
+          ) : null}
+        </Link>
+      </div>
     </>
   );
 
@@ -640,6 +671,7 @@ export default function StudyLayout({ children }: { children: React.ReactNode })
             <button
               type="button"
               onClick={() => setMenuOpen(true)}
+              aria-label="Open My School navigation"
               className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-slate-400 transition hover:bg-white/6 hover:text-white lg:hidden"
             >
               <Menu className="h-4 w-4" />
@@ -649,6 +681,7 @@ export default function StudyLayout({ children }: { children: React.ReactNode })
             <button
               type="button"
               onClick={() => setSidebarExpanded((c) => !c)}
+              aria-label={sidebarExpanded ? "Collapse My School sidebar" : "Expand My School sidebar"}
               className="hidden h-9 w-9 items-center justify-center rounded-lg text-slate-500 transition hover:bg-white/6 hover:text-slate-300 lg:inline-flex"
             >
               <Menu className="h-4 w-4" />
@@ -664,6 +697,9 @@ export default function StudyLayout({ children }: { children: React.ReactNode })
               <button
                 type="button"
                 onClick={(e) => { e.stopPropagation(); setPlusOpen((c) => !c); }}
+                aria-label="Create new study material"
+                aria-expanded={plusOpen}
+                aria-haspopup="menu"
                 className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-indigo-600 text-white shadow-[0_2px_8px_rgba(79,70,229,0.35)] transition hover:bg-indigo-500"
               >
                 <Plus className="h-4 w-4" />

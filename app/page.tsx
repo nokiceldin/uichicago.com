@@ -237,7 +237,7 @@ export default function Home() {
 
       <SectionTransition label="Bring the data together" />
 
-      <section className="bg-[radial-gradient(circle_at_top,rgba(239,68,68,0.05),transparent_28%)] px-6 py-20 dark:bg-[radial-gradient(circle_at_top,rgba(239,68,68,0.08),transparent_30%)]">
+      <section className="bg-[radial-gradient(circle_at_top,rgba(239,68,68,0.025),transparent_28%)] px-6 py-20 dark:bg-[radial-gradient(circle_at_top,rgba(239,68,68,0.035),transparent_30%)]">
         <SparkyShowcase />
       </section>
 

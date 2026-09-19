@@ -2,7 +2,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { DEFAULT_THEME_SCHEDULE, THEME_STORAGE_KEY } from "@/lib/site-settings";
+import { THEME_STORAGE_KEY } from "@/lib/site-settings";
 
 type Theme = "light" | "dark"
 
@@ -11,10 +11,7 @@ function applyTheme(next: Theme) {
   else document.documentElement.classList.remove("dark")
   localStorage.setItem(
     THEME_STORAGE_KEY,
-    JSON.stringify({
-      themeMode: next,
-      themeSchedule: DEFAULT_THEME_SCHEDULE,
-    }),
+    JSON.stringify({ themeMode: next }),
   )
   window.dispatchEvent(new Event("uichicago-theme-change"))
 }

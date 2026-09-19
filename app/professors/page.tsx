@@ -300,7 +300,7 @@ function ProfessorsPageContent() {
           <div className="flex items-center gap-3 overflow-x-auto pb-1 sm:flex-wrap sm:overflow-visible">
             <button className={navBtn} onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1 || loading}>← Prev</button>
             <div className="inline-flex h-9 items-center rounded-xl border border-zinc-200 bg-white px-4 text-sm font-medium text-zinc-600 dark:border-white/10 dark:bg-zinc-900 dark:text-zinc-300">
-              Page {page} of {totalPages}
+              {page} of {totalPages}
             </div>
             <button className={navBtn} onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page === totalPages || loading}>Next →</button>
           </div>
@@ -310,19 +310,47 @@ function ProfessorsPageContent() {
           {visibleData.map((p, idx) => {
             const rc = ratingConfig(Number(p.quality) || 0, Boolean(p.isRated));
             return (
-              <div key={p.slug} className="rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-white/8 dark:bg-zinc-900/40">
+              <div
+                key={p.slug}
+                role="link"
+                tabIndex={0}
+                onClick={() => router.push(`/professors/${p.slug}`)}
+                onKeyDown={(event) => {
+                  if (event.target !== event.currentTarget) return;
+                  if (event.key === "Enter" || event.key === " ") {
+                    event.preventDefault();
+                    router.push(`/professors/${p.slug}`);
+                  }
+                }}
+                className="group cursor-pointer rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm transition-colors hover:bg-zinc-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-500 dark:border-white/8 dark:bg-zinc-900/40 dark:hover:bg-white/4"
+              >
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
                     <div className="text-base font-bold text-zinc-900 dark:text-zinc-100">
                       <span className="mr-1.5 text-zinc-400 dark:text-zinc-600">{start + idx + 1}.</span>
-                      <Link href={`/professors/${p.slug}`} className="hover:text-red-500 dark:hover:text-white transition-colors hover:underline">{p.name}</Link>
+                      <Link href={`/professors/${p.slug}`} onClick={(event) => event.stopPropagation()} className="transition-colors hover:text-red-500 hover:underline group-hover:text-red-500 dark:hover:text-white dark:group-hover:text-white">{p.name}</Link>
                     </div>
                     <div className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">{p.school}</div>
                   </div>
-                  <span className={`inline-flex flex-col items-center rounded-lg px-2.5 py-1.5 text-xs font-black tabular-nums ring-1 ${rc.bg} ${rc.text} ${rc.ring}`}>
-                    <span className="text-sm">{p.isRated ? (Number(p.quality) || 0).toFixed(1) : "NR"}</span>
-                    <span className="text-[9px] font-medium opacity-60">{p.isRated ? `(${Number(p.ratingsCount) || 0})` : "active"}</span>
-                  </span>
+                  {p.url ? (
+                    <a
+                      href={p.url}
+                      target="_blank"
+                      rel="noreferrer"
+                      onClick={(event) => event.stopPropagation()}
+                      aria-label={`Open ${p.name} on Rate My Professors`}
+                      title="Open on Rate My Professors"
+                      className={`inline-flex flex-col items-center rounded-lg px-2.5 py-1.5 text-xs font-black tabular-nums ring-1 transition hover:brightness-110 hover:ring-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-500 ${rc.bg} ${rc.text} ${rc.ring}`}
+                    >
+                      <span className="text-sm">{p.isRated ? (Number(p.quality) || 0).toFixed(1) : "NR"}</span>
+                      <span className="text-[9px] font-medium opacity-60">{p.isRated ? `(${Number(p.ratingsCount) || 0})` : "active"}</span>
+                    </a>
+                  ) : (
+                    <span className={`inline-flex flex-col items-center rounded-lg px-2.5 py-1.5 text-xs font-black tabular-nums ring-1 ${rc.bg} ${rc.text} ${rc.ring}`}>
+                      <span className="text-sm">{p.isRated ? (Number(p.quality) || 0).toFixed(1) : "NR"}</span>
+                      <span className="text-[9px] font-medium opacity-60">{p.isRated ? `(${Number(p.ratingsCount) || 0})` : "active"}</span>
+                    </span>
+                  )}
                 </div>
 
                 <div className="mt-4 flex flex-wrap items-center gap-2">
@@ -350,11 +378,6 @@ function ProfessorsPageContent() {
                       onToggle={(event) => handleProfessorSaveToggle(event, p)}
                       compact
                     />
-                    {p.url ? (
-                      <a href={p.url} target="_blank" rel="noreferrer" className="inline-flex items-center justify-center rounded-lg border border-zinc-200 bg-white px-3 py-2 text-xs font-semibold text-zinc-700 transition hover:bg-zinc-50 dark:border-white/10 dark:bg-white/5 dark:text-zinc-300 dark:hover:bg-white/10 dark:hover:text-white">Open RMP</a>
-                    ) : (
-                      <span className="inline-flex items-center justify-center rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-2 text-xs font-semibold text-zinc-500 dark:border-white/10 dark:bg-white/5 dark:text-zinc-400">No RMP</span>
-                    )}
                   </div>
                 </div>
               </div>
@@ -373,8 +396,7 @@ function ProfessorsPageContent() {
             <div className="col-span-4">Professor</div>
             <div className="col-span-3">Department</div>
             <div className="col-span-2">Classes</div>
-            <div className="col-span-1 text-right">Rating</div>
-            <div className="col-span-1 text-right">RMP</div>
+            <div className="col-span-2 text-right">Rating</div>
             <div className="col-span-1 text-right">Save</div>
           </div>
           <div className="max-h-[75vh] overflow-auto">
@@ -383,11 +405,24 @@ function ProfessorsPageContent() {
                 {visibleData.map((p, idx) => {
                   const rc = ratingConfig(Number(p.quality) || 0, Boolean(p.isRated));
                   return (
-                    <li key={p.slug} className="grid grid-cols-12 items-center px-4 sm:px-6 py-4 transition-colors hover:bg-zinc-50 dark:hover:bg-white/4">
+                    <li
+                      key={p.slug}
+                      role="link"
+                      tabIndex={0}
+                      onClick={() => router.push(`/professors/${p.slug}`)}
+                      onKeyDown={(event) => {
+                        if (event.target !== event.currentTarget) return;
+                        if (event.key === "Enter" || event.key === " ") {
+                          event.preventDefault();
+                          router.push(`/professors/${p.slug}`);
+                        }
+                      }}
+                      className="group grid cursor-pointer grid-cols-12 items-center px-4 py-4 transition-colors hover:bg-zinc-50 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-red-500 dark:hover:bg-white/4 sm:px-6"
+                    >
                       <div className="col-span-4 min-w-0 pr-3">
                         <div className="text-sm font-bold text-zinc-900 dark:text-zinc-100 sm:text-base">
                           <span className="text-zinc-400 dark:text-zinc-600 tabular-nums mr-1.5">{start + idx + 1}.</span>
-                          <Link href={`/professors/${p.slug}`} className="hover:text-red-500 dark:hover:text-white transition-colors hover:underline">{p.name}</Link>
+                          <Link href={`/professors/${p.slug}`} onClick={(event) => event.stopPropagation()} className="transition-colors hover:text-red-500 hover:underline group-hover:text-red-500 dark:hover:text-white dark:group-hover:text-white">{p.name}</Link>
                         </div>
                         <div className="mt-0.5 text-xs text-zinc-400 dark:text-zinc-600">{p.school}</div>
                       </div>
@@ -400,17 +435,25 @@ function ProfessorsPageContent() {
                         </div>
                       </div>
                       <div className="col-span-2 pr-3"><ClassesCell profName={p.name} map={courseMap} courses={p.courseItems} /></div>
-                      <div className="col-span-1 flex justify-end">
-                        <span className={`inline-flex flex-col items-center rounded-lg px-2.5 py-1.5 text-xs font-black tabular-nums ring-1 ${rc.bg} ${rc.text} ${rc.ring}`}>
-                          <span className="text-sm">{p.isRated ? (Number(p.quality) || 0).toFixed(1) : "NR"}</span>
-                          <span className="text-[9px] font-medium opacity-60">{p.isRated ? `(${Number(p.ratingsCount) || 0})` : "active"}</span>
-                        </span>
-                      </div>
-                      <div className="col-span-1 flex justify-end">
+                      <div className="col-span-2 flex justify-end">
                         {p.url ? (
-                          <a href={p.url} target="_blank" rel="noreferrer" className="inline-flex items-center justify-center rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-xs font-semibold text-zinc-700 transition hover:bg-zinc-50 dark:border-white/10 dark:bg-white/5 dark:text-zinc-300 dark:hover:bg-white/10 dark:hover:text-white">RMP</a>
+                          <a
+                            href={p.url}
+                            target="_blank"
+                            rel="noreferrer"
+                            onClick={(event) => event.stopPropagation()}
+                            aria-label={`Open ${p.name} on Rate My Professors`}
+                            title="Open on Rate My Professors"
+                            className={`inline-flex flex-col items-center rounded-lg px-2.5 py-1.5 text-xs font-black tabular-nums ring-1 transition hover:brightness-110 hover:ring-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-500 ${rc.bg} ${rc.text} ${rc.ring}`}
+                          >
+                            <span className="text-sm">{p.isRated ? (Number(p.quality) || 0).toFixed(1) : "NR"}</span>
+                            <span className="text-[9px] font-medium opacity-60">{p.isRated ? `(${Number(p.ratingsCount) || 0})` : "active"}</span>
+                          </a>
                         ) : (
-                          <span className="inline-flex items-center justify-center rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-1.5 text-xs font-semibold text-zinc-500 dark:border-white/10 dark:bg-white/5 dark:text-zinc-400">No RMP</span>
+                          <span className={`inline-flex flex-col items-center rounded-lg px-2.5 py-1.5 text-xs font-black tabular-nums ring-1 ${rc.bg} ${rc.text} ${rc.ring}`}>
+                            <span className="text-sm">{p.isRated ? (Number(p.quality) || 0).toFixed(1) : "NR"}</span>
+                            <span className="text-[9px] font-medium opacity-60">{p.isRated ? `(${Number(p.ratingsCount) || 0})` : "active"}</span>
+                          </span>
                         )}
                       </div>
                       <div className="col-span-1 flex justify-end">

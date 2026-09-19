@@ -16,7 +16,6 @@ import GradeDistributionCard from "../../../components/course/GradeDistributionC
 import CourseInsightCards from "../../../components/course/CourseInsightCards";
 import CourseGpaByProfessor from "../../../components/course/CourseGpaByProfessor";
 import CoursePageNavigator from "@/app/components/loops/CoursePageNavigator";
-import ViewHistoryNudge from "@/app/components/loops/ViewHistoryNudge";
 import SiteFooter from "@/app/components/SiteFooter";
 import SaveCourseControl from "@/app/components/saved/SaveCourseControl";
 
@@ -227,7 +226,6 @@ export default async function CourseDetailPage({
   const termScope = formatCourseTermScope(courseTerms);
 
   const topProfessor = professorGpas.find((row) => row.slug);
-  const comparePrompt = `Compare ${[`${course.subject} ${course.number}`, ...relatedCourses.slice(0, 2).map((item) => `${item.subject} ${item.number}`)].join(", ")} for difficulty, GPA, and which kind of UIC student each is best for.`;
   const orderedCourseDirectory = [...courseDirectory].sort(compareCourseDirectoryOrder);
   const currentIndex = orderedCourseDirectory.findIndex(
     (entry) => entry.subject === course.subject && entry.number === course.number
@@ -270,17 +268,6 @@ export default async function CourseDetailPage({
     course={course}
     actions={<SaveCourseControl course={{ id: course.id, subject: course.subject, number: course.number, title: course.title ?? "" }} />}
   />
-
-        <ViewHistoryNudge
-          kind="course"
-          item={{
-            key: `${course.subject} ${course.number}`,
-            title: course.title || "UIC course",
-            href: `/courses/${course.subject}/${course.number}`,
-            group: course.subject,
-          }}
-          comparePrompt={comparePrompt}
-        />
 
         <div className="mt-6">
           <GradeDistributionCard

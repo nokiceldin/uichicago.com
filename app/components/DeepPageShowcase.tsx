@@ -222,7 +222,7 @@ export default function DeepPageShowcase() {
             </div>
           </div>
 
-          <div className="mt-4 rounded-[1.4rem] border border-zinc-300 bg-white p-4 shadow-[0_16px_40px_rgba(15,23,42,0.07)] transition duration-300 dark:border-white/8 dark:bg-white/4 dark:shadow-none">
+          <div className="mt-4">
             <div className="flex items-start gap-4">
               <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-400 text-2xl font-bold text-emerald-950">
                 {activeProfessor.rating}

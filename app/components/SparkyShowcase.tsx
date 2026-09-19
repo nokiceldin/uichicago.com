@@ -1,11 +1,13 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
 
 type ShowcasePrompt = {
   tag: string;
   emoji: string;
+  tone: string;
   questions: string[];
 };
 
@@ -46,6 +48,7 @@ const promptSlots: ShowcasePrompt[] = [
   {
     tag: "Planning",
     emoji: "🗺️",
+    tone: "border-sky-300/60 bg-sky-50 text-sky-700 dark:border-sky-400/25 dark:bg-sky-400/10 dark:text-sky-200",
     questions: [
       "How should a transfer student plan their first semester?",
       "Can you help me build a smart 4-year plan?",
@@ -55,6 +58,7 @@ const promptSlots: ShowcasePrompt[] = [
   {
     tag: "Campus Life",
     emoji: "🎉",
+    tone: "border-violet-300/60 bg-violet-50 text-violet-700 dark:border-violet-400/25 dark:bg-violet-400/10 dark:text-violet-200",
     questions: [
       "Where do people actually go out or party near UIC?",
       "What are the most social student events at UIC?",
@@ -64,6 +68,7 @@ const promptSlots: ShowcasePrompt[] = [
   {
     tag: "Dining",
     emoji: "🍔",
+    tone: "border-amber-300/60 bg-amber-50 text-amber-700 dark:border-amber-400/25 dark:bg-amber-400/10 dark:text-amber-200",
     questions: [
       "What food near UIC is actually good after 10pm?",
       "Best late-night spots around UIC if I'm hungry after studying?",
@@ -73,6 +78,7 @@ const promptSlots: ShowcasePrompt[] = [
   {
     tag: "Costs",
     emoji: "💰",
+    tone: "border-emerald-300/60 bg-emerald-50 text-emerald-700 dark:border-emerald-400/25 dark:bg-emerald-400/10 dark:text-emerald-200",
     questions: [
       "What scholarships or grants should I look at first?",
       "How can I lower my costs at UIC without making life miserable?",
@@ -82,6 +88,7 @@ const promptSlots: ShowcasePrompt[] = [
   {
     tag: "Athletics",
     emoji: "🔥",
+    tone: "border-orange-300/60 bg-orange-50 text-orange-700 dark:border-orange-400/25 dark:bg-orange-400/10 dark:text-orange-200",
     questions: [
       "How do free student tickets for games work?",
       "What UIC games are actually the most fun to go to?",
@@ -107,6 +114,7 @@ export default function SparkyShowcase() {
       promptSlots.map((slot, index) => ({
         tag: slot.tag,
         emoji: slot.emoji,
+        tone: slot.tone,
         question: slot.questions[(activeIndex + index) % slot.questions.length],
       })),
     [activeIndex],
@@ -139,7 +147,7 @@ export default function SparkyShowcase() {
               </div>
             </div>
             <div className="flex items-start gap-3">
-              <img src="/sparky-icon.png" alt="Sparky" className="mt-1 h-7 w-7 shrink-0 object-contain" />
+              <Image src="/sparky-icon.png" alt="Sparky" width={28} height={28} className="mt-1 h-7 w-7 shrink-0 object-contain" />
               <div className="max-w-[92%]">
                 <div className="min-h-[10.5rem] text-sm leading-7 text-zinc-800 transition-all duration-300 dark:text-zinc-300">
                   {activeExample.answer}
@@ -185,9 +193,9 @@ export default function SparkyShowcase() {
               href={`/chat?q=${encodeURIComponent(item.question)}`}
               style={{ transitionDelay: `${150 + 65 * (visiblePrompts.indexOf(item) + 1)}ms` }}
               data-reveal="item"
-              className="premium-card rounded-[1.2rem] border border-zinc-300 bg-white p-4 shadow-[0_10px_28px_rgba(15,23,42,0.05)] transition hover:border-red-400/40 hover:bg-white hover:shadow-lg dark:border-white/10 dark:bg-[rgba(15,17,22,0.75)] dark:hover:bg-[rgba(19,22,28,0.92)]"
+              className="premium-card rounded-[1.2rem] border border-zinc-300 bg-white p-4 shadow-[0_10px_28px_rgba(15,23,42,0.05)] transition hover:border-zinc-400/60 hover:bg-white hover:shadow-lg dark:border-white/10 dark:bg-[rgba(15,17,22,0.75)] dark:hover:border-white/20 dark:hover:bg-[rgba(19,22,28,0.92)]"
             >
-              <div className="inline-flex items-center gap-2 rounded-full border border-red-300/50 bg-red-50 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-red-600 dark:border-red-400/30 dark:bg-red-400/16 dark:text-red-200">
+              <div className={`inline-flex items-center gap-2 rounded-full border px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.18em] ${item.tone}`}>
                 <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-white/10 text-[13px] not-italic leading-none">
                   {item.emoji}
                 </span>

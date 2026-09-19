@@ -98,7 +98,7 @@ export default function CoursesTable({ courses, total, page, pageSize, sort, dep
   const start = (page - 1) * pageSize;
   const selectedMajor = majorRequirements.find((m) => m.key === major);
   const majorCategories = selectedMajor?.categories ?? [];
-  const hasAnyFilters = !!q.trim() || !!dept || gened || !!genedCategory || !!major || !!majorCategory || savedOnly || sort !== "difficultyDesc";
+  const hasAnyFilters = !!q.trim() || !!dept || gened || !!genedCategory || !!major || !!majorCategory || savedOnly;
 
   const selectBase = "h-9 w-full cursor-pointer rounded-xl border border-zinc-200 bg-white px-3 text-sm text-zinc-900 outline-none focus:border-red-500 focus:ring-2 focus:ring-red-900/30 transition-colors dark:border-white/10 dark:bg-zinc-900 dark:text-zinc-200 dark:focus:border-red-500/50 dark:focus:ring-red-500/10";
   const inputBase = "h-10 w-full rounded-xl border border-zinc-200 bg-white px-4 text-sm text-zinc-900 outline-none placeholder:text-zinc-400 focus:border-red-500 focus:ring-2 focus:ring-red-900/30 transition-colors dark:border-white/10 dark:bg-zinc-900 dark:text-zinc-200 dark:placeholder:text-zinc-600 dark:focus:border-red-500/50 dark:focus:ring-red-500/10";
@@ -208,7 +208,6 @@ export default function CoursesTable({ courses, total, page, pageSize, sort, dep
               {savedOnly && <button className={chipBase} onClick={() => setSavedOnly(false)}>Saved only <span className="text-zinc-400">×</span></button>}
               {gened && <button className={chipBase} onClick={() => setGenEd(false)}>Gen Ed <span className="text-zinc-400">×</span></button>}
               {gened && genedCategory && <button className={chipBase} onClick={() => setGenEdCategory("")}>{genedCategory} <span className="text-zinc-400">×</span></button>}
-              {sort !== "difficultyDesc" && <button className={chipBase} onClick={() => setSort("difficultyDesc")}>Sort: Hardest first <span className="text-zinc-400">×</span></button>}
               <button onClick={clearAll} className="ml-auto text-xs font-semibold text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 transition-colors">Clear all</button>
             </div>
           )}
@@ -221,13 +220,20 @@ export default function CoursesTable({ courses, total, page, pageSize, sort, dep
             Showing <span className="text-zinc-700 dark:text-zinc-300 font-medium">{effectiveTotal === 0 ? 0 : nf.format(start + 1)}–{nf.format(Math.min(start + pageSize, effectiveTotal))}</span> of <span className="text-zinc-700 dark:text-zinc-300 font-medium">{nf.format(effectiveTotal)}</span> courses
           </p>
           <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
-            <button onClick={() => setSort(sort === "difficultyDesc" ? "difficultyAsc" : "difficultyDesc")} className="inline-flex h-10 items-center justify-center gap-1.5 rounded-xl border border-zinc-200 bg-white px-4 text-sm font-medium text-zinc-700 hover:bg-zinc-50 transition-colors dark:border-white/10 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-white/10">
-              {sort === "difficultyDesc" ? <><span className="text-emerald-500">↓</span> Easiest first</> : <><span className="text-red-500">↑</span> Hardest first</>}
+            <button
+              onClick={() => setSort(sort === "difficultyDesc" ? "difficultyAsc" : "difficultyDesc")}
+              aria-label={sort === "difficultyDesc" ? "Sort easiest first" : "Sort hardest first"}
+              title={sort === "difficultyDesc" ? "Sort easiest first" : "Sort hardest first"}
+              className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-zinc-200 bg-white text-xl font-semibold leading-none transition-colors hover:bg-zinc-50 dark:border-white/10 dark:bg-zinc-900 dark:hover:bg-white/10"
+            >
+              <span aria-hidden="true" className={sort === "difficultyDesc" ? "text-emerald-500" : "text-red-500"}>
+                {sort === "difficultyDesc" ? "↓" : "↑"}
+              </span>
             </button>
             <div className="flex items-center gap-3 overflow-x-auto pb-1 sm:overflow-visible">
               <button className={navBtn} onClick={() => setPage(Math.max(1, page - 1))} disabled={page === 1}>← Prev</button>
               <div className="inline-flex h-9 items-center rounded-xl border border-zinc-200 bg-white px-4 text-sm font-medium text-zinc-600 dark:border-white/10 dark:bg-zinc-900 dark:text-zinc-300">
-                Page {page} of {totalPages}
+                {page} of {totalPages}
               </div>
               <button className={navBtn} onClick={() => setPage(Math.min(totalPages, page + 1))} disabled={page === totalPages}>Next →</button>
             </div>

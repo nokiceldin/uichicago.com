@@ -2,12 +2,13 @@
 
 import { useEffect, useState } from "react";
 import { signIn, signOut, useSession } from "next-auth/react";
-import { LoaderCircle, Settings2, Trash2 } from "lucide-react";
+import { LoaderCircle, Moon, Settings2, Sun, Trash2 } from "lucide-react";
 import {
   DEFAULT_THEME_MODE,
   SETTINGS_STORAGE_KEY,
   THEME_STORAGE_KEY,
   clearLocalSiteSettingsForAccount,
+  getResolvedThemeMode,
   readLocalSiteSettings,
   writeLocalSiteSettings,
 } from "@/lib/site-settings";
@@ -21,14 +22,10 @@ function persistThemeLocally(themeMode: ThemeMode) {
   const merged: SiteSettingsPayload = {
     ...existing,
     themeMode,
-    themeSchedule: {
-      darkStartHour: 19,
-      lightStartHour: 7,
-    },
   };
   window.localStorage.setItem(
     THEME_STORAGE_KEY,
-    JSON.stringify({ themeMode: merged.themeMode, themeSchedule: merged.themeSchedule }),
+    JSON.stringify({ themeMode: merged.themeMode }),
   );
   writeLocalSiteSettings(merged);
   window.dispatchEvent(new Event("uichicago-theme-change"));
@@ -37,38 +34,15 @@ function persistThemeLocally(themeMode: ThemeMode) {
 
 export default function SettingsPageClient() {
   const { data: session, status } = useSession();
-  const [loadedFromDb, setLoadedFromDb] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [message, setMessage] = useState("");
   const [themeMode, setThemeMode] = useState<ThemeMode>(() => {
     if (typeof window === "undefined") return DEFAULT_THEME_MODE;
-    return readLocalSiteSettings().themeMode ?? DEFAULT_THEME_MODE;
+    return getResolvedThemeMode(readLocalSiteSettings());
   });
 
-  // Load theme from DB when authenticated
-  useEffect(() => {
-    if (status !== "authenticated") return;
-    let cancelled = false;
-
-    const load = async () => {
-      try {
-        const response = await fetch("/api/study/me?scope=settings", { cache: "no-store" });
-        const payload = await response.json().catch(() => null);
-        if (!response.ok || !payload || cancelled) return;
-        const dbTheme: ThemeMode = payload.profile?.settings?.themeMode ?? DEFAULT_THEME_MODE;
-        setThemeMode(dbTheme);
-        persistThemeLocally(dbTheme);
-      } finally {
-        if (!cancelled) setLoadedFromDb(true);
-      }
-    };
-
-    void load();
-    return () => { cancelled = true; };
-  }, [status]);
-
-  // Auto-apply theme to page immediately whenever it changes
+  // Apply only the explicit choice stored on this device.
   useEffect(() => {
     persistThemeLocally(themeMode);
   }, [themeMode]);
@@ -136,7 +110,7 @@ export default function SettingsPageClient() {
   };
 
   // Show skeleton while loading from DB
-  if (status === "loading" || (status === "authenticated" && !loadedFromDb)) {
+  if (status === "loading") {
     return (
       <main className="min-h-screen bg-zinc-50 px-4 py-10 text-zinc-950 dark:bg-zinc-950 dark:text-white sm:px-6">
         <div className="mx-auto h-[340px] max-w-3xl animate-pulse rounded-4xl border border-zinc-200 bg-white dark:border-white/10 dark:bg-white/4" />
@@ -169,31 +143,38 @@ export default function SettingsPageClient() {
               <div>
                 <div className="text-sm font-semibold text-zinc-950 dark:text-white">Theme</div>
                 <div className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
-                  Dark, light, or automatic. Auto uses light 7 AM – 7 PM. My School always stays dark.
+                  Choose one appearance. It stays that way until you change it here.
                 </div>
               </div>
-              <select
-                value={themeMode}
-                onChange={(event) => handleThemeChange(event.target.value as ThemeMode)}
-                disabled={isSaving}
-                className="h-11 min-w-[130px] rounded-xl border border-zinc-200 bg-zinc-50 px-4 text-sm text-zinc-900 outline-none disabled:opacity-60 dark:border-white/10 dark:bg-white/4 dark:text-white"
-              >
-                <option value="dark">Dark</option>
-                <option value="light">Light</option>
-                <option value="auto">Auto</option>
-              </select>
+              <div className="inline-flex w-full rounded-2xl border border-zinc-200 bg-zinc-100 p-1 dark:border-white/10 dark:bg-black/20 md:w-auto" role="group" aria-label="Theme">
+                {([
+                  { mode: "dark" as const, label: "Dark", icon: Moon },
+                  { mode: "light" as const, label: "Light", icon: Sun },
+                ]).map(({ mode, label, icon: Icon }) => {
+                  const active = themeMode === mode;
+                  return (
+                    <button
+                      key={mode}
+                      type="button"
+                      aria-pressed={active}
+                      disabled={isSaving}
+                      onClick={() => handleThemeChange(mode)}
+                      className={`inline-flex min-h-10 flex-1 items-center justify-center gap-2 rounded-xl px-4 text-sm font-semibold transition disabled:cursor-wait disabled:opacity-60 md:flex-none ${
+                        active
+                          ? "bg-white text-zinc-950 shadow-sm dark:bg-white dark:text-zinc-950"
+                          : "text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white"
+                      }`}
+                    >
+                      <Icon className="h-4 w-4" aria-hidden="true" />
+                      {label}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
             {status !== "authenticated" && (
               <p className="mt-4 text-xs text-zinc-500 dark:text-zinc-400">
-                Theme is saved on this device.{" "}
-                <button
-                  type="button"
-                  onClick={() => signIn("google", { callbackUrl: "/settings" })}
-                  className="font-medium text-zinc-700 underline-offset-2 hover:underline dark:text-zinc-300"
-                >
-                  Sign in
-                </button>{" "}
-                to sync it across devices.
+                Theme is saved on this device.
               </p>
             )}
           </div>
@@ -203,9 +184,9 @@ export default function SettingsPageClient() {
           <section className="overflow-hidden rounded-[1.8rem] border border-zinc-200 bg-[linear-gradient(180deg,#ffffff,#f6f6f7)] p-6 shadow-[0_18px_55px_rgba(15,23,42,0.06)] dark:border-white/10 dark:bg-[linear-gradient(180deg,rgba(28,28,33,0.96),rgba(16,16,21,0.98))]">
             <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
               <div className="max-w-2xl">
-                <div className="text-lg font-semibold text-zinc-950 dark:text-white">Sign in to unlock synced settings.</div>
+                <div className="text-lg font-semibold text-zinc-950 dark:text-white">Sign in to sync your study space.</div>
                 <div className="mt-2 text-sm leading-6 text-zinc-500 dark:text-zinc-400">
-                  Theme already works on this device. Sign in if you want to sync it across devices and manage your profile and account.
+                  Keep your courses, notes, flashcards, and profile connected to your account across devices.
                 </div>
               </div>
               <button
@@ -237,26 +218,6 @@ export default function SettingsPageClient() {
             />
           </div>
         </section>
-
-        {/* Profile picture — authenticated only, link to profile page */}
-        {status === "authenticated" && (
-          <section className="overflow-hidden rounded-[1.8rem] border border-zinc-200 bg-white shadow-[0_18px_55px_rgba(15,23,42,0.06)] dark:border-white/10 dark:bg-[rgba(18,18,23,0.94)]">
-            <div className="border-b border-zinc-200 px-6 py-5 dark:border-white/10">
-              <div className="text-sm font-semibold text-zinc-950 dark:text-white">Profile picture</div>
-            </div>
-            <div className="flex items-center justify-between gap-4 px-6 py-5">
-              <div className="text-sm text-zinc-500 dark:text-zinc-400">
-                Upload a photo or choose an avatar from your Profile page.
-              </div>
-              <a
-                href="/profile"
-                className="inline-flex items-center rounded-full bg-zinc-950 px-4 py-2 text-sm font-semibold text-white transition hover:bg-zinc-800 dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-100"
-              >
-                Go to Profile
-              </a>
-            </div>
-          </section>
-        )}
 
         {/* Personal information — authenticated only */}
         {status === "authenticated" && (

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import Link from "next/link";
 import { normalizeProfName } from "@/app/lib/name";
 
 function formatCourseLabel(s: string) {
@@ -13,6 +14,12 @@ function formatCourseLabel(s: string) {
   if (pipeParts.length >= 2) return `${pipeParts[0]} ${pipeParts[1]}`;
 
   return t;
+}
+
+function courseHref(label: string) {
+  const match = label.trim().match(/^([A-Z&]+)\s+(\d+[A-Z]?)$/i);
+  if (!match) return null;
+  return `/courses/${encodeURIComponent(match[1].toUpperCase())}/${encodeURIComponent(match[2].toUpperCase())}`;
 }
 
 function tokens(name: string) {
@@ -413,10 +420,24 @@ export function ClassesCell({
   }
 
   return (
-    <div ref={wrapRef} className="relative">
+    <div ref={wrapRef} className="relative" onClick={(event) => event.stopPropagation()}>
       <div className="flex flex-wrap items-center gap-2 justify-start">
         {firstThree.map((label) => {
           const clickable = Boolean(onPickCourse);
+          const href = courseHref(label);
+
+          if (!clickable && href) {
+            return (
+              <Link
+                key={label}
+                href={href}
+                className={[chipBase, chipStatic, chipBorder, chipClickable].join(" ")}
+                title={`Open ${label}`}
+              >
+                {label}
+              </Link>
+            );
+          }
 
           return (
             <button
@@ -430,6 +451,7 @@ export function ClassesCell({
                 clickable ? chipClickable : "",
               ].join(" ")}
               title={clickable ? `Filter by ${label}` : label}
+              disabled={!clickable}
             >
               {label}
             </button>
@@ -466,6 +488,22 @@ export function ClassesCell({
           <div className="max-h-56 overflow-auto px-1 pb-1">
             {rest.map((label) => {
               const clickable = Boolean(onPickCourse);
+              const href = courseHref(label);
+
+              if (!clickable && href) {
+                return (
+                  <Link
+                    key={label}
+                    href={href}
+                    role="menuitem"
+                    onClick={() => setOpen(false)}
+                    className="block w-full rounded-xl px-3 py-2 text-left text-sm text-zinc-900 hover:bg-zinc-100 dark:text-zinc-100 dark:hover:bg-white/10"
+                    title={`Open ${label}`}
+                  >
+                    {label}
+                  </Link>
+                );
+              }
 
               return (
                 <button
@@ -478,6 +516,7 @@ export function ClassesCell({
                   }}
                   className="w-full rounded-xl px-3 py-2 text-left text-sm text-zinc-900 hover:bg-zinc-100 dark:text-zinc-100 dark:hover:bg-white/10"
                   title={clickable ? `Filter by ${label}` : label}
+                  disabled={!clickable}
                 >
                   {label}
                 </button>

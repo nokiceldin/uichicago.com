@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { Menu, Search, X } from "lucide-react";
+import { BookOpen, Menu, Search, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import HeroSearch from "./HeroSearch";
@@ -138,9 +138,8 @@ export default function Navbar() {
                       : "text-zinc-700 hover:bg-white hover:text-zinc-950 dark:text-zinc-200 dark:hover:bg-white/8 dark:hover:text-white"
                 }`}
               >
-                {item.accent ? (
-                  <span className={`h-2 w-2 rounded-full ${item.accent === "indigo" ? "bg-violet-400" : "bg-red-400"}`} />
-                ) : null}
+                {item.accent === "indigo" ? <BookOpen className="h-4 w-4" aria-hidden="true" /> : null}
+                {item.accent === "red" ? <Image src="/sparky-icon.png" alt="" width={22} height={22} className="h-[22px] w-[22px] object-contain" aria-hidden="true" /> : null}
                 {item.label}
               </Link>
             );
@@ -216,10 +215,7 @@ export default function Navbar() {
                   : "border-white/10 bg-white/5 text-zinc-100 shadow-sm hover:border-indigo-400/40 hover:bg-white/8 hover:text-white"
               }`}
             >
-              <span className="relative flex h-2 w-2">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-violet-400 opacity-75" />
-                <span className="relative inline-flex h-2 w-2 rounded-full bg-violet-500" />
-              </span>
+              <BookOpen className={`h-4 w-4 ${onStudy ? "text-white" : "text-violet-300"}`} aria-hidden="true" />
               <span>My School</span>
             </Link>
 
@@ -228,12 +224,11 @@ export default function Navbar() {
               className={`group inline-flex shrink-0 items-center gap-2 rounded-full border px-4 py-2 text-xs font-bold tracking-wide transition-all sm:text-sm ${
                 onChat
                   ? "border-red-500 bg-red-600 text-white shadow-[0_0_24px_rgba(239,68,68,0.22)]"
-                  : "border-white/10 bg-white/5 text-zinc-100 shadow-sm hover:border-red-400/40 hover:bg-white/8 hover:text-white"
+                  : "border-red-500/20 bg-red-500/[0.07] text-zinc-100 shadow-sm hover:border-red-400/40 hover:bg-red-500/10 hover:text-white"
               }`}
             >
-              <span className="relative flex h-2 w-2">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-400 opacity-75" />
-                <span className="relative inline-flex h-2 w-2 rounded-full bg-red-500" />
+              <span className={`inline-flex h-6 w-6 items-center justify-center rounded-full ${onChat ? "bg-white/12" : "bg-red-500/10"}`}>
+                <Image src="/sparky-icon.png" alt="" width={22} height={22} className="h-[22px] w-[22px] object-contain" aria-hidden="true" />
               </span>
               <span>SparkyAI</span>
             </Link>
@@ -317,10 +312,7 @@ export default function Navbar() {
                   : "border-zinc-200 bg-zinc-50 text-zinc-900 shadow-sm hover:border-indigo-300 hover:bg-white dark:border-white/10 dark:bg-white/5 dark:text-zinc-200 dark:hover:border-indigo-400/30 dark:hover:bg-white/8 dark:hover:text-white"
               }`}
             >
-              <span className="relative flex h-2 w-2">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-violet-400 opacity-75" />
-                <span className="relative inline-flex h-2 w-2 rounded-full bg-violet-500" />
-              </span>
+              <BookOpen className={`h-4 w-4 ${onStudy ? "text-white" : "text-violet-500 dark:text-violet-300"}`} aria-hidden="true" />
               <span>My School</span>
             </Link>
 
@@ -329,12 +321,11 @@ export default function Navbar() {
               className={`group flex items-center gap-2 rounded-full border px-4 py-2 text-xs font-bold tracking-wide transition-all sm:text-sm ${
                 onChat
                   ? "border-red-500 bg-red-600 text-white shadow-[0_0_24px_rgba(239,68,68,0.22)]"
-                  : "border-zinc-200 bg-zinc-50 text-zinc-900 shadow-sm hover:border-red-300 hover:bg-white dark:border-white/10 dark:bg-white/5 dark:text-zinc-200 dark:hover:border-red-400/30 dark:hover:bg-white/8 dark:hover:text-white"
+                  : "border-red-200/80 bg-red-50/70 text-zinc-900 shadow-sm hover:border-red-300 hover:bg-red-50 dark:border-red-500/20 dark:bg-red-500/[0.07] dark:text-zinc-100 dark:hover:border-red-400/40 dark:hover:bg-red-500/10"
               }`}
             >
-              <span className="relative flex h-2 w-2">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-400 opacity-75" />
-                <span className="relative inline-flex h-2 w-2 rounded-full bg-red-500" />
+              <span className={`inline-flex h-6 w-6 items-center justify-center rounded-full ${onChat ? "bg-white/12" : "bg-red-500/10"}`}>
+                <Image src="/sparky-icon.png" alt="" width={22} height={22} className="h-[22px] w-[22px] object-contain" aria-hidden="true" />
               </span>
               <span>SparkyAI</span>
             </Link>

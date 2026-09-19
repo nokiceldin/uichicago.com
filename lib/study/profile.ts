@@ -20,12 +20,7 @@ export type StudyWorkspaceStatePayload = {
   noteAiLogs?: NoteAiGenerationLog[];
 };
 
-export type ThemeMode = "auto" | "light" | "dark";
-
-export type ThemeSchedulePayload = {
-  darkStartHour?: number;
-  lightStartHour?: number;
-};
+export type ThemeMode = "light" | "dark";
 
 export type AvatarSelectionPayload =
   | {
@@ -42,7 +37,6 @@ export type AvatarSelectionPayload =
 
 export type SiteSettingsPayload = {
   themeMode?: ThemeMode;
-  themeSchedule?: ThemeSchedulePayload;
   avatar?: AvatarSelectionPayload;
 };
 

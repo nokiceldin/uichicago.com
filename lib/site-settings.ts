@@ -1,15 +1,10 @@
-import type { AvatarSelectionPayload, SiteSettingsPayload, ThemeMode, ThemeSchedulePayload } from "@/lib/study/profile";
+import type { AvatarSelectionPayload, SiteSettingsPayload, ThemeMode } from "@/lib/study/profile";
 
 export const THEME_STORAGE_KEY = "uichicago_theme_settings";
 export const SETTINGS_STORAGE_KEY = "uichicago_site_settings";
 export const ACCOUNT_SETTINGS_STORAGE_PREFIX = "uichicago_account_settings";
 
 export const DEFAULT_THEME_MODE: ThemeMode = "dark";
-
-export const DEFAULT_THEME_SCHEDULE: Required<ThemeSchedulePayload> = {
-  darkStartHour: 19,
-  lightStartHour: 7,
-};
 
 type PresetAvatarDefinition = {
   id: string;
@@ -76,52 +71,13 @@ export const PRESET_AVATARS = [
 ] as const satisfies readonly PresetAvatarDefinition[];
 
 export function getResolvedThemeMode(settings?: SiteSettingsPayload): ThemeMode {
-  return settings?.themeMode === "light" || settings?.themeMode === "dark" || settings?.themeMode === "auto"
+  return settings?.themeMode === "light" || settings?.themeMode === "dark"
     ? settings.themeMode
     : DEFAULT_THEME_MODE;
 }
 
-export function getResolvedThemeSchedule(settings?: SiteSettingsPayload): Required<ThemeSchedulePayload> {
-  return {
-    darkStartHour:
-      typeof settings?.themeSchedule?.darkStartHour === "number"
-        ? clampHour(settings.themeSchedule.darkStartHour)
-        : DEFAULT_THEME_SCHEDULE.darkStartHour,
-    lightStartHour:
-      typeof settings?.themeSchedule?.lightStartHour === "number"
-        ? clampHour(settings.themeSchedule.lightStartHour)
-        : DEFAULT_THEME_SCHEDULE.lightStartHour,
-  };
-}
-
-export function resolveEffectiveTheme(
-  settings?: SiteSettingsPayload,
-  now: Date = new Date(),
-): Exclude<ThemeMode, "auto"> {
-  const mode = getResolvedThemeMode(settings);
-  if (mode === "light" || mode === "dark") return mode;
-
-  const schedule = getResolvedThemeSchedule(settings);
-  const hour = now.getHours();
-
-  if (schedule.darkStartHour === schedule.lightStartHour) {
-    return hour >= 18 || hour < 7 ? "dark" : "light";
-  }
-
-  if (schedule.darkStartHour > schedule.lightStartHour) {
-    return hour >= schedule.darkStartHour || hour < schedule.lightStartHour ? "dark" : "light";
-  }
-
-  return hour >= schedule.darkStartHour && hour < schedule.lightStartHour ? "dark" : "light";
-}
-
-export function shouldForceDarkTheme(pathname: string | null | undefined) {
-  return Boolean(pathname?.startsWith("/study"));
-}
-
-function clampHour(value: number) {
-  if (!Number.isFinite(value)) return 0;
-  return Math.max(0, Math.min(23, Math.round(value)));
+export function resolveEffectiveTheme(settings?: SiteSettingsPayload): ThemeMode {
+  return getResolvedThemeMode(settings);
 }
 
 function renderMascot(preset: PresetAvatarDefinition) {

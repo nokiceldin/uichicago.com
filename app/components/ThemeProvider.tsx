@@ -1,6 +1,6 @@
 "use client";
 
-import { DEFAULT_THEME_MODE, DEFAULT_THEME_SCHEDULE, THEME_STORAGE_KEY, resolveEffectiveTheme } from "@/lib/site-settings";
+import { DEFAULT_THEME_MODE, THEME_STORAGE_KEY, resolveEffectiveTheme } from "@/lib/site-settings";
 import type { SiteSettingsPayload } from "@/lib/study/profile";
 
 type Theme = "light" | "dark";
@@ -26,10 +26,7 @@ export function getSavedTheme(): Theme | null {
 export function saveTheme(theme: Theme) {
   window.localStorage.setItem(
     THEME_STORAGE_KEY,
-    JSON.stringify({
-      themeMode: theme,
-      themeSchedule: DEFAULT_THEME_SCHEDULE,
-    }),
+    JSON.stringify({ themeMode: theme }),
   );
   applyTheme(theme);
 }

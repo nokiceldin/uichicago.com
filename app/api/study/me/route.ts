@@ -4,6 +4,7 @@ import { getStudyWorkspacePayload } from "@/lib/study/server";
 import { parseStoredPreferences, serializeStoredPreferences, type PlannerProfilePayload, type SiteSettingsPayload, type StudyWorkspaceStatePayload } from "@/lib/study/profile";
 import { getResolvedThemeMode, resolveAvatarUrl } from "@/lib/site-settings";
 import { getSavedItemsForStudyUser } from "@/lib/saved-items";
+import { prepareAuditImport } from "@/lib/academic/audit-import-review";
 
 export const dynamic = "force-dynamic";
 
@@ -77,6 +78,21 @@ export async function PATCH(request: Request) {
   try {
     const studyUser = await requireCurrentStudyUser();
     const body = await request.json();
+    let imported: ReturnType<typeof prepareAuditImport> | null = null;
+    if (body.auditImport !== undefined) {
+      if (body.auditImport?.confirmed !== true || typeof body.auditImport?.text !== "string") {
+        return NextResponse.json({ error: "Review and confirm the audit before saving." }, { status: 400 });
+      }
+      try {
+        imported = prepareAuditImport(body.auditImport.text, body.auditImport.choices);
+      } catch (error) {
+        return NextResponse.json({ error: error instanceof Error ? error.message : "Invalid audit import." }, { status: 400 });
+      }
+      // The server recomputes approved course lists; client-supplied lists cannot
+      // bypass grade or duplicate-attempt checks during an audit import.
+      body.currentCourses = imported.currentCourses;
+      body.plannerProfile = { currentCourses: imported.currentCourses, completedCourses: imported.completedCourses };
+    }
     const existingPreferences = parseStoredPreferences(studyUser.studyPreferences);
     const existingCurrentCourses = existingPreferences.plannerProfile.currentCourses ?? studyUser.currentCourses ?? [];
     const existingCompletedCourses = existingPreferences.plannerProfile.completedCourses ?? [];
@@ -102,6 +118,7 @@ export async function PATCH(request: Request) {
         ? body.studyPreferences.trim()
         : existingPreferences.notes;
     const nextPlannerProfile: PlannerProfilePayload = {
+      auditImport: imported?.auditImport ?? existingPreferences.plannerProfile.auditImport,
       majorSlug: String(body.plannerProfile?.majorSlug || existingPreferences.plannerProfile.majorSlug || "").trim() || undefined,
       currentSemesterNumber: Number.isFinite(Number(body.plannerProfile?.currentSemesterNumber))
         ? Number(body.plannerProfile.currentSemesterNumber)

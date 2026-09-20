@@ -3,13 +3,18 @@ import "server-only";
 import { readFileSync } from "fs";
 import { join } from "path";
 import { fetchCoursesByCodesRanked, fetchGenEdCourses } from "@/lib/chat/data";
+import { normalizeAcademicRecord } from "@/lib/academic/audit";
+import { buildCsAudit, type CsAudit } from "@/lib/academic/cs-audit";
+import { applyPlannerProgress } from "@/lib/academic/planner-progress";
 
 export type DegreePlannerRequest = {
+  catalogCode?: string;
   major: string;
   majorSlug?: string;
   currentSemesterNumber?: number;
   planLength?: "one_semester" | "one_year" | "two_years" | "three_years" | "remaining" | "full";
   currentCourses?: string[];
+  completedCourses?: string[];
   honorsStudent?: boolean;
 };
 
@@ -43,6 +48,9 @@ export type DegreePlannerSemester = {
 };
 
 export type DegreePlannerResult = {
+  audit: CsAudit | null;
+  warnings: string[];
+  unscheduledRequirements: DegreePlannerCourse[];
   majorName: string;
   catalogUrl: string | null;
   planLengthLabel: string;
@@ -847,7 +855,8 @@ export async function generateDegreePlan(request: DegreePlannerRequest): Promise
 
   const pools = await buildElectivePools(major);
   const usedCodes = new Set<string>();
-  const explicitSavedCourses = normalizeCourseCodeList(request.currentCourses);
+  const academicRecord = normalizeAcademicRecord(request.completedCourses, request.currentCourses);
+  const explicitSavedCourses = [...academicRecord.completedCourses, ...academicRecord.currentCourses];
   const explicitSavedCourseMetadata = await fetchCoursesByCodesRanked(explicitSavedCourses, true).catch(() => []);
   const takenCourseDetails = buildTakenCourseDetailsMap(explicitSavedCourseMetadata, explicitSavedCourses);
   const availableTakenCodes = new Set(explicitSavedCourses);
@@ -933,15 +942,11 @@ export async function generateDegreePlan(request: DegreePlannerRequest): Promise
     unmatchedTakenCodes,
     takenCourseDetails,
   );
-  const inferredCompletedCourses =
-    explicitSavedCourses.length === 0 && currentSemesterNumber > 1
-      ? scheduleWithRemainingTakenCourses
-          .slice(0, currentSemesterNumber - 1)
-          .flatMap((semester) => semester.courses.map((course) => course.code))
-      : [];
-  const currentCourses = Array.from(new Set([...explicitSavedCourses, ...inferredCompletedCourses]));
+  const inferredCompletedCourses: string[] = [];
+  const currentCourses = academicRecord.currentCourses;
 
   const statusForCode = (code: string): DegreePlannerCourse["status"] => {
+    if (academicRecord.completedCourses.includes(code)) return "completed";
     if (currentCourses.includes(code)) return "in_progress";
     return "planned";
   };
@@ -953,19 +958,28 @@ export async function generateDegreePlan(request: DegreePlannerRequest): Promise
       status: statusForCode(course.code),
     })),
   }));
-  const balancedSchedule = rebalanceScheduleAroundCurrentSemester(markedSchedule, currentSemesterNumber, new Set(currentCourses));
+  const balancedSchedule = rebalanceScheduleAroundCurrentSemester(markedSchedule, currentSemesterNumber, new Set(explicitSavedCourses));
   const reconciledSchedule = reconcileMissingTakenCourses(
     balancedSchedule,
     currentSemesterNumber,
-    currentCourses,
+    explicitSavedCourses,
     takenCourseDetails,
   );
 
   const startIndex = request.planLength === "full" ? 0 : currentSemesterNumber;
   const semesterCount = planLengthToSemesterCount(request.planLength ?? "remaining", reconciledSchedule.length, startIndex);
-  const semesters = reconciledSchedule.slice(startIndex, startIndex + semesterCount);
+  const { semesters, unscheduledRequirements } = applyPlannerProgress<DegreePlannerCourse, DegreePlannerSemester>(
+    reconciledSchedule, academicRecord, startIndex, semesterCount, request.planLength === "full",
+  );
 
   return {
+    audit: buildCsAudit(matchedMajor.slug, academicRecord.completedCourses, currentCourses, request.catalogCode),
+    warnings: [
+      ...(request.catalogCode ? [`Your imported catalog (${request.catalogCode}) has not been mapped to verified program rules yet. The current-catalog CS audit is disabled; this schedule is only a sample.`] : []),
+      "This is a sample-based schedule, not a prerequisite-validated plan. Completed courses are based on your reported record; current courses are conditional on successful completion.",
+      ...(unscheduledRequirements.length ? ["Earlier unfinished sample requirements are listed separately and still need scheduling."] : []),
+    ],
+    unscheduledRequirements,
     majorName: major.name,
     catalogUrl: major.url ?? matchedMajor.url ?? null,
     planLengthLabel: planLengthLabel(request.planLength ?? "remaining", semesters.length),

@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { CheckCircle2, Plus, RotateCcw, Search, Sparkles, Target, X } from "lucide-react";
+import type { CsAudit } from "@/lib/academic/cs-audit";
 
 type PlannerCourseOption = {
   code: string;
@@ -33,6 +34,9 @@ type PlannerSemester = {
 };
 
 type PlannerResult = {
+  audit: CsAudit | null;
+  warnings: string[];
+  unscheduledRequirements: PlannerCourse[];
   majorName: string;
   catalogUrl: string | null;
   planLengthLabel: string;
@@ -65,6 +69,8 @@ type Props = {
   defaultMajor: string;
   defaultCurrentCourses: string;
   initialPlannerProfile: {
+    auditImport?: { metadata: { catalogCode: string | null } };
+    completedCourses?: string[];
     majorSlug: string;
     currentSemesterNumber: number;
     honorsStudent: boolean;
@@ -224,7 +230,12 @@ export default function MySchoolPlanner({
   const [shouldPersistCourseSelection, setShouldPersistCourseSelection] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [plan, setPlan] = useState<PlannerResult | null>(null);
+  const [storedPlan, setPlan] = useState<PlannerResult | null>(null);
+  const [generatedForKey, setGeneratedForKey] = useState("");
+  const inputKey = JSON.stringify([selectedMajorSlug, currentSemesterNumber, planLength,
+    selectedCurrentCourses.map(course => course.code), initialPlannerProfile.completedCourses ?? [], initialPlannerProfile.honorsStudent, initialPlannerProfile.auditImport?.metadata.catalogCode]);
+  // An edited record must never continue showing an audit of the previous record.
+  const plan = generatedForKey === inputKey ? storedPlan : null;
 
   useEffect(() => {
     let cancelled = false;
@@ -371,6 +382,8 @@ export default function MySchoolPlanner({
           currentSemesterNumber: Number(currentSemesterNumber || "0"),
           planLength,
           currentCourses: selectedCurrentCourses.map((course) => course.code),
+          completedCourses: initialPlannerProfile.completedCourses ?? [],
+          catalogCode: initialPlannerProfile.auditImport?.metadata.catalogCode,
           honorsStudent: Boolean(initialPlannerProfile.honorsStudent),
         }),
       });
@@ -379,6 +392,7 @@ export default function MySchoolPlanner({
         throw new Error(payload.error || "Could not generate your plan.");
       }
       setPlan(payload.plan as PlannerResult);
+      setGeneratedForKey(inputKey);
       onPersistProfile();
     } catch (err) {
       setPlan(null);
@@ -398,7 +412,7 @@ export default function MySchoolPlanner({
     setShouldPersistCourseSelection(true);
   };
 
-  const markTaken = (slotId: string) => {
+  const markInProgress = (slotId: string) => {
     const plannedCourse = plan?.semesters.flatMap((semester) => semester.courses).find((course) => course.slotId === slotId);
 
     setPlan((current) => {
@@ -409,7 +423,7 @@ export default function MySchoolPlanner({
           ...semester,
           courses: semester.courses.map((course) =>
             course.slotId === slotId
-              ? { ...course, status: "completed" }
+              ? { ...course, status: "in_progress" }
               : course,
           ),
         })),
@@ -463,7 +477,7 @@ export default function MySchoolPlanner({
               Build a clean semester-by-semester degree plan around the student.
             </h2>
             <p className="mt-3 max-w-2xl text-sm leading-6 text-zinc-300">
-              Pick your major from the official degree list, add your current and completed courses from real UIC course search, and then generate the roadmap from that exact context and the major&apos;s sample schedule.
+              Pick your major, save completed courses in your profile, and add in-progress courses here to adapt the major&apos;s sample schedule.
             </p>
           </div>
 
@@ -539,8 +553,8 @@ export default function MySchoolPlanner({
           </div>
 
           <CoursePicker
-            label="Current or completed courses"
-            placeholder="Search and add courses you already have or are taking"
+            label="In-progress courses"
+            placeholder="Search and add courses you are taking now"
             query={currentCourseQuery}
             onQueryChange={setCurrentCourseQuery}
             results={currentCourseResults}
@@ -548,6 +562,12 @@ export default function MySchoolPlanner({
             onAddCourse={addCurrentCourse}
             onRemoveCourse={removeCurrentCourse}
           />
+          <p className="text-sm text-zinc-400">
+            Completed courses are loaded from <a href="/profile" className="text-indigo-300 underline">your academic profile</a>.
+            {initialPlannerProfile.completedCourses?.length
+              ? ` Recorded: ${initialPlannerProfile.completedCourses.join(", ")}.`
+              : " None recorded yet. Year standing does not establish course completion."}
+          </p>
 
           {error ? (
             <div className="rounded-[1.2rem] border border-red-400/20 bg-red-500/10 px-4 py-3 text-sm text-red-100">
@@ -565,12 +585,42 @@ export default function MySchoolPlanner({
                 </div>
                 <div className="mt-5 text-xl font-semibold text-white">Generate a personalized roadmap</div>
                 <p className="mt-3 text-sm leading-6 text-zinc-400">
-                  Choose a major from the official list, add the UIC classes you already have or are taking, and the planner will generate from the matching sample schedule.
+                  Choose a major, record completed classes in your profile, and add current classes here. The planner starts from a sample schedule; course eligibility still needs verification.
                 </p>
               </div>
             </div>
           ) : (
             <>
+              <div className="rounded-xl border border-amber-400/20 bg-amber-500/10 p-4 text-sm text-amber-100" role="status">
+                {plan.warnings.map(warning => <p key={warning} className="mb-2 last:mb-0">{warning}</p>)}
+              </div>
+              {plan.audit ? (
+                <section className="rounded-xl border border-white/10 p-4">
+                  <h3 className="font-semibold text-white">CS requirement check — partial</h3>
+                  <p className="mt-2 text-sm text-zinc-400">{plan.audit.notice}</p>
+                  <a href={plan.audit.source} target="_blank" rel="noreferrer" className="mt-2 inline-block text-sm text-indigo-300 underline">Catalog source ({plan.audit.catalogYear})</a>
+                  <div className="mt-3 space-y-2">
+                    {plan.audit.requirements.map(requirement => (
+                      <details key={requirement.id} className="rounded-lg bg-white/5 p-3 text-sm">
+                        <summary className="cursor-pointer text-zinc-200">
+                          {requirement.label} — {{ reported_complete: "Reported complete", in_progress: "In progress", missing: "Not recorded", unknown: "Needs verification" }[requirement.status]}
+                        </summary>
+                        <p className="mt-2 text-zinc-400">{requirement.explanation}</p>
+                        {requirement.options.length ? <p className="mt-1 text-zinc-300">Requirement options: {requirement.options.join(", ")}. Eligibility has not been checked.</p> : null}
+                      </details>
+                    ))}
+                  </div>
+                </section>
+              ) : null}
+              {plan.unscheduledRequirements.length ? (
+                <section className="rounded-xl border border-amber-400/20 p-4 text-sm">
+                  <h3 className="font-semibold text-amber-100">Earlier sample requirements still unaccounted for</h3>
+                  <p className="mt-2 text-zinc-300">These have not been removed from your requirements or assigned to a future term.</p>
+                  <ul className="mt-2 list-disc pl-5 text-zinc-300">
+                    {plan.unscheduledRequirements.map(course => <li key={course.slotId}>{course.code} — {course.title}</li>)}
+                  </ul>
+                </section>
+              ) : null}
               <div className="space-y-2.5">
                 {plan.semesters.map((semester) => (
                   <section key={semester.id} className="rounded-[1.2rem] border border-white/10 bg-white/4 p-3">
@@ -593,12 +643,12 @@ export default function MySchoolPlanner({
                                   {course.bucketLabel}
                                 </span>
                                 <span className="rounded-full border border-white/10 bg-black/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-zinc-300">
-                                  {course.status === "completed" || course.status === "in_progress" ? "Taken" : "Planned"}
+                                  {course.status === "completed" ? "Reported complete" : course.status === "in_progress" ? "In progress" : "Planned"}
                                 </span>
                               </div>
                               <div className="mt-1 line-clamp-2 text-sm text-zinc-200">{course.title}</div>
                               <div className="mt-0.5 text-[11px] text-zinc-400">
-                                {course.credits ? `${course.credits} credits` : "Credits vary"}
+                                {course.credits !== null ? `${course.credits} credits` : "Credits vary"}
                                 {course.popularityReason ? ` • ${course.popularityReason}` : ""}
                               </div>
                             </div>
@@ -607,11 +657,11 @@ export default function MySchoolPlanner({
                               {course.status === "planned" ? (
                                 <button
                                   type="button"
-                                  onClick={() => markTaken(course.slotId)}
+                                  onClick={() => markInProgress(course.slotId)}
                                   className="inline-flex items-center gap-1.5 rounded-full border border-emerald-400/25 bg-emerald-500/10 px-2.5 py-1.5 text-[11px] font-semibold text-emerald-100 transition hover:bg-emerald-500/20"
                                 >
                                   <CheckCircle2 className="h-3 w-3" />
-                                  Already taken
+                                  Taking now
                                 </button>
                               ) : null}
                               {course.kind === "elective" && course.alternatives.length > 1 ? (

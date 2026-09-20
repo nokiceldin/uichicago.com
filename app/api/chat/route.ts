@@ -15,6 +15,7 @@ import {
 } from "@/lib/chat/session-state";
 import { getCurrentStudyUser } from "@/lib/auth/session";
 import { parseStoredPreferences } from "@/lib/study/profile";
+import { buildCsAudit, formatCsAuditForChat } from "@/lib/academic/cs-audit";
 import { getCurrentSession } from "@/lib/auth/session";
 import { formatMemoryForPrompt, getAccountMemoryKey, getMemory, learnMemoryFromMessages, mergeUserMemory, persistMemory } from "@/lib/chat/memory";
 import { buildUploadedFileSupport, type UploadedFile } from "@/lib/chat/attachments";
@@ -5207,6 +5208,19 @@ if (relevantVectors.length > 0 && !query.isFact && query.answerMode !== "plannin
         }
       }
       let planningObj: PlanningObject;
+      const importedCatalogCode = authenticatedStudyUser
+        ? parseStoredPreferences(authenticatedStudyUser.studyPreferences).plannerProfile.auditImport?.metadata.catalogCode : null;
+      const catalogNotice = importedCatalogCode
+        ? `Imported audit catalog code: ${importedCatalogCode}. This catalog has not been mapped to verified rules. Any current-catalog scaffold is only a sample, not an exact remaining-degree audit for this student. Explain this limitation.` : "";
+      if (catalogNotice) scaffoldChunk.content += `\n${catalogNotice}`;
+      const sharedAudit = buildCsAudit(studentCtx.major ?? "", studentCtx.completed_courses, studentCtx.in_progress_courses, importedCatalogCode);
+      if (sharedAudit) {
+        // Both planner and chat consume the same limited, deterministic checks.
+        // Keep this in the retrieval context as well as the structure-generation prompt.
+        scaffoldChunk.content += `\n\n${formatCsAuditForChat(sharedAudit)}`;
+        studentCtx.completed_courses = sharedAudit.record.completedCourses;
+        studentCtx.in_progress_courses = sharedAudit.record.currentCourses;
+      }
       try {
         planningObj = await buildPlanningObject(
           scaffoldChunk.content,
@@ -5249,6 +5263,8 @@ if (relevantVectors.length > 0 && !query.isFact && query.answerMode !== "plannin
         `  Constraints: ${planningObj.student_context.constraints.join(", ") || "none"}`,
         ``,
         `Plan strategy: ${planningObj.plan_strategy}`,
+        ...(sharedAudit ? ["", formatCsAuditForChat(sharedAudit)] : []),
+        ...(catalogNotice ? [catalogNotice] : []),
       ].join("\n");
 
       // Phase 2: capture manifest directly — no string parsing

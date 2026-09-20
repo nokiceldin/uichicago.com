@@ -1,13 +1,16 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useSession } from "next-auth/react";
 import { ChevronRight, Sparkles } from "lucide-react";
 import MySchoolPlanner from "@/app/components/study/MySchoolPlanner";
+import AuditImportPanel from "@/app/components/study/AuditImportPanel";
+import type { ImportChoice, SavedAuditImport } from "@/lib/academic/audit-import-review";
 import { parseCommaSeparated, readLocalStudyProfile, writeLocalStudyProfile } from "@/lib/study/profile";
 
 type PlannerProfileState = {
+  auditImport?: SavedAuditImport;
   majorSlug: string;
   currentSemesterNumber: number;
   honorsStudent: boolean;
@@ -28,6 +31,7 @@ function samePlannerProfile(a: PlannerProfileState, b: PlannerProfileState) {
     a.honorsStudent === b.honorsStudent &&
     sameStringArray(a.currentCourses, b.currentCourses)
     && sameStringArray(a.completedCourses, b.completedCourses)
+    && a.auditImport?.importedAt === b.auditImport?.importedAt
   );
 }
 
@@ -35,6 +39,9 @@ export default function StudyPlannerPageClient() {
   const { data: session, status } = useSession();
   const userId = session?.user?.id ?? null;
   const [hasLoadedProfile, setHasLoadedProfile] = useState(false);
+  const [importing, setImporting] = useState(false);
+  const importingRef = useRef(false);
+  const pendingSaves = useRef(new Set<Promise<void>>());
   const [profileMajor, setProfileMajor] = useState("");
   const [profileCurrentCourses, setProfileCurrentCourses] = useState("");
   const [profileInterests, setProfileInterests] = useState<string[]>([]);
@@ -75,6 +82,7 @@ export default function StudyPlannerPageClient() {
     }
     if (profile.plannerProfile || Array.isArray(profile.currentCourses)) {
       const nextPlannerProfile: PlannerProfileState = {
+        auditImport: profile.plannerProfile?.auditImport,
         majorSlug: typeof profile.plannerProfile?.majorSlug === "string" ? profile.plannerProfile.majorSlug : "",
         currentSemesterNumber: Number(profile.plannerProfile?.currentSemesterNumber ?? 0),
         honorsStudent: Boolean(profile.plannerProfile?.honorsStudent),
@@ -155,11 +163,12 @@ export default function StudyPlannerPageClient() {
     currentCourses?: string[];
     plannerProfile?: Partial<PlannerProfileState>;
   }) => {
-    if (status !== "authenticated") return;
-
+    if (status !== "authenticated" || importingRef.current) return;
+    const task = (async () => {
     const nextMajor = overrides?.major ?? profileMajor;
     const nextCurrentCourses = overrides?.currentCourses ?? parseCommaSeparated(profileCurrentCourses);
     const nextPlannerProfile: PlannerProfileState = {
+      auditImport: plannerProfile.auditImport,
       majorSlug: typeof overrides?.plannerProfile?.majorSlug === "string" ? overrides.plannerProfile.majorSlug : plannerProfile.majorSlug,
       currentSemesterNumber: Number(overrides?.plannerProfile?.currentSemesterNumber ?? plannerProfile.currentSemesterNumber),
       honorsStudent: Boolean(overrides?.plannerProfile?.honorsStudent ?? plannerProfile.honorsStudent),
@@ -210,7 +219,35 @@ export default function StudyPlannerPageClient() {
       setProfileSyncError(error instanceof Error ? error.message : "Could not save your planner profile to your account.");
       return;
     }
+    })();
+    pendingSaves.current.add(task);
+    try { await task; } finally { pendingSaves.current.delete(task); }
   }, [plannerProfile, profileCurrentCourses, profileInterests, profileMajor, profileStudyPreferences, status, syncLocalProfile, userId]);
+
+  const importAudit = async (text: string, choices: ImportChoice[]) => {
+    if (status !== "authenticated" || !hasLoadedProfile) throw new Error("Sign in and load your profile before saving.");
+    if (importingRef.current) throw new Error("An audit import is already saving.");
+    importingRef.current = true;
+    setImporting(true);
+    try {
+      // Finish outstanding autosaves before replacing course history, and prevent
+      // stale autosaves from racing the explicit import operation.
+      await Promise.allSettled([...pendingSaves.current]);
+      const response = await fetch("/api/study/me", {
+        method: "PATCH", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ auditImport: { text, choices, confirmed: true } }),
+      });
+      const payload = await response.json();
+      if (!response.ok || !payload.profile) throw new Error(payload.error || "Could not save the audit. Try again.");
+      syncLocalProfile(payload.profile);
+      writeLocalStudyProfile(payload.profile, userId);
+      window.dispatchEvent(new CustomEvent(STUDY_PROFILE_EVENT, { detail: { profile: payload.profile } }));
+      setProfileSyncError("");
+    } finally {
+      importingRef.current = false;
+      setImporting(false);
+    }
+  };
 
   const handleProfileSync = useCallback((next: { major: string; currentCourses: string[] }) => {
     const nextCourses = next.currentCourses.join(", ");
@@ -220,18 +257,18 @@ export default function StudyPlannerPageClient() {
 
   const handlePlannerProfileChange = useCallback((next: Omit<PlannerProfileState, "completedCourses">) => {
     setPlannerProfile((current) => {
-      const merged = { ...next, completedCourses: current.completedCourses };
+      const merged = { ...current, ...next, completedCourses: current.completedCourses };
       return samePlannerProfile(current, merged) ? current : merged;
     });
   }, []);
 
   useEffect(() => {
-    if (status !== "authenticated" || !hasLoadedProfile) return;
+    if (status !== "authenticated" || !hasLoadedProfile || importing) return;
     const timeout = window.setTimeout(() => {
       void saveAcademicContext();
     }, 700);
     return () => window.clearTimeout(timeout);
-  }, [hasLoadedProfile, saveAcademicContext, status]);
+  }, [hasLoadedProfile, importing, saveAcademicContext, status]);
 
   return (
     <main className="min-h-screen bg-transparent pb-20 text-white">
@@ -266,6 +303,16 @@ export default function StudyPlannerPageClient() {
           </div>
         </section>
 
+        <AuditImportPanel
+          key={userId ?? "signed-out"}
+          canSave={status === "authenticated" && hasLoadedProfile}
+          saving={importing}
+          completedCourses={plannerProfile.completedCourses}
+          currentCourses={plannerProfile.currentCourses}
+          savedImport={plannerProfile.auditImport}
+          onImport={importAudit}
+        />
+        <fieldset disabled={importing} className="min-w-0">
         <MySchoolPlanner
           defaultMajor={profileMajor}
           defaultCurrentCourses={profileCurrentCourses}
@@ -274,6 +321,7 @@ export default function StudyPlannerPageClient() {
           onProfileSync={handleProfileSync}
           onPersistProfile={saveAcademicContext}
         />
+        </fieldset>
       </div>
     </main>
   );

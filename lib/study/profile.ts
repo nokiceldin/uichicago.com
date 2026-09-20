@@ -1,6 +1,8 @@
 import type { CardProgress, NoteAiGenerationLog, NoteAudioSession, QuizResult } from "@/lib/study/types";
+import type { SavedAuditImport } from "../academic/audit-import-review.ts";
 
 export type PlannerProfilePayload = {
+  auditImport?: SavedAuditImport;
   majorSlug?: string;
   currentSemesterNumber?: number;
   honorsStudent?: boolean;
@@ -134,6 +136,7 @@ export function normalizeStudyProfileSnapshot(profile: Partial<StudyProfileSnaps
     studyPreferences: typeof profile.studyPreferences === "string" ? profile.studyPreferences : "",
     plannerProfile: typeof profile.plannerProfile === "object" && profile.plannerProfile
       ? {
+          auditImport: profile.plannerProfile.auditImport,
           majorSlug:
             typeof profile.plannerProfile.majorSlug === "string" && profile.plannerProfile.majorSlug.trim()
               ? profile.plannerProfile.majorSlug.trim()

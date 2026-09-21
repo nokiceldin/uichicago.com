@@ -2084,6 +2084,9 @@ function ChatHistorySidebar({
 
 function ChatContent() {
   const stopRef = useRef<(() => void) | null>(null);
+  // React state updates are asynchronous, so `loading` alone cannot prevent two
+  // near-simultaneous Enter/click events from starting duplicate chat requests.
+  const sendInFlightRef = useRef(false);
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -2521,7 +2524,8 @@ const [attachedFile, setAttachedFile] = useState<AttachedFile | null>(null);
 
   const handleSend = useCallback(async (textOverride?: string) => {
     const text = (typeof textOverride === "string" ? textOverride : input).trim();
-    if ((!text && !attachedFile) || loading) return;
+    if ((!text && !attachedFile) || loading || sendInFlightRef.current) return;
+    sendInFlightRef.current = true;
 
     // Snapshot & clear the attachment before the async send
     const fileSnapshot = attachedFile;
@@ -2720,6 +2724,7 @@ setLoading(false);
       }
     } finally {
       setLoading(false);
+      sendInFlightRef.current = false;
       setTimeout(() => inputRef.current?.focus(), 50);
     }
   }, [activeConversationId, attachedFile, createConversation, input, loading, messages, persistConversationSnapshot]);

@@ -6,7 +6,7 @@ import { useState, useRef, useEffect, useCallback, useMemo, Suspense } from "rea
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { flushSync } from "react-dom";
 import posthog from "posthog-js";
-import { Check, Ellipsis, MessageSquare, Pencil, PanelLeftClose, PanelLeftOpen, Plus, Trash2, X } from "lucide-react";
+import { Check, Ellipsis, Pencil, PanelLeftClose, PanelLeftOpen, Plus, Trash2, X } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { getDeterministicItems } from "@/lib/chat/prompts";
 
@@ -1449,8 +1449,8 @@ function ChatInput({
       <div
         className={`overflow-hidden border transition-all duration-200 ${
           isFloating
-            ? "rounded-[20px] border-zinc-300/80 bg-white/92 shadow-[0_14px_34px_rgba(0,0,0,0.08)] dark:border-zinc-700/70 dark:bg-[rgba(21,23,30,0.92)] dark:shadow-[0_14px_34px_rgba(0,0,0,0.35)] sm:rounded-[24px]"
-            : "rounded-[20px] border-zinc-300/80 bg-white/92 shadow-[0_16px_42px_rgba(0,0,0,0.12)] dark:border-zinc-700/80 dark:bg-[rgba(21,23,30,0.94)] dark:shadow-[0_16px_42px_rgba(0,0,0,0.45)] sm:rounded-[24px]"
+            ? "rounded-[24px] border-zinc-300/80 bg-white/92 shadow-[0_14px_34px_rgba(0,0,0,0.08)] dark:border-zinc-700/70 dark:bg-[rgba(21,23,30,0.92)] dark:shadow-[0_14px_34px_rgba(0,0,0,0.35)] sm:rounded-[28px]"
+            : "rounded-[24px] border-zinc-300/80 bg-white/92 shadow-[0_16px_42px_rgba(0,0,0,0.12)] dark:border-zinc-700/80 dark:bg-[rgba(21,23,30,0.94)] dark:shadow-[0_16px_42px_rgba(0,0,0,0.45)] sm:rounded-[28px]"
         }`}
       >
       {/* Attachment preview strip */}
@@ -1476,7 +1476,7 @@ function ChatInput({
         </div>
       )}
 
-      <div className="flex min-h-[50px] items-end">
+      <div className="flex min-h-[48px] items-end">
         {/* Textarea */}
         <textarea
           ref={inputRef}
@@ -1489,7 +1489,7 @@ function ChatInput({
           onKeyDown={onKeyDown}
           placeholder={attachedFile ? "Ask about this file..." : "Ask Sparky anything about UIC..."}
           rows={1}
-          className="flex-1 resize-none bg-transparent px-2 py-4 text-[16px] font-normal leading-relaxed text-zinc-900 outline-none placeholder:text-zinc-400 dark:text-white sm:px-3 sm:py-[18px]"
+          className="flex-1 resize-none bg-transparent px-2 py-3.5 text-[16px] font-normal leading-relaxed text-zinc-900 outline-none placeholder:text-zinc-400 dark:text-white sm:px-3 sm:py-4"
           style={{ maxHeight: "180px" }}
         />
 
@@ -1714,6 +1714,11 @@ const visiblePrompts = useMemo(() => getDeterministicItems(topic.items, 4), [top
               onClick={() => {
                 posthog.capture("chat_prompt_card_clicked", { prompt_text: item, topic: topic.id });
                 onInputChange(item);
+                requestAnimationFrame(() => {
+                  inputRef.current?.focus();
+                  const length = inputRef.current?.value.length ?? 0;
+                  inputRef.current?.setSelectionRange(length, length);
+                });
               }}
               delay={i * 35}
             />
@@ -1760,17 +1765,30 @@ function ConversationView({
     el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
   };
 
+  const isStreaming = messages.some(m => m.streaming);
+  const activeStreamingMessage = messages.find((message) => message.streaming);
+  // Keep a newly-sent message in a comfortable reading position while Sparky
+  // starts. Once the answer has enough text to need following, resume normal
+  // bottom-follow behavior.
+  const shouldHoldNewTurnPosition =
+    loading && (!activeStreamingMessage || activeStreamingMessage.content.length < 240);
+
   useEffect(() => {
     const el = scrollAreaRef.current;
     if (!el) return;
     if (!autoScrollRef.current) return;
+    if (shouldHoldNewTurnPosition) return;
     const frame = requestAnimationFrame(() => {
       el.scrollTo({ top: el.scrollHeight, behavior: "auto" });
     });
     return () => cancelAnimationFrame(frame);
-  }, [messages, loading, scrollAreaRef, autoScrollRef]);
+  }, [messages, loading, shouldHoldNewTurnPosition, scrollAreaRef, autoScrollRef]);
 
-  const isStreaming = messages.some(m => m.streaming);
+  // This is deliberately narrower than `loading`: after streaming ends, the
+  // conversation save can still be pending briefly. That must not show a second
+  // typing indicator beneath an already-complete assistant message.
+  const isWaitingForFirstResponse =
+    loading && !isStreaming && messages.at(-1)?.role === "user";
   return (
     <div className="relative">
       <div className="mx-auto w-full max-w-3xl px-3 pt-6 pb-4 sm:px-5 sm:pt-8">
@@ -1779,13 +1797,8 @@ function ConversationView({
           const userQuestion = msg.role === "assistant"
             ? messages.slice(0, i).reverse().find(m => m.role === "user")?.content
             : undefined;
-          // Add a subtle divider before each user message (except the first)
-          const showDivider = msg.role === "user" && i > 0;
           return (
             <div key={msg.id}>
-              {showDivider && (
-                <div className="border-t border-zinc-100 dark:border-zinc-800/60 mb-8" />
-              )}
               <div className="msg-appear" data-msg-id={msg.id}>
                 <MessageBubble
                   msg={msg}
@@ -1796,7 +1809,7 @@ function ConversationView({
             </div>
           );
         })}
-        {loading && !isStreaming && <TypingIndicator />}
+        {isWaitingForFirstResponse && <TypingIndicator />}
       </div>
       <div className="h-4" />
     </div>{showScroll && (
@@ -1816,10 +1829,12 @@ function ConversationView({
 function QuickSuggestBar({
   onSend,
   onInputChange,
+  inputRef,
   refreshKey,
 }: {
   onSend: (text?: string) => void;
   onInputChange: (v: string) => void;
+  inputRef: React.RefObject<HTMLTextAreaElement | null>;
   refreshKey: number;
 }) {
   const quickPrompts = useMemo(() => {
@@ -1835,6 +1850,11 @@ function QuickSuggestBar({
             onClick={() => {
               posthog.capture("chat_prompt_card_clicked", { prompt_text: item, topic: "chat_general" });
               onInputChange(item);
+              requestAnimationFrame(() => {
+                inputRef.current?.focus();
+                const length = inputRef.current?.value.length ?? 0;
+                inputRef.current?.setSelectionRange(length, length);
+              });
             }}
             className="shrink-0 h-[32px] rounded-full border border-zinc-200/80 bg-white/55 px-3.5 text-[12.5px] text-zinc-500 shadow-[0_8px_20px_rgba(0,0,0,0.03)] backdrop-blur-sm transition-all duration-150 whitespace-nowrap hover:border-zinc-400 hover:bg-zinc-50 hover:text-zinc-800 active:scale-[0.97] dark:border-zinc-700/60 dark:bg-[rgba(18,20,26,0.7)] dark:text-zinc-400 dark:hover:border-zinc-500 dark:hover:bg-zinc-800/50 dark:hover:text-zinc-100"
             title={item}
@@ -1897,17 +1917,11 @@ function ChatHistorySidebar({
 
   return (
     <aside
-      className={`${open ? "w-[280px] min-w-[280px]" : "w-[76px] min-w-[76px]"} flex h-full shrink-0 flex-col border-r border-zinc-200/70 bg-zinc-50/85 transition-all duration-200 dark:border-white/8 dark:bg-[#0c0d12]`}
+      className={`${open ? "w-[280px] min-w-[280px]" : "w-[76px] min-w-[76px]"} flex h-full shrink-0 flex-col overflow-hidden border-r border-zinc-200/70 bg-zinc-50/85 transition-[width,min-width] duration-300 ease-out dark:border-white/8 dark:bg-[#0c0d12]`}
     >
       <div className="flex items-center justify-between px-4 pb-3 pt-4">
         {open ? (
-          <div>
-            <div className="text-xs font-bold uppercase tracking-[0.18em] text-zinc-400 dark:text-zinc-500">Sparky</div>
-            <div className="mt-1 text-sm font-semibold text-zinc-900 dark:text-white">Chat history</div>
-            <div className="mt-1 text-[11px] text-zinc-500 dark:text-zinc-400">
-              {signedIn ? "Synced to your account" : "Saved on this device"}
-            </div>
-          </div>
+          <div className="text-sm font-semibold text-zinc-900 dark:text-white">Recents</div>
         ) : null}
         <button
           type="button"
@@ -2055,17 +2069,7 @@ function ChatHistorySidebar({
                         </div>
                       ) : null}
                     </>
-                  ) : (
-                    <button
-                      type="button"
-                      onClick={() => onOpenConversation(item.id)}
-                      className="flex w-full justify-center px-0 py-2"
-                    >
-                      <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-zinc-900/90 text-white dark:bg-white/8">
-                        <MessageSquare className="h-3.5 w-3.5" />
-                      </div>
-                    </button>
-                  )}
+                  ) : null}
                 </div>
               );
             })}
@@ -2120,13 +2124,6 @@ const [attachedFile, setAttachedFile] = useState<AttachedFile | null>(null);
   useEffect(() => {
     activeConversationIdRef.current = activeConversationId;
   }, [activeConversationId]);
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    if (window.innerWidth >= 768) {
-      setSidebarOpen(true);
-    }
-  }, []);
 
   const upsertConversationSummary = useCallback((summary: ConversationSummary) => {
     setConversations((current) => [summary, ...current.filter((item) => item.id !== summary.id)]);
@@ -2551,8 +2548,9 @@ const [attachedFile, setAttachedFile] = useState<AttachedFile | null>(null);
       effectiveConversationId = null;
     }
 
-    // flushSync forces React to commit the DOM synchronously so we can
-    // measure and scroll immediately — no setTimeout needed.
+    // Commit first, then position the user's message roughly one-third down
+    // the reading area. This feels like a conversational handoff instead of
+    // pinning a new message against the composer at the absolute bottom.
     flushSync(() => {
       setMessages(updated);
     });
@@ -2561,7 +2559,15 @@ const [attachedFile, setAttachedFile] = useState<AttachedFile | null>(null);
     if (scrollArea) {
       autoScrollRef.current = true;
       requestAnimationFrame(() => {
-        scrollArea.scrollTo({ top: scrollArea.scrollHeight, behavior: "smooth" });
+        const userMessage = scrollArea.querySelector<HTMLElement>(`[data-msg-id="${userMsg.id}"]`);
+        if (!userMessage) return;
+        const containerRect = scrollArea.getBoundingClientRect();
+        const messageRect = userMessage.getBoundingClientRect();
+        const targetTop = Math.max(
+          0,
+          scrollArea.scrollTop + messageRect.top - containerRect.top - scrollArea.clientHeight * 0.34,
+        );
+        scrollArea.scrollTo({ top: targetTop, behavior: "smooth" });
       });
     }
     posthog.capture("chat_message_sent", {
@@ -2688,6 +2694,8 @@ setMessages((prev: Message[]) =>
       : m
   )
 );
+// Do not leave the visible request active while chat history is saved.
+setLoading(false);
 
       if (effectiveConversationId) {
         const finalMessages = [
@@ -2802,6 +2810,8 @@ setMessages(prev =>
     m.id === assistantId ? { ...m, content: accumulated2, streaming: false } : m
   )
 );
+    // History persistence is non-visual work; it should not revive typing UI.
+    setLoading(false);
     if (activeConversationIdRef.current) {
       await persistConversationSnapshot(activeConversationIdRef.current, [
         ...withoutLastAssistant,
@@ -3021,6 +3031,7 @@ const handleKey = useCallback((e: React.KeyboardEvent<HTMLTextAreaElement>) => {
                   <QuickSuggestBar
                     onSend={handleSend}
                     onInputChange={setInput}
+                    inputRef={inputRef}
                     refreshKey={chipRefreshKey}
                   />
 

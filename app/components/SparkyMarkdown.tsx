@@ -139,7 +139,7 @@ export default function SparkyMarkdown({ content }: { content: string }) {
             <strong className="text-zinc-900 dark:text-white font-semibold">{children}</strong>
           ),
           ul: ({ children }) => (
-            <ul className="my-2 space-y-1.5 list-disc pl-5 text-zinc-700 dark:text-zinc-300">{children}</ul>
+            <ul className="my-3 space-y-2 list-none pl-0 text-zinc-700 dark:text-zinc-300 [&>li]:relative [&>li]:pl-5 [&>li]:before:absolute [&>li]:before:left-0 [&>li]:before:top-[0.76em] [&>li]:before:h-1.5 [&>li]:before:w-1.5 [&>li]:before:rounded-full [&>li]:before:bg-zinc-400 dark:[&>li]:before:bg-zinc-500">{children}</ul>
           ),
           ol: ({ children }) => (
             <ol className="my-2 space-y-1.5 list-decimal pl-5 text-zinc-700 dark:text-zinc-300">{children}</ol>
@@ -186,13 +186,14 @@ export default function SparkyMarkdown({ content }: { content: string }) {
           ),
           a: ({ href, children }) => {
             const isInternal = typeof href === "string" && href.startsWith("/");
+            const isCourseLink = typeof href === "string" && href.startsWith("/courses/");
 
             return (
               <a
                 href={href}
                 target={isInternal ? undefined : "_blank"}
                 rel={isInternal ? undefined : "noreferrer"}
-                className="font-medium text-red-500 underline decoration-red-300 underline-offset-2 hover:text-red-600 dark:text-red-400 dark:decoration-red-500/60 dark:hover:text-red-300"
+                className={`font-medium text-red-500 underline decoration-red-300 underline-offset-2 hover:text-red-600 dark:text-red-400 dark:decoration-red-500/60 dark:hover:text-red-300${isCourseLink ? " whitespace-nowrap" : ""}`}
               >
                 {children}
               </a>

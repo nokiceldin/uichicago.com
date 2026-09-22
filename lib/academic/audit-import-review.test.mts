@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { parseUachieveText } from "./uachieve-import.ts";
-import { defaultImportChoices, prepareAuditImport, reviewImport } from "./audit-import-review.ts";
+import { defaultImportChoices, mergeCurrentCoursesAfterAuditImport, prepareAuditImport, reviewImport } from "./audit-import-review.ts";
 import { buildCsAudit } from "./cs-audit.ts";
 import { normalizeStudyProfileSnapshot, parseStoredPreferences, serializeStoredPreferences } from "../study/profile.ts";
 
@@ -54,6 +54,33 @@ test("selected records round-trip through account and device persistence", () =>
   assert.equal(local?.plannerProfile.auditImport?.metadata.catalogCode, "202408");
   assert.equal(local?.plannerProfile.auditImport?.attempts.length, 6);
   assert.doesNotMatch(stored, /Synthetic Student|000000000/);
+});
+
+test("a new audit preserves manual current courses and replaces old audit-derived ones", () => {
+  const choices = defaultImportChoices(parseUachieveText(sample));
+  choices[2] = "completed";
+  const previous = prepareAuditImport(sample, choices, "2026-09-20T12:00:00Z").auditImport;
+  assert.deepEqual(
+    mergeCurrentCoursesAfterAuditImport(
+      ["CS 251", "CS 342", "CS 361", "CS 362"],
+      previous,
+      ["BIOS 120"],
+      ["CS 251"],
+    ),
+    ["CS 342", "CS 361", "CS 362", "BIOS 120"],
+  );
+});
+
+test("local profile normalization repairs current courses lost by the old import regression", () => {
+  const choices = defaultImportChoices(parseUachieveText(sample));
+  choices[2] = "completed";
+  const auditImport = prepareAuditImport(sample, choices, "2026-09-20T12:00:00Z").auditImport;
+  const repaired = normalizeStudyProfileSnapshot({
+    currentCourses: [],
+    plannerProfile: { auditImport, currentCourses: [], completedCourses: ["CS 141", "CS 151"] },
+  });
+  assert.deepEqual(repaired?.currentCourses, ["CS 251"]);
+  assert.deepEqual(repaired?.plannerProfile.currentCourses, ["CS 251"]);
 });
 
 test("known but unmapped catalogs cannot use the current CS rule snapshot", () => {

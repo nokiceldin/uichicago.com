@@ -2,8 +2,8 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import { signIn, useSession } from "next-auth/react";
-import { CheckCircle2, ChevronDown, ChevronRight, ImageIcon, Plus, Search, Upload, UserRound, X } from "lucide-react";
+import { useSession } from "next-auth/react";
+import { CheckCircle2, ChevronDown, ChevronRight, ImageIcon, Plus, Search, Upload, X } from "lucide-react";
 import { parseCommaSeparated, readLocalStudyProfile, writeLocalStudyProfile } from "@/lib/study/profile";
 import type { SiteSettingsPayload } from "@/lib/study/profile";
 import type { SavedCourseSummary, SavedProfessorSummary } from "@/lib/saved-items";
@@ -279,7 +279,17 @@ export default function ProfilePageClient() {
   }, [majorOptions, loaded]);
 
   useEffect(() => {
-    if (status !== "authenticated") return;
+    if (status !== "authenticated") {
+      const cached = readLocalStudyProfile();
+      const nextForm: ProfileFormState = cached ? {
+        school: cached.school || "UIC", major: cached.major || "", majorSlug: cached.plannerProfile.majorSlug || "",
+        currentCourses: cached.currentCourses.join(", "), completedCourses: (cached.plannerProfile.completedCourses ?? []).join(", "),
+        interests: cached.interests.join(", "), studyPreferences: cached.studyPreferences || "",
+        currentSemesterNumber: String(Number(cached.plannerProfile.currentSemesterNumber || 0)), honorsStudent: Boolean(cached.plannerProfile.honorsStudent),
+      } : emptyProfile;
+      setForm(nextForm); setSavedSnapshot(serializeProfileForm(nextForm)); setLoaded(true);
+      return;
+    }
 
     let cancelled = false;
     setLoaded(false);
@@ -470,6 +480,12 @@ export default function ProfilePageClient() {
     if (!trimmedCode) return;
     const existing = field === "currentCourses" ? currentCoursesList : completedCoursesList;
     if (existing.includes(trimmedCode)) return;
+    // A course cannot be current and completed at the same time. Moving it to
+    // completed preserves one shared academic record for Profile and Planner.
+    if (field === "completedCourses") {
+      updateCourseField("currentCourses", currentCoursesList.filter(course => course !== trimmedCode));
+    }
+    if (field === "currentCourses" && completedCoursesList.includes(trimmedCode)) return;
     updateCourseField(field, [...existing, trimmedCode]);
     setCurrentCourseQuery("");
     setCurrentCourseSuggestions([]);
@@ -490,10 +506,6 @@ export default function ProfilePageClient() {
   };
 
   const saveProfile = useCallback(async () => {
-    if (status !== "authenticated") {
-      void signIn("google", { callbackUrl: "/profile" });
-      return;
-    }
     if (!hasUnsavedChanges) return;
 
     const localSettings = readLocalSiteSettings(userId);
@@ -515,6 +527,12 @@ export default function ProfilePageClient() {
       };
       const localProfilePayload = formToStudyProfilePayload(localForm, { ...localSettings, avatar });
       broadcastStudyProfile(localProfilePayload);
+      if (status !== "authenticated") {
+        setSavedSnapshot(serializeProfileForm(localForm));
+        setLastSavedAt(new Date());
+        setMessage("");
+        return;
+      }
 
       const response = await fetch("/api/study/me", {
         method: "PATCH",
@@ -598,7 +616,7 @@ export default function ProfilePageClient() {
   }, [avatar, broadcastStudyProfile, form, hasUnsavedChanges, majorOptions, status, userId]);
 
   useEffect(() => {
-    if (status !== "authenticated" || !loaded || !hasUnsavedChanges || isSaving) return;
+    if (!loaded || !hasUnsavedChanges || isSaving) return;
 
     const timeout = window.setTimeout(() => {
       void saveProfile();
@@ -617,83 +635,12 @@ export default function ProfilePageClient() {
     );
   }
 
-  if (status !== "authenticated") {
-    return (
-      <main className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(239,68,68,0.08),transparent_36%),#fafafa] px-4 py-10 text-zinc-950 dark:bg-[radial-gradient(circle_at_top,rgba(129,58,58,0.18),transparent_36%),#09090b] dark:text-white sm:px-6">
-        <div className="mx-auto max-w-[960px] rounded-4xl border border-zinc-200 bg-white p-8 shadow-[0_24px_70px_rgba(15,23,42,0.08)] dark:border-white/10 dark:bg-[linear-gradient(180deg,rgba(28,28,33,0.96),rgba(16,16,21,0.98))] dark:shadow-[0_30px_80px_rgba(0,0,0,0.35)]">
-          <div className="inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-zinc-50 px-4 py-2 text-[11px] font-bold uppercase tracking-[0.22em] text-zinc-600 dark:border-white/10 dark:bg-white/4 dark:text-zinc-300">
-            <UserRound className="h-4 w-4" />
-            Your profile
-          </div>
-          <h1 className="mt-6 text-[2.5rem] font-black tracking-[-0.06em] text-zinc-950 dark:text-white">One place for the context your whole workspace needs.</h1>
-          <p className="mt-4 max-w-2xl text-sm leading-7 text-zinc-600 dark:text-zinc-400">
-            Save your major, classes, and study preferences once so planning, study tools, and Sparky can personalize around you.
-          </p>
-          <button
-            type="button"
-            onClick={() => signIn("google", { callbackUrl: "/profile" })}
-            className="mt-8 inline-flex items-center rounded-full bg-zinc-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-zinc-800 dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-100"
-          >
-            Continue with Google
-          </button>
-        </div>
-      </main>
-    );
-  }
-
-  const displayName = session?.user?.name || "Your profile";
-  const email = session?.user?.email || "";
+  const displayName = session?.user?.name || "This device";
+  const email = session?.user?.email || "Saved in this browser";
 
   return (
     <main className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(239,68,68,0.08),transparent_36%),#fafafa] px-4 py-10 text-zinc-950 dark:bg-[radial-gradient(circle_at_top,rgba(129,58,58,0.18),transparent_36%),#09090b] dark:text-white sm:px-6">
       <div className="mx-auto max-w-[1240px] space-y-6">
-        <section className="rounded-[1.8rem] border border-zinc-200 bg-[linear-gradient(180deg,#ffffff,#f6f6f7)] p-6 shadow-[0_24px_70px_rgba(15,23,42,0.08)] dark:border-white/10 dark:bg-[linear-gradient(180deg,rgba(28,28,33,0.96),rgba(16,16,21,0.98))] dark:shadow-[0_30px_80px_rgba(0,0,0,0.28)] sm:p-7">
-          <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
-            <div>
-              <div className="text-[11px] font-bold uppercase tracking-[0.22em] text-zinc-500">Your profile</div>
-              <h1 className="mt-2 text-[2.1rem] font-black tracking-[-0.06em] text-zinc-950 dark:text-white sm:text-[2.5rem]">
-                Keep your academic context tidy.
-              </h1>
-              <p className="mt-3 max-w-2xl text-sm leading-7 text-zinc-600 dark:text-zinc-400">
-                Save your major, semester, classes, and preferences here so the rest of the site can adapt without crowding the page.
-              </p>
-              <div className="mt-5 flex flex-wrap gap-2">
-                <span className="rounded-full border border-zinc-200 bg-zinc-50 px-3 py-1.5 text-xs font-semibold text-zinc-700 dark:border-white/10 dark:bg-white/5 dark:text-zinc-200">
-                  {selectedMajor?.name || form.major.trim() || "No major yet"}
-                </span>
-                <span className="rounded-full border border-zinc-200 bg-zinc-50 px-3 py-1.5 text-xs font-semibold text-zinc-700 dark:border-white/10 dark:bg-white/5 dark:text-zinc-200">
-                  {currentCoursesList.length} current or completed courses
-                </span>
-                {form.honorsStudent ? (
-                  <span className="rounded-full border border-zinc-200 bg-zinc-50 px-3 py-1.5 text-xs font-semibold text-zinc-700 dark:border-white/10 dark:bg-white/5 dark:text-zinc-200">
-                    Honors student
-                  </span>
-                ) : null}
-              </div>
-            </div>
-            <div className="flex flex-col items-start gap-3 lg:items-end">
-              <div className="text-sm text-zinc-500 dark:text-zinc-400">{displayName}</div>
-              <div className={`inline-flex items-center justify-center rounded-full px-4 py-2 text-sm font-semibold ${
-                isSaving
-                  ? "bg-zinc-200 text-zinc-600 dark:bg-white/8 dark:text-zinc-300"
-                  : hasUnsavedChanges
-                  ? "bg-amber-100 text-amber-800 dark:bg-amber-500/15 dark:text-amber-200"
-                  : "bg-emerald-100 text-emerald-800 dark:bg-emerald-500/15 dark:text-emerald-200"
-              }`}>
-                {isSaving ? "Saving..." : hasUnsavedChanges ? "Saving soon..." : "Autosaved"}
-              </div>
-              {lastSavedAt && (
-                <div className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">
-                  ✓ Saved {lastSavedAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                </div>
-              )}
-              {message && (
-                <div className="text-xs font-medium text-red-500">{message}</div>
-              )}
-            </div>
-          </div>
-        </section>
-
         {/* Profile picture section */}
         <section className="rounded-[1.8rem] border border-zinc-200 bg-white shadow-[0_24px_70px_rgba(15,23,42,0.08)] dark:border-white/10 dark:bg-[linear-gradient(180deg,rgba(28,28,33,0.96),rgba(16,16,21,0.98))] dark:shadow-[0_30px_80px_rgba(0,0,0,0.28)]">
           <div className="border-b border-zinc-200 px-6 py-5 dark:border-white/10">
@@ -860,12 +807,17 @@ export default function ProfilePageClient() {
           </div>
         </section>
 
-        <section className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
-          <div className="rounded-[1.8rem] border border-zinc-200 bg-white p-6 shadow-[0_24px_70px_rgba(15,23,42,0.08)] dark:border-white/10 dark:bg-[linear-gradient(180deg,rgba(28,28,33,0.96),rgba(16,16,21,0.98))] dark:shadow-[0_30px_80px_rgba(0,0,0,0.28)] sm:p-7">
-            <div>
-              <div className="text-[11px] font-bold uppercase tracking-[0.22em] text-zinc-500">Account context</div>
-              <h2 className="mt-2 text-2xl font-bold tracking-[-0.04em] text-zinc-950 dark:text-white">{displayName}</h2>
-              <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-400">{email}</p>
+        <section className="rounded-[1.8rem] border border-zinc-200 bg-white p-6 shadow-[0_24px_70px_rgba(15,23,42,0.08)] dark:border-white/10 dark:bg-[linear-gradient(180deg,rgba(28,28,33,0.96),rgba(16,16,21,0.98))] dark:shadow-[0_30px_80px_rgba(0,0,0,0.28)] sm:p-7">
+          <div>
+            <div className="flex flex-wrap items-start justify-between gap-4">
+              <div>
+                <div className="text-[11px] font-bold uppercase tracking-[0.22em] text-zinc-500">Account context</div>
+                <h2 className="mt-2 text-2xl font-bold tracking-[-0.04em] text-zinc-950 dark:text-white">{displayName}</h2>
+                <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-400">{email}</p>
+              </div>
+              <div className={`inline-flex items-center justify-center rounded-full px-4 py-2 text-sm font-semibold ${isSaving ? "bg-zinc-200 text-zinc-600 dark:bg-white/8 dark:text-zinc-300" : hasUnsavedChanges ? "bg-amber-100 text-amber-800 dark:bg-amber-500/15 dark:text-amber-200" : "bg-emerald-100 text-emerald-800 dark:bg-emerald-500/15 dark:text-emerald-200"}`}>
+                {isSaving ? "Saving..." : hasUnsavedChanges ? "Saving soon..." : lastSavedAt ? `Saved ${lastSavedAt.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}` : "Autosaved"}
+              </div>
             </div>
 
             <div className="mt-7 grid gap-4 md:grid-cols-2">
@@ -985,9 +937,9 @@ export default function ProfilePageClient() {
                   className="flex w-full items-center justify-between gap-4 text-left"
                 >
                   <div>
-                    <div className="text-xs font-semibold uppercase tracking-[0.18em] text-zinc-500">Current or completed courses</div>
+                    <div className="text-xs font-semibold uppercase tracking-[0.18em] text-zinc-500">Current courses</div>
                     <div className="mt-2 text-sm font-semibold text-zinc-900 dark:text-white">
-                      {currentCoursesList.length ? `${currentCoursesList.length} courses saved` : "No courses saved yet"}
+                      {currentCoursesList.length ? `${currentCoursesList.length} current courses` : "No current courses"}
                     </div>
                   </div>
                   <ChevronDown className={`h-4 w-4 text-zinc-400 transition ${currentClassesOpen ? "rotate-180" : ""}`} />
@@ -1070,28 +1022,40 @@ export default function ProfilePageClient() {
                 ) : null}
               </div>
 
+              <div className="rounded-[1.25rem] border border-zinc-200 bg-zinc-50/80 p-4 dark:border-white/10 dark:bg-white/3">
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <div className="text-xs font-semibold uppercase tracking-[0.18em] text-zinc-500">Completed courses</div>
+                    <p className="mt-2 text-sm font-semibold text-zinc-900 dark:text-white">{completedCoursesList.length ? `${completedCoursesList.length} completed courses` : "No completed courses yet"}</p>
+                    <p className="mt-1 text-xs text-zinc-500">Shared with your degree planner and updated when you import a degree audit.</p>
+                  </div>
+                </div>
+                <div className="mt-4 flex flex-wrap gap-2">
+                  {(completedCoursesList.length ? completedCoursesList.slice(0, currentClassesOpen ? completedCoursesList.length : 8) : ["Import an audit or add a completed course"]).map((course) => (
+                    completedCoursesList.length ? (
+                      <span key={course} className="inline-flex items-center gap-2 rounded-full border border-emerald-300/60 bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-800 dark:border-emerald-400/20 dark:bg-emerald-500/10 dark:text-emerald-100">
+                        {course}
+                        {currentClassesOpen ? <button type="button" onClick={() => removeCourse("completedCourses", course)} className="text-emerald-600 transition hover:text-rose-500 dark:text-emerald-200" aria-label={`Remove completed ${course}`}><X className="h-3 w-3" /></button> : null}
+                      </span>
+                    ) : <span key={course} className="rounded-full border border-zinc-200 bg-white px-3 py-1.5 text-xs text-zinc-500 dark:border-white/10 dark:bg-white/4 dark:text-zinc-400">{course}</span>
+                  ))}
+                  {!currentClassesOpen && completedCoursesList.length > 8 ? <span className="rounded-full border border-zinc-200 bg-white px-3 py-1.5 text-xs text-zinc-500 dark:border-white/10 dark:bg-white/4 dark:text-zinc-400">+{completedCoursesList.length - 8} more</span> : null}
+                </div>
+                {currentClassesOpen ? (
+                  <div className="mt-4">
+                    <div className="mb-2 text-xs font-semibold uppercase tracking-[0.18em] text-zinc-500">Add completed course</div>
+                    <div className="flex gap-2">
+                      <input value={currentCourseQuery} onChange={(event) => setCurrentCourseQuery(event.target.value)} placeholder="Search a completed course" className="h-11 min-w-0 flex-1 rounded-xl border border-zinc-200 bg-white px-4 text-sm text-zinc-900 outline-none placeholder:text-zinc-500 dark:border-white/10 dark:bg-white/5 dark:text-white" />
+                      <button type="button" onClick={() => { const firstSuggestion = currentCourseSuggestions[0]; if (firstSuggestion) addCourse("completedCourses", firstSuggestion.code); }} disabled={!currentCourseSuggestions.length} className="rounded-xl bg-zinc-200 px-4 text-sm font-semibold text-zinc-700 disabled:opacity-40 dark:bg-white/8 dark:text-zinc-200">Add</button>
+                    </div>
+                    {currentCourseSuggestions.length ? <div className="mt-2 space-y-1">{currentCourseSuggestions.map(course => <button key={`completed-${course.id}`} type="button" onClick={() => addCourse("completedCourses", course.code)} className="flex w-full items-center justify-between rounded-lg border border-zinc-200 bg-white px-3 py-2 text-left text-sm font-medium text-zinc-800 dark:border-white/10 dark:bg-white/4 dark:text-zinc-100"><span>{course.code}</span><Plus className="h-4 w-4" /></button>)}</div> : null}
+                  </div>
+                ) : null}
+              </div>
+
             </div>
           </div>
 
-          <div className="space-y-5">
-            <div className="rounded-[1.6rem] border border-zinc-200 bg-white p-5 shadow-[0_18px_55px_rgba(15,23,42,0.06)] dark:border-white/10 dark:bg-[linear-gradient(180deg,rgba(28,28,33,0.96),rgba(16,16,21,0.98))]">
-              <div className="text-[11px] font-bold uppercase tracking-[0.22em] text-zinc-500">Next best places</div>
-              <div className="mt-4 space-y-3">
-                <Link href="/study/planner" className="flex items-center justify-between rounded-[1.1rem] border border-zinc-200 bg-zinc-50 px-4 py-3 text-sm font-semibold text-zinc-900 transition hover:bg-zinc-100 dark:border-white/10 dark:bg-white/4 dark:text-white dark:hover:bg-white/8">
-                  <span>Open degree planner</span>
-                  <ChevronRight className="h-4 w-4 text-zinc-400" />
-                </Link>
-                <Link href="/study" className="flex items-center justify-between rounded-[1.1rem] border border-zinc-200 bg-zinc-50 px-4 py-3 text-sm font-semibold text-zinc-900 transition hover:bg-zinc-100 dark:border-white/10 dark:bg-white/4 dark:text-white dark:hover:bg-white/8">
-                  <span>Open study workspace</span>
-                  <ChevronRight className="h-4 w-4 text-zinc-400" />
-                </Link>
-                <Link href="/chat" className="flex items-center justify-between rounded-[1.1rem] border border-zinc-200 bg-zinc-50 px-4 py-3 text-sm font-semibold text-zinc-900 transition hover:bg-zinc-100 dark:border-white/10 dark:bg-white/4 dark:text-white dark:hover:bg-white/8">
-                  <span>Talk to Sparky</span>
-                  <ChevronRight className="h-4 w-4 text-zinc-400" />
-                </Link>
-              </div>
-            </div>
-          </div>
         </section>
 
         {message ? (

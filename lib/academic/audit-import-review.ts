@@ -36,6 +36,10 @@ export function reviewImport(audit: AuditPreview, choices: unknown) {
 
 export function prepareAuditImport(text: string, choices: unknown, importedAt = new Date().toISOString()) {
   const audit = parseUachieveText(text);
+  return prepareParsedAuditImport(audit, choices, importedAt);
+}
+
+export function prepareParsedAuditImport(audit: AuditPreview, choices: unknown, importedAt = new Date().toISOString()) {
   const courses = reviewImport(audit, choices);
   return {
     ...courses,
@@ -55,3 +59,26 @@ export function prepareAuditImport(text: string, choices: unknown, importedAt = 
 }
 
 export type SavedAuditImport = ReturnType<typeof prepareAuditImport>["auditImport"];
+
+export function selectedCurrentCoursesFromSavedImport(auditImport: SavedAuditImport | null | undefined) {
+  if (!auditImport) return [];
+  return auditImport.attempts.flatMap((attempt, index) =>
+    auditImport.choices[index] === "in_progress" ? [attempt.code] : [],
+  );
+}
+
+/** Replace courses supplied by the previous audit without deleting classes the
+ * student added manually. Newly completed courses cannot remain in progress. */
+export function mergeCurrentCoursesAfterAuditImport(
+  existingCurrentCourses: string[],
+  previousAuditImport: SavedAuditImport | null | undefined,
+  importedCurrentCourses: string[],
+  importedCompletedCourses: string[],
+) {
+  const previousAuditCurrent = new Set(selectedCurrentCoursesFromSavedImport(previousAuditImport));
+  const newlyCompleted = new Set(importedCompletedCourses);
+  return [...new Set([
+    ...existingCurrentCourses.filter(code => !previousAuditCurrent.has(code)),
+    ...importedCurrentCourses,
+  ])].filter(code => !newlyCompleted.has(code));
+}

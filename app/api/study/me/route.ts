@@ -4,7 +4,8 @@ import { getStudyWorkspacePayload } from "@/lib/study/server";
 import { parseStoredPreferences, serializeStoredPreferences, type PlannerProfilePayload, type SiteSettingsPayload, type StudyWorkspaceStatePayload } from "@/lib/study/profile";
 import { getResolvedThemeMode, resolveAvatarUrl } from "@/lib/site-settings";
 import { getSavedItemsForStudyUser } from "@/lib/saved-items";
-import { prepareAuditImport } from "@/lib/academic/audit-import-review";
+import { mergeCurrentCoursesAfterAuditImport, prepareAuditImport, prepareParsedAuditImport, selectedCurrentCoursesFromSavedImport } from "@/lib/academic/audit-import-review";
+import { parseUachievePdfText } from "@/lib/academic/uachieve-import";
 
 export const dynamic = "force-dynamic";
 
@@ -19,7 +20,13 @@ export async function GET(request: Request) {
       includeSaved ? getSavedItemsForStudyUser(studyUser.id) : Promise.resolve(null),
     ]);
     const preferences = parseStoredPreferences(studyUser.studyPreferences);
-    const currentCourses = preferences.plannerProfile.currentCourses ?? studyUser.currentCourses ?? [];
+    const savedPlannerCurrent = preferences.plannerProfile.currentCourses ?? [];
+    const savedAccountCurrent = studyUser.currentCourses ?? [];
+    const currentCourses = savedPlannerCurrent.length
+      ? savedPlannerCurrent
+      : savedAccountCurrent.length
+        ? savedAccountCurrent
+        : selectedCurrentCoursesFromSavedImport(preferences.plannerProfile.auditImport);
     const completedCourses = preferences.plannerProfile.completedCourses ?? [];
     const plannerProfile = {
       ...preferences.plannerProfile,
@@ -53,7 +60,7 @@ export async function GET(request: Request) {
       profile: {
         school: studyUser.school ?? "UIC",
         major: studyUser.major ?? "",
-        currentCourses: studyUser.currentCourses ?? currentCourses,
+        currentCourses,
         interests: studyUser.interests ?? [],
         studyPreferences: preferences.notes,
         plannerProfile,
@@ -84,18 +91,26 @@ export async function PATCH(request: Request) {
         return NextResponse.json({ error: "Review and confirm the audit before saving." }, { status: 400 });
       }
       try {
-        imported = prepareAuditImport(body.auditImport.text, body.auditImport.choices);
+        imported = body.auditImport.source === "pdf"
+          ? prepareParsedAuditImport(parseUachievePdfText(body.auditImport.text), body.auditImport.choices)
+          : prepareAuditImport(body.auditImport.text, body.auditImport.choices);
       } catch (error) {
         return NextResponse.json({ error: error instanceof Error ? error.message : "Invalid audit import." }, { status: 400 });
       }
       // The server recomputes approved course lists; client-supplied lists cannot
       // bypass grade or duplicate-attempt checks during an audit import.
-      body.currentCourses = imported.currentCourses;
-      body.plannerProfile = { currentCourses: imported.currentCourses, completedCourses: imported.completedCourses };
     }
     const existingPreferences = parseStoredPreferences(studyUser.studyPreferences);
     const existingCurrentCourses = existingPreferences.plannerProfile.currentCourses ?? studyUser.currentCourses ?? [];
     const existingCompletedCourses = existingPreferences.plannerProfile.completedCourses ?? [];
+    const importedCurrentCourses = imported
+      ? mergeCurrentCoursesAfterAuditImport(
+          existingCurrentCourses,
+          existingPreferences.plannerProfile.auditImport,
+          imported.currentCourses,
+          imported.completedCourses,
+        )
+      : null;
     const normalizedTopLevelCurrentCourses = Array.isArray(body.currentCourses)
       ? body.currentCourses.map((course: unknown) => String(course).trim()).filter(Boolean)
       : null;
@@ -103,7 +118,8 @@ export async function PATCH(request: Request) {
       ? body.plannerProfile.currentCourses.map((course: unknown) => String(course).trim()).filter(Boolean)
       : null;
     const unifiedCourseSource: string[] =
-      normalizedTopLevelCurrentCourses
+      importedCurrentCourses
+      ?? normalizedTopLevelCurrentCourses
       ?? normalizedPlannerCurrentCourses
       ?? existingCurrentCourses;
     const nextUnifiedCourses = Array.from(
@@ -127,12 +143,14 @@ export async function PATCH(request: Request) {
         typeof body.plannerProfile?.honorsStudent === "boolean"
           ? body.plannerProfile.honorsStudent
           : Boolean(existingPreferences.plannerProfile.honorsStudent),
-      currentCourses: normalizedPlannerCurrentCourses
+      currentCourses: importedCurrentCourses
+        ?? normalizedPlannerCurrentCourses
         ?? normalizedTopLevelCurrentCourses
         ?? existingCurrentCourses,
-      completedCourses: Array.isArray(body.plannerProfile?.completedCourses)
+      completedCourses: imported?.completedCourses
+        ?? (Array.isArray(body.plannerProfile?.completedCourses)
         ? body.plannerProfile.completedCourses.map((course: unknown) => String(course).trim()).filter(Boolean)
-        : existingCompletedCourses,
+        : existingCompletedCourses),
     };
     const nextSettings: SiteSettingsPayload = {
       themeMode: getResolvedThemeMode({

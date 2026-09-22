@@ -128,3 +128,43 @@ export function parseUachieveText(text: string) {
     warnings,
   };
 }
+
+/**
+ * The uAchieve print/PDF view has a different layout from "Open All Sections":
+ * it has no Requirement: rows and repeats courses under several allocations.
+ * Read only the authoritative ALL COURSES block, then reuse the strict text
+ * importer. This intentionally does not invent PDF requirement statuses.
+ */
+export function parseUachievePdfText(text: string) {
+  if (text.length > 1_000_000) throw new Error("PDF text is too large. Upload an audit under 10 MB.");
+  // PDF extractors often emit each visual cell on its own line. For this print
+  // layout, whitespace is not semantic; reconstruct known course rows below.
+  const flat = text.replace(/\s+/g, " ").trim();
+  const programMatch = flat.match(/\b(0112\b.{0,30}\bBS\b.{0,50}\bComputer\b.{0,50}\bScience\b)/i)
+    ?? flat.match(/\b(\d{4}\s+BS:\s*Computer\s+Science)\b/i)
+    ?? flat.match(/Program:\s*(.*?)\s+Catalog Year:/i);
+  const program = programMatch ? (/\b0112\b.*\bBS\b.*\bComputer\b.*\bScience\b/i.test(programMatch[1]) ? "0112 BS: Computer Science" : programMatch[1].trim()) : null;
+  const catalogCode = flat.match(/Catalog Year:\s*(\d{6})\b/i)?.[1] ?? null;
+  const preparedOn = flat.match(/Prepared On:\s*(.*?)\s+(?:Open All Sections|\d{4}-\d{2}-\d{2})/i)?.[1]?.trim() ?? null;
+  const allCourseMatches = [...flat.matchAll(/\bALL\s+COURSES\b/ig)];
+  const allCoursesStart = allCourseMatches.at(-1)?.index ?? -1;
+  if (allCoursesStart < 0) throw new Error("This PDF does not contain an ALL COURSES section. Export the full uAchieve audit or paste its expanded website text.");
+  const history = flat.slice(allCoursesStart).split(/EXCEPTION SUMMARY/i)[0];
+  const rows = [...history.matchAll(/\b((?:FA|WS|SP|SU|SS)\d{2,4})\s+([A-Z&]{2,5})\s+(\d{3}[A-Z]?)\s+(\d+(?:\.\d+)?)\s+([A-Z][A-Z+*\-]*)(\s+>[A-Z])?/g)]
+    .map(match => `${match[1]} ${match[2]} ${match[3]} ${match[4]} ${match[5]}${match[6] ?? ""}`);
+  if (!rows.length) throw new Error("No course rows could be read from ALL COURSES. Try the expanded website audit instead.");
+  const totalRequired = flat.match(/Total Degree Hours\s+(\d+(?:\.\d+)?)\s+hours required/i)?.[1] ?? null;
+  const synthetic = [
+    `Program:\t${program ?? ""}`,
+    `Catalog Year:\t${catalogCode ?? ""}`,
+    `Prepared On:\t${preparedOn ?? ""}`,
+    "Requirement:\tTotal Degree Hours\tRequirement",
+    totalRequired ? `${totalRequired} hours required` : "",
+    "Requirement:\tALL COURSES\tRequirement",
+    rows.join("\n"),
+  ].filter(Boolean).join("\n");
+  const audit = parseUachieveText(synthetic);
+  audit.warnings.unshift("Imported from a uAchieve print/PDF view. Course history was read from ALL COURSES; requirement completion statuses and allocation details were not extracted from this layout.");
+  if (!program || !catalogCode) audit.warnings.unshift("PDF metadata could not be read completely. Confirm the program and catalog code before saving.");
+  return audit;
+}

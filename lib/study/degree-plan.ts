@@ -6,9 +6,19 @@ import { fetchCoursesByCodesRanked, fetchGenEdCourses } from "@/lib/chat/data";
 import { normalizeAcademicRecord } from "@/lib/academic/audit";
 import { buildCsAudit, type CsAudit } from "@/lib/academic/cs-audit";
 import { applyPlannerProgress } from "@/lib/academic/planner-progress";
+import { alignRecordedCoursesToTimeline } from "@/lib/academic/planner-timeline";
+import { catalogHoursCountTowardGraduation, parseFixedCatalogHours } from "@/lib/academic/catalog-hours";
+import type { SavedAuditImport } from "@/lib/academic/audit-import-review";
+import {
+  evaluateCourseEligibility,
+  parseCatalogPrerequisites,
+  type CourseEligibility,
+  type EligibilityRecord,
+} from "@/lib/academic/course-eligibility";
 
 export type DegreePlannerRequest = {
   catalogCode?: string;
+  auditImport?: SavedAuditImport;
   major: string;
   majorSlug?: string;
   currentSemesterNumber?: number;
@@ -22,6 +32,7 @@ export type DegreePlannerOption = {
   code: string;
   title: string;
   totalRegsAllTime: number;
+  eligibility?: CourseEligibility;
 };
 
 export type DegreePlannerCourse = {
@@ -29,6 +40,7 @@ export type DegreePlannerCourse = {
   code: string;
   title: string;
   credits: number | null;
+  countsTowardGraduation?: boolean;
   bucket: string;
   bucketLabel: string;
   kind: "required" | "elective";
@@ -36,6 +48,7 @@ export type DegreePlannerCourse = {
   totalRegsAllTime: number | null;
   alternatives: DegreePlannerOption[];
   status: "completed" | "in_progress" | "planned";
+  eligibility?: CourseEligibility;
 };
 
 export type DegreePlannerSemester = {
@@ -52,6 +65,7 @@ export type DegreePlannerResult = {
   warnings: string[];
   unscheduledRequirements: DegreePlannerCourse[];
   majorName: string;
+  degreeTotalHours: number | null;
   catalogUrl: string | null;
   planLengthLabel: string;
   inferredCompletedCourses: string[];
@@ -121,7 +135,136 @@ type MajorData = {
   requiredMath?: { options?: Array<{ code: string; title?: string }>; totalHours?: number };
   technicalElectives?: { options?: Array<{ code: string; title?: string }>; totalHours?: number };
   requiredEngineering?: { courses?: Array<{ code: string; title?: string; hours?: number | null; note?: string | null }> };
+  electiveGroups?: Array<{
+    label?: string;
+    credits?: number;
+    options?: Array<{ code: string; title?: string; hours?: number | null }>;
+  }>;
 };
+
+type CatalogCourse = {
+  subject?: string;
+  number?: string;
+  description?: string | null;
+  hours?: string | number | null;
+};
+
+type CatalogCourseFacts = {
+  credits: number | null;
+  countsTowardGraduation: boolean;
+};
+
+let prerequisiteCatalogCache: Map<string, ReturnType<typeof parseCatalogPrerequisites>> | null = null;
+let catalogCourseFactsCache: Map<string, CatalogCourseFacts> | null = null;
+
+function loadCatalogCourses() {
+  const path = join(process.cwd(), "scripts/catalog-scraped.json");
+  return JSON.parse(readFileSync(path, "utf8")) as CatalogCourse[];
+}
+
+function loadPrerequisiteCatalog() {
+  if (prerequisiteCatalogCache) return prerequisiteCatalogCache;
+  const courses = loadCatalogCourses();
+  prerequisiteCatalogCache = new Map(courses.flatMap(course => {
+    if (!course.subject || !course.number) return [];
+    const code = normalizeCourseCode(`${course.subject} ${course.number}`);
+    return [[code, parseCatalogPrerequisites(course.description)]];
+  }));
+  return prerequisiteCatalogCache;
+}
+
+function loadCatalogCourseFacts() {
+  if (catalogCourseFactsCache) return catalogCourseFactsCache;
+  catalogCourseFactsCache = new Map(loadCatalogCourses().flatMap(course => {
+    if (!course.subject || !course.number) return [];
+    return [[normalizeCourseCode(`${course.subject} ${course.number}`), {
+      credits: parseFixedCatalogHours(course.hours),
+      countsTowardGraduation: catalogHoursCountTowardGraduation(course.description),
+    } satisfies CatalogCourseFacts]];
+  }));
+  return catalogCourseFactsCache;
+}
+
+function applyCatalogCourseFacts(schedule: DegreePlannerSemester[]) {
+  const facts = loadCatalogCourseFacts();
+  return schedule.map(semester => ({
+    ...semester,
+    courses: semester.courses.map(course => {
+      const catalog = facts.get(course.code);
+      if (!catalog) return course;
+      return {
+        ...course,
+        credits: catalog.credits ?? course.credits,
+        countsTowardGraduation: catalog.countsTowardGraduation,
+      };
+    }),
+  }));
+}
+
+function eligibilityRecord(request: DegreePlannerRequest): EligibilityRecord {
+  const grades = new Map<string, string>();
+  request.auditImport?.attempts.forEach((attempt, index) => {
+    if (request.auditImport?.choices[index] !== "completed") return;
+    grades.set(normalizeCourseCode(attempt.code), attempt.grade);
+  });
+  return {
+    completed: normalizeCourseCodeList(request.completedCourses).map(code => ({ code, grade: grades.get(code) ?? null })),
+    inProgress: normalizeCourseCodeList(request.currentCourses),
+  };
+}
+
+function annotateScheduleEligibility(schedule: DegreePlannerSemester[], request: DegreePlannerRequest) {
+  const catalog = loadPrerequisiteCatalog();
+  const record = eligibilityRecord(request);
+  const assumedCompleted = new Set<string>();
+
+  return schedule.map(semester => {
+    const sameSemester = semester.courses
+      .filter(course => /^[A-Z&]{2,5} \d{3}[A-Z]?$/.test(course.code))
+      .map(course => course.code);
+    const courses = semester.courses.map(course => {
+      const parsed = catalog.get(course.code);
+      if (!parsed || course.status !== "planned") return course;
+      const eligibility = evaluateCourseEligibility(parsed, {
+        ...record,
+        // Explicit concurrent rules may be satisfied by another course in the
+        // proposed semester; ordinary prerequisites may only use earlier terms.
+        inProgress: [...(record.inProgress ?? []), ...sameSemester],
+        assumedCompleted: [...assumedCompleted],
+      });
+      const alternatives = course.alternatives.map(option => {
+        const alternativeRule = catalog.get(option.code);
+        return alternativeRule ? {
+          ...option,
+          eligibility: evaluateCourseEligibility(alternativeRule, {
+            ...record,
+            inProgress: [...(record.inProgress ?? []), ...sameSemester],
+            assumedCompleted: [...assumedCompleted],
+          }),
+        } : option;
+      });
+      const saferAlternative = eligibility.status === "eligible"
+        ? null
+        : alternatives.find(option => option.eligibility?.status === "eligible");
+      if (saferAlternative) {
+        return {
+          ...course,
+          code: saferAlternative.code,
+          title: saferAlternative.title,
+          totalRegsAllTime: saferAlternative.totalRegsAllTime,
+          popularityReason: `Selected from the approved ${course.bucketLabel.toLowerCase()} options because its parsed catalog prerequisites are satisfied in this sequence.`,
+          eligibility: saferAlternative.eligibility,
+          alternatives,
+        };
+      }
+      return { ...course, eligibility, alternatives };
+    });
+    for (const course of courses) {
+      if (/^[A-Z&]{2,5} \d{3}[A-Z]?$/.test(course.code)) assumedCompleted.add(course.code);
+    }
+    return { ...semester, courses };
+  });
+}
 
 function loadMajorIndex(): MajorIndexEntry[] {
   const indexPath = join(process.cwd(), "public/data/uic-knowledge/majors/_index.json");
@@ -403,10 +546,18 @@ async function buildElectivePools(major: MajorData): Promise<Record<string, Rank
   const scienceCodes = (major.scienceElectives?.options ?? []).map((option) => option.code).filter(Boolean);
   const mathCodes = (major.requiredMath?.options ?? []).map((option) => option.code).filter(Boolean);
   const technicalCodes = (major.technicalElectives?.options ?? []).map((option) => option.code).filter(Boolean);
-  const majorElectiveCodes = (major.requiredEngineering?.courses ?? [])
+  const legacyMajorElectiveCodes = (major.requiredEngineering?.courses ?? [])
     .filter((course) => course.hours == null)
     .map((course) => course.code ?? "")
     .filter(Boolean);
+  // Most scraped programs use the shared electiveGroups shape rather than the
+  // older CS-only fields. A single populated group is an approved program pool;
+  // multiple unlabeled groups stay separate until their semantics are known.
+  const populatedGroups = (major.electiveGroups ?? []).filter(group => group.options?.length);
+  const sharedGroupCodes = populatedGroups.length === 1
+    ? (populatedGroups[0].options ?? []).map(option => option.code).filter(Boolean)
+    : [];
+  const majorElectiveCodes = [...new Set([...legacyMajorElectiveCodes, ...sharedGroupCodes])];
 
   const [science, math, technical, genEd, genEdSociety, genEdPast, genEdWorldCultures, majorElectives] = await Promise.all([
     scienceCodes.length ? rankCoursesByPopularity(scienceCodes) : Promise.resolve([]),
@@ -632,21 +783,6 @@ function placeRemainingTakenCourses(
   return next;
 }
 
-function swapCourseIntoSlot(course: DegreePlannerCourse, slotId: string): DegreePlannerCourse {
-  return {
-    ...course,
-    slotId,
-  };
-}
-
-function pickReplacementAlternative(
-  course: DegreePlannerCourse,
-  takenCodes: Set<string>,
-  usedCodes: Set<string>,
-) {
-  return course.alternatives.find((option) => option.code !== course.code && !takenCodes.has(option.code) && !usedCodes.has(option.code)) ?? null;
-}
-
 function chooseOverflowSemesterIndex(schedule: DegreePlannerSemester[], currentSemesterNumber: number) {
   if (currentSemesterNumber <= 0) return -1;
 
@@ -753,90 +889,6 @@ function reconcileMissingTakenCourses(
   }
 
   return next;
-}
-
-function rebalanceScheduleAroundCurrentSemester(
-  schedule: DegreePlannerSemester[],
-  currentSemesterNumber: number,
-  takenCodes: Set<string>,
-) {
-  if (currentSemesterNumber <= 0) return schedule;
-
-  const rebalanced = schedule.map((semester) => ({
-    ...semester,
-    courses: semester.courses.map((course) => ({ ...course })),
-  }));
-
-  const earlierPlannedSlots: Array<{ semesterIndex: number; courseIndex: number; course: DegreePlannerCourse }> = [];
-  const futureTakenSlots: Array<{ semesterIndex: number; courseIndex: number; course: DegreePlannerCourse }> = [];
-  const usedCodes = new Set(rebalanced.flatMap((semester) => semester.courses.map((course) => course.code)));
-
-  for (let semesterIndex = 0; semesterIndex < rebalanced.length; semesterIndex += 1) {
-    const semester = rebalanced[semesterIndex];
-    for (let courseIndex = 0; courseIndex < semester.courses.length; courseIndex += 1) {
-      const course = semester.courses[courseIndex];
-      if (semesterIndex < currentSemesterNumber && course.status === "planned") {
-        earlierPlannedSlots.push({ semesterIndex, courseIndex, course });
-      } else if (semesterIndex >= currentSemesterNumber && course.status !== "planned") {
-        futureTakenSlots.push({ semesterIndex, courseIndex, course });
-      }
-    }
-  }
-
-  const compatibleTargetIndex = (source: DegreePlannerCourse) => {
-    const exactIndex = earlierPlannedSlots.findIndex(({ course }) => {
-      if (source.kind === "required") {
-        return course.kind === "required";
-      }
-      return course.kind === "elective" && course.bucket === source.bucket;
-    });
-
-    if (exactIndex >= 0) return exactIndex;
-
-    const sameKindIndex = earlierPlannedSlots.findIndex(({ course }) => course.kind === source.kind);
-    if (sameKindIndex >= 0) return sameKindIndex;
-
-    return earlierPlannedSlots.findIndex(() => true);
-  };
-
-  for (const source of futureTakenSlots) {
-    const targetIndex = compatibleTargetIndex(source.course);
-    const sourceCourse = rebalanced[source.semesterIndex].courses[source.courseIndex];
-
-    if (targetIndex >= 0) {
-      const [target] = earlierPlannedSlots.splice(targetIndex, 1);
-      const targetCourse = rebalanced[target.semesterIndex].courses[target.courseIndex];
-      rebalanced[target.semesterIndex].courses[target.courseIndex] = swapCourseIntoSlot(sourceCourse, targetCourse.slotId);
-      rebalanced[source.semesterIndex].courses[source.courseIndex] = swapCourseIntoSlot(targetCourse, sourceCourse.slotId);
-      continue;
-    }
-
-    if (sourceCourse.kind !== "elective") continue;
-
-    const overflowSemesterIndex = chooseOverflowSemesterIndex(rebalanced, currentSemesterNumber);
-    if (overflowSemesterIndex < 0) continue;
-
-    rebalanced[overflowSemesterIndex].courses.push({
-      ...sourceCourse,
-      slotId: `${rebalanced[overflowSemesterIndex].id}-overflow-${rebalanced[overflowSemesterIndex].courses.length + 1}`,
-    });
-
-    const replacement = pickReplacementAlternative(sourceCourse, takenCodes, usedCodes);
-    if (!replacement) continue;
-
-    usedCodes.add(replacement.code);
-    rebalanced[source.semesterIndex].courses[source.courseIndex] = {
-      ...sourceCourse,
-      code: replacement.code,
-      title: replacement.title,
-      totalRegsAllTime: replacement.totalRegsAllTime,
-      popularityReason: buildPopularityReason(sourceCourse.bucketLabel, replacement.totalRegsAllTime ?? null),
-      status: "planned",
-      alternatives: sourceCourse.alternatives,
-    };
-  }
-
-  return rebalanced;
 }
 
 export async function generateDegreePlan(request: DegreePlannerRequest): Promise<DegreePlannerResult> {
@@ -958,29 +1010,44 @@ export async function generateDegreePlan(request: DegreePlannerRequest): Promise
       status: statusForCode(course.code),
     })),
   }));
-  const balancedSchedule = rebalanceScheduleAroundCurrentSemester(markedSchedule, currentSemesterNumber, new Set(explicitSavedCourses));
   const reconciledSchedule = reconcileMissingTakenCourses(
-    balancedSchedule,
+    markedSchedule,
     currentSemesterNumber,
     explicitSavedCourses,
     takenCourseDetails,
   );
+  const remarkedSchedule = reconciledSchedule.map(semester => ({
+    ...semester,
+    courses: semester.courses.map(course => ({ ...course, status: statusForCode(course.code) })),
+  }));
+  const balancedSchedule = alignRecordedCoursesToTimeline(remarkedSchedule, currentSemesterNumber);
 
   const startIndex = request.planLength === "full" ? 0 : currentSemesterNumber;
   const semesterCount = planLengthToSemesterCount(request.planLength ?? "remaining", reconciledSchedule.length, startIndex);
+  const correctedSchedule = applyCatalogCourseFacts(balancedSchedule);
+  const eligibilitySchedule = annotateScheduleEligibility(correctedSchedule, request);
   const { semesters, unscheduledRequirements } = applyPlannerProgress<DegreePlannerCourse, DegreePlannerSemester>(
-    reconciledSchedule, academicRecord, startIndex, semesterCount, request.planLength === "full",
+    eligibilitySchedule, academicRecord, startIndex, semesterCount, request.planLength === "full",
   );
 
+  const blockedCount = semesters.flatMap(semester => semester.courses)
+    .filter(course => course.eligibility?.status === "blocked").length;
+  const reviewCount = semesters.flatMap(semester => semester.courses)
+    .filter(course => course.eligibility?.status === "review").length;
+
+  const audit = buildCsAudit(matchedMajor.slug, academicRecord.completedCourses, currentCourses, request.catalogCode, request.auditImport);
   return {
-    audit: buildCsAudit(matchedMajor.slug, academicRecord.completedCourses, currentCourses, request.catalogCode),
+    audit,
     warnings: [
-      ...(request.catalogCode ? [`Your imported catalog (${request.catalogCode}) has not been mapped to verified program rules yet. The current-catalog CS audit is disabled; this schedule is only a sample.`] : []),
-      "This is a sample-based schedule, not a prerequisite-validated plan. Completed courses are based on your reported record; current courses are conditional on successful completion.",
+      ...(request.catalogCode ? [audit?.notice ?? `Your imported catalog (${request.catalogCode}) does not have a supported program rule set and matching saved import. The current-catalog CS audit is disabled; this schedule is only a sample.`] : []),
+      "This schedule starts from the major's sample plan. Exact catalog prerequisite clauses are checked where they can be parsed safely; ambiguous restrictions are flagged for verification. Current courses remain conditional on successful completion.",
+      ...(blockedCount ? [`${blockedCount} planned course${blockedCount === 1 ? "" : "s"} currently have unmet catalog prerequisites in this sequence.`] : []),
+      ...(reviewCount ? [`${reviewCount} planned course${reviewCount === 1 ? "" : "s"} have prerequisite language that needs verification (such as grade, standing, placement, restriction, or consent).`] : []),
       ...(unscheduledRequirements.length ? ["Earlier unfinished sample requirements are listed separately and still need scheduling."] : []),
     ],
     unscheduledRequirements,
     majorName: major.name,
+    degreeTotalHours: major.totalHours ?? null,
     catalogUrl: major.url ?? matchedMajor.url ?? null,
     planLengthLabel: planLengthLabel(request.planLength ?? "remaining", semesters.length),
     inferredCompletedCourses,

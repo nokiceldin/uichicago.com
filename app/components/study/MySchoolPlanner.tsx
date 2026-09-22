@@ -1,13 +1,37 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { CheckCircle2, Plus, RotateCcw, Search, Sparkles, Target, X } from "lucide-react";
+import {
+  AlertTriangle,
+  ArrowRight,
+  BookOpen,
+  CalendarDays,
+  Check,
+  ChevronRight,
+  Circle,
+  GraduationCap,
+  Layers3,
+  Pencil,
+  Plus,
+  Search,
+  Target,
+  X,
+} from "lucide-react";
 import type { CsAudit } from "@/lib/academic/cs-audit";
 
 type PlannerCourseOption = {
   code: string;
   title: string;
   totalRegsAllTime: number;
+  eligibility?: PlannerEligibility;
+};
+
+type PlannerEligibility = {
+  status: "eligible" | "blocked" | "review";
+  satisfied: string[];
+  missing: string[];
+  unresolved: string[];
+  sourceText: string | null;
 };
 
 type PlannerCourse = {
@@ -15,6 +39,7 @@ type PlannerCourse = {
   code: string;
   title: string;
   credits: number | null;
+  countsTowardGraduation?: boolean;
   bucket: string;
   bucketLabel: string;
   kind: "required" | "elective";
@@ -22,6 +47,7 @@ type PlannerCourse = {
   totalRegsAllTime: number | null;
   alternatives: PlannerCourseOption[];
   status: "completed" | "in_progress" | "planned";
+  eligibility?: PlannerEligibility;
 };
 
 type PlannerSemester = {
@@ -38,6 +64,7 @@ type PlannerResult = {
   warnings: string[];
   unscheduledRequirements: PlannerCourse[];
   majorName: string;
+  degreeTotalHours: number | null;
   catalogUrl: string | null;
   planLengthLabel: string;
   inferredCompletedCourses: string[];
@@ -132,6 +159,16 @@ function courseBadgeClasses() {
   return "border-sky-400/20 bg-sky-500/10 text-sky-100";
 }
 
+function academicYearNumber(label: string, fallbackIndex: number) {
+  const normalized = label.toLowerCase();
+  if (normalized.includes("freshman") || normalized.includes("first year")) return 1;
+  if (normalized.includes("sophomore") || normalized.includes("second year")) return 2;
+  if (normalized.includes("junior") || normalized.includes("third year")) return 3;
+  if (normalized.includes("senior") || normalized.includes("fourth year")) return 4;
+  const numericYear = normalized.match(/(?:year|yr)\s*(\d+)/)?.[1];
+  return numericYear ? Number(numericYear) : fallbackIndex + 1;
+}
+
 function CoursePicker({
   label,
   placeholder,
@@ -223,13 +260,14 @@ export default function MySchoolPlanner({
   const [majorOptions, setMajorOptions] = useState<MajorOption[]>([]);
   const [selectedMajorSlug, setSelectedMajorSlug] = useState("");
   const [currentSemesterNumber, setCurrentSemesterNumber] = useState("0");
-  const [planLength, setPlanLength] = useState<"one_semester" | "one_year" | "two_years" | "three_years" | "remaining" | "full">("full");
+  const [planLength, setPlanLength] = useState<"remaining" | "full">("full");
   const [currentCourseQuery, setCurrentCourseQuery] = useState("");
   const [currentCourseResults, setCurrentCourseResults] = useState<CourseSearchResult[]>([]);
   const [selectedCurrentCourses, setSelectedCurrentCourses] = useState<SelectedCourse[]>([]);
   const [shouldPersistCourseSelection, setShouldPersistCourseSelection] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const [storedPlan, setPlan] = useState<PlannerResult | null>(null);
   const [generatedForKey, setGeneratedForKey] = useState("");
   const inputKey = JSON.stringify([selectedMajorSlug, currentSemesterNumber, planLength,
@@ -393,6 +431,7 @@ export default function MySchoolPlanner({
       }
       setPlan(payload.plan as PlannerResult);
       setGeneratedForKey(inputKey);
+      setSettingsOpen(false);
       onPersistProfile();
     } catch (err) {
       setPlan(null);
@@ -447,14 +486,17 @@ export default function MySchoolPlanner({
             if (course.slotId !== slotId || course.kind !== "elective" || course.alternatives.length < 2) {
               return course;
             }
-            const currentIndex = course.alternatives.findIndex((option) => option.code === course.code);
-            const nextIndex = currentIndex >= 0 ? (currentIndex + 1) % course.alternatives.length : 0;
-            const next = course.alternatives[nextIndex];
+            const eligibleAlternatives = course.alternatives.filter(option => option.eligibility?.status !== "blocked");
+            if (eligibleAlternatives.length < 2) return course;
+            const currentIndex = eligibleAlternatives.findIndex((option) => option.code === course.code);
+            const nextIndex = currentIndex >= 0 ? (currentIndex + 1) % eligibleAlternatives.length : 0;
+            const next = eligibleAlternatives[nextIndex];
             return {
               ...course,
               code: next.code,
               title: next.title,
               totalRegsAllTime: next.totalRegsAllTime,
+              eligibility: next.eligibility,
               popularityReason: `Swapped to another approved ${course.bucketLabel.toLowerCase()} option (${next.totalRegsAllTime.toLocaleString()} registrations).`,
               status: "planned",
             };
@@ -464,42 +506,103 @@ export default function MySchoolPlanner({
     });
   };
 
+  const semestersByYear = useMemo(() => {
+    if (!plan) return [];
+    const groups = new Map<string, PlannerSemester[]>();
+    plan.semesters.forEach((semester) => {
+      const semesters = groups.get(semester.year) ?? [];
+      semesters.push(semester);
+      groups.set(semester.year, semesters);
+    });
+    return Array.from(groups, ([year, semesters]) => ({ year, semesters }));
+  }, [plan]);
+
+  const planStats = useMemo(() => {
+    if (!plan) return { completed: 0, inProgress: 0, planned: 0, total: 0 };
+    return plan.semesters.flatMap((semester) => semester.courses).reduce(
+      (totals, course) => {
+        const credits = course.credits ?? 0;
+        if (course.countsTowardGraduation !== false) {
+          totals.total += credits;
+          if (course.status === "completed") totals.completed += credits;
+          else if (course.status === "in_progress") totals.inProgress += credits;
+          else totals.planned += credits;
+        }
+        return totals;
+      },
+      { completed: 0, inProgress: 0, planned: 0, total: 0 },
+    );
+  }, [plan]);
+
+  const currentSemesterPosition = Number(currentSemesterNumber || "0");
+  const activeSemesterIndex = currentSemesterPosition > 0
+    ? Math.min((plan?.semesters.length ?? 1) - 1, currentSemesterPosition - 1)
+    : -1;
+  const activeSemester = activeSemesterIndex >= 0 ? plan?.semesters[activeSemesterIndex] ?? null : null;
+  const degreeTotalHours = plan?.degreeTotalHours ?? planStats.total;
+  const completedPercent = degreeTotalHours ? Math.round((planStats.completed / degreeTotalHours) * 100) : 0;
+
   return (
-    <section className="overflow-hidden rounded-[1.8rem] border border-white/10 bg-[linear-gradient(180deg,rgba(36,24,61,0.94),rgba(15,19,31,0.98))] shadow-[0_30px_80px_rgba(0,0,0,0.28)]">
-      <div className="border-b border-white/10 px-6 py-6 sm:px-7">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-          <div className="max-w-3xl">
-            <div className="inline-flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.24em] text-indigo-200">
-              <Sparkles className="h-4 w-4" />
-              My School Planner
+    <section className="space-y-4 text-white">
+      <header className="rounded-2xl border border-white/10 bg-[#0d1627] px-5 py-4 shadow-[0_20px_60px_rgba(0,0,0,0.2)]">
+        <div className="flex flex-col gap-4 xl:flex-row xl:items-center">
+          <div className="min-w-[270px] flex-1">
+            <div className="text-[10px] font-bold uppercase tracking-[0.24em] text-slate-500">Degree planner</div>
+            <div className="mt-1 flex items-center gap-2">
+              <h2 className="truncate text-xl font-bold tracking-[-0.03em] sm:text-2xl">{plan?.majorName || selectedMajor?.name || "Choose a major"}</h2>
+              <ChevronRight className="h-4 w-4 rotate-90 text-slate-500" />
             </div>
-            <h2 className="mt-3 text-2xl font-bold tracking-[-0.04em] text-white sm:text-[2.1rem]">
-              Build a clean semester-by-semester degree plan around the student.
-            </h2>
-            <p className="mt-3 max-w-2xl text-sm leading-6 text-zinc-300">
-              Pick your major, save completed courses in your profile, and add in-progress courses here to adapt the major&apos;s sample schedule.
-            </p>
           </div>
 
-          <button
-            type="button"
-            onClick={handleGenerate}
-            disabled={loading}
-            className="inline-flex items-center justify-center rounded-full bg-[#5b54ef] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#6a63ff] disabled:cursor-not-allowed disabled:opacity-70"
-          >
-            {loading ? "Generating..." : "Generate plan"}
+          <div className="hidden h-14 w-px bg-white/10 xl:block" />
+          <div className="min-w-[270px] flex-1">
+            <div className="flex items-end justify-between gap-4">
+              <div>
+                <div className="text-xs text-slate-400">Degree progress</div>
+                <div className="mt-1 text-2xl font-bold">{completedPercent}%</div>
+              </div>
+              <div className="mb-1 flex-1">
+                <div className="h-2 overflow-hidden rounded-full bg-slate-700/80">
+                  <div className="h-full rounded-full bg-emerald-300 transition-all" style={{ width: `${completedPercent}%` }} />
+                </div>
+                <div className="mt-1 text-center text-[11px] text-slate-400">{planStats.completed} / {degreeTotalHours || 120} credits</div>
+              </div>
+            </div>
+          </div>
+
+          <div className="hidden h-14 w-px bg-white/10 xl:block" />
+          <div className="flex min-w-[190px] items-center gap-3">
+            <CalendarDays className="h-5 w-5 text-slate-400" />
+            <div>
+              <div className="text-xs text-slate-400">Current semester</div>
+              <div className="mt-1 font-semibold">{activeSemester?.label ?? (currentSemesterNumber === "0" ? "Not set" : `Semester ${currentSemesterNumber}`)}</div>
+            </div>
+          </div>
+
+          <button type="button" onClick={() => setSettingsOpen(true)} className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-[#5747ff] px-5 text-sm font-semibold transition hover:bg-[#695bff]">
+            <Pencil className="h-4 w-4" />
+            {plan ? "Edit plan" : "Set up plan"}
           </button>
         </div>
-      </div>
+      </header>
 
-      <div className="grid gap-6 px-6 py-6 sm:px-7 xl:grid-cols-[420px_minmax(0,1fr)]">
-        <div className="space-y-5">
+      {settingsOpen || !plan ? (
+        <section className="rounded-2xl border border-white/10 bg-[#101829] p-5">
+          <div className="mb-5 flex items-start justify-between gap-4">
+            <div>
+              <h3 className="font-semibold">Plan settings</h3>
+              <p className="mt-1 text-sm text-slate-400">Choose your program and tell us what you are taking now.</p>
+            </div>
+            {plan ? <button type="button" onClick={() => setSettingsOpen(false)} className="rounded-lg p-2 text-slate-400 hover:bg-white/5 hover:text-white"><X className="h-4 w-4" /></button> : null}
+          </div>
+          <div className="grid gap-5 lg:grid-cols-3">
+            <div className="space-y-5">
           <label className="block">
             <div className="mb-2 text-xs font-semibold uppercase tracking-[0.18em] text-zinc-500">Major</div>
             <select
               value={selectedMajorSlug}
               onChange={(event) => setSelectedMajorSlug(event.target.value)}
-              className="h-11 w-full rounded-xl border border-white/10 bg-white/5 px-4 text-sm text-white outline-none"
+              className="h-11 w-full rounded-xl border border-white/10 bg-[#0b1322] px-4 text-sm text-white outline-none"
             >
               <option value="">Choose your major</option>
               {majorOptions.map((major) => (
@@ -515,13 +618,13 @@ export default function MySchoolPlanner({
             )}
           </label>
 
-          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-1">
+          <div className="grid gap-4 sm:grid-cols-2">
             <label className="block">
               <div className="mb-2 text-xs font-semibold uppercase tracking-[0.18em] text-zinc-500">Current semester</div>
               <select
                 value={currentSemesterNumber}
                 onChange={(event) => setCurrentSemesterNumber(event.target.value)}
-                className="h-11 w-full rounded-xl border border-white/10 bg-white/5 px-4 text-sm text-white outline-none"
+                className="h-11 w-full rounded-xl border border-white/10 bg-[#0b1322] px-4 text-sm text-white outline-none"
               >
                 <option value="0">Not set yet</option>
                 <option value="1">1st semester</option>
@@ -540,18 +643,15 @@ export default function MySchoolPlanner({
               <select
                 value={planLength}
                 onChange={(event) => setPlanLength(event.target.value as typeof planLength)}
-                className="h-11 w-full rounded-xl border border-white/10 bg-white/5 px-4 text-sm text-white outline-none"
+                className="h-11 w-full rounded-xl border border-white/10 bg-[#0b1322] px-4 text-sm text-white outline-none"
               >
-                <option value="one_semester">Just one semester</option>
-                <option value="one_year">One year</option>
-                <option value="two_years">Two years</option>
-                <option value="three_years">Three years</option>
                 <option value="remaining">Remaining semesters</option>
                 <option value="full">Full plan</option>
               </select>
             </label>
           </div>
-
+            </div>
+            <div className="lg:col-span-2">
           <CoursePicker
             label="In-progress courses"
             placeholder="Search and add courses you are taking now"
@@ -562,23 +662,30 @@ export default function MySchoolPlanner({
             onAddCourse={addCurrentCourse}
             onRemoveCourse={removeCurrentCourse}
           />
-          <p className="text-sm text-zinc-400">
+          <p className="mt-4 text-xs leading-5 text-zinc-400">
             Completed courses are loaded from <a href="/profile" className="text-indigo-300 underline">your academic profile</a>.
             {initialPlannerProfile.completedCourses?.length
               ? ` Recorded: ${initialPlannerProfile.completedCourses.join(", ")}.`
               : " None recorded yet. Year standing does not establish course completion."}
           </p>
 
+            </div>
+          </div>
           {error ? (
             <div className="rounded-[1.2rem] border border-red-400/20 bg-red-500/10 px-4 py-3 text-sm text-red-100">
               {error}
             </div>
           ) : null}
-        </div>
+          <div className="mt-5 flex justify-end">
+            <button type="button" onClick={handleGenerate} disabled={loading} className="inline-flex h-11 items-center justify-center rounded-xl bg-[#5747ff] px-5 text-sm font-semibold transition hover:bg-[#695bff] disabled:opacity-60">
+              {loading ? "Generating..." : plan ? "Update roadmap" : "Generate roadmap"}
+            </button>
+          </div>
+        </section>
+      ) : null}
 
-        <div className="space-y-5">
-          {!plan ? (
-            <div className="flex h-full min-h-[420px] items-center justify-center rounded-[1.6rem] border border-dashed border-white/12 bg-white/3 p-8 text-center">
+      {!plan ? (
+            <div className="flex min-h-[420px] items-center justify-center rounded-2xl border border-dashed border-white/12 bg-[#0d1627] p-8 text-center">
               <div className="max-w-md">
                 <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-white/6 text-indigo-200">
                   <Target className="h-6 w-6" />
@@ -589,103 +696,94 @@ export default function MySchoolPlanner({
                 </p>
               </div>
             </div>
-          ) : (
-            <>
-              <div className="rounded-xl border border-amber-400/20 bg-amber-500/10 p-4 text-sm text-amber-100" role="status">
-                {plan.warnings.map(warning => <p key={warning} className="mb-2 last:mb-0">{warning}</p>)}
+      ) : (
+        <>
+          {(plan.warnings.length || plan.unscheduledRequirements.length) ? (
+            <details className="rounded-xl border border-amber-400/20 bg-amber-500/8 px-4 py-3 text-sm text-amber-100">
+              <summary className="flex cursor-pointer list-none items-center gap-2 font-medium"><AlertTriangle className="h-4 w-4" />{plan.warnings.length + plan.unscheduledRequirements.length} items need attention <ChevronRight className="ml-auto h-4 w-4" /></summary>
+              <div className="mt-3 space-y-2 border-t border-amber-300/10 pt-3 text-xs leading-5 text-amber-50/80">
+                {plan.warnings.map(warning => <p key={warning}>{warning}</p>)}
+                {plan.unscheduledRequirements.map(course => <p key={course.slotId}>{course.code} — {course.title} has not been assigned to a future term.</p>)}
               </div>
-              {plan.audit ? (
-                <section className="rounded-xl border border-white/10 p-4">
-                  <h3 className="font-semibold text-white">CS requirement check — partial</h3>
-                  <p className="mt-2 text-sm text-zinc-400">{plan.audit.notice}</p>
-                  <a href={plan.audit.source} target="_blank" rel="noreferrer" className="mt-2 inline-block text-sm text-indigo-300 underline">Catalog source ({plan.audit.catalogYear})</a>
-                  <div className="mt-3 space-y-2">
-                    {plan.audit.requirements.map(requirement => (
-                      <details key={requirement.id} className="rounded-lg bg-white/5 p-3 text-sm">
-                        <summary className="cursor-pointer text-zinc-200">
-                          {requirement.label} — {{ reported_complete: "Reported complete", in_progress: "In progress", missing: "Not recorded", unknown: "Needs verification" }[requirement.status]}
-                        </summary>
-                        <p className="mt-2 text-zinc-400">{requirement.explanation}</p>
-                        {requirement.options.length ? <p className="mt-1 text-zinc-300">Requirement options: {requirement.options.join(", ")}. Eligibility has not been checked.</p> : null}
-                      </details>
-                    ))}
+            </details>
+          ) : null}
+
+          <div className="overflow-x-auto pb-2">
+            <div className="grid min-w-[1160px] grid-cols-4 gap-2.5">
+              {semestersByYear.map((group, yearIndex) => (
+                <section key={group.year} className="rounded-2xl border border-white/10 bg-[#0b1424] p-2.5">
+                  <div className="mb-2.5 flex items-center gap-3 px-1">
+                    <div>
+                      <h3 className="text-lg font-bold">Year {academicYearNumber(group.year, yearIndex)}</h3>
+                      <p className="text-xs text-slate-400">{group.year}</p>
+                    </div>
+                    {yearIndex < semestersByYear.length - 1 ? <ArrowRight className="ml-auto h-4 w-4 text-slate-500" /> : <div className="ml-auto h-px w-12 bg-slate-600" />}
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    {group.semesters.map((semester) => {
+                      const semesterIndex = plan.semesters.findIndex(item => item.id === semester.id);
+                      const isCurrent = semesterIndex === activeSemesterIndex;
+                      const isCompleted = semester.courses.length > 0 && semester.courses.every(course => course.status === "completed");
+                      const earnedCredits = semester.courses.filter(course => course.status === "completed").reduce((sum, course) => sum + (course.credits ?? 0), 0);
+                      return (
+                        <article key={semester.id} className={`flex min-h-[430px] flex-col rounded-xl border p-2 ${isCurrent ? "border-violet-400 bg-violet-500/10 shadow-[0_0_0_1px_rgba(167,139,250,0.25)]" : isCompleted ? "border-emerald-400/25 bg-emerald-500/[0.06]" : "border-white/10 bg-white/[0.025]"}`}>
+                          <div className="border-b border-white/8 px-1 py-1.5 text-center">
+                            <div className="flex items-center justify-center gap-2">
+                              {isCompleted ? <Check className="h-4 w-4 rounded-full bg-emerald-300 p-0.5 text-emerald-950" /> : <Circle className={`h-4 w-4 ${isCurrent ? "fill-violet-400/20 text-violet-400" : "text-slate-500"}`} />}
+                              <h4 className="text-sm font-semibold">{semester.semester}</h4>
+                            </div>
+                            <p className="mt-1 text-[11px] text-slate-400">{semester.totalHours ? `${semester.totalHours} credits` : "Credits vary"}</p>
+                            <span className={`mt-2 inline-flex rounded-full border px-3 py-1 text-[10px] font-semibold ${isCurrent ? "border-violet-400/40 bg-violet-400/15 text-violet-200" : isCompleted ? "border-emerald-400/30 bg-emerald-400/10 text-emerald-200" : "border-white/10 bg-white/5 text-slate-400"}`}>{isCurrent ? "Current" : isCompleted ? "Completed" : "Planned"}</span>
+                          </div>
+
+                          <div className="mt-2 space-y-1.5">
+                            {semester.courses.map((course) => (
+                              <details key={course.slotId} className={`group/course rounded-lg border ${statusClasses(course.status)}`}>
+                                <summary className="flex min-h-[52px] cursor-pointer list-none items-center gap-2 px-2 py-1.5">
+                                  {course.status === "completed" ? <Check className="h-4 w-4 shrink-0 rounded-full bg-emerald-300 p-0.5 text-emerald-950" /> : <Circle className={`h-4 w-4 shrink-0 ${course.status === "in_progress" ? "fill-sky-400/20 text-sky-300" : "text-slate-400"}`} />}
+                                  <div className="min-w-0 flex-1">
+                                    <div className="flex items-center justify-between gap-1 text-[11px] font-bold"><span>{course.code}</span><span className="flex items-center gap-1 font-medium text-slate-300">{course.eligibility?.status === "blocked" ? <span className="rounded border border-red-400/25 bg-red-500/10 px-1 text-[8px] text-red-200">Prereq</span> : course.eligibility?.status === "review" ? <span className="rounded border border-amber-400/25 bg-amber-500/10 px-1 text-[8px] text-amber-200">Check</span> : null}{course.credits ?? "—"}</span></div>
+                                    <div className="truncate text-[10px] text-slate-400" title={course.title}>{course.title}</div>
+                                  </div>
+                                </summary>
+                                <div className="space-y-2 border-t border-white/8 px-2 py-2 text-[10px] text-slate-400">
+                                  <p>{course.bucketLabel}{course.popularityReason ? ` · ${course.popularityReason}` : ""}</p>
+                                  {course.eligibility?.status === "blocked" ? <p className="text-red-200">Missing: {course.eligibility.missing.join(", ")}</p> : null}
+                                  {course.eligibility?.status === "review" ? <p className="text-amber-200">Verify: {[...course.eligibility.missing, ...course.eligibility.unresolved].join(", ") || "catalog prerequisite wording"}</p> : null}
+                                  {course.eligibility?.sourceText ? <p className="leading-4 text-slate-500">Catalog: {course.eligibility.sourceText}</p> : null}
+                                  <div className="flex flex-wrap gap-1">
+                                    {course.status === "planned" ? <button type="button" onClick={() => markInProgress(course.slotId)} className="rounded-md border border-emerald-400/25 px-2 py-1 font-semibold text-emerald-200 hover:bg-emerald-400/10">Taking now</button> : null}
+                                    {course.kind === "elective" && course.alternatives.length > 1 ? <button type="button" onClick={() => swapElective(course.slotId)} className="rounded-md border border-white/10 px-2 py-1 font-semibold text-slate-200 hover:bg-white/5">Swap option</button> : null}
+                                  </div>
+                                </div>
+                              </details>
+                            ))}
+                          </div>
+
+                          <div className="mt-auto border-t border-white/8 px-1 pt-2">
+                            <div className="flex justify-between text-[10px] text-slate-400"><span>{earnedCredits} / {semester.totalHours ?? "—"} credits</span><span>{semester.courses.filter(course => course.status === "completed").length}/{semester.courses.length}</span></div>
+                            <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-slate-700"><div className={`h-full rounded-full ${isCurrent ? "bg-violet-400" : "bg-emerald-300"}`} style={{ width: `${semester.totalHours ? Math.min(100, (earnedCredits / semester.totalHours) * 100) : 0}%` }} /></div>
+                          </div>
+                        </article>
+                      );
+                    })}
                   </div>
                 </section>
-              ) : null}
-              {plan.unscheduledRequirements.length ? (
-                <section className="rounded-xl border border-amber-400/20 p-4 text-sm">
-                  <h3 className="font-semibold text-amber-100">Earlier sample requirements still unaccounted for</h3>
-                  <p className="mt-2 text-zinc-300">These have not been removed from your requirements or assigned to a future term.</p>
-                  <ul className="mt-2 list-disc pl-5 text-zinc-300">
-                    {plan.unscheduledRequirements.map(course => <li key={course.slotId}>{course.code} — {course.title}</li>)}
-                  </ul>
-                </section>
-              ) : null}
-              <div className="space-y-2.5">
-                {plan.semesters.map((semester) => (
-                  <section key={semester.id} className="rounded-[1.2rem] border border-white/10 bg-white/4 p-3">
-                    <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-                      <div>
-                        <div className="text-[11px] font-bold uppercase tracking-[0.2em] text-zinc-500">{semester.year}</div>
-                        <h3 className="mt-1 text-base font-semibold tracking-[-0.03em] text-white">{semester.label}</h3>
-                      </div>
-                      <div className="text-sm text-zinc-400">{semester.totalHours ? `${semester.totalHours} credits` : "Credits vary"}</div>
-                    </div>
+              ))}
+            </div>
+          </div>
 
-                    <div className="mt-3 space-y-1.5">
-                      {semester.courses.map((course) => (
-                        <div key={course.slotId} className={`rounded-[0.95rem] border px-3 py-2.5 ${statusClasses(course.status)}`}>
-                          <div className="flex flex-col gap-2 lg:flex-row lg:items-start lg:justify-between">
-                            <div className="min-w-0">
-                              <div className="flex flex-wrap items-center gap-2">
-                                <span className="text-sm font-semibold text-white">{course.code}</span>
-                                <span className="rounded-full border border-white/10 bg-black/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-zinc-200">
-                                  {course.bucketLabel}
-                                </span>
-                                <span className="rounded-full border border-white/10 bg-black/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-zinc-300">
-                                  {course.status === "completed" ? "Reported complete" : course.status === "in_progress" ? "In progress" : "Planned"}
-                                </span>
-                              </div>
-                              <div className="mt-1 line-clamp-2 text-sm text-zinc-200">{course.title}</div>
-                              <div className="mt-0.5 text-[11px] text-zinc-400">
-                                {course.credits !== null ? `${course.credits} credits` : "Credits vary"}
-                                {course.popularityReason ? ` • ${course.popularityReason}` : ""}
-                              </div>
-                            </div>
-
-                            <div className="flex shrink-0 flex-wrap items-center gap-1.5">
-                              {course.status === "planned" ? (
-                                <button
-                                  type="button"
-                                  onClick={() => markInProgress(course.slotId)}
-                                  className="inline-flex items-center gap-1.5 rounded-full border border-emerald-400/25 bg-emerald-500/10 px-2.5 py-1.5 text-[11px] font-semibold text-emerald-100 transition hover:bg-emerald-500/20"
-                                >
-                                  <CheckCircle2 className="h-3 w-3" />
-                                  Taking now
-                                </button>
-                              ) : null}
-                              {course.kind === "elective" && course.alternatives.length > 1 ? (
-                                <button
-                                  type="button"
-                                  onClick={() => swapElective(course.slotId)}
-                                  className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-2.5 py-1.5 text-[11px] font-semibold text-zinc-100 transition hover:bg-white/10"
-                                >
-                                  <RotateCcw className="h-3 w-3" />
-                                  Swap option
-                                </button>
-                              ) : null}
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </section>
-                ))}
-              </div>
-            </>
-          )}
-        </div>
-      </div>
+          <section className="grid gap-3 rounded-2xl border border-white/10 bg-[#0d1627] p-4 sm:grid-cols-2 xl:grid-cols-4">
+            <div className="flex items-center gap-3 border-white/10 xl:border-r">
+              <GraduationCap className="h-5 w-5 text-slate-400" />
+              <div><div className="text-xs text-slate-400">Degree requirements</div><div className="mt-1 font-semibold">{planStats.completed} / {degreeTotalHours} credits</div></div>
+            </div>
+            <div className="flex items-center gap-3"><BookOpen className="h-5 w-5 text-emerald-300" /><div className="flex-1"><div className="flex justify-between text-xs"><span>Completed</span><span>{planStats.completed}</span></div><div className="mt-2 h-1.5 rounded-full bg-slate-700"><div className="h-full rounded-full bg-emerald-300" style={{ width: `${completedPercent}%` }} /></div></div></div>
+            <div className="flex items-center gap-3"><Layers3 className="h-5 w-5 text-sky-300" /><div className="flex-1"><div className="flex justify-between text-xs"><span>In progress</span><span>{planStats.inProgress}</span></div><div className="mt-2 h-1.5 rounded-full bg-slate-700"><div className="h-full rounded-full bg-sky-400" style={{ width: `${degreeTotalHours ? (planStats.inProgress / degreeTotalHours) * 100 : 0}%` }} /></div></div></div>
+            {plan.audit ? <details className="rounded-xl border border-white/10 bg-white/[0.025] px-3 py-2 text-xs"><summary className="flex cursor-pointer list-none items-center justify-between font-semibold">View degree audit <ChevronRight className="h-4 w-4" /></summary><p className="mt-2 leading-5 text-slate-400">{plan.audit.requirements.filter(item => item.status === "reported_complete").length} complete · {plan.audit.requirements.filter(item => item.status === "missing").length} remaining</p><a href={plan.audit.source} target="_blank" rel="noreferrer" className="mt-2 inline-block text-indigo-300 underline">Catalog {plan.audit.catalogYear}</a></details> : <div className="flex items-center justify-end text-xs text-slate-500">{planStats.planned} credits planned</div>}
+          </section>
+        </>
+      )}
     </section>
   );
 }

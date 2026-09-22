@@ -88,6 +88,51 @@ Do not convert course grades into accepted requirement credit without policy che
    grade thresholds, overlap, and changed programs before broader release.
 8. Expand per program/catalog version and review source changes before promotion.
 
+## Archived CS rules increment (2026-09-21)
+
+`lib/academic/cs-2024.ts` now provides a separate, versioned base-CS rule set.
+The supported imported program is exactly `0112 BS: Computer Science`, catalog
+`202408`. The Fall 2024 mapping is provisional, corroborated by the supplied
+audit and archive; institutional confirmation is still needed. Other catalogs,
+concentrations, and missing imports do not fall back to current-catalog rules.
+
+Implemented checks:
+
+- Archived fixed courses, introductory alternatives, and zero-credit CS 499.
+- ENGR 100 completion separately from degree credit.
+- Mathematics: nine reported credits, required statistics component, IE 342
+  exclusions, and one linear-algebra alternative (MATH 218/310/320).
+- Technical electives: six courses AND 18 reported credits, at most one outside
+  CS. CS 398 approval remains unresolved rather than automatically allocated.
+- Science: two distinct choices AND eight reported credits; paired chemistry
+  lectures/labs and their honors alternatives count as a single choice each.
+- MCS 471 is explicitly unallocated and both affected groups remain unknown
+  until allocation is resolved. This increment is not a global allocation solver.
+- Completed and projected (including IP) checks remain distinct. Credit checks
+  fail closed when course lists differ from the reviewed import or split-credit
+  markers require review. Course-presence checks remain student-reported.
+- Planner API loads credit evidence from the authenticated saved profile, never
+  a client-supplied snapshot. Sparky planning context calls the same engine.
+
+Sources reviewed: [2024–2025 archived catalog, printed pages 245–247](https://catalog.uic.edu/ucat/archive-links/UIC_Undergraduate_Catalog_2024-2025.pdf#page=246)
+and [Spring 2026 MATH schedule documenting MATH 218 as formerly MATH 310](https://webcs7.osss.uic.edu/schedule-of-classes/static/schedules/spring-2026/MATH.html).
+The catalog's tables and footnotes were visually checked. CS 398's conservative
+review gate also reflects the documentation condition in the supplied audit;
+this implementation does not infer project approval from a course code.
+
+Validation uses synthetic regression cases plus a local comparison against the
+provided audit; no original audit or identity is committed. The local comparison
+matches fixed remaining courses, three additional mathematics credits, six/18
+technical electives, and conditional science completion.
+
+Still unresolved: confirmed catalog applicability, source-effective equivalency
+dates beyond this case, minimum-grade/transfer acceptance, global allocations,
+Gen Ed/HSSA categories, free electives, degree/core-credit reconciliation, GPA,
+residency, and exceptions. No summed transcript total is called a degree total.
+The existing semester schedule is still sample-based and may differ from this
+archived audit; it is not a validated recommendation. The next increment should
+reconcile imported requirement outcomes and exceptions before scheduling.
+
 ## Useful user input, when available
 
 An anonymized CS uAchieve audit with its catalog year and expected remaining

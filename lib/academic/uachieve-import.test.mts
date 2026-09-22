@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { parseUachieveText } from "./uachieve-import.ts";
+import { parseUachievePdfText, parseUachieveText } from "./uachieve-import.ts";
 
 // Synthetic miniature audit: no private student document is stored in the repo.
 const sample = `Student UIN:\t000000000
@@ -59,6 +59,15 @@ test("never falls back to treating repeated allocations as a transcript", () => 
   const audit = parseUachieveText(sample.split("Requirement: ALL COURSES")[0]);
   assert.equal(audit.attempts.length, 0);
   assert.ok(audit.warnings.some(w => w.includes("ALL COURSES is missing")));
+});
+
+test("PDF layout reads only ALL COURSES and does not fabricate requirement status", () => {
+  const pdf = `Program: 0112 BS: Computer\nScience\nCatalog Year: 202408\nPrepared On: today\nTotal Degree Hours\n128 hours required\nALL COURSES\nFA24 CS 112 3.00 A Program Design\nFA26 BIOS 120 4.00 IP >I Biology\nEXCEPTION SUMMARY`;
+  const audit = parseUachievePdfText(pdf);
+  assert.deepEqual(audit.attempts.map(a => a.code), ["CS 112", "BIOS 120"]);
+  assert.equal(audit.metadata.program, "0112 BS: Computer Science");
+  assert.equal(audit.requirements.find(r => r.title === "ALL COURSES")?.status, "unspecified");
+  assert.ok(audit.warnings.some(w => w.includes("print/PDF")));
 });
 
 test("marks unknown grades and repeated attempts for review", () => {

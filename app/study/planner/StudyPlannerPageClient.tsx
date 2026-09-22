@@ -3,10 +3,11 @@
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useSession } from "next-auth/react";
-import { ChevronRight, Sparkles } from "lucide-react";
+import { ChevronRight, FileCheck2, UserRound } from "lucide-react";
 import MySchoolPlanner from "@/app/components/study/MySchoolPlanner";
 import AuditImportPanel from "@/app/components/study/AuditImportPanel";
-import type { ImportChoice, SavedAuditImport } from "@/lib/academic/audit-import-review";
+import { mergeCurrentCoursesAfterAuditImport, prepareAuditImport, prepareParsedAuditImport, type ImportChoice, type SavedAuditImport } from "@/lib/academic/audit-import-review";
+import { parseUachievePdfText } from "@/lib/academic/uachieve-import";
 import { parseCommaSeparated, readLocalStudyProfile, writeLocalStudyProfile } from "@/lib/study/profile";
 
 type PlannerProfileState = {
@@ -103,6 +104,7 @@ export default function StudyPlannerPageClient() {
   useEffect(() => {
     if (status === "loading") return;
     syncLocalProfile(readLocalStudyProfile(userId));
+    if (status !== "authenticated") setHasLoadedProfile(true);
 
     const handleStudyProfileChange = (event: Event) => {
       const customEvent = event as CustomEvent<{ profile?: {
@@ -163,7 +165,7 @@ export default function StudyPlannerPageClient() {
     currentCourses?: string[];
     plannerProfile?: Partial<PlannerProfileState>;
   }) => {
-    if (status !== "authenticated" || importingRef.current) return;
+    if (importingRef.current) return;
     const task = (async () => {
     const nextMajor = overrides?.major ?? profileMajor;
     const nextCurrentCourses = overrides?.currentCourses ?? parseCommaSeparated(profileCurrentCourses);
@@ -190,6 +192,7 @@ export default function StudyPlannerPageClient() {
     writeLocalStudyProfile(localProfile, userId);
     window.dispatchEvent(new CustomEvent(STUDY_PROFILE_EVENT, { detail: { profile: localProfile } }));
 
+    if (status !== "authenticated") return;
     try {
       const response = await fetch("/api/study/me", {
         method: "PATCH",
@@ -224,8 +227,8 @@ export default function StudyPlannerPageClient() {
     try { await task; } finally { pendingSaves.current.delete(task); }
   }, [plannerProfile, profileCurrentCourses, profileInterests, profileMajor, profileStudyPreferences, status, syncLocalProfile, userId]);
 
-  const importAudit = async (text: string, choices: ImportChoice[]) => {
-    if (status !== "authenticated" || !hasLoadedProfile) throw new Error("Sign in and load your profile before saving.");
+  const importAudit = async (text: string, choices: ImportChoice[], source: "paste" | "pdf") => {
+    if (!hasLoadedProfile) throw new Error("Your browser profile is still loading.");
     if (importingRef.current) throw new Error("An audit import is already saving.");
     importingRef.current = true;
     setImporting(true);
@@ -233,9 +236,33 @@ export default function StudyPlannerPageClient() {
       // Finish outstanding autosaves before replacing course history, and prevent
       // stale autosaves from racing the explicit import operation.
       await Promise.allSettled([...pendingSaves.current]);
+      if (status !== "authenticated") {
+        const imported = source === "pdf"
+          ? prepareParsedAuditImport(parseUachievePdfText(text), choices)
+          : prepareAuditImport(text, choices);
+        const existingCurrentCourses = [...new Set([
+          ...plannerProfile.currentCourses,
+          ...parseCommaSeparated(profileCurrentCourses),
+        ])];
+        const mergedCurrentCourses = mergeCurrentCoursesAfterAuditImport(
+          existingCurrentCourses,
+          plannerProfile.auditImport,
+          imported.currentCourses,
+          imported.completedCourses,
+        );
+        const localProfile = {
+          school: "UIC", major: profileMajor, currentCourses: mergedCurrentCourses, interests: profileInterests,
+          studyPreferences: profileStudyPreferences,
+          plannerProfile: { ...plannerProfile, currentCourses: mergedCurrentCourses, completedCourses: imported.completedCourses, auditImport: imported.auditImport },
+        };
+        syncLocalProfile(localProfile); writeLocalStudyProfile(localProfile, userId);
+        window.dispatchEvent(new CustomEvent(STUDY_PROFILE_EVENT, { detail: { profile: localProfile } }));
+        setProfileSyncError("");
+        return;
+      }
       const response = await fetch("/api/study/me", {
         method: "PATCH", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ auditImport: { text, choices, confirmed: true } }),
+        body: JSON.stringify({ auditImport: { text, choices, source, confirmed: true } }),
       });
       const payload = await response.json();
       if (!response.ok || !payload.profile) throw new Error(payload.error || "Could not save the audit. Try again.");
@@ -263,7 +290,7 @@ export default function StudyPlannerPageClient() {
   }, []);
 
   useEffect(() => {
-    if (status !== "authenticated" || !hasLoadedProfile || importing) return;
+    if (!hasLoadedProfile || importing) return;
     const timeout = window.setTimeout(() => {
       void saveAcademicContext();
     }, 700);
@@ -272,56 +299,56 @@ export default function StudyPlannerPageClient() {
 
   return (
     <main className="min-h-screen bg-transparent pb-20 text-white">
-      <div className="mx-auto max-w-[1280px] space-y-6 px-1 pb-16 pt-3 sm:px-2">
-        <section className="rounded-[1.6rem] border border-white/10 bg-white/4 p-6">
-          {profileSyncError ? (
-            <p role="alert" className="mb-4 rounded-xl border border-rose-400/20 bg-rose-500/8 px-4 py-3 text-sm text-rose-200">
-              {profileSyncError}
-            </p>
-          ) : null}
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-            <div>
-              <div className="inline-flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.22em] text-indigo-200">
-                <Sparkles className="h-4 w-4" />
-                Saved student context
-              </div>
-              <div className="mt-3 text-2xl font-bold tracking-[-0.04em] text-white">
-                {session?.user?.name || "Your profile"}
-              </div>
-              <div className="mt-2 text-sm text-zinc-400">
-                {profileMajor || "No major saved yet"}
-              </div>
-            </div>
-
-            <Link
-              href="/profile"
-              className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-white/8"
-            >
-              Edit profile
-              <ChevronRight className="h-4 w-4" />
-            </Link>
-          </div>
-        </section>
-
-        <AuditImportPanel
-          key={userId ?? "signed-out"}
-          canSave={status === "authenticated" && hasLoadedProfile}
-          saving={importing}
-          completedCourses={plannerProfile.completedCourses}
-          currentCourses={plannerProfile.currentCourses}
-          savedImport={plannerProfile.auditImport}
-          onImport={importAudit}
-        />
+      <div className="mx-auto max-w-[1536px] space-y-4 px-1 pb-16 pt-3 sm:px-2">
+        {profileSyncError ? (
+          <p role="alert" className="rounded-xl border border-rose-400/20 bg-rose-500/8 px-4 py-3 text-sm text-rose-200">
+            {profileSyncError}
+          </p>
+        ) : null}
         <fieldset disabled={importing} className="min-w-0">
-        <MySchoolPlanner
-          defaultMajor={profileMajor}
-          defaultCurrentCourses={profileCurrentCourses}
-          initialPlannerProfile={plannerProfile}
-          onPlannerProfileChange={handlePlannerProfileChange}
-          onProfileSync={handleProfileSync}
-          onPersistProfile={saveAcademicContext}
-        />
+          <MySchoolPlanner
+            defaultMajor={profileMajor}
+            defaultCurrentCourses={profileCurrentCourses}
+            initialPlannerProfile={plannerProfile}
+            onPlannerProfileChange={handlePlannerProfileChange}
+            onProfileSync={handleProfileSync}
+            onPersistProfile={saveAcademicContext}
+          />
         </fieldset>
+
+        <details className="group overflow-hidden rounded-2xl border border-white/10 bg-white/[0.025]">
+          <summary className="flex cursor-pointer list-none items-center gap-3 px-4 py-3.5">
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg border border-white/10 bg-white/5 text-indigo-200">
+              <FileCheck2 className="h-4 w-4" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="text-sm font-semibold">Academic record &amp; audit import</div>
+              <div className="truncate text-xs text-zinc-500">{plannerProfile.completedCourses.length} completed · {plannerProfile.currentCourses.length} in progress · {plannerProfile.auditImport ? "Audit imported" : "No audit imported"}</div>
+            </div>
+            <ChevronRight className="h-4 w-4 text-zinc-500 transition group-open:rotate-90" />
+          </summary>
+          <div className="space-y-4 border-t border-white/8 p-4">
+            <section className="flex flex-col gap-3 rounded-xl border border-white/8 bg-white/[0.025] p-4 sm:flex-row sm:items-center">
+              <UserRound className="h-5 w-5 text-zinc-400" />
+              <div className="min-w-0 flex-1">
+                <div className="text-sm font-semibold">{session?.user?.name || "Your profile"}</div>
+                <div className="truncate text-xs text-zinc-500">{profileMajor || "No major saved yet"}</div>
+              </div>
+              <Link href="/profile" className="inline-flex items-center gap-1.5 text-xs font-semibold text-indigo-300 hover:text-indigo-200">
+                Edit profile <ChevronRight className="h-3.5 w-3.5" />
+              </Link>
+            </section>
+            <AuditImportPanel
+              key={userId ?? "signed-out"}
+              canSave={hasLoadedProfile}
+              saving={importing}
+              completedCourses={plannerProfile.completedCourses}
+              currentCourses={plannerProfile.currentCourses}
+              savedImport={plannerProfile.auditImport}
+              onImport={importAudit}
+            />
+          </div>
+        </details>
       </div>
     </main>
   );

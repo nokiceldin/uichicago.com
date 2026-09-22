@@ -10,6 +10,20 @@ const EMPTY_SAVED: SavedItemsPayload = {
 };
 
 const UNAUTHORIZED_ERROR = "UNAUTHORIZED";
+const LOCAL_SAVED_ITEMS_KEY = "uic-atlas-saved-items-v1";
+
+function readLocalSaved(): SavedItemsPayload {
+  if (typeof window === "undefined") return EMPTY_SAVED;
+  try {
+    const value = JSON.parse(window.localStorage.getItem(LOCAL_SAVED_ITEMS_KEY) ?? "null");
+    return { professors: Array.isArray(value?.professors) ? value.professors : [], courses: Array.isArray(value?.courses) ? value.courses : [] };
+  } catch { return EMPTY_SAVED; }
+}
+
+function writeLocalSaved(saved: SavedItemsPayload) {
+  if (typeof window === "undefined") return;
+  window.localStorage.setItem(LOCAL_SAVED_ITEMS_KEY, JSON.stringify(saved));
+}
 
 async function requestWithAuthRetry(input: RequestInfo | URL, init?: RequestInit) {
   const first = await fetch(input, {
@@ -53,9 +67,10 @@ export function useSavedItems() {
 
   const refresh = useCallback(async () => {
     if (status !== "authenticated") {
-      setSaved(EMPTY_SAVED);
+      const local = readLocalSaved();
+      setSaved(local);
       setLoading(false);
-      return EMPTY_SAVED;
+      return local;
     }
 
     setLoading(true);
@@ -82,6 +97,12 @@ export function useSavedItems() {
   }, [refresh]);
 
   const saveProfessor = useCallback(async (input: SaveProfessorInput) => {
+    if (status !== "authenticated") {
+      const current = readLocalSaved();
+      const entry = { id: `local-professor:${input.professorSlug}`, slug: input.professorSlug, name: input.professorName, department: input.department ?? "", school: input.school ?? "", note: input.note ?? null, href: `/professors/${encodeURIComponent(input.professorSlug)}`, createdAt: new Date().toISOString() };
+      const next = { ...current, professors: [entry, ...current.professors.filter(item => item.slug !== input.professorSlug)] };
+      writeLocalSaved(next); setSaved(next); return next;
+    }
     const response = await requestWithAuthRetry("/api/saved-items", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -100,9 +121,13 @@ export function useSavedItems() {
     const nextSaved = payload?.saved ?? EMPTY_SAVED;
     setSaved(nextSaved);
     return nextSaved;
-  }, []);
+  }, [status]);
 
   const unsaveProfessor = useCallback(async (professorSlug: string) => {
+    if (status !== "authenticated") {
+      const current = readLocalSaved(); const next = { ...current, professors: current.professors.filter(item => item.slug !== professorSlug) };
+      writeLocalSaved(next); setSaved(next); return next;
+    }
     const response = await requestWithAuthRetry("/api/saved-items", {
       method: "DELETE",
       headers: { "Content-Type": "application/json" },
@@ -121,9 +146,17 @@ export function useSavedItems() {
     const nextSaved = payload?.saved ?? EMPTY_SAVED;
     setSaved(nextSaved);
     return nextSaved;
-  }, []);
+  }, [status]);
 
   const saveCourse = useCallback(async (courseId: string) => {
+    if (status !== "authenticated") {
+      const current = readLocalSaved();
+      // The list card may not have course metadata; keep the stable course ID so
+      // its saved state persists locally. Signed-in saves enrich it on sync.
+      const entry = { id: `local-course:${courseId}`, courseId, subject: "", number: "", title: "Saved course", href: "/courses", createdAt: new Date().toISOString() };
+      const next = { ...current, courses: [entry, ...current.courses.filter(item => item.courseId !== courseId)] };
+      writeLocalSaved(next); setSaved(next); return next;
+    }
     const response = await requestWithAuthRetry("/api/saved-items", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -142,9 +175,13 @@ export function useSavedItems() {
     const nextSaved = payload?.saved ?? EMPTY_SAVED;
     setSaved(nextSaved);
     return nextSaved;
-  }, []);
+  }, [status]);
 
   const unsaveCourse = useCallback(async (courseId: string) => {
+    if (status !== "authenticated") {
+      const current = readLocalSaved(); const next = { ...current, courses: current.courses.filter(item => item.courseId !== courseId) };
+      writeLocalSaved(next); setSaved(next); return next;
+    }
     const response = await requestWithAuthRetry("/api/saved-items", {
       method: "DELETE",
       headers: { "Content-Type": "application/json" },
@@ -163,7 +200,7 @@ export function useSavedItems() {
     const nextSaved = payload?.saved ?? EMPTY_SAVED;
     setSaved(nextSaved);
     return nextSaved;
-  }, []);
+  }, [status]);
 
   const savedProfessorSlugs = useMemo(
     () => new Set(saved.professors.map((entry) => entry.slug)),

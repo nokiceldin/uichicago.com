@@ -1,4 +1,6 @@
 import { auditRequirements, normalizeAcademicRecord, type Requirement, type Rule } from "./audit.ts";
+import { auditCs2024, supportsCs2024 } from "./cs-2024.ts";
+import type { SavedAuditImport } from "./audit-import-review.ts";
 
 const source = "https://catalog.uic.edu/ucat/colleges-depts/engineering/cs/bs-cs/";
 const course = (code: string): Rule => ({ kind: "course", code });
@@ -24,13 +26,15 @@ export const csRequirements: Requirement[] = [
   ].map(([id, label, reason]) => requirement(`cs.${id}`, label, { kind: "unknown", reason })),
 ];
 
-export function buildCsAudit(major: string, completed: unknown, current: unknown, importedCatalogCode?: string | null) {
-  // Imported catalog codes are not mapped to reviewed rule versions yet.
-  // Do not reinterpret a known catalog using the current catalog snapshot.
-  if (importedCatalogCode) return null;
+export function buildCsAudit(major: string, completed: unknown, current: unknown, importedCatalogCode?: string | null, snapshot?: SavedAuditImport) {
   // Exact aliases only: CS + Design / Linguistics / concentrations need distinct rules.
   if (!["cs", "computer science", "computer-science", "computer-science-bs", "computer science - bs", "computer science, bs", "computer science, b.s."].includes(major.trim().toLowerCase())) return null;
   const record = normalizeAcademicRecord(completed, current);
+  const catalogCode = importedCatalogCode || snapshot?.metadata.catalogCode;
+  if (catalogCode) {
+    return catalogCode === "202408" && supportsCs2024(snapshot) && snapshot
+      ? auditCs2024(record, snapshot) : null;
+  }
   return {
     program: "Computer Science BS", catalogYear: "2026-2027", reviewedOn: "2026-09-20", source,
     scope: "partial" as const,

@@ -1,5 +1,5 @@
 import type { CardProgress, NoteAiGenerationLog, NoteAudioSession, QuizResult } from "@/lib/study/types";
-import type { SavedAuditImport } from "../academic/audit-import-review.ts";
+import { selectedCurrentCoursesFromSavedImport, type SavedAuditImport } from "../academic/audit-import-review.ts";
 
 export type PlannerProfilePayload = {
   auditImport?: SavedAuditImport;
@@ -124,19 +124,35 @@ export function serializeStoredPreferences(
 export function normalizeStudyProfileSnapshot(profile: Partial<StudyProfileSnapshot> | null | undefined): StudyProfileSnapshot | null {
   if (!profile || typeof profile !== "object") return null;
 
+  const auditImport = profile.plannerProfile?.auditImport;
+  const savedTopLevelCurrent = Array.isArray(profile.currentCourses)
+    ? profile.currentCourses.map((course) => String(course).trim()).filter(Boolean)
+    : [];
+  const savedPlannerCurrent = Array.isArray(profile.plannerProfile?.currentCourses)
+    ? profile.plannerProfile.currentCourses.map((course) => String(course).trim()).filter(Boolean)
+    : [];
+  // Repair profiles written by the earlier audit-import regression, which
+  // could empty both current-course arrays while retaining reviewed IP rows.
+  const recoveredAuditCurrent = savedTopLevelCurrent.length || savedPlannerCurrent.length
+    ? []
+    : selectedCurrentCoursesFromSavedImport(auditImport);
+  const currentCourses = savedTopLevelCurrent.length
+    ? savedTopLevelCurrent
+    : savedPlannerCurrent.length
+      ? savedPlannerCurrent
+      : recoveredAuditCurrent;
+
   return {
     school: typeof profile.school === "string" && profile.school.trim() ? profile.school.trim() : "UIC",
     major: typeof profile.major === "string" ? profile.major.trim() : "",
-    currentCourses: Array.isArray(profile.currentCourses)
-      ? profile.currentCourses.map((course) => String(course).trim()).filter(Boolean)
-      : [],
+    currentCourses,
     interests: Array.isArray(profile.interests)
       ? profile.interests.map((interest) => String(interest).trim()).filter(Boolean)
       : [],
     studyPreferences: typeof profile.studyPreferences === "string" ? profile.studyPreferences : "",
     plannerProfile: typeof profile.plannerProfile === "object" && profile.plannerProfile
       ? {
-          auditImport: profile.plannerProfile.auditImport,
+          auditImport,
           majorSlug:
             typeof profile.plannerProfile.majorSlug === "string" && profile.plannerProfile.majorSlug.trim()
               ? profile.plannerProfile.majorSlug.trim()
@@ -146,9 +162,7 @@ export function normalizeStudyProfileSnapshot(profile: Partial<StudyProfileSnaps
               ? Number(profile.plannerProfile.currentSemesterNumber)
               : undefined,
           honorsStudent: Boolean(profile.plannerProfile.honorsStudent),
-          currentCourses: Array.isArray(profile.plannerProfile.currentCourses)
-            ? profile.plannerProfile.currentCourses.map((course) => String(course).trim()).filter(Boolean)
-            : [],
+          currentCourses: savedPlannerCurrent.length ? savedPlannerCurrent : currentCourses,
           completedCourses: Array.isArray(profile.plannerProfile.completedCourses)
             ? profile.plannerProfile.completedCourses.map((course) => String(course).trim()).filter(Boolean)
             : [],

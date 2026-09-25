@@ -8,7 +8,7 @@ import { flushSync } from "react-dom";
 import posthog from "posthog-js";
 import { Check, Ellipsis, Pencil, PanelLeftClose, PanelLeftOpen, Plus, Trash2, X } from "lucide-react";
 import { useSession } from "next-auth/react";
-import { getDeterministicItems } from "@/lib/chat/prompts";
+import { getDeterministicItems, getSeededRandomItems } from "@/lib/chat/prompts";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -954,7 +954,7 @@ const TOPIC_SHORTCUTS: Record<string, string[]> = {
   ],
 };
 
-const CHAT_QUICK_PROMPTS = [
+const CURATED_QUICK_PROMPTS = [
   "Best CS average grades",
   "Hardest CS classes",
   "Easiest 200 level CS classes",
@@ -1032,6 +1032,13 @@ function shortenPrompt(text: string): string {
     .replace(/\?$/, "")
     .trim();
 }
+
+const CHAT_QUICK_PROMPTS = Array.from(
+  new Set([
+    ...CURATED_QUICK_PROMPTS,
+    ...TOPICS.flatMap((topic) => topic.items.map(shortenPrompt)),
+  ]),
+);
 
 function formatContent(text: string): string {
   // Headers
@@ -1642,7 +1649,22 @@ function EmptyState({
   onRemoveAttachment: () => void;
 }){
 const topic = TOPICS[activeTopic];
-const visiblePrompts = useMemo(() => getDeterministicItems(topic.items, 4), [topic.items]);
+const [visitSeed, setVisitSeed] = useState<number | null>(null);
+
+useEffect(() => {
+  const frame = window.requestAnimationFrame(() => {
+    const randomValue = new Uint32Array(1);
+    window.crypto.getRandomValues(randomValue);
+    setVisitSeed(randomValue[0]);
+  });
+
+  return () => window.cancelAnimationFrame(frame);
+}, []);
+
+const visiblePrompts = useMemo(() => {
+  if (visitSeed === null) return getDeterministicItems(topic.items, 4);
+  return getSeededRandomItems(topic.items, 4, visitSeed + activeTopic * 10_007);
+}, [activeTopic, topic.items, visitSeed]);
 
   return (
     <div
@@ -1837,9 +1859,25 @@ function QuickSuggestBar({
   inputRef: React.RefObject<HTMLTextAreaElement | null>;
   refreshKey: number;
 }) {
+  const [visitSeed, setVisitSeed] = useState<number | null>(null);
+
+  useEffect(() => {
+    const frame = window.requestAnimationFrame(() => {
+      const randomValue = new Uint32Array(1);
+      window.crypto.getRandomValues(randomValue);
+      setVisitSeed(randomValue[0]);
+    });
+
+    return () => window.cancelAnimationFrame(frame);
+  }, []);
+
   const quickPrompts = useMemo(() => {
-    return getDeterministicItems(CHAT_QUICK_PROMPTS, 10, refreshKey * 10);
-  }, [refreshKey]);
+    if (visitSeed === null) {
+      return getDeterministicItems(CHAT_QUICK_PROMPTS, 10, refreshKey * 10);
+    }
+
+    return getSeededRandomItems(CHAT_QUICK_PROMPTS, 10, visitSeed + refreshKey * 10_007);
+  }, [refreshKey, visitSeed]);
 
   return (
     <div className="w-full max-w-[860px] mx-auto">

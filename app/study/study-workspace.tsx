@@ -5741,19 +5741,24 @@ function OverviewView({
     { label: "Match", icon: <Shuffle className="h-4 w-4" />, active: false, onClick: () => onModeChange("match") },
   ];
 
-  const setPreviewIndex = (updater: number | ((current: number) => number)) => {
-    setPreviewState((current) => {
-      const currentIndex = current.setId === set.id ? current.index : 0;
-      const nextIndex = typeof updater === "function" ? updater(currentIndex) : updater;
-      return { setId: set.id, index: nextIndex, flipped: false };
-    });
-  };
-
   const setPreviewFlipped = (updater: boolean | ((current: boolean) => boolean)) => {
     setPreviewState((current) => {
       const currentFlipped = current.setId === set.id ? current.flipped : false;
       const nextFlipped = typeof updater === "function" ? updater(currentFlipped) : updater;
-      return { setId: set.id, index: previewIndex, flipped: nextFlipped };
+      const currentIndex = current.setId === set.id ? current.index : 0;
+      return { setId: set.id, index: currentIndex, flipped: nextFlipped };
+    });
+  };
+
+  const movePreviewCard = (direction: "next" | "prev") => {
+    setPreviewState((current) => {
+      const currentIndex = current.setId === set.id ? current.index : 0;
+      const nextIndex =
+        direction === "next"
+          ? Math.min(set.cards.length - 1, currentIndex + 1)
+          : Math.max(0, currentIndex - 1);
+
+      return { setId: set.id, index: nextIndex, flipped: false };
     });
   };
 
@@ -6092,10 +6097,11 @@ function OverviewView({
                 onClick={() => {
                   if (previewIndex <= 0) return;
                   triggerPreviewMotion("prev");
-                  setPreviewIndex((current) => Math.max(0, current - 1));
-                  setPreviewFlipped(false);
+                  movePreviewCard("prev");
                 }}
-                className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-white/8 text-zinc-100"
+                disabled={previewIndex <= 0}
+                aria-label="Previous card"
+                className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-white/8 text-zinc-100 transition hover:bg-white/14 disabled:cursor-not-allowed disabled:opacity-40"
               >
                 <ChevronLeft className="h-5 w-5" />
               </button>
@@ -6106,10 +6112,11 @@ function OverviewView({
                 onClick={() => {
                   if (previewIndex >= set.cards.length - 1) return;
                   triggerPreviewMotion("next");
-                  setPreviewIndex((current) => Math.min(set.cards.length - 1, current + 1));
-                  setPreviewFlipped(false);
+                  movePreviewCard("next");
                 }}
-                className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-white/8 text-zinc-100"
+                disabled={previewIndex >= set.cards.length - 1}
+                aria-label="Next card"
+                className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-white/8 text-zinc-100 transition hover:bg-white/14 disabled:cursor-not-allowed disabled:opacity-40"
               >
                 <ChevronRight className="h-5 w-5" />
               </button>
@@ -6384,7 +6391,7 @@ function FlashcardsMode({
           return nextIndex;
         });
       }
-      if (event.key === " ") {
+      if (event.key === "ArrowUp" || event.key === "ArrowDown" || event.key === " ") {
         event.preventDefault();
         setFlipped((current) => !current);
       }
@@ -7128,10 +7135,14 @@ function LearnMode({
   return (
     <div
       ref={panelRef}
-      className={`study-appear mx-auto max-w-310 ${isFullscreen ? "study-flashcards-fullscreen min-h-screen overflow-auto p-8" : ""}`}
+      className={`study-appear mx-auto w-full max-w-310 ${
+        isFullscreen
+          ? "study-flashcards-fullscreen flex min-h-screen max-w-none flex-col overflow-auto px-[clamp(1.5rem,4vw,4rem)] py-[clamp(1.5rem,3vh,2.5rem)]"
+          : ""
+      }`}
     >
       {/* Shared header — always visible */}
-      <div className={`flex items-center justify-between gap-4 ${isFullscreen && !completed ? "pt-[8vh]" : ""}`}>
+      <div className="flex shrink-0 items-center justify-between gap-4">
         <div className="flex items-center gap-4">
           <button
             onClick={onBack}
@@ -7281,7 +7292,10 @@ function LearnMode({
         })()
       ) : q ? (
         /* ── ACTIVE QUESTION ── */
-        <div className={`mt-6 space-y-6 ${isFullscreen ? "pt-[4vh]" : ""}`}>
+        <div className={isFullscreen
+          ? "mx-auto flex w-full max-w-270 flex-1 flex-col justify-center gap-5 py-6"
+          : "mt-6 space-y-6"
+        }>
           {(() => {
             const progressT = Math.min(1, (index + (submitted ? 1 : 0)) / Math.max(questions.length, 1));
             const cr = Math.round(85 + (16 - 85) * progressT);
@@ -7308,7 +7322,11 @@ function LearnMode({
             );
           })()}
 
-          <div className="mx-auto w-full max-w-245 rounded-[1.6rem] border border-[#515b84] bg-[#394264] p-6 shadow-[0_24px_70px_rgba(0,0,0,0.22)] sm:p-7">
+          <div className={`mx-auto w-full rounded-[1.6rem] border border-[#515b84] bg-[#394264] p-6 shadow-[0_24px_70px_rgba(0,0,0,0.22)] sm:p-7 ${
+            isFullscreen
+              ? "flex min-h-[clamp(30rem,52vh,38rem)] max-w-none flex-col rounded-[2rem] sm:p-10"
+              : "max-w-245"
+          }`}>
             <div className="flex items-center justify-between gap-4">
               <div className="flex items-center gap-2 text-xs font-semibold text-zinc-300">
                 <span>Term</span>
@@ -7323,7 +7341,7 @@ function LearnMode({
               </div>
               <div className="text-xs text-zinc-400">{index + 1} of {questions.length}</div>
             </div>
-            <div className="mt-8 min-h-27.5 text-[2rem] leading-[1.2] font-medium tracking-[-0.03em] text-white">
+            <div className={`mt-8 min-h-27.5 text-[2rem] leading-[1.2] font-medium tracking-[-0.03em] text-white ${isFullscreen ? "flex-1" : ""}`}>
               {currentCard?.imageFrontUrl ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
@@ -7387,7 +7405,7 @@ function LearnMode({
             const liveAccuracy = Math.round((score / Math.max(index + Number(submitted), 1)) * 100) || 0;
             const accColor = liveAccuracy >= 80 ? "#4ade80" : liveAccuracy >= 60 ? "#fbbf24" : liveAccuracy >= 40 ? "#fb923c" : "#f87171";
             return (
-              <div className="mx-auto flex w-full max-w-245 items-center justify-between px-2 text-sm text-zinc-300">
+              <div className={`mx-auto flex w-full items-center justify-between px-2 text-sm text-zinc-300 ${isFullscreen ? "max-w-none" : "max-w-245"}`}>
                 <div>Click the correct answer or press any key to continue</div>
                 <div className="rounded-full border border-white/10 bg-white/4 px-3 py-1 text-xs font-semibold transition-colors" style={{ color: accColor }}>
                   {liveAccuracy}% correct

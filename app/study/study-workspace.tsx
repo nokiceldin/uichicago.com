@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type RefObject } from "react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { parseStudyInvite, studyInvitePath } from "@/lib/study/invite";
@@ -60,6 +60,41 @@ const LIBRARY_SYNC_EVENT = "uic-atlas-study-library-sync";
 const FOLDERS_SYNC_EVENT = "uic-atlas-study-folders-sync";
 const CARD_IMAGE_MAX_FILE_SIZE = 6 * 1024 * 1024;
 const CARD_IMAGE_MAX_DIMENSION = 1200;
+
+function isTextEntryTarget(target: EventTarget | null) {
+  if (!(target instanceof HTMLElement)) return false;
+  return Boolean(target.closest('input, textarea, select, [contenteditable="true"], [role="textbox"]'));
+}
+
+function useFullscreenShortcut(elementRef: RefObject<HTMLElement | null>) {
+  useEffect(() => {
+    const handleFullscreenShortcut = (event: KeyboardEvent) => {
+      if (
+        event.key.toLowerCase() !== "f"
+        || event.metaKey
+        || event.ctrlKey
+        || event.altKey
+        || event.repeat
+        || isTextEntryTarget(event.target)
+      ) {
+        return;
+      }
+
+      const element = elementRef.current;
+      if (!element) return;
+
+      event.preventDefault();
+      if (document.fullscreenElement === element) {
+        void document.exitFullscreen?.().catch(() => {});
+      } else if (!document.fullscreenElement) {
+        void element.requestFullscreen?.().catch(() => {});
+      }
+    };
+
+    window.addEventListener("keydown", handleFullscreenShortcut);
+    return () => window.removeEventListener("keydown", handleFullscreenShortcut);
+  }, [elementRef]);
+}
 
 function hasImage(value?: string) {
   return Boolean(value?.trim());
@@ -5684,6 +5719,7 @@ function OverviewView({
   const [trackPreviewProgress, setTrackPreviewProgress] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const panelRef = useRef<HTMLDivElement | null>(null);
+  useFullscreenShortcut(panelRef);
   const previewIndex = previewState.setId === set.id ? previewState.index : 0;
   const previewFlipped = previewState.setId === set.id ? previewState.flipped : false;
   const previewCard = set.cards[previewIndex] ?? set.cards[0];
@@ -6131,7 +6167,7 @@ function OverviewView({
               <button
                 onClick={toggleFullscreen}
                 aria-label={isFullscreen ? "Exit full screen" : "Full screen"}
-                title={isFullscreen ? "Exit full screen" : "Full screen"}
+                title={isFullscreen ? "Exit full screen (F)" : "Full screen (F)"}
                 className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/8 text-zinc-100"
               >
                 {isFullscreen ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
@@ -6223,6 +6259,7 @@ function FlashcardsMode({
   const [fcShareOpen, setFcShareOpen] = useState(false);
   const [fcCopied, setFcCopied] = useState(false);
   const panelRef = useRef<HTMLDivElement | null>(null);
+  useFullscreenShortcut(panelRef);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const touchStartX = useRef<number | null>(null);
   const motionTimeoutRef = useRef<number | null>(null);
@@ -6758,7 +6795,7 @@ function FlashcardsMode({
                   label="Shuffle cards"
                   active={Boolean(shuffledCardIds?.length)}
                 />
-                <IconControlButton onClick={toggleFullscreen} icon={<Maximize2 className="h-4.5 w-4.5" />} label="Full screen" active={isFullscreen} />
+                <IconControlButton onClick={toggleFullscreen} icon={<Maximize2 className="h-4.5 w-4.5" />} label="Full screen (F)" active={isFullscreen} />
               </>
             ) : (
               <>
@@ -6841,6 +6878,7 @@ function LearnMode({
   const prefetchedExplanations = useRef<Record<number, string>>({});
   const sessionStartMs = useRef(Date.now());
   const panelRef = useRef<HTMLDivElement | null>(null);
+  useFullscreenShortcut(panelRef);
   const question = questions[index];
 
   // Compute selectedIsCorrect early (null-safe) so it can be used in effects and continueLearn
@@ -7158,6 +7196,7 @@ function LearnMode({
           <button
             onClick={toggleFullscreen}
             aria-label={isFullscreen ? "Exit full screen" : "Full screen"}
+            title={isFullscreen ? "Exit full screen (F)" : "Full screen (F)"}
             className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/6 text-zinc-200 transition hover:bg-white/12"
           >
             {isFullscreen ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
@@ -7450,6 +7489,7 @@ function AssessmentMode({
   const [showTestMistakes, setShowTestMistakes] = useState(false);
   const [enhancedChoices, setEnhancedChoices] = useState<Record<string, string[]>>({});
   const testPanelRef = useRef<HTMLDivElement | null>(null);
+  useFullscreenShortcut(testPanelRef);
   const questionCardRefs = useRef<(HTMLDivElement | null)[]>([]);
   const [enabledTypes, setEnabledTypes] = useState({
     trueFalse: true,
@@ -7831,6 +7871,7 @@ function AssessmentMode({
           <button
             onClick={toggleTestFullscreen}
             aria-label={isFullscreen ? "Exit full screen" : "Full screen"}
+            title={isFullscreen ? "Exit full screen (F)" : "Full screen (F)"}
             {...magneticHoverProps}
             className="study-premium-button inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-white/4"
           >

@@ -7567,10 +7567,6 @@ function AssessmentMode({
       .catch(() => {});
   }, [questions]);
 
-  if (!questions.length) {
-    return <EmptyModeState title="Not enough material to generate this assessment yet." onBack={onBack} />;
-  }
-
   const toggleTestFullscreen = async () => {
     if (!testPanelRef.current) return;
     if (document.fullscreenElement === testPanelRef.current) {
@@ -7580,7 +7576,7 @@ function AssessmentMode({
     await testPanelRef.current.requestFullscreen?.();
   };
 
-  const scrollQuestionIntoView = (element: HTMLDivElement | null) => {
+  const scrollQuestionIntoView = useCallback((element: HTMLDivElement | null) => {
     if (!element) return;
 
     const fullscreenContainer = document.fullscreenElement === testPanelRef.current ? testPanelRef.current : null;
@@ -7599,17 +7595,75 @@ function AssessmentMode({
 
     const nextTop = window.scrollY + elementRect.top - (window.innerHeight * visualAnchor - elementRect.height / 2);
     window.scrollTo({ top: Math.max(0, nextTop), behavior: "smooth" });
-  };
+  }, []);
 
   // Auto-scroll to next question after picking an MC/TF answer
-  const handleSelectAnswer = (questionId: string, value: string, questionIndex: number) => {
+  const handleSelectAnswer = useCallback((questionId: string, value: string, questionIndex: number) => {
     setAnswers((current) => ({ ...current, [questionId]: value }));
     if (questionIndex < questions.length - 1) {
       window.setTimeout(() => {
         scrollQuestionIntoView(questionCardRefs.current[questionIndex + 1]);
       }, 160);
     }
-  };
+  }, [questions.length, scrollQuestionIntoView]);
+
+  useEffect(() => {
+    if (setupOpen || submitted) return;
+
+    const handleChoiceShortcut = (event: KeyboardEvent) => {
+      if (
+        !["1", "2", "3", "4"].includes(event.key)
+        || event.metaKey
+        || event.ctrlKey
+        || event.altKey
+        || event.repeat
+        || isTextEntryTarget(event.target)
+      ) {
+        return;
+      }
+
+      const fullscreenRect = document.fullscreenElement === testPanelRef.current
+        ? testPanelRef.current?.getBoundingClientRect()
+        : null;
+      const viewportTop = fullscreenRect?.top ?? 0;
+      const viewportHeight = fullscreenRect?.height ?? window.innerHeight;
+      const viewportBottom = viewportTop + viewportHeight;
+      const viewportCenter = viewportTop + viewportHeight / 2;
+
+      let activeQuestionIndex = -1;
+      let closestDistance = Number.POSITIVE_INFINITY;
+      questionCardRefs.current.forEach((element, questionIndex) => {
+        if (!element) return;
+        const rect = element.getBoundingClientRect();
+        if (rect.bottom <= viewportTop || rect.top >= viewportBottom) return;
+        const distance = Math.abs(rect.top + rect.height / 2 - viewportCenter);
+        if (distance < closestDistance) {
+          closestDistance = distance;
+          activeQuestionIndex = questionIndex;
+        }
+      });
+
+      const activeQuestion = questions[activeQuestionIndex];
+      if (!activeQuestion || (activeQuestion.type !== "multiple_choice" && activeQuestion.type !== "true_false")) return;
+
+      const activeChoices = activeQuestion.type === "true_false"
+        ? ["True", "False"]
+        : (enhancedChoices[activeQuestion.id] ?? activeQuestion.choices ?? []);
+      const choice = activeChoices[Number(event.key) - 1];
+      if (!choice) return;
+
+      event.preventDefault();
+      const normalizedChoice = activeQuestion.type === "true_false" ? choice.toLowerCase() : choice;
+      handleSelectAnswer(activeQuestion.id, normalizedChoice, activeQuestionIndex);
+    };
+
+    window.addEventListener("keydown", handleChoiceShortcut);
+    return () => window.removeEventListener("keydown", handleChoiceShortcut);
+  }, [enhancedChoices, handleSelectAnswer, questions, setupOpen, submitted]);
+
+  if (!questions.length) {
+    return <EmptyModeState title="Not enough material to generate this assessment yet." onBack={onBack} />;
+  }
 
   const gradeQuestion = (quizQuestion: QuizQuestion) => {
     const answer = answers[quizQuestion.id] ?? "";
@@ -7883,7 +7937,7 @@ function AssessmentMode({
         </div>
       </div>
 
-      <div className="mx-auto w-full max-w-245 space-y-24 sm:space-y-32">
+      <div className="mx-auto w-full max-w-270 space-y-[clamp(10rem,18vh,14rem)]">
         {questions.map((q, qIndex) => {
           const isMC = q.type === "multiple_choice" || q.type === "true_false";
           const isWritten = q.type === "short_answer" || q.type === "fill_blank" || q.type === "written";
@@ -7895,7 +7949,7 @@ function AssessmentMode({
             <div
               key={q.id}
               ref={(el) => { questionCardRefs.current[qIndex] = el; }}
-              className="rounded-[1.6rem] border border-[#515b84] bg-[#394264] p-6 shadow-[0_24px_70px_rgba(0,0,0,0.22)] sm:p-7"
+              className="flex min-h-[clamp(30rem,52vh,36rem)] flex-col rounded-[1.8rem] border border-[#515b84] bg-[#394264] p-6 shadow-[0_24px_70px_rgba(0,0,0,0.22)] sm:p-9"
             >
               {/* Question header */}
               <div className="flex items-center justify-between gap-4">
@@ -7914,7 +7968,7 @@ function AssessmentMode({
               </div>
 
               {/* Question prompt */}
-              <div className="mt-7 text-[1.75rem] leading-[1.18] font-medium tracking-[-0.04em] text-white">
+              <div className="mt-8 flex-1 text-[clamp(1.9rem,2.2vw,2.35rem)] leading-[1.18] font-medium tracking-[-0.04em] text-white">
                 {linkedCard?.imageFrontUrl ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
@@ -7971,7 +8025,7 @@ function AssessmentMode({
                   ? <span className="text-indigo-300">Answer saved ✓</span>
                   : isWritten
                     ? "Write your best answer"
-                    : "Pick the best option"}
+                    : `Press 1–${choices.length} or pick the best option`}
               </div>
             </div>
           );

@@ -1,4 +1,5 @@
 import { majorRequirements } from "@/lib/majorRequirements";
+import { extractProfessorNameHint } from "@/lib/chat/professor-identity";
 
 export function detectIntent(msg: string) {
   const m = msg.toLowerCase();
@@ -97,16 +98,14 @@ export function detectIntent(msg: string) {
     if (re.test(m)) { deptName = dept; break; }
   }
 
-  const profNameMatch = m.match(/professor\s+([a-z]+)|prof\s+([a-z]+)|([a-z]+)'s\s+(class|course|section)/);
+  const profNameHint = extractProfessorNameHint(msg);
 
   return {
     courseCode,
     subjectCode,
     major: majorMatch,
     deptName,
-    profNameHint: profNameMatch
-      ? (profNameMatch[1] || profNameMatch[2] || profNameMatch[3])
-      : null,
+    profNameHint,
     isAboutProfessors: /professor|instructor|teacher|\bprof\b|who teach|who gives|best prof|worst prof|ratings|rmp|rank.*prof|prof.*rank/i.test(m),
     isAboutCourses: /course|class|elective|easiest|hardest|gpa|grade|subject|credit|difficult|easy|hard|gen.?ed|requirement/i.test(m),
     isAboutGenEd: /gen.?ed|general education|gen ed/i.test(m),

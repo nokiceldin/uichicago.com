@@ -1,8 +1,13 @@
 import { prisma } from "@/lib/prisma";
-import { normName, mapKeyToDbName, courseLabel, courseTitle, getProfCourseMap } from "./utils";
+import { courseLabel, courseTitle, getProfCourseMap } from "./utils";
 import fs from "node:fs";
 import path from "node:path";
 import { getCourseInstructorStats } from "@/lib/courses/instructor-stats";
+import {
+  formatProfessorClarification,
+  resolveProfessorCourseMapKey,
+  resolveProfessorIdentityFromLookup,
+} from "@/lib/chat/professor-identity";
 
 type LocalCatalogCourse = {
   subject: string;
@@ -310,33 +315,51 @@ export async function fetchProfessorsByDept(deptName?: string | null, limit = 30
 // ─── Professor with course rankings ──────────────────────────────────────────
 
 export async function fetchProfessorWithCourseRankings(profNameHint: string) {
-  // Try direct match first, then try each word of the hint individually
-const nameParts = profNameHint.split(/\s+/).filter(p => p.length >= 3);
-const prof = await prisma.professor.findFirst({
-  where: {
-    OR: [
-      { name: { contains: profNameHint, mode: "insensitive" as const } },
-      ...nameParts.map(part => ({ name: { contains: part, mode: "insensitive" as const } })),
-    ]
-  },
-  orderBy: { rmpRatingsCount: "desc" },
-    select: {
+  const select = {
       name: true, department: true, rmpQuality: true, rmpDifficulty: true,
       rmpRatingsCount: true, rmpWouldTakeAgain: true, aiSummary: true, slug: true,
       salary: true, salaryTitle: true,
-    },
+  } as const;
+  const resolution = await resolveProfessorIdentityFromLookup(profNameHint, {
+    findExact: (prefixes) => prisma.professor.findMany({
+      where: {
+        OR: prefixes.flatMap(({ raw, normalized }) => [
+          { name: { equals: raw, mode: "insensitive" as const } },
+          { nameNormalized: { equals: normalized, mode: "insensitive" as const } },
+        ]),
+      },
+      orderBy: { name: "asc" },
+      select,
+    }),
+    findCandidates: (lookupParts) => prisma.professor.findMany({
+      where: {
+        OR: lookupParts.flatMap((part) => [
+          { name: { contains: part, mode: "insensitive" as const } },
+          { nameNormalized: { contains: part, mode: "insensitive" as const } },
+        ]),
+      },
+      orderBy: { name: "asc" },
+      select,
+    }),
   });
-  if (!prof) return null;
+  if (resolution.status !== "match") {
+    return {
+      status: resolution.status,
+      clarification: formatProfessorClarification(
+        profNameHint,
+        resolution.status === "ambiguous" ? resolution.candidates : [],
+      ),
+    };
+  }
+  const prof = resolution.candidate;
 
   const courseMap = getProfCourseMap();
-  const profNorm = normName(prof.name);
-  const mapKey =
-    Object.keys(courseMap).find((k) => normName(mapKeyToDbName(k)) === profNorm) || "";
+  const mapKey = resolveProfessorCourseMapKey(prof.name, Object.keys(courseMap));
   const courses = mapKey
     ? (courseMap[mapKey] || []).map((item) => ({ label: courseLabel(item), title: courseTitle(item) }))
     : [];
 
-  return { prof, courses };
+  return { status: "match" as const, prof, courses };
 }
 
 // ─── Recent news ──────────────────────────────────────────────────────────────

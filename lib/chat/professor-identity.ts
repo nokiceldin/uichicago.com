@@ -40,6 +40,8 @@ const NAME_PREDICATE_COLLISIONS = new Set(["fair", "may", "will"]);
 const GENERIC_POST_ROLE_MARKERS = new Set([
   "actually", "currently", "generally", "now", "often", "overall", "sometimes", "today", "usually",
 ]);
+const PROFESSOR_POSSESSIVE_ATTRIBUTE =
+  String.raw`(?:ratings?|courses?|class(?:es)?|sections?|departments?|depts?|reviews?|difficulty|teaching\s+history)`;
 const NICKNAMES: Record<string, string[]> = {
   alex: ["alexander", "alexandra"],
   alexander: ["alex"],
@@ -171,6 +173,26 @@ function sanitizeProfessorNameHint(value: string) {
   return cleaned.every(validToken) ? cleaned.join(" ") : null;
 }
 
+function extractPossessiveProfessorNameHint(message: string) {
+  const nameToken = String.raw`[\p{L}][\p{L}’'.-]*`;
+  const titledMatch = message.match(new RegExp(
+    String.raw`\b(?:professor|prof\.?|dr\.?)\s+(${nameToken}(?:\s+${nameToken}){0,5})[’']s\s+${PROFESSOR_POSSESSIVE_ATTRIBUTE}\b`,
+    "iu",
+  ));
+  if (titledMatch?.[1]) return sanitizeProfessorNameHint(titledMatch[1]);
+
+  const surnameMatch = message.match(new RegExp(
+    String.raw`\b(${nameToken})[’']s\s+${PROFESSOR_POSSESSIVE_ATTRIBUTE}\b`,
+    "iu",
+  ));
+  const surname = surnameMatch?.[1] ? sanitizeProfessorNameHint(surnameMatch[1]) : null;
+  if (!surname) return null;
+  const token = lexicalToken(surname);
+  return token && !HONORIFICS.has(token) && !PROFESSOR_PREDICATE_WORDS.has(token)
+    ? surname
+    : null;
+}
+
 export function buildProfessorNamePrefixes(value: string) {
   const sanitized = sanitizeProfessorNameHint(value);
   if (!sanitized) return [];
@@ -240,10 +262,7 @@ export function isGenericProfessorInterrogative(message: string) {
 }
 
 function hasSupportedPossessiveProfessorTarget(message: string) {
-  const possessive = message.match(/\b([\p{L}][\p{L}’'.-]*)[’']s\s+(?:class|course|section|rating|reviews?)\b/iu)?.[1];
-  if (!possessive) return false;
-  const token = lexicalToken(possessive);
-  return Boolean(token) && !HONORIFICS.has(token) && !PROFESSOR_PREDICATE_WORDS.has(token);
+  return extractPossessiveProfessorNameHint(message) !== null;
 }
 
 function identityMessageTokens(message: string) {
@@ -320,14 +339,14 @@ export function shouldClarifyProfessorLookup(
 
 export function extractProfessorNameHint(message: string) {
   if (isGenericProfessorInterrogative(message)) return null;
+  const possessive = extractPossessiveProfessorNameHint(message);
+  if (possessive) return possessive;
   const afterTitle = message.match(/\b(?:professor|prof\.?|dr\.?)\s+([\p{L}][\p{L}’'.-]*(?:\s+[\p{L}][\p{L}’'.-]*){0,5})/iu)?.[1];
   if (afterTitle) {
     const sanitized = sanitizeProfessorNameHint(afterTitle);
     if (sanitized) return sanitized;
   }
-
-  const possessive = message.match(/\b([\p{L}][\p{L}’'.-]*)[’']s\s+(?:class|course|section|rating|reviews?)\b/iu);
-  return possessive?.[1] ?? null;
+  return null;
 }
 
 function nameParts(raw: string) {
@@ -445,6 +464,8 @@ export function resolveProfessorCourseMapKey(professorName: string, mapKeys: str
 
 export function chooseProfessorNameHint(aiHint: unknown, regexHint: unknown, rawQuery?: string) {
   if (rawQuery && isGenericProfessorInterrogative(rawQuery)) return null;
+  const possessiveHint = rawQuery ? extractPossessiveProfessorNameHint(rawQuery) : null;
+  if (possessiveHint) return possessiveHint;
   const values = [aiHint, regexHint]
     .filter((value): value is string => typeof value === "string")
     .map(sanitizeProfessorNameHint)

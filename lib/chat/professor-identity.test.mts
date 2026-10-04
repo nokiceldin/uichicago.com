@@ -19,6 +19,7 @@ const professors = [
   { name: "Adam Koehler", department: "Computer Science", slug: "adam-koehler", rmpRatingsCount: 10 },
   { name: "Anne-Marie Smith", department: "English", slug: "anne-marie-smith", rmpRatingsCount: 5 },
   { name: "Jane Smith", department: "Mathematics", slug: "jane-smith", rmpRatingsCount: 99 },
+  { name: "Shavila Devi", department: "Computer Science", slug: "shavila-devi", rmpRatingsCount: 25 },
 ];
 
 test("extracts plausible named phrases while possessives provide a hard boundary", () => {
@@ -40,6 +41,50 @@ test("extracts plausible named phrases while possessives provide a hard boundary
   for (const [message, expected] of cases) {
     assert.equal(extractProfessorNameHint(message), expected, message);
   }
+});
+
+test("possessive attributes never become part of the professor name hint", () => {
+  const cases: Array<[string, string, string]> = [
+    ["What is Professor Shavila Devi's rating?", "shavila devis rating", "Shavila Devi"],
+    ["What are Professor Shavila Devi's ratings?", "shavila devis ratings", "Shavila Devi"],
+    ["Tell me about Professor Shavila Devi's rating and courses.", "shavila devis rating and courses", "Shavila Devi"],
+    ["Which courses are Professor Shavila Devi's courses?", "shavila devis courses", "Shavila Devi"],
+    ["What is Professor Shavila Devi's department?", "shavila devis department", "Shavila Devi"],
+    ["Show me Professor Shavila Devi's reviews.", "shavila devis reviews", "Shavila Devi"],
+    ["What is Professor Shavila Devi's difficulty?", "shavila devis difficulty", "Shavila Devi"],
+    ["Summarize Professor Shavila Devi's teaching history.", "shavila devis teaching history", "Shavila Devi"],
+  ];
+
+  for (const [message, malformedAiHint, expected] of cases) {
+    const regexHint = extractProfessorNameHint(message);
+    assert.equal(regexHint, expected, message);
+    assert.equal(chooseProfessorNameHint(malformedAiHint, regexHint, message), expected, message);
+    const resolution = resolveProfessorIdentity(expected, professors);
+    assert.equal(resolution.status, "match", message);
+    if (resolution.status === "match") assert.equal(resolution.candidate.name, expected, message);
+  }
+});
+
+test("surname apostrophes remain intact before a possessive boundary", () => {
+  const cases: Array<[string, string]> = [
+    ["What is Professor William O'Brien's rating?", "William O'Brien"],
+    ["Show Professor William O’Brien’s reviews.", "William O’Brien"],
+    ["Tell me Professor William O'Brien's teaching history.", "William O'Brien"],
+    ["How difficult is O'Brien's class?", "O'Brien"],
+  ];
+
+  for (const [message, expected] of cases) {
+    const regexHint = extractProfessorNameHint(message);
+    assert.equal(regexHint, expected, message);
+    assert.equal(
+      chooseProfessorNameHint("william obriens rating and courses", regexHint, message),
+      expected,
+      message,
+    );
+  }
+
+  assert.equal(extractProfessorNameHint("Tell me about Professor William O'Brien"), "William O'Brien");
+  assert.equal(resolveProfessorIdentity("William O'Brien", professors).status, "match");
 });
 
 test("does not invent a named professor hint for course ranking questions", () => {

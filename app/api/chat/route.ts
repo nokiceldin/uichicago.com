@@ -26,6 +26,7 @@ import {
   MIN_COURSE_INSTRUCTOR_GRADED_OUTCOMES,
 } from "@/lib/courses/instructor-stats";
 import { summarizeCourseOutcomes } from "@/lib/courses/outcome-summary";
+import { chooseProfessorNameHint, shouldClarifyProfessorLookup } from "@/lib/chat/professor-identity";
 import housingDiningData from "@/public/data/uic-knowledge/housing-dining.json";
 import athleticsData from "@/public/data/uic-knowledge/athletics.json";
 import academicCalendarData from "@/public/data/uic-knowledge/academic-calendar.json";
@@ -1460,7 +1461,7 @@ async function retrieveProfessors(intent: any, query: QueryAnalysis): Promise<Re
   try {
     if (intent.profNameHint) {
       const result = await fetchProfessorWithCourseRankings(intent.profNameHint);
-      if (result) {
+      if (result.status === "match") {
         const { prof, courses } = result;
         const content = `=== PROFESSOR: ${prof.name} ===\n` +
           `Dept: ${prof.department} | RMP: ${prof.rmpQuality ?? "N/A"}/5 | Difficulty: ${prof.rmpDifficulty ?? "N/A"}/5\n` +
@@ -1470,6 +1471,20 @@ async function retrieveProfessors(intent: any, query: QueryAnalysis): Promise<Re
           `Courses: ${courses.map((c: any) => c.label).join(", ")}`;
         chunks.push(makeChunk("professors", content, 0.98, query));
         // Specific professor found — skip generic dept list to avoid noise
+        return chunks;
+      }
+      if (shouldClarifyProfessorLookup(
+        result.status,
+        Boolean(intent.wantsProfRanking || intent.wantsEasiest || intent.wantsHardest),
+        query.rawQuery,
+        intent.profNameHint,
+      )) {
+        chunks.push(makeChunk(
+          "professors",
+          `=== DETERMINISTIC PROFESSOR CLARIFICATION ===\n${result.clarification}`,
+          1,
+          query,
+        ));
         return chunks;
       }
     }
@@ -4603,7 +4618,7 @@ const rc = regexCiResult.status === "fulfilled" ? regexCiResult.value : ({} as a
     subjectCode: aiIntent.subjectCode ?? ri.subjectCode,
     major: (aiIntent as any).major ?? ri.major,
     deptName: aiIntent.deptName ?? ri.deptName,
-    profNameHint: aiIntent.profNameHint ?? ri.profNameHint,
+    profNameHint: chooseProfessorNameHint(aiIntent.profNameHint, ri.profNameHint, lastMsg),
     isAboutProfessors: aiIntent.isAboutProfessors || ri.isAboutProfessors,
     isAboutCourses: aiIntent.isAboutCourses || ri.isAboutCourses,
     isAboutGenEd: aiIntent.isAboutGenEd || ri.isAboutGenEd,
@@ -5087,6 +5102,20 @@ if (relevantVectors.length > 0 && !query.isFact && query.answerMode !== "plannin
   const deterministicFactChunk = allChunks.find((chunk) =>
     chunk.content.startsWith("=== DETERMINISTIC FACT ===")
   );
+  const deterministicProfessorClarificationChunk = allChunks.find((chunk) =>
+    chunk.content.startsWith("=== DETERMINISTIC PROFESSOR CLARIFICATION ===")
+  );
+
+  if (deterministicProfessorClarificationChunk) {
+    const directText = deterministicProfessorClarificationChunk.content
+      .replace(/^=== DETERMINISTIC PROFESSOR CLARIFICATION ===\n?/, "")
+      .trim();
+    return makePlainTextResponse(directText, undefined, {
+      responseKind: "professor_identity_clarification",
+      answerMode: query.answerMode,
+      extraMetadata: { matchedPath: "professor_identity_clarification" },
+    });
+  }
 
   if (deterministicPlanChunk) {
     const directPlan = deterministicPlanChunk.content

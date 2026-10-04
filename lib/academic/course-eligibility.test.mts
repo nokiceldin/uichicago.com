@@ -58,3 +58,51 @@ test("does not treat recommended background as a prerequisite", () => {
     completed: [{ code: "CS 251", grade: "B" }],
   }).status, "eligible");
 });
+
+test("groups UIC AND requirements separately from OR alternatives", () => {
+  const parsed = parseCatalogPrerequisites(
+    "Prerequisite (s): Grade of C or better in CS 141 or Grade of C or better in CS 107; and Grade of C or better in CS 151; and Credit or concurrent registration in CS 211 or Credit or concurrent registration in ECE 266.",
+  );
+  assert.equal(parsed.confidence, "exact");
+  assert.equal(evaluateCourseEligibility(parsed, {
+    completed: [
+      { code: "CS 141", grade: "B" },
+      { code: "CS 151", grade: "A" },
+    ],
+    inProgress: ["CS 211"],
+  }).status, "eligible");
+  assert.equal(evaluateCourseEligibility(parsed, {
+    completed: [
+      { code: "CS 141", grade: "B" },
+      { code: "CS 151", grade: "A" },
+    ],
+  }).status, "blocked");
+});
+
+test("does not mistake 'credit or concurrent' for an alternative to an earlier prerequisite", () => {
+  const parsed = parseCatalogPrerequisites(
+    "Prerequisite(s): Grade of C or better in CS 141; and Credit or concurrent registration in CS 211.",
+  );
+  assert.equal(evaluateCourseEligibility(parsed, {
+    completed: [],
+    inProgress: ["CS 211"],
+  }).status, "blocked");
+  assert.equal(evaluateCourseEligibility(parsed, {
+    completed: [{ code: "CS 141", grade: "A" }],
+    inProgress: ["CS 211"],
+  }).status, "eligible");
+});
+
+test("meaningful unsupported qualifiers force review even when course rules pass", () => {
+  for (const description of [
+    "Prerequisite(s): CS 111 and a minimum 2.50 GPA.",
+    "Prerequisite(s): Grade of C or better in CS 111 and successful completion of a portfolio review.",
+  ]) {
+    const parsed = parseCatalogPrerequisites(description);
+    assert.equal(parsed.confidence, "partial");
+    assert.ok(parsed.unresolvedConditions.includes("Unsupported prerequisite qualifier"));
+    assert.equal(evaluateCourseEligibility(parsed, {
+      completed: [{ code: "CS 111", grade: "A" }],
+    }).status, "review");
+  }
+});

@@ -3,6 +3,8 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useSession } from "next-auth/react";
 import type { SavedItemsPayload } from "@/lib/saved-items";
+import { captureProductEvent } from "@/app/lib/product-analytics";
+import { PRODUCT_EVENT_NAMES } from "@/lib/analytics/product-events";
 
 const EMPTY_SAVED: SavedItemsPayload = {
   professors: [],
@@ -101,7 +103,14 @@ export function useSavedItems() {
       const current = readLocalSaved();
       const entry = { id: `local-professor:${input.professorSlug}`, slug: input.professorSlug, name: input.professorName, department: input.department ?? "", school: input.school ?? "", note: input.note ?? null, href: `/professors/${encodeURIComponent(input.professorSlug)}`, createdAt: new Date().toISOString() };
       const next = { ...current, professors: [entry, ...current.professors.filter(item => item.slug !== input.professorSlug)] };
-      writeLocalSaved(next); setSaved(next); return next;
+      writeLocalSaved(next);
+      setSaved(next);
+      captureProductEvent(PRODUCT_EVENT_NAMES.favoriteProfessor, {
+        professor_slug: input.professorSlug,
+        department: input.department || null,
+        is_authenticated: false,
+      });
+      return next;
     }
     const response = await requestWithAuthRetry("/api/saved-items", {
       method: "POST",
@@ -120,6 +129,11 @@ export function useSavedItems() {
     }
     const nextSaved = payload?.saved ?? EMPTY_SAVED;
     setSaved(nextSaved);
+    captureProductEvent(PRODUCT_EVENT_NAMES.favoriteProfessor, {
+      professor_slug: input.professorSlug,
+      department: input.department || null,
+      is_authenticated: true,
+    });
     return nextSaved;
   }, [status]);
 

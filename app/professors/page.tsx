@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useEffect, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { useProfCoursesMap } from "@/app/hooks/useProfCoursesMap";
 import { ClassesCell } from "@/app/components/ClassesCell";
 import Link from "next/link";
@@ -11,6 +11,8 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import ProfessorNoteModal from "@/app/components/saved/ProfessorNoteModal";
 import SaveProfessorButton from "@/app/components/saved/SaveProfessorButton";
 import { UNAUTHORIZED_ERROR, useSavedItems } from "@/app/hooks/useSavedItems";
+import { captureProductEvent } from "@/app/lib/product-analytics";
+import { buildProfessorSearchEvent, productEventKey, searchEventKeyAfterInput } from "@/lib/analytics/product-events";
 
 type Prof = {
   id: string;
@@ -94,6 +96,7 @@ function ProfessorsPageContent() {
   const [noteModalOpen, setNoteModalOpen] = useState(false);
   const [draftNote, setDraftNote] = useState("");
   const [selectedProfessor, setSelectedProfessor] = useState<Prof | null>(null);
+  const lastSearchEventKeyRef = useRef<string | null>(null);
   const pageSize = 50;
   const visibleData = savedOnly && !savedLoading ? data.filter((professor) => savedProfessorSlugs.has(professor.slug)) : data;
   const effectiveTotal = savedOnly && !savedLoading ? saved.professors.length : total;
@@ -106,7 +109,13 @@ function ProfessorsPageContent() {
   const navBtn = "h-9 px-4 rounded-xl border border-zinc-200 bg-white text-sm font-medium text-zinc-700 hover:bg-zinc-50 transition-colors disabled:opacity-30 disabled:cursor-not-allowed dark:border-white/10 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-white/10";
   const hasAnyFilters = query.trim() || dept !== "All" || minRatings !== 0 || minStars !== 0 || savedOnly || sort !== "best";
 
-  function clearAll() { setQuery(""); setDept("All"); setSavedOnly(false); setMinRatings(0); setMinStars(0); setSort("best"); setPage(1); }
+  function setProfessorQuery(nextQuery: string) {
+    lastSearchEventKeyRef.current = searchEventKeyAfterInput(lastSearchEventKeyRef.current, nextQuery);
+    setQuery(nextQuery);
+    setPage(1);
+  }
+
+  function clearAll() { setProfessorQuery(""); setDept("All"); setSavedOnly(false); setMinRatings(0); setMinStars(0); setSort("best"); }
 
   useEffect(() => {
     fetch("/api/departments").then(async (r) => { const text = await r.text(); if (!r.ok) throw new Error(text); return JSON.parse(text); }).then((d) => setDepartments(Array.isArray(d) ? d : [])).catch(() => setDepartments([]));
@@ -129,19 +138,47 @@ function ProfessorsPageContent() {
 
   useEffect(() => {
     const controller = new AbortController();
+    let analyticsTimeout: ReturnType<typeof setTimeout> | null = null;
     setLoading(true);
     const params = new URLSearchParams();
     params.set("page", String(page)); params.set("pageSize", String(pageSize)); params.set("dept", dept);
     params.set("minRatings", String(minRatings)); params.set("minStars", String(minStars)); params.set("sort", sort);
     if (savedOnly) params.set("saved", "1");
     const qTrim = query.trim();
+    lastSearchEventKeyRef.current = searchEventKeyAfterInput(lastSearchEventKeyRef.current, qTrim);
     if (qTrim) params.set("q", qTrim);
     fetch(`/api/professors?${params.toString()}`, { signal: controller.signal })
       .then(async (r) => { const text = await r.text(); if (!r.ok) throw new Error(text); return JSON.parse(text); })
-      .then((res) => { setData(res.items || []); setTotal(res.total || 0); })
+      .then((res) => {
+        setData(res.items || []);
+        setTotal(res.total || 0);
+        const event = buildProfessorSearchEvent({
+          query: qTrim,
+          department: dept,
+          minRating: minStars,
+          minReviews: minRatings,
+          sort,
+          savedOnly,
+          resultCount: Number(res.total) || 0,
+        });
+        if (!event) {
+          lastSearchEventKeyRef.current = null;
+          return;
+        }
+        const eventKey = productEventKey(event);
+        if (eventKey === lastSearchEventKeyRef.current) return;
+        analyticsTimeout = setTimeout(() => {
+          if (controller.signal.aborted) return;
+          lastSearchEventKeyRef.current = eventKey;
+          captureProductEvent(event.name, event.properties);
+        }, 400);
+      })
       .catch((err) => { if (err?.name !== "AbortError") console.error(err); })
       .finally(() => { if (!controller.signal.aborted) setLoading(false); });
-    return () => controller.abort();
+    return () => {
+      controller.abort();
+      if (analyticsTimeout) clearTimeout(analyticsTimeout);
+    };
   }, [query, dept, minRatings, minStars, page, savedOnly, sort]);
 
   async function handleProfessorSaveToggle(event: React.MouseEvent<HTMLButtonElement>, professor: Prof) {
@@ -236,7 +273,7 @@ function ProfessorsPageContent() {
         <div className="mb-4 rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-white/8 dark:bg-zinc-900/60 sm:p-6">
           <div className="relative mb-4">
             <svg className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z" /></svg>
-            <input className={inputBase + " pl-10"} placeholder="Search professor name..." value={query} onChange={(e) => { setQuery(e.target.value); setPage(1); }} />
+            <input className={inputBase + " pl-10"} placeholder="Search professor name..." value={query} onChange={(e) => setProfessorQuery(e.target.value)} />
           </div>
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-5">
             <div>
@@ -285,7 +322,7 @@ function ProfessorsPageContent() {
               {minStars !== 0 && <button className={chipBase} onClick={() => { setMinStars(0); setPage(1); }}>Rating: <strong>{minStars}+</strong> <span className="text-zinc-400">×</span></button>}
               {minRatings !== 0 && <button className={chipBase} onClick={() => { setMinRatings(0); setPage(1); }}>Reviews: <strong>{minRatings}+</strong> <span className="text-zinc-400">×</span></button>}
               {savedOnly && <button className={chipBase} onClick={() => { setSavedOnly(false); setPage(1); }}>Saved only <span className="text-zinc-400">×</span></button>}
-              {query.trim() && <button className={chipBase} onClick={() => { setQuery(""); setPage(1); }}>Search: <strong>&quot;{query.trim()}&quot;</strong> <span className="text-zinc-400">×</span></button>}
+              {query.trim() && <button className={chipBase} onClick={() => setProfessorQuery("")}>Search: <strong>&quot;{query.trim()}&quot;</strong> <span className="text-zinc-400">×</span></button>}
               <button onClick={clearAll} className="ml-auto text-xs font-semibold text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 transition-colors">Clear all</button>
             </div>
           )}

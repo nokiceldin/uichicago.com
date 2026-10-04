@@ -1,13 +1,15 @@
 "use client";
 
 import { majorRequirements } from "@/lib/majorRequirements";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import MissingCourseButton from "@/app/components/MissingCourseButton";
 import SiteFooter from "@/app/components/SiteFooter";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { signIn } from "next-auth/react";
 import SaveCourseButton from "@/app/components/saved/SaveCourseButton";
 import { UNAUTHORIZED_ERROR, useSavedItems } from "@/app/hooks/useSavedItems";
+import { captureProductEvent } from "@/app/lib/product-analytics";
+import { buildCourseSearchEvent, productEventKey } from "@/lib/analytics/product-events";
 
 function easinessConfig(v: number) {
   if (v >= 4.5) return { label: "Very Easy", dot: "bg-emerald-500", text: "text-emerald-700 dark:text-emerald-400", bg: "bg-emerald-50 dark:bg-emerald-500/15", ring: "ring-emerald-200 dark:ring-emerald-500/25" };
@@ -57,6 +59,7 @@ export default function CoursesTable({ courses, total, page, pageSize, sort, dep
   const [qDraft, setQDraft] = useState(q);
   const [pendingCourseId, setPendingCourseId] = useState<string | null>(null);
   const [saveError, setSaveError] = useState("");
+  const lastSearchEventKeyRef = useRef<string | null>(null);
 
   const pushWith = useCallback((next: Record<string, string | null>) => {
     const params = new URLSearchParams(sp.toString());
@@ -76,6 +79,28 @@ export default function CoursesTable({ courses, total, page, pageSize, sort, dep
     }, 300);
     return () => clearTimeout(timeout);
   }, [pushWith, qDraft, q]);
+
+  useEffect(() => {
+    const event = buildCourseSearchEvent({
+      query: q,
+      department: dept,
+      genEd: gened,
+      genEdCategory: genedCategory,
+      major,
+      majorCategory,
+      savedOnly,
+      sort,
+      resultCount: total,
+    });
+    if (!event) {
+      lastSearchEventKeyRef.current = null;
+      return;
+    }
+    const eventKey = productEventKey(event);
+    if (eventKey === lastSearchEventKeyRef.current) return;
+    lastSearchEventKeyRef.current = eventKey;
+    captureProductEvent(event.name, event.properties);
+  }, [dept, gened, genedCategory, major, majorCategory, q, savedOnly, sort, total]);
 
   function setPage(n: number) { pushWith({ page: String(n) }); }
   function setSort(s: "difficultyDesc" | "difficultyAsc") { pushWith({ sort: s, page: "1" }); }

@@ -9,6 +9,7 @@ import ThemeInit from "./components/ThemeInit"
 import AuthProvider from "./components/auth/AuthProvider"
 import { getCurrentSession } from "@/lib/auth/session"
 import WebsiteFeedbackPrompt from "./components/WebsiteFeedbackPrompt"
+import ProductAnalyticsTracker from "./components/ProductAnalyticsTracker"
 import { Inter } from "next/font/google";
 const inter = Inter({ subsets: ["latin"] });
 
@@ -41,6 +42,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           <ThemeInit />
           <Suspense fallback={null}>
             <Navbar />
+            <ProductAnalyticsTracker />
           </Suspense>
           {children}
           <WebsiteFeedbackPrompt />

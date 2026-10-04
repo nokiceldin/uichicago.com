@@ -30,6 +30,10 @@ import {
 } from "@/lib/academic/prerequisite-safe-planning";
 import { getCurrentSession } from "@/lib/auth/session";
 import { buildPlainTextLogInput } from "@/lib/chat/plain-text-log";
+import {
+  detectDataProvenanceRequest,
+  renderDataProvenanceResponse,
+} from "@/lib/chat/data-provenance";
 import { getAccountMemoryKey, getMemory, learnMemoryFromMessages, mergeUserMemory, persistMemory } from "@/lib/chat/memory";
 import {
   buildPlanningMajorLookupText,
@@ -4263,6 +4267,16 @@ export async function POST(req: Request) {
       arithmeticAnswer,
       "direct_rule_response",
       "simple_arithmetic_fast_path"
+    );
+  }
+
+  const dataProvenanceRequest = detectDataProvenanceRequest(normalizedLastMsg);
+  if (dataProvenanceRequest) {
+    return makeFastTextResponse(
+      renderDataProvenanceResponse(dataProvenanceRequest, COURSE_INSTRUCTOR_TERM_CODES),
+      "data_provenance_capability",
+      "data_provenance_fast_path",
+      "success",
     );
   }
 

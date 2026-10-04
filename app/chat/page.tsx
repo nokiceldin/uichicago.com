@@ -6,6 +6,8 @@ import { useState, useRef, useEffect, useCallback, useMemo, Suspense } from "rea
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { flushSync } from "react-dom";
 import posthog from "posthog-js";
+import { captureProductEvent } from "@/app/lib/product-analytics";
+import { PRODUCT_EVENT_NAMES } from "@/lib/analytics/product-events";
 import { Check, Ellipsis, Pencil, PanelLeftClose, PanelLeftOpen, Plus, Trash2, X } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { getDeterministicItems, getSeededRandomItems } from "@/lib/chat/prompts";
@@ -1721,7 +1723,12 @@ const visiblePrompts = useMemo(() => {
                 key={t.id}
                 topic={t}
                 active={activeTopic === i}
-                onClick={() => setActiveTopic(i)}
+                onClick={() => {
+                  setActiveTopic(i);
+                  if (t.id === "registration") {
+                    captureProductEvent(PRODUCT_EVENT_NAMES.registrationHubView, { surface: "chat_topic" });
+                  }
+                }}
               />
             ))}
           </div>
@@ -2569,6 +2576,14 @@ const [attachedFile, setAttachedFile] = useState<AttachedFile | null>(null);
     const fileSnapshot = attachedFile;
     setAttachedFile(null);
 
+    captureProductEvent(PRODUCT_EVENT_NAMES.chatbotQuestion, {
+      question_length: text.length,
+      conversation_message_count: messages.length + 1,
+      has_attachment: Boolean(fileSnapshot),
+      attachment_type: fileSnapshot?.fileType ?? null,
+      topic: TOPICS[activeTopic]?.id ?? "unknown",
+    });
+
     const userMsg: Message = {
       id: uid(),
       role: "user",
@@ -2765,7 +2780,7 @@ setLoading(false);
       sendInFlightRef.current = false;
       setTimeout(() => inputRef.current?.focus(), 50);
     }
-  }, [activeConversationId, attachedFile, createConversation, input, loading, messages, persistConversationSnapshot]);
+  }, [activeConversationId, activeTopic, attachedFile, createConversation, input, loading, messages, persistConversationSnapshot]);
 
   const handleRegenerate = useCallback(async () => {
   if (loading) return;

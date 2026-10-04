@@ -54,6 +54,8 @@ import MyPicksPanel from "@/app/components/loops/MyPicksPanel";
 import { estimateFlashcardCountFromText, parseExplicitFlashcardsFromText } from "@/lib/study/flashcard-parser";
 import { studyFoldersStorageKey, studyLibraryStorageKey, studyStorageOwner } from "@/lib/study/storage";
 import { mergeAccountRecords } from "@/lib/study/account-sync";
+import { captureProductEvent } from "@/app/lib/product-analytics";
+import { PRODUCT_EVENT_NAMES } from "@/lib/analytics/product-events";
 
 const MATCH_BESTS_KEY = "uic-atlas-study-match-bests-v1";
 const LIBRARY_SYNC_EVENT = "uic-atlas-study-library-sync";
@@ -5735,6 +5737,7 @@ function OverviewView({
       : "";
 
   const handleCopyLink = () => {
+    captureProductEvent(PRODUCT_EVENT_NAMES.shareClick, { surface: "study_workspace", object: "study_set", method: "copy_link" });
     navigator.clipboard.writeText(shareUrl).then(() => {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
@@ -5743,6 +5746,7 @@ function OverviewView({
 
   const handleNativeShare = () => {
     if (navigator.share) {
+      captureProductEvent(PRODUCT_EVENT_NAMES.shareClick, { surface: "study_workspace", object: "study_set", method: "native" });
       navigator.share({ title: set.title, url: shareUrl }).catch(() => {});
     }
   };
@@ -5848,6 +5852,7 @@ function OverviewView({
                 href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(`Check out this study set: ${set.title}`)}&url=${encodeURIComponent(shareUrl)}`}
                 target="_blank"
                 rel="noopener noreferrer"
+                onClick={() => captureProductEvent(PRODUCT_EVENT_NAMES.shareClick, { surface: "study_workspace", object: "study_set", method: "x" })}
                 className="flex items-center gap-3 rounded-xl bg-white/5 px-4 py-3 text-sm font-medium text-zinc-200 transition hover:bg-white/10"
               >
                 <Globe className="h-4 w-4 text-sky-400" />
@@ -5857,6 +5862,7 @@ function OverviewView({
                 href={`https://wa.me/?text=${encodeURIComponent(`${set.title} — ${shareUrl}`)}`}
                 target="_blank"
                 rel="noopener noreferrer"
+                onClick={() => captureProductEvent(PRODUCT_EVENT_NAMES.shareClick, { surface: "study_workspace", object: "study_set", method: "whatsapp" })}
                 className="flex items-center gap-3 rounded-xl bg-white/5 px-4 py-3 text-sm font-medium text-zinc-200 transition hover:bg-white/10"
               >
                 <Users className="h-4 w-4 text-green-400" />
@@ -5864,6 +5870,7 @@ function OverviewView({
               </a>
               <a
                 href={`mailto:?subject=${encodeURIComponent(set.title)}&body=${encodeURIComponent(`Here is a study set I thought you would find useful:\n${shareUrl}`)}`}
+                onClick={() => captureProductEvent(PRODUCT_EVENT_NAMES.shareClick, { surface: "study_workspace", object: "study_set", method: "email" })}
                 className="flex items-center gap-3 rounded-xl bg-white/5 px-4 py-3 text-sm font-medium text-zinc-200 transition hover:bg-white/10"
               >
                 <Share2 className="h-4 w-4 text-zinc-400" />
@@ -5918,7 +5925,10 @@ function OverviewView({
                 Groups
               </button>
               <button
-                onClick={() => setShareOpen(true)}
+                onClick={() => {
+                  captureProductEvent(PRODUCT_EVENT_NAMES.shareClick, { surface: "study_workspace", object: "study_set", method: "open" });
+                  setShareOpen(true);
+                }}
                 className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/8 text-zinc-200 transition hover:bg-white/14 hover:text-white"
                 aria-label="Share set"
               >
@@ -6485,6 +6495,7 @@ function FlashcardsMode({
 
   const fcShareUrl = typeof window !== "undefined" ? window.location.href : "";
   const handleFcCopyLink = () => {
+    captureProductEvent(PRODUCT_EVENT_NAMES.shareClick, { surface: "study_workspace", object: "study_set", method: "copy_link" });
     navigator.clipboard.writeText(fcShareUrl).then(() => {
       setFcCopied(true);
       setTimeout(() => setFcCopied(false), 2000);
@@ -6518,6 +6529,7 @@ function FlashcardsMode({
                 href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(`Check out this study set: ${set.title}`)}&url=${encodeURIComponent(fcShareUrl)}`}
                 target="_blank"
                 rel="noopener noreferrer"
+                onClick={() => captureProductEvent(PRODUCT_EVENT_NAMES.shareClick, { surface: "study_workspace", object: "study_set", method: "x" })}
                 className="flex items-center gap-3 rounded-xl bg-white/5 px-4 py-3 text-sm font-medium text-zinc-200 transition hover:bg-white/10"
               >
                 <Globe className="h-4 w-4 text-sky-400" />
@@ -6527,6 +6539,7 @@ function FlashcardsMode({
                 href={`https://wa.me/?text=${encodeURIComponent(`${set.title} — ${fcShareUrl}`)}`}
                 target="_blank"
                 rel="noopener noreferrer"
+                onClick={() => captureProductEvent(PRODUCT_EVENT_NAMES.shareClick, { surface: "study_workspace", object: "study_set", method: "whatsapp" })}
                 className="flex items-center gap-3 rounded-xl bg-white/5 px-4 py-3 text-sm font-medium text-zinc-200 transition hover:bg-white/10"
               >
                 <Users className="h-4 w-4 text-green-400" />
@@ -6534,6 +6547,7 @@ function FlashcardsMode({
               </a>
               <a
                 href={`mailto:?subject=${encodeURIComponent(set.title)}&body=${encodeURIComponent(`Here is a study set I thought you would find useful:\n${fcShareUrl}`)}`}
+                onClick={() => captureProductEvent(PRODUCT_EVENT_NAMES.shareClick, { surface: "study_workspace", object: "study_set", method: "email" })}
                 className="flex items-center gap-3 rounded-xl bg-white/5 px-4 py-3 text-sm font-medium text-zinc-200 transition hover:bg-white/10"
               >
                 <Share2 className="h-4 w-4 text-zinc-400" />
@@ -6578,7 +6592,10 @@ function FlashcardsMode({
                 Groups
               </button>
               <button
-                onClick={() => setFcShareOpen(true)}
+                onClick={() => {
+                  captureProductEvent(PRODUCT_EVENT_NAMES.shareClick, { surface: "study_workspace", object: "study_set", method: "open" });
+                  setFcShareOpen(true);
+                }}
                 className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/8 text-zinc-200 transition hover:bg-white/14 hover:text-white"
                 aria-label="Share set"
               >

@@ -15,6 +15,11 @@ import {
 import { getCurrentStudyUser } from "@/lib/auth/session";
 import { parseStoredPreferences } from "@/lib/study/profile";
 import { buildCsAudit, formatCsAuditForChat } from "@/lib/academic/cs-audit";
+import {
+  answerCatalogCourseFactRequest,
+  detectCatalogCourseFactRequest,
+  type CatalogCourseRecord,
+} from "@/lib/academic/catalog-course-facts";
 import type { SavedAuditImport } from "@/lib/academic/audit-import-review";
 import {
   buildPrerequisiteSafeNextTermPlan,
@@ -24,6 +29,7 @@ import {
   shouldScheduleMajorPlanRetrieval,
 } from "@/lib/academic/prerequisite-safe-planning";
 import { getCurrentSession } from "@/lib/auth/session";
+import { buildPlainTextLogInput } from "@/lib/chat/plain-text-log";
 import { getAccountMemoryKey, getMemory, learnMemoryFromMessages, mergeUserMemory, persistMemory } from "@/lib/chat/memory";
 import {
   buildPlanningMajorLookupText,
@@ -42,6 +48,7 @@ import {
 } from "@/lib/courses/instructor-stats";
 import { summarizeCourseOutcomes } from "@/lib/courses/outcome-summary";
 import { chooseProfessorNameHint, shouldClarifyProfessorLookup } from "@/lib/chat/professor-identity";
+import catalogCourseRecords from "@/scripts/catalog-scraped.json";
 import housingDiningData from "@/public/data/uic-knowledge/housing-dining.json";
 import athleticsData from "@/public/data/uic-knowledge/athletics.json";
 import academicCalendarData from "@/public/data/uic-knowledge/academic-calendar.json";
@@ -4335,13 +4342,7 @@ export async function POST(req: Request) {
     extraHeaders?: Record<string, string>,
     logOptions?: Partial<PersistChatLogInput>
   ) => {
-    await persistChatLog({
-      responseText: text,
-      responseKind: logOptions?.responseKind ?? "direct_rule_response",
-      responseStatus: logOptions?.responseStatus,
-      answerMode: logOptions?.answerMode ?? query.answerMode,
-      extraMetadata: logOptions?.extraMetadata,
-    });
+    await persistChatLog(buildPlainTextLogInput(text, query.answerMode, logOptions));
     const encoder = new TextEncoder();
     const readable = new ReadableStream({
       start(controller) {
@@ -4359,6 +4360,24 @@ export async function POST(req: Request) {
     }
     return new Response(readable, { headers });
   };
+
+  const catalogFactRequest = detectCatalogCourseFactRequest(normalizedMsg);
+  if (catalogFactRequest) {
+    const catalogFactResult = answerCatalogCourseFactRequest(
+      catalogFactRequest,
+      catalogCourseRecords as CatalogCourseRecord[],
+    );
+    return makePlainTextResponse(catalogFactResult.response, undefined, {
+      responseKind: catalogFactResult.kind === "answer" ? "catalog_course_fact" : "catalog_course_redirect",
+      responseStatus: catalogFactResult.kind === "answer" ? "success" : "abstained",
+      abstained: catalogFactResult.kind === "redirect",
+      abstainReason: catalogFactResult.kind === "redirect" ? "catalog_record_unavailable" : null,
+      extraMetadata: {
+        matchedPath: catalogFactResult.kind === "answer" ? "catalog_course_fact" : "catalog_course_redirect",
+        catalogCourseCode: catalogFactResult.code,
+      },
+    });
+  }
 
   if (/\bu.?pass\b/.test(normalizedLower) && /\b(fee|cost|price|how much|per semester)\b/.test(normalizedLower)) {
     return makePlainTextResponse(

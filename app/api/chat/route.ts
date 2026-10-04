@@ -11,13 +11,28 @@ import {
   getSessionState,
   updateSessionState,
   extractEntitiesFromQuery,
-  type SessionState,
 } from "@/lib/chat/session-state";
 import { getCurrentStudyUser } from "@/lib/auth/session";
 import { parseStoredPreferences } from "@/lib/study/profile";
 import { buildCsAudit, formatCsAuditForChat } from "@/lib/academic/cs-audit";
+import type { SavedAuditImport } from "@/lib/academic/audit-import-review";
+import {
+  buildPrerequisiteSafeNextTermPlan,
+  decidePrerequisiteSafeNextTermRoute,
+  hasPriorPersonalizedPlanningContext,
+  renderPrerequisiteSafeNextTermPlan,
+  shouldScheduleMajorPlanRetrieval,
+} from "@/lib/academic/prerequisite-safe-planning";
 import { getCurrentSession } from "@/lib/auth/session";
-import { formatMemoryForPrompt, getAccountMemoryKey, getMemory, learnMemoryFromMessages, mergeUserMemory, persistMemory } from "@/lib/chat/memory";
+import { getAccountMemoryKey, getMemory, learnMemoryFromMessages, mergeUserMemory, persistMemory } from "@/lib/chat/memory";
+import {
+  buildPlanningMajorLookupText,
+  buildPlanningStudentContext,
+  buildVerifiedStudentContext,
+  formatVerifiedStudentContext,
+  type SavedStudentProfileContext,
+  type VerifiedStudentContext,
+} from "@/lib/chat/verified-student-context";
 import { buildUploadedFileSupport, type UploadedFile } from "@/lib/chat/attachments";
 import { prisma } from "@/lib/prisma";
 import { diffLabel } from "@/lib/chat/utils";
@@ -57,6 +72,7 @@ import {
 const client = new Anthropic();
 const SPARKY_CHAT_MODEL = process.env.ANTHROPIC_CHAT_MODEL?.trim() || "claude-sonnet-4-6";
 const SPARKY_FAST_MODEL = process.env.ANTHROPIC_FAST_MODEL?.trim() || "claude-haiku-4-5-20251001";
+let planningPrerequisiteDescriptionCache: Map<string, string | null> | null = null;
 
 // ── Vector store empty check ──────────────────────────────────────────────────
 // Checked once per process lifetime and cached. If fewer than 100 chunks exist,
@@ -920,7 +936,7 @@ function isFollowUpQuery(msg: string): boolean {
 function buildSmartFollowUpInstruction(
   lastMsg: string,
   query: QueryAnalysis,
-  sessionState?: SessionState | null
+  verifiedContext?: VerifiedStudentContext | null
 ): string {
   const lower = lastMsg.toLowerCase().trim();
 
@@ -930,8 +946,8 @@ function buildSmartFollowUpInstruction(
     return "FOLLOW-UP QUESTION RULE: The student is wrapping up or acknowledging. Do not ask a follow-up question. End cleanly.";
   }
 
-  const majorHint = sessionState?.confirmedMajor ? `major=${sessionState.confirmedMajor}` : null;
-  const yearHint = sessionState?.confirmedYear ? `year=${sessionState.confirmedYear}` : null;
+  const majorHint = verifiedContext?.major ? `major=${verifiedContext.major.value}` : null;
+  const yearHint = verifiedContext?.year ? `year=${verifiedContext.year.value}` : null;
   const contextHints = [majorHint, yearHint].filter(Boolean).join(", ");
 
   if (query.isFact || query.answerMode === "logistics") {
@@ -1572,167 +1588,11 @@ function semYearNumber(yearStr: string): number {
   return 4; // fourth, fifth, etc.
 }
 
-// ── Student progress extraction ───────────────────────────────────────────────
-// Pulls year standing and completed course codes from the user's message.
-// Used to personalise the planning scaffold before handing to Claude.
-function extractStudentProgress(rawQuery: string): { completedCourses: string[]; yearStanding: number } {
-  let yearStanding = 0;
-  if (/\b(i'?m\s+)?(already\s+)?a?\s*(freshman|first[- ]?year)\b/i.test(rawQuery)) yearStanding = 1;
-  else if (/\b(i'?m\s+)?(already\s+)?a?\s*(sophomore|second[- ]?year)\b/i.test(rawQuery)) yearStanding = 2;
-  else if (/\b(i'?m\s+)?(already\s+)?a?\s*(junior|third[- ]?year)\b/i.test(rawQuery)) yearStanding = 3;
-  else if (/\b(i'?m\s+)?(already\s+)?a?\s*(senior|fourth[- ]?year)\b/i.test(rawQuery)) yearStanding = 4;
-
-  const completedCourses: string[] = [];
-  // Match completion phrases, then extract course codes from the trailing segment
-  const completionPhraseRe =
-    /(?:already\s+took|have\s+taken|already\s+taken|i\s+took|took|completed|finished|done\s+with|i'?ve\s+(?:already\s+)?(?:taken|completed|finished))\s+(.{3,200}?)(?:\.|,?\s+(?:and\s+i|so\b|but\b|now\b|my\b|what\b)|$)/gi;
-  const courseCodeRe = /\b([A-Z&]{2,5})\s+(\d{3}[A-Z]?)\b/g;
-
-  let phraseMatch: RegExpExecArray | null;
-  while ((phraseMatch = completionPhraseRe.exec(rawQuery)) !== null) {
-    const segment = phraseMatch[1];
-    let codeMatch: RegExpExecArray | null;
-    courseCodeRe.lastIndex = 0;
-    while ((codeMatch = courseCodeRe.exec(segment)) !== null) {
-      completedCourses.push(`${codeMatch[1]} ${codeMatch[2]}`);
-    }
-  }
-
-  return { completedCourses: [...new Set(completedCourses)], yearStanding };
-}
-
-// ── Student context extraction (planning pipeline) ────────────────────────────
-// Scans the current query AND conversation history to extract all available
-// student context. Used as input to buildPlanningObject.
-// Rule: if data is absent, set fields to empty/null — never hallucinate.
-function extractStudentContext(
-  rawQuery: string,
-  conversationHistory: ChatMessage[]
-): StudentContext {
-  // Combine all text we have: history (assistant turns omitted to avoid
-  // confusing Claude's prior answers with student facts) + current query.
-  const studentTurns = [
-    ...conversationHistory.filter(m => m.role === "user").map(m => m.content),
-    rawQuery,
-  ].join(" ");
-
-  // ── Major detection ───────────────────────────────────────────────────────
-  // Matches: "I'm a CS major", "studying nursing", "in the engineering program", etc.
-  let major: string | null = null;
-  const majorPatterns: [RegExp, string][] = [
-    [/\b(computer science|cs)\s*(major|program|degree)?\b/i, "Computer Science"],
-    [/\b(electrical (and computer engineering|engineering)|ece)\b/i, "Electrical and Computer Engineering"],
-    [/\b(mechanical engineering|me)\s*(major|program)?\b/i, "Mechanical Engineering"],
-    [/\b(civil engineering)\b/i, "Civil Engineering"],
-    [/\b(bioengineering|bioe)\b/i, "Bioengineering"],
-    [/\b(chemical engineering|che)\b/i, "Chemical Engineering"],
-    [/\b(industrial engineering|ie)\b/i, "Industrial Engineering"],
-    [/\b(nursing)\s*(major|program|degree|student)?\b/i, "Nursing"],
-    [/\b(biological sciences?|bio(?:logical)? sciences?)\s*(major|program)?\b/i, "Biological Sciences"],
-    [/\b(biology|bios)\s*(major|program)?\b/i, "Biology"],
-    [/\b(pre-?med|premed)\b/i, "Biological Sciences"],
-    [/\b(chemistry|chem)\s*(major|program)?\b/i, "Chemistry"],
-    [/\b(physics|phys)\s*(major|program)?\b/i, "Physics"],
-    [/\b(mathematics|math)\s*(major|program)?\b/i, "Mathematics"],
-    [/\b(accounting|actg)\s*(major|program)?\b/i, "Accounting"],
-    [/\b(finance|fin)\s*(major|program)?\b/i, "Finance"],
-    [/\b(marketing)\s*(major|program)?\b/i, "Marketing"],
-    [/\b(management)\s*(major|program)?\b/i, "Management"],
-    [/\b(information and decision sciences|ids)\b/i, "Information and Decision Sciences"],
-    [/\b(psychology|psch)\s*(major|program)?\b/i, "Psychology"],
-    [/\b(sociology|soc)\s*(major|program)?\b/i, "Sociology"],
-    [/\b(english)\s*(major|program)?\b/i, "English"],
-    [/\b(history)\s*(major|program)?\b/i, "History"],
-    [/\b(political science|pols)\s*(major|program)?\b/i, "Political Science"],
-    [/\b(criminology law and justice|criminology|criminal justice)\s*(major|program)?\b/i, "Criminology Law and Justice"],
-    [/\b(architecture)\s*(major|program)?\b/i, "Architecture"],
-    [/\b(public health)\s*(major|program)?\b/i, "Public Health"],
-    [/\b(kinesiology|kin)\s*(major|program)?\b/i, "Kinesiology"],
-    [/\b(engineering)\s*(major|program|student|degree)?\b/i, "Engineering"],
-  ];
-
-  // Check explicit major/studying phrasing first
-  const majorDeclareRe = /\b(i(?:'?m| am) (?:a |an )?|studying |in the |declared? |my major is |majoring in )([a-z &]+?)(?:\s*(?:major|program|student|degree))?\b/i;
-  const declareMatch = majorDeclareRe.exec(studentTurns);
-  if (declareMatch) {
-    const candidate = declareMatch[2].toLowerCase().trim();
-    for (const [pattern, name] of majorPatterns) {
-      if (pattern.test(candidate)) { major = name; break; }
-    }
-  }
-  // Fall back to scanning all turns
-  if (!major) {
-    for (const [pattern, name] of majorPatterns) {
-      if (pattern.test(studentTurns)) { major = name; break; }
-    }
-  }
-
-  // ── Completed course extraction ───────────────────────────────────────────
-  // Reuse the same regex logic as extractStudentProgress, but applied to all turns.
-  const completedCourses: string[] = [];
-  const completionPhraseRe =
-    /(?:already\s+took|have\s+taken|already\s+taken|i\s+took|took|completed|finished|done\s+with|i'?ve\s+(?:already\s+)?(?:taken|completed|finished))\s+(.{3,200}?)(?:\.|,?\s+(?:and\s+i|so\b|but\b|now\b|my\b|what\b)|$)/gi;
-  const courseCodeRe = /\b([A-Z&]{2,5})\s+(\d{3}[A-Z]?)\b/g;
-
-  let phraseMatch: RegExpExecArray | null;
-  while ((phraseMatch = completionPhraseRe.exec(studentTurns)) !== null) {
-    const segment = phraseMatch[1];
-    let codeMatch: RegExpExecArray | null;
-    courseCodeRe.lastIndex = 0;
-    while ((codeMatch = courseCodeRe.exec(segment)) !== null) {
-      completedCourses.push(`${codeMatch[1]} ${codeMatch[2]}`);
-    }
-  }
-
-  // ── In-progress course extraction ─────────────────────────────────────────
-  const inProgressCourses: string[] = [];
-  const inProgressPhraseRe =
-    /(?:currently\s+(?:taking|in|enrolled in)|taking\s+(?:right\s+now|this\s+semester|this\s+term)|i'?m\s+in|enrolled\s+in|registered\s+for)\s+(.{3,200}?)(?:\.|,?\s+(?:and\s+i|so\b|but\b|what\b)|$)/gi;
-
-  let ipMatch: RegExpExecArray | null;
-  while ((ipMatch = inProgressPhraseRe.exec(studentTurns)) !== null) {
-    const segment = ipMatch[1];
-    let codeMatch: RegExpExecArray | null;
-    courseCodeRe.lastIndex = 0;
-    while ((codeMatch = courseCodeRe.exec(segment)) !== null) {
-      inProgressCourses.push(`${codeMatch[1]} ${codeMatch[2]}`);
-    }
-  }
-
-  // ── Constraints extraction ─────────────────────────────────────────────────
-  const constraints: string[] = [];
-  if (/\b(transfer|transferred|transfer student)\b/i.test(studentTurns))
-    constraints.push("transfer student");
-  if (/\b(part.?time|part time)\b/i.test(studentTurns))
-    constraints.push("part-time");
-  if (/\b(honors|honors college)\b/i.test(studentTurns))
-    constraints.push("honors college");
-  if (/\b(commut(e|er|ing))\b/i.test(studentTurns))
-    constraints.push("commuter");
-  if (/\b(double major|dual degree|second major)\b/i.test(studentTurns))
-    constraints.push("double major");
-  if (/\b(minor in|adding a minor|with a minor)\b/i.test(studentTurns))
-    constraints.push("minor");
-  if (/\b(pre.?med|pre.?health|pre.?law|pre.?dental)\b/i.test(studentTurns))
-    constraints.push("pre-professional track");
-  if (/\b(3 years?|graduate early|finish early|3.?year plan)\b/i.test(studentTurns))
-    constraints.push("accelerated graduation (3 years)");
-  if (/\b(international student|f.?1|f1 visa|ois)\b/i.test(studentTurns))
-    constraints.push("international student");
-
-  return {
-    major,
-    completed_courses: [...new Set(completedCourses)],
-    in_progress_courses: [...new Set(inProgressCourses)],
-    constraints,
-  };
-}
-
 // ── Planning object builder ───────────────────────────────────────────────────
 // EXECUTION ORDER:
 //   Query
 //   → isPlanningQuery()           (detect planning intent)
-//   → extractStudentContext()     (extract who the student is)
+//   → buildPlanningStudentContext() (reuse verified student facts)
 //   → retrieveMajorPlan()         (fetch requirements data)
 //   → buildPlanningObject()       ← this function (structure via Claude)
 //   → final answer generation     (human-readable output from PlanningObject)
@@ -1998,7 +1858,12 @@ function formatSampleSchedule(
   return lines.join("\n");
 }
 
-async function retrieveMajorPlan(query: QueryAnalysis): Promise<RetrievedChunk[]> {
+async function retrieveMajorPlan(
+  query: QueryAnalysis,
+  verifiedContext: VerifiedStudentContext,
+  reviewedAudit?: SavedAuditImport,
+  hasPriorPlanningContext = false,
+): Promise<RetrievedChunk[]> {
   try {
     const { readFileSync } = await import("fs");
     const { join } = await import("path");
@@ -2016,6 +1881,7 @@ const data = {
   })
 };
     const lower = query.rawQuery.toLowerCase();
+    const majorLookupText = buildPlanningMajorLookupText(query.rawQuery, verifiedContext).toLowerCase();
  
     const majorMatch = data.majors?.filter((m: any) => {
       // Normalize new "Name - DEGREE" format → "name degree" for substring matching
@@ -2026,72 +1892,72 @@ const data = {
         .trim();
 
       // Direct name match (handles most cases automatically)
-      if (lower.includes(n)) return true;
+      if (majorLookupText.includes(n)) return true;
 
       // Also try matching just the base name without degree suffix
       // Use word-boundary check so "chemistry" doesn't match inside "biochemistry"
       const baseName = n.replace(/\s+(bs|ba|bfa|bmus|ms)$/, "").trim();
       if (baseName.length > 4) {
         const words = baseName.split(/\s+/);
-        const allWordsPresent = words.every((w: string) => new RegExp(`\\b${w}\\b`, "i").test(lower));
+        const allWordsPresent = words.every((w: string) => new RegExp(`\\b${w}\\b`, "i").test(majorLookupText));
         if (allWordsPresent) return true;
       }
 
       // Explicit aliases for common queries / abbreviations
       if (n.includes("computer science") && !n.includes("design") && !n.includes("philosophy") && !n.includes("linguistics") && !n.includes("mathematics") &&
-          (/\bcs\b/.test(lower) || lower.includes("computer science"))) return true;
-      if (n.includes("computer science and design") && (lower.includes("cs and design") || lower.includes("computer science and design"))) return true;
-      if (n.includes("information and decision sciences") && (lower.includes("ids") || lower.includes("information and decision"))) return true;
-      if (n.includes("biochemistry") && lower.includes("biochem")) return true;
-      if (n.includes("biological sciences") && (/\bbiological sciences?\b/.test(lower) || /\bbio(?:logical)? sciences?\b/.test(lower) || /\bpre-?med\b/.test(lower) || /\bpremed\b/.test(lower))) return true;
-      if (n.includes("chemistry") && !n.includes("biochemistry") && lower.includes("chem") && !lower.includes("biochem")) return true;
-      if (n.includes("biology") && (lower.includes("biol") || lower.includes("biology"))) return true;
+          (/\bcs\b/.test(majorLookupText) || majorLookupText.includes("computer science"))) return true;
+      if (n.includes("computer science and design") && (majorLookupText.includes("cs and design") || majorLookupText.includes("computer science and design"))) return true;
+      if (n.includes("information and decision sciences") && (majorLookupText.includes("ids") || majorLookupText.includes("information and decision"))) return true;
+      if (n.includes("biochemistry") && majorLookupText.includes("biochem")) return true;
+      if (n.includes("biological sciences") && (/\bbiological sciences?\b/.test(majorLookupText) || /\bbio(?:logical)? sciences?\b/.test(majorLookupText) || /\bpre-?med\b/.test(majorLookupText) || /\bpremed\b/.test(majorLookupText))) return true;
+      if (n.includes("chemistry") && !n.includes("biochemistry") && majorLookupText.includes("chem") && !majorLookupText.includes("biochem")) return true;
+      if (n.includes("biology") && (majorLookupText.includes("biol") || majorLookupText.includes("biology"))) return true;
       // Exclude "applied psychology" from the generic psych alias — handle it separately
-      if (n.includes("applied psychology") && (lower.includes("applied psych") || lower.includes("applied psychology"))) return true;
-      if (n.includes("psychology") && !n.includes("applied") && lower.includes("psych") && !lower.includes("applied psych") && !lower.includes("applied psychology")) return true;
-      if (n.includes("kinesiology") && (lower.includes("kin") || lower.includes("kinesiology"))) return true;
-      if (n.includes("nursing") && lower.includes("nurs")) return true;
-      if (n.includes("accounting") && lower.includes("account")) return true;
-      if (n.includes("finance") && lower.includes("finance")) return true;
-      if (n.includes("marketing") && lower.includes("marketing")) return true;
-      if (n.includes("management") && !n.includes("engineering") && !n.includes("health") && lower.includes("management")) return true;
+      if (n.includes("applied psychology") && (majorLookupText.includes("applied psych") || majorLookupText.includes("applied psychology"))) return true;
+      if (n.includes("psychology") && !n.includes("applied") && majorLookupText.includes("psych") && !majorLookupText.includes("applied psych") && !majorLookupText.includes("applied psychology")) return true;
+      if (n.includes("kinesiology") && (majorLookupText.includes("kin") || majorLookupText.includes("kinesiology"))) return true;
+      if (n.includes("nursing") && majorLookupText.includes("nurs")) return true;
+      if (n.includes("accounting") && majorLookupText.includes("account")) return true;
+      if (n.includes("finance") && majorLookupText.includes("finance")) return true;
+      if (n.includes("marketing") && majorLookupText.includes("marketing")) return true;
+      if (n.includes("management") && !n.includes("engineering") && !n.includes("health") && majorLookupText.includes("management")) return true;
       // Generic "business" query (no specific major named) → default to Management BS.
       // All 8 CBA majors share the same base schedule so any one works.
       if (n === "management bs" &&
-          /\bbusiness\b/.test(lower) &&
-          !/(accounting|finance|marketing|entrepreneurship|human resource|real estate|information and decision|\bids\b|music business)/.test(lower)) return true;
-      if (n.includes("economics") && lower.includes("econ")) return true;
-      if (n.includes("mechanical engineering") && lower.includes("mechanical")) return true;
+          /\bbusiness\b/.test(majorLookupText) &&
+          !/(accounting|finance|marketing|entrepreneurship|human resource|real estate|information and decision|\bids\b|music business)/.test(majorLookupText)) return true;
+      if (n.includes("economics") && majorLookupText.includes("econ")) return true;
+      if (n.includes("mechanical engineering") && majorLookupText.includes("mechanical")) return true;
       if (
         n === "mechanical engineering bs" &&
-        /\bengineering\b/.test(lower) &&
-        !/(electrical|ece|mechanical|civil|biomedical|bioengineering|computer engineering|environmental engineering|industrial engineering|chemical engineering|engineering physics)/.test(lower)
+        /\bengineering\b/.test(majorLookupText) &&
+        !/(electrical|ece|mechanical|civil|biomedical|bioengineering|computer engineering|environmental engineering|industrial engineering|chemical engineering|engineering physics)/.test(majorLookupText)
       ) return true;
-      if (n.includes("electrical engineering") && lower.includes("electrical")) return true;
-      if (n.includes("civil engineering") && lower.includes("civil")) return true;
-      if (n.includes("biomedical engineering") && (lower.includes("biomed") || lower.includes("bme") || lower.includes("biomedical"))) return true;
-      if (n.includes("environmental engineering") && lower.includes("environmental eng")) return true;
-      if (n.includes("industrial engineering") && lower.includes("industrial")) return true;
-      if (n.includes("computer engineering") && lower.includes("computer eng")) return true;
-      if (n.includes("public health") && lower.includes("public health")) return true;
-      if (n.includes("neuroscience") && lower.includes("neuro")) return true;
-      if (n.includes("criminology") && (lower.includes("crim") || lower.includes("criminal justice") || lower.includes("criminology law and justice"))) return true;
-      if (n.includes("political science") && (lower.includes("poli sci") || lower.includes("political science"))) return true;
-      if (n.includes("communication") && lower.includes("comm") && !lower.includes("telecomm")) return true;
-      if (n.includes("mathematics") && !n.includes("computer") && (lower.includes("math") && !lower.includes("cs"))) return true;
-      if (n.includes("statistics") && lower.includes("stat")) return true;
-      if (n.includes("physics") && lower.includes("physics")) return true;
-      if (n.includes("philosophy") && lower.includes("phil")) return true;
-      if (n.includes("sociology") && lower.includes("sociol")) return true;
-      if (n.includes("anthropology") && lower.includes("anthro")) return true;
-      if (n.includes("english") && lower.includes("english") && !lower.includes("engineering")) return true;
-      if (n.includes("history") && lower.includes("history")) return true;
-      if (n.includes("architecture") && !n.includes("architectural studies") && lower.includes("architecture")) return true;
-      if (n.includes("architectural studies") && lower.includes("architectural studies")) return true;
-      if (n.includes("entrepreneurship") && (lower.includes("entrepreneur") || lower.includes("entrep"))) return true;
-      if (n.includes("pharmaceutical sciences") && (lower.includes("pharm") || lower.includes("pharmaceutical"))) return true;
-      if (n.includes("urban studies") && lower.includes("urban stud")) return true;
-      if (n.includes("public policy") && lower.includes("public policy")) return true;
+      if (n.includes("electrical engineering") && majorLookupText.includes("electrical")) return true;
+      if (n.includes("civil engineering") && majorLookupText.includes("civil")) return true;
+      if (n.includes("biomedical engineering") && (majorLookupText.includes("biomed") || majorLookupText.includes("bme") || majorLookupText.includes("biomedical"))) return true;
+      if (n.includes("environmental engineering") && majorLookupText.includes("environmental eng")) return true;
+      if (n.includes("industrial engineering") && majorLookupText.includes("industrial")) return true;
+      if (n.includes("computer engineering") && majorLookupText.includes("computer eng")) return true;
+      if (n.includes("public health") && majorLookupText.includes("public health")) return true;
+      if (n.includes("neuroscience") && majorLookupText.includes("neuro")) return true;
+      if (n.includes("criminology") && (majorLookupText.includes("crim") || majorLookupText.includes("criminal justice") || majorLookupText.includes("criminology law and justice"))) return true;
+      if (n.includes("political science") && (majorLookupText.includes("poli sci") || majorLookupText.includes("political science"))) return true;
+      if (n.includes("communication") && majorLookupText.includes("comm") && !majorLookupText.includes("telecomm")) return true;
+      if (n.includes("mathematics") && !n.includes("computer") && (majorLookupText.includes("math") && !majorLookupText.includes("cs"))) return true;
+      if (n.includes("statistics") && majorLookupText.includes("stat")) return true;
+      if (n.includes("physics") && majorLookupText.includes("physics")) return true;
+      if (n.includes("philosophy") && majorLookupText.includes("phil")) return true;
+      if (n.includes("sociology") && majorLookupText.includes("sociol")) return true;
+      if (n.includes("anthropology") && majorLookupText.includes("anthro")) return true;
+      if (n.includes("english") && majorLookupText.includes("english") && !majorLookupText.includes("engineering")) return true;
+      if (n.includes("history") && majorLookupText.includes("history")) return true;
+      if (n.includes("architecture") && !n.includes("architectural studies") && majorLookupText.includes("architecture")) return true;
+      if (n.includes("architectural studies") && majorLookupText.includes("architectural studies")) return true;
+      if (n.includes("entrepreneurship") && (majorLookupText.includes("entrepreneur") || majorLookupText.includes("entrep"))) return true;
+      if (n.includes("pharmaceutical sciences") && (majorLookupText.includes("pharm") || majorLookupText.includes("pharmaceutical"))) return true;
+      if (n.includes("urban studies") && majorLookupText.includes("urban stud")) return true;
+      if (n.includes("public policy") && majorLookupText.includes("public policy")) return true;
 
       return false;
     }).sort((a: any, b: any) => {
@@ -2120,7 +1986,16 @@ Available majors in data (suggest they check if their major appears under a diff
 ${list}`, 0.7, query)];
     }
  
-    const progress = extractStudentProgress(query.rawQuery);
+    const verifiedPlanningContext = buildPlanningStudentContext(verifiedContext);
+    const verifiedYear = verifiedContext.year?.value ?? "";
+    const progress = {
+      completedCourses: verifiedPlanningContext.completed_courses,
+      yearStanding: /freshman|first[- ]?year/i.test(verifiedYear) ? 1
+        : /sophomore|second[- ]?year/i.test(verifiedYear) ? 2
+        : /junior|third[- ]?year/i.test(verifiedYear) ? 3
+        : /senior|fourth[- ]?year/i.test(verifiedYear) ? 4
+        : 0,
+    };
     const completedCourses = progress.completedCourses;
 
     // ── REQUIRED COURSES — with credit hours from source data ──────────────
@@ -2495,33 +2370,62 @@ ${list}`, 0.7, query)];
         `7. Do NOT use HON / honors-only courses or honors seminars as gen ed fillers unless STUDENT CONTEXT explicitly says honors college`,
       ].join("\n");
 
-      const nextSemesterQuery =
-        /\bwhat should\b.*\btake next semester\b/.test(lower) ||
-        /\bnext semester\b/.test(lower) && /\b(sophomore|junior|senior|freshman|first.year|second.year|third.year|fourth.year)\b/.test(lower);
-      if (nextSemesterQuery && standing > 0 && completedCourses.length === 0) {
-        const nextSemesterIsFall = new Date().getMonth() <= 4;
-        const targetYear = nextSemesterIsFall ? Math.min(standing + 1, 4) : standing;
-        const targetSemester = nextSemesterIsFall ? "First Semester" : "Second Semester";
-        const yearName = ["", "Freshman", "Sophomore", "Junior", "Senior"][targetYear];
-        const target = (majorMatch.sampleSchedule ?? []).find((sem: any) =>
-          sem.year?.includes(yearName) && sem.semester === targetSemester
-        );
-        if (target) {
-          const formatNextTermHours = (hours: number | null | undefined): string =>
-            hours != null ? ` (${hours} cr)` : "";
-          const nextTermText = [
-            `=== DETERMINISTIC NEXT TERM ===`,
-            `Typical next-term courses for a **${["", "freshman", "sophomore", "junior", "senior"][standing]}** ${majorName} student:`,
-            ``,
-            ...(target.courses ?? []).map((course: any) =>
-              course.isElective
-                ? `- *${ELECTIVE_LABELS[course.electiveType ?? ""] ?? course.title}*${formatNextTermHours(course.hours)}`
-                : `- **${course.code}** — ${course.title}${formatNextTermHours(course.hours)}`
-            ),
-            ``,
-            `This is the standard catalog backbone. Your exact next term depends on completed courses and prerequisites.`,
-          ].join("\n");
-          return [makeChunk("major_plan", nextTermText, 0.99, query)];
+      const statedCompletedCourses = verifiedPlanningContext.completed_courses;
+      const statedCurrentCourses = verifiedPlanningContext.in_progress_courses;
+      const safeRouteDecision = decidePrerequisiteSafeNextTermRoute({
+        isPersonalScheduleRequest:
+          /\b(?:schedule|what should i take|what classes (?:do )?i have left|what should i register for|make me a plan|plan for (?:my )?(?:next|remaining)|graduate quickly)\b/i.test(query.rawQuery),
+        hasVerifiedMajor: Boolean(verifiedContext.major),
+        hasVerifiedCourseHistory: statedCompletedCourses.length > 0 || statedCurrentCourses.length > 0,
+        hasPriorPlanningContext,
+        rawQuery: query.rawQuery,
+      });
+      if (safeRouteDecision === "missing_history_clarification") {
+        return [makeChunk(
+          "major_plan",
+          "=== DETERMINISTIC NEXT TERM ===\nI know your major, but I do not have verified course progress to check prerequisites safely. Which courses have you completed or are taking now?",
+          0.99,
+          query,
+        )];
+      }
+      if (safeRouteDecision === "safe_planner") {
+        if (!planningPrerequisiteDescriptionCache) {
+          const catalogRows = JSON.parse(
+            readFileSync(join(process.cwd(), "scripts/catalog-scraped.json"), "utf8"),
+          ) as Array<{ subject?: string; number?: string | number; description?: string | null }>;
+          planningPrerequisiteDescriptionCache = new Map<string, string | null>();
+          for (const course of catalogRows) {
+            if (!course.subject || course.number == null) continue;
+            planningPrerequisiteDescriptionCache.set(
+              `${course.subject.toUpperCase()} ${String(course.number).toUpperCase()}`,
+              course.description ?? null,
+            );
+          }
+        }
+        const safePlan = buildPrerequisiteSafeNextTermPlan({
+          semesters: majorMatch.sampleSchedule ?? [],
+          catalogDescriptions: planningPrerequisiteDescriptionCache,
+          record: {
+            completed: statedCompletedCourses.map((code) => {
+              const normalizedCode = code.replace(/\s+/g, " ").trim().toUpperCase();
+              const reviewedAttemptIndex = reviewedAudit?.attempts.findIndex(
+                (attempt) => attempt.code.replace(/\s+/g, " ").trim().toUpperCase() === normalizedCode,
+              ) ?? -1;
+              const grade = reviewedAttemptIndex >= 0 && reviewedAudit?.choices[reviewedAttemptIndex] === "completed"
+                ? reviewedAudit.attempts[reviewedAttemptIndex].grade
+                : null;
+              return { code: normalizedCode, grade };
+            }),
+            inProgress: statedCurrentCourses,
+          },
+        });
+        if (safePlan) {
+          return [makeChunk(
+            "major_plan",
+            `=== DETERMINISTIC NEXT TERM ===\n${renderPrerequisiteSafeNextTermPlan(safePlan, majorName, majorMatch.url)}`,
+            0.99,
+            query,
+          )];
         }
       }
 
@@ -3966,7 +3870,7 @@ function buildAnswerPack(
 }
 
 function buildSystemPrompt(
-  memoryContext: string,
+  verifiedStudentContext: string,
   context: string,
   isFact: boolean,
   answerPack?: AnswerPack,
@@ -3982,8 +3886,8 @@ function buildSystemPrompt(
   const modeInstructions: Record<AnswerMode, string> = {
     ranking: "RANKING: Lead with the top options. Use real GPA numbers, scores, prices, and sample sizes to justify rankings. Name the strongest option for the metric the student asked about. For professors or classes, distinguish historical grade outcomes from teaching quality and learning. Do not claim a professor is best for learning, clearer, more supportive, or better at managing workload unless the retrieved evidence explicitly measures that.",
     discovery: "DISCOVERY: If this is a simple or casual question, answer briefly and directly. Only give a rich overview if the student is genuinely exploring a broad topic.",
-    comparison: "COMPARISON: Structure as clear A vs B with parallel criteria. Acknowledge the real tradeoffs. End with a concrete recommendation tailored to the implied student profile.",
-    recommendation: "RECOMMENDATION: You detected specific constraints about this student. Use them. Give a direct, personalized answer — not 'it depends,' but 'given that you care about X and Y, here is what I recommend and why.' If the student is choosing professors or classes, mention the strongest option for grades and briefly note any tradeoff in workload, teaching style, or learning fit.",
+    comparison: "COMPARISON: Structure as clear A vs B with parallel criteria. Acknowledge the real tradeoffs. End with a concrete recommendation tailored only to verified student context. If no relevant verified context exists, give a general recommendation and name the missing fact that would change it.",
+    recommendation: "RECOMMENDATION: Use only constraints present in VERIFIED STUDENT CONTEXT. Give a direct answer based on those verified constraints. If a missing personal fact would materially change the recommendation, ask one concise clarification question instead of guessing. If the student is choosing professors or classes, mention the strongest option for grades and briefly note any tradeoff in workload, teaching style, or learning fit.",
     logistics: "LOGISTICS: Be precise. Lead with exact addresses, phone numbers, deadlines, URLs, hours. Zero editorializing. Students need to act — give them exactly what they need.",
 planning: `PLANNING: The retrieved data contains a PLANNING OBJECT — a pre-validated JSON structure. Your ONLY job is to render it as a readable semester-by-semester plan for the student. NEVER use your training knowledge about course sequences.
 
@@ -4021,6 +3925,8 @@ STRICT OUTPUT RULES:
 
   const corePrinciples = `CORE PRINCIPLES:
 - Never hallucinate — if a fact isn't in the retrieved data, say so and point to the right UIC page
+- PERSONAL FACT INVARIANT: Only describe the student's major, year, goals, completed courses, current courses, preferences, or personal situation when that fact appears in VERIFIED STUDENT CONTEXT below. Never infer personal facts from the topic, course, Gen Ed category, or an assistant's earlier statement. If a missing fact materially changes the answer, ask exactly one concise clarification question.
+- PROVENANCE RULE: Every item in VERIFIED STUDENT CONTEXT includes its source. Treat only those listed items as known personal facts. An empty context means you know no personal facts about the student.
 - Be specific: cite exact GPA numbers, dollar amounts, addresses, phone numbers, and dates from the data
 - Use **bold** for course codes, professor names, and critical numbers
 - Match response length to the question: simple fact = 1-3 sentences, planning/comparison = detailed with structure
@@ -4030,7 +3936,7 @@ STRICT OUTPUT RULES:
 - KEEP LISTS SHORT: when you do use bullets, keep them tight and high-signal rather than long or repetitive
 - STOP WHEN THE QUESTION IS ANSWERED: for direct asks like "who is", "give me some players", "what is", "where is", or "when is", answer the asked thing first and do not tack on extra trivia, history, ticket info, or side notes unless the user asked for that broader context
 - Zero filler phrases — students want answers, not preamble
-- Read between the lines: if a student seems stressed or implicitly needs an easier path, address that directly
+- Respond empathetically to the student's wording, but do not convert tone or topic into an unstated personal fact or preference
 - GRADE-SHOPPING TONE RULE: It is fine to use GPA, A-rate, and easiness data when the student asks for the easiest option or best shot at an A. But do not sound cynical or one-note. When recommending a professor or course, avoid framing it like "easy A at all costs." Give the strongest grades-based answer, then add one brief reality check about fit, teaching quality, workload, or what the course is actually good for.
 - ACADEMIC EVIDENCE RULE: Historical GPA, A-rate, W-rate, and enrollment show outcomes in the covered records. They do not prove teaching quality, clarity, support, workload management, or how much students learned. RMP ratings are student-review signals, not objective proof. Label the metric behind a recommendation and do not invent causal explanations.
 - NUMERICAL COMPARISON RULE: Calculate differences before describing them. Never call a 0.20 GPA-point difference "half a grade" or otherwise exaggerate the size of a gap.
@@ -4073,7 +3979,7 @@ ${corePrinciples}
 ${financialRule}${majorRequirementsRule}${trustLine}
 ${smartFollowUpInstruction ? `\n${smartFollowUpInstruction}\n` : ""}
 UIC: Chicago's only public Research I university. ~33,000 students. ~91% commuters. Majority-minority. Mascot: Sparky the Dragon. Navy and Flames Red. Missouri Valley Conference (MVC). Go Flames!
-${memoryContext ? "\n" + memoryContext + "\n" : ""}
+${verifiedStudentContext ? "\n" + verifiedStudentContext + "\n" : ""}
 ${answerPack ? `
 --- ANSWER PACK ---
 INTENT: ${answerPack.resolvedIntent}
@@ -4522,6 +4428,8 @@ const [conversationMemory, accountMemory, sessionState, authenticatedStudyUser] 
   getCurrentStudyUser().catch(() => null),
 ]);
 const userMemory = mergeUserMemory(accountMemory, conversationMemory);
+let savedProfileForVerifiedContext: SavedStudentProfileContext | null = null;
+let reviewedAuditForVerifiedContext: SavedAuditImport | undefined;
 
 const numericYearToLabel: Record<number, string> = {
   1: "freshman",
@@ -4533,8 +4441,21 @@ const numericYearToLabel: Record<number, string> = {
 if (authenticatedStudyUser) {
   // Parse the user's saved plannerProfile (completedCourses, majorSlug, etc.)
   const userPlannerPrefs = parseStoredPreferences(authenticatedStudyUser.studyPreferences);
+  reviewedAuditForVerifiedContext = userPlannerPrefs.plannerProfile.auditImport;
   const profileCompletedCourses: string[] = userPlannerPrefs.plannerProfile.completedCourses ?? [];
   const profileCurrentCourses: string[] = authenticatedStudyUser.currentCourses ?? [];
+  const currentSemesterNumber = userPlannerPrefs.plannerProfile.currentSemesterNumber;
+  const profileYear = currentSemesterNumber
+    ? numericYearToLabel[Math.min(4, Math.max(1, Math.ceil(currentSemesterNumber / 2)))] ?? null
+    : null;
+  savedProfileForVerifiedContext = {
+    major: authenticatedStudyUser.major,
+    year: profileYear,
+    interests: authenticatedStudyUser.interests,
+    currentCourses: profileCurrentCourses,
+    completedCourses: profileCompletedCourses,
+    honorsStudent: userPlannerPrefs.plannerProfile.honorsStudent,
+  };
 
   // Profile data is the authoritative source (explicit user input).
   // Always override stale memory with the profile values so Sparky stays in sync
@@ -4589,10 +4510,67 @@ if (memoryForThisTurn !== null) {
   void Promise.allSettled(memoryWrites);
 }
 
+const verifiedStudentContext = buildVerifiedStudentContext({
+  messages,
+  savedProfile: savedProfileForVerifiedContext,
+});
+
+const isUnderspecifiedCourseRecommendation =
+  /\b(?:give|suggest|recommend|show)\b[^.!?]{0,40}\b(?:courses?|classes?|electives?|options?)\b|\bwhat should i take\b/i.test(lastMsg) &&
+  !/\b[A-Z]{2,5}\s*\d{3}[A-Z]?\b/i.test(lastMsg) &&
+  !/\b(?:gen[ -]?ed|general education|understanding the|exploring world cultures|analyzing the natural world|individual and society|creative arts|past|united states society)\b/i.test(lastMsg);
+
+if (isUnderspecifiedCourseRecommendation && !verifiedStudentContext.major) {
+  return makePlainTextResponse(
+    "I don't have a verified major or requirement to base those course options on. What major, subject, or requirement should the options count toward?",
+    undefined,
+    {
+      responseKind: "verified_context_clarification",
+      answerMode: query.answerMode,
+      extraMetadata: {
+        matchedPath: "missing_verified_context_for_course_recommendation",
+      },
+    },
+  );
+}
+
+if (
+  /\b(?:what(?:'s| is) my major|what major am i|do you know my major)\b/i.test(lastMsg) &&
+  !verifiedStudentContext.major
+) {
+  const statedTrack = verifiedStudentContext.preferences.find((fact) =>
+    /pre[- ]?med|pre[- ]?law|track/i.test(fact.value),
+  );
+  const statedGoal = verifiedStudentContext.goals[0];
+  const knownFact = statedTrack?.value ?? statedGoal?.value ?? null;
+  const prefix = knownFact
+    ? `You told me ${knownFact}, but that does not establish your current major. `
+    : "You haven't told me your current major yet. ";
+  return makePlainTextResponse(
+    `${prefix}What is your actual UIC major?`,
+    undefined,
+    {
+      responseKind: "verified_context_clarification",
+      answerMode: query.answerMode,
+      extraMetadata: {
+        matchedPath: "goal_or_track_is_not_a_verified_major",
+      },
+    },
+  );
+}
+
+const verifiedClassifierMemory = {
+  major: verifiedStudentContext.major?.value,
+  year: verifiedStudentContext.year?.value,
+  interests: verifiedStudentContext.interests.map((fact) => fact.value),
+  goals: verifiedStudentContext.goals.map((fact) => fact.value),
+  knownPrefs: verifiedStudentContext.preferences.map((fact) => fact.value),
+};
+
 // Always run AI classify — it runs in parallel with memory/session so cost is low,
 // and it handles informal phrasing that regex misses.
 const [aiIntentResult, regexIntentResult, regexCiResult] = await Promise.allSettled([
-  classifyIntent(normalizedMsg, messages.slice(0, -1), memoryForThisTurn),
+  classifyIntent(normalizedMsg, messages.slice(0, -1), verifiedClassifierMemory),
   Promise.resolve(detectIntent(normalizedMsg)),
   Promise.resolve(detectCampusIntent(normalizedMsg)),
 ]);
@@ -4652,6 +4630,95 @@ const rc = regexCiResult.status === "fulfilled" ? regexCiResult.value : ({} as a
     isAboutRecreation: aiIntent.isAboutRecreation || rc.isAboutRecreation,
     isAboutSafety: aiIntent.isAboutSafety || rc.isAboutSafety,
   } : rc;
+
+  // Personal schedule/remaining-course requests need verified student context.
+  // Stop them before retrieval can select an unrelated default degree plan or
+  // mistake a personal constraint (such as commuting) for the primary domain.
+  const isPersonalScheduleRequest =
+    /\b(?:schedule|what should i take|what classes (?:do )?i have left|what should i register for|make me a plan|plan for (?:my )?(?:next|remaining)|graduate quickly)\b/i.test(lastMsg);
+  const hasExplicitGenericProgramTarget =
+    /\b(?:plan|schedule)\s+(?:for\s+)?(?:computer science|cs|engineering|nursing|finance|accounting|biology|chemistry|physics|mathematics|math|psychology)\b/i.test(lastMsg) ||
+    /\b(?:computer science|cs|engineering|nursing|finance|accounting|biology|chemistry|physics|mathematics|math|psychology)\s+(?:plan|schedule)\b/i.test(lastMsg);
+  const hasVerifiedCourseHistory =
+    verifiedStudentContext.currentCourses.length > 0 ||
+    verifiedStudentContext.completedCourses.length > 0;
+  const hasPriorPlanningContext = hasPriorPersonalizedPlanningContext(messages.slice(0, -1));
+  const prerequisiteSafeRouteDecision = decidePrerequisiteSafeNextTermRoute({
+    isPersonalScheduleRequest,
+    hasVerifiedMajor: Boolean(verifiedStudentContext.major),
+    hasVerifiedCourseHistory,
+    hasPriorPlanningContext,
+    rawQuery: lastMsg,
+  });
+
+  // A question such as "Will this delay my graduation?" is about an unstated
+  // event, not a request for a generic degree plan.  Ask for that event and
+  // the student's actual progress instead of guessing what "this" means.
+  if (
+    /\b(?:will|would|can|could)\s+(?:this|that|it)\s+(?:delay|affect|push back)\s+(?:my\s+)?graduation\b/i.test(lastMsg)
+  ) {
+    return makePlainTextResponse(
+      "I can help figure that out, but I need to know what ‘this’ refers to and where you are in your degree. What happened or what course are you considering, and what is your major and current course progress?",
+      undefined,
+      {
+        responseKind: "verified_context_clarification",
+        answerMode: query.answerMode,
+        extraMetadata: {
+          matchedPath: "ambiguous_graduation_delay_question",
+        },
+      },
+    );
+  }
+
+  if (
+    isPersonalScheduleRequest &&
+    !verifiedStudentContext.major &&
+    !hasExplicitGenericProgramTarget &&
+    prerequisiteSafeRouteDecision !== "safe_planner"
+  ) {
+    const knownContext = [
+      verifiedStudentContext.year?.value
+        ? `your year (${verifiedStudentContext.year.value})`
+        : null,
+      verifiedStudentContext.preferences.length
+        ? `your stated constraint (${verifiedStudentContext.preferences[0].value})`
+        : null,
+      verifiedStudentContext.goals.length
+        ? `your goal (${verifiedStudentContext.goals[0].value})`
+        : null,
+    ].filter(Boolean);
+    const acknowledgement = knownContext.length
+      ? `I have ${knownContext.join(" and ")}, but I don't have your major. `
+      : "I can help build that, but I don't have your major or course progress yet. ";
+    return makePlainTextResponse(
+      `${acknowledgement}What is your exact UIC major, and which courses are you taking or have completed?`,
+      undefined,
+      {
+        responseKind: "verified_context_clarification",
+        answerMode: query.answerMode,
+        extraMetadata: {
+          matchedPath: "missing_verified_major_for_personal_schedule",
+        },
+      },
+    );
+  }
+
+  if (prerequisiteSafeRouteDecision === "missing_history_clarification") {
+    const yearText = verifiedStudentContext.year
+      ? `${verifiedStudentContext.year.value} `
+      : "";
+    return makePlainTextResponse(
+      `I know you're a ${yearText}${verifiedStudentContext.major!.value} student, but I don't know your course progress yet. Which courses have you completed or are taking now?`,
+      undefined,
+      {
+        responseKind: "verified_context_clarification",
+        answerMode: query.answerMode,
+        extraMetadata: {
+          matchedPath: "missing_verified_course_history_for_personal_schedule",
+        },
+      },
+    );
+  }
 
   // ── Determine which domains to retrieve based on query analysis + legacy intents ──
   const dc = query.domainConfidence;
@@ -4780,8 +4847,8 @@ if (isFollowUpQuery(lastMsg)) {
   }
 
   // Memory-boosted retrieval — inject user's known major/interests into intent
-if (userMemory?.major && !intent.subjectCode && !intent.deptName) {
-  const m = userMemory.major.toLowerCase();
+if (verifiedStudentContext.major?.value && !intent.subjectCode && !intent.deptName) {
+  const m = verifiedStudentContext.major.value.toLowerCase();
   if (m.includes("computer science") || m.includes(" cs")) intent.subjectCode = "CS";
   else if (m.includes("ece") || m.includes("electrical")) intent.subjectCode = "ECE";
   else if (m.includes("math")) intent.subjectCode = "MATH";
@@ -4795,10 +4862,10 @@ if (userMemory?.major && !intent.subjectCode && !intent.deptName) {
 }
 
 // Boost domain confidence for known interests
-if (userMemory?.interests?.some(i => i.toLowerCase().includes("greek") || i.toLowerCase().includes("sport"))) {
+if (verifiedStudentContext.interests.some(({ value }) => value.toLowerCase().includes("greek") || value.toLowerCase().includes("sport"))) {
   if (!dc["student_life"]) dc["student_life"] = 0.6;
 }
-if (userMemory?.interests?.some(i => i.toLowerCase().includes("sport") || i.toLowerCase().includes("basketball"))) {
+if (verifiedStudentContext.interests.some(({ value }) => value.toLowerCase().includes("sport") || value.toLowerCase().includes("basketball"))) {
   if (!dc["athletics"]) dc["athletics"] = 0.6;
 }
 
@@ -4956,7 +5023,18 @@ if ((intent.isAboutCourses || intent.wantsEasiest || intent.wantsHardest) && !in
   if ((dc["courses"] ?? 0) > 0.5 || intent.isAboutCourses) asyncTasks.push(retrieveCourseList(intent, query));
   if ((dc["gen_ed"] ?? 0) > 0.5 || intent.isAboutGenEd) asyncTasks.push(retrieveGenEd(query));
   if ((dc["professors"] ?? 0) > 0.5 || intent.isAboutProfessors) asyncTasks.push(retrieveProfessors(intent, query));
-  if ((dc["major_plan"] ?? 0) > 0.5 || query.answerMode === "planning") asyncTasks.push(retrieveMajorPlan(query));
+  if (shouldScheduleMajorPlanRetrieval({
+    majorPlanConfidence: dc["major_plan"] ?? 0,
+    answerMode: query.answerMode,
+    prerequisiteSafeRouteDecision,
+  })) {
+    asyncTasks.push(retrieveMajorPlan(
+      query,
+      verifiedStudentContext,
+      reviewedAuditForVerifiedContext,
+      hasPriorPlanningContext,
+    ));
+  }
   if ((dc["athletics"] ?? 0) > 0.5 || ci.isAboutAthletics) asyncTasks.push(retrieveAthletics(query));
 
 // Run vector store check and async DB tasks in parallel — neither blocks the other.
@@ -5191,7 +5269,7 @@ if (relevantVectors.length > 0 && !query.isFact && query.answerMode !== "plannin
 
   // ── Planning pipeline: MANDATORY PlanningObject before answer generation ────
   // Pipeline order:
-  //   isPlanningQuery → extractStudentContext → retrieveMajorPlan (above)
+  //   isPlanningQuery → verified student context → retrieveMajorPlan (above)
   //   → buildPlanningObject → answer generation
   //
   // PlanningObject is NOT optional. Raw scaffold MUST NOT reach the answer call.
@@ -5199,50 +5277,16 @@ if (relevantVectors.length > 0 && !query.isFact && query.answerMode !== "plannin
   if (query.answerMode === "planning") {
     const scaffoldChunk = allChunks.find(c => c.domain === "major_plan");
     if (scaffoldChunk) {
-      const studentCtx = extractStudentContext(lastMsg, messages.slice(0, -1));
+      const studentCtx: StudentContext = buildPlanningStudentContext(verifiedStudentContext);
       planningStudentCtx = studentCtx;
-
-      // Merge in profile data so the planner automatically knows the student's
-      // major, completed courses, and current courses without them having to
-      // re-state everything in the chat.
-      if (authenticatedStudyUser) {
-        const profilePrefs = parseStoredPreferences(authenticatedStudyUser.studyPreferences);
-        const profileCompleted = profilePrefs.plannerProfile.completedCourses ?? [];
-        const profileCurrent = authenticatedStudyUser.currentCourses ?? [];
-        const profileMajor = authenticatedStudyUser.major ?? null;
-        // Use profile major if not explicitly stated in chat
-        if (!studentCtx.major && profileMajor) {
-          studentCtx.major = profileMajor;
-        }
-        // Merge profile completed courses (deduplicated)
-        if (profileCompleted.length) {
-          const existingCompleted = new Set(studentCtx.completed_courses);
-          for (const c of profileCompleted) {
-            existingCompleted.add(c);
-          }
-          studentCtx.completed_courses = Array.from(existingCompleted);
-        }
-        // Merge profile current courses
-        if (profileCurrent.length) {
-          const existingCurrent = new Set(studentCtx.in_progress_courses);
-          for (const c of profileCurrent) {
-            existingCurrent.add(c);
-          }
-          studentCtx.in_progress_courses = Array.from(existingCurrent);
-        }
-        // Add honors constraint if set in profile
-        const isHonors = profilePrefs.plannerProfile.honorsStudent;
-        if (isHonors && !studentCtx.constraints.includes("honors college")) {
-          studentCtx.constraints.push("honors college");
-        }
-      }
       let planningObj: PlanningObject;
-      const importedCatalogCode = authenticatedStudyUser
-        ? parseStoredPreferences(authenticatedStudyUser.studyPreferences).plannerProfile.auditImport?.metadata.catalogCode : null;
+      const importedAudit = authenticatedStudyUser
+        ? parseStoredPreferences(authenticatedStudyUser.studyPreferences).plannerProfile.auditImport : undefined;
+      const importedCatalogCode = importedAudit?.metadata.catalogCode;
+      const sharedAudit = buildCsAudit(studentCtx.major ?? "", studentCtx.completed_courses, studentCtx.in_progress_courses, importedCatalogCode, importedAudit);
       const catalogNotice = importedCatalogCode
-        ? `Imported audit catalog code: ${importedCatalogCode}. This catalog has not been mapped to verified rules. Any current-catalog scaffold is only a sample, not an exact remaining-degree audit for this student. Explain this limitation.` : "";
+        ? sharedAudit?.notice ?? `Imported audit catalog code: ${importedCatalogCode}. No supported program rule set and matching saved import are available. Any current-catalog scaffold is only a sample, not an exact remaining-degree audit for this student. Explain this limitation.` : "";
       if (catalogNotice) scaffoldChunk.content += `\n${catalogNotice}`;
-      const sharedAudit = buildCsAudit(studentCtx.major ?? "", studentCtx.completed_courses, studentCtx.in_progress_courses, importedCatalogCode);
       if (sharedAudit) {
         // Both planner and chat consume the same limited, deterministic checks.
         // Keep this in the retrieval context as well as the structure-generation prompt.
@@ -5403,7 +5447,7 @@ if (trust.decision === "abstain") {
 }
 
 const context = assembleContext(rerankedChunks, query.isFact, query.domainConfidence);
-const memoryContext = memoryForThisTurn ? formatMemoryForPrompt(memoryForThisTurn) : "";
+const verifiedStudentContextPrompt = formatVerifiedStudentContext(verifiedStudentContext);
 const answerPack = buildAnswerPack(query, rerankedChunks, intent, sessionState);
 
   // Collect entity state updates — written once per request after response completes
@@ -5429,9 +5473,9 @@ if (uploadedFile) {
   uploadedFileFallbackPrompt = uploadedFileSupport.fallbackUserPrompt;
 }
 
-const smartFollowUpInstruction = buildSmartFollowUpInstruction(lastMsg, query, sessionState);
+const smartFollowUpInstruction = buildSmartFollowUpInstruction(lastMsg, query, verifiedStudentContext);
 const systemPrompt = buildSystemPrompt(
-  memoryContext,
+  verifiedStudentContextPrompt,
   context,
   query.isFact,
   answerPack,

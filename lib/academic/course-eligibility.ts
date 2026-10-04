@@ -39,11 +39,17 @@ function normalizeCode(subject: string, number: string) {
 
 export function extractPrerequisiteText(description: string | null | undefined) {
   if (!description) return null;
-  const match = /Prerequisite\(s\):\s*/i.exec(description);
+  const match = /Prerequisite\s*\(s\):\s*/i.exec(description);
   if (!match) return null;
   const tail = description.slice(match.index + match[0].length);
   const end = SECTION_END.exec(tail);
-  return (end ? tail.slice(0, end.index) : tail).trim() || null;
+  const section = (end ? tail.slice(0, end.index) : tail)
+    // Explanatory prose after the prerequisite sentence often repeats course
+    // codes while describing exceptions. It is evidence for an advisor review,
+    // not another prerequisite clause.
+    .replace(/\.\s+(?:The|This)\b[\s\S]*$/i, ". Unsupported prerequisite qualifier.")
+    .trim();
+  return section || null;
 }
 
 function minimumGradeNear(text: string, codeIndex: number) {
@@ -67,9 +73,11 @@ function uniqueRules(rules: PrerequisiteCourseRule[]) {
 }
 
 function connectorBetween(text: string, leftEnd: number, rightStart: number) {
-  const between = text.slice(leftEnd, rightStart).toLowerCase();
-  if (/\bor\b/.test(between)) return "or" as const;
+  const between = text.slice(leftEnd, rightStart).toLowerCase()
+    .replace(/or better/g, "")
+    .replace(/(credit|completion) or concurrent/g, "$1 concurrent");
   if (/\band\b|;/.test(between)) return "and" as const;
+  if (/\bor\b/.test(between)) return "or" as const;
   // Catalog lists sometimes omit a conjunction after punctuation. Requiring
   // every listed course is safer than treating an unexplained list as choices.
   return "and" as const;
@@ -96,10 +104,12 @@ function buildCourseRule(text: string) {
     return { kind: onlyOr ? "any" as const : "all" as const, rules: courseRules };
   }
 
-  // Mixed AND/OR expressions require grouping. Split on strong AND boundaries
-  // and retain OR alternatives within each group. If this cannot account for
-  // every course, the caller will mark the result partial.
-  const segments = text.split(/\s*;\s*(?:and\s+)?|\s+and\s+(?=(?:grade of\s+[A-DF][+-]?\s+or better\s+in\s+)?[A-Z&]{2,5}\s*\d{3})/i);
+  // Mixed AND/OR expressions require grouping. UIC separates required groups
+  // with "; and" (or an explicit "and" before the next grade/credit clause),
+  // while alternatives inside each group use "or".
+  const segments = text.split(
+    /\s*;\s*and\s+|\s+and\s+(?=(?:(?:grade of\s+[A-DF][+-]?\s+or better\s+in)|(?:credit or concurrent registration in)|(?:completion or concurrent registration in)|[A-Z&]{2,5}\s*\d{3}))/i,
+  );
   const segmentRules = segments.map<PrerequisiteRule | null>(segment => {
     const found = [...segment.matchAll(COURSE_CODE)];
     if (!found.length) return null;
@@ -128,8 +138,19 @@ function unresolvedConditions(text: string) {
     [/completion of all other|completion of the .* core/i, "Program-progress requirement"],
     [/average grade of\s+[A-DF][+-]?\s+or higher/i, "Combined minimum-grade requirement"],
     [/faculty sponsor|departmental approval|approval of/i, "Approval requirement"],
+    [/unsupported prerequisite qualifier/i, "Unsupported prerequisite qualifier"],
   ];
   for (const [pattern, label] of checks) if (pattern.test(text)) conditions.push(label);
+  const unconsumed = text
+    .replace(COURSE_CODE, " ")
+    .replace(/grade of\s+[A-DF][+-]?\s+or better(?:\s+in)?/gi, " ")
+    .replace(/(?:credit|completion) or concurrent registration in/gi, " ")
+    .replace(/simultaneous enrollment in/gi, " ")
+    .replace(/\b(?:and|or|in)\b/gi, " ")
+    .replace(/[.;,:()\[\]{}\-/]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+  if (/[A-Za-z0-9]/.test(unconsumed)) conditions.push("Unsupported prerequisite qualifier");
   return [...new Set(conditions)];
 }
 
@@ -145,12 +166,15 @@ export function parseCatalogPrerequisites(description: string | null | undefined
     return { sourceText, rule: null, confidence: "unparsed", unresolvedConditions: unresolved.length ? unresolved : ["Unparsed prerequisite language"] };
   }
 
-  const hasMixedCourseLogic = /\band\b/i.test(sourceText.replace(/or better/gi, ""))
-    && /\bor\b/i.test(sourceText.replace(/or better/gi, ""));
+  const logicalText = sourceText
+    .replace(/or better/gi, "")
+    .replace(/(credit|completion) or concurrent/gi, "$1 concurrent");
+  const hasMixedCourseLogic = /\band\b/i.test(logicalText) && /\bor\b/i.test(logicalText);
+  const hasExplicitMixedGrouping = /;\s*and\b/i.test(logicalText);
   return {
     sourceText,
     rule,
-    confidence: unresolved.length || hasMixedCourseLogic ? "partial" : "exact",
+    confidence: unresolved.length || (hasMixedCourseLogic && !hasExplicitMixedGrouping) ? "partial" : "exact",
     unresolvedConditions: unresolved,
   };
 }
